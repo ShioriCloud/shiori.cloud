@@ -20,6 +20,8 @@ export function MediaSpecTags({ hardsubLanguage, className }: MediaSpecTagsProps
       className={cn(
         'shrink-0 rounded-full px-2 py-0 text-[10px] font-medium leading-5',
         isEnglish && 'font-semibold',
+        !isEnglish &&
+          'border-cyan-500/35 bg-cyan-500/15 text-cyan-200',
         className
       )}
     >

@@ -3,12 +3,10 @@ import { useEffect, lazy, Suspense } from 'react'
 import WebApp from '@twa-dev/sdk'
 import Layout from './components/Layout'
 import ScrollToTop from './components/ScrollToTop'
-import { RequireAppAuth } from './components/RequireAppAuth'
 import { useTheme } from './utils/theme'
 import { useAppAuth } from './hooks/useAppAuth'
 import { isTelegramMiniApp } from './lib/platform'
 import { useTelegramStartNavigation } from './hooks/useTelegramStartNavigation'
-import { useTelegramLinkComplete } from './hooks/useTelegramLinkComplete'
 import { useTelegramUserSync } from './hooks/useTelegramUserSync'
 
 const Home = lazy(() => import('./pages/Home'))
@@ -25,7 +23,6 @@ function App() {
   const { isReady } = useAppAuth()
   const { applyTheme } = useTheme()
   useTelegramStartNavigation(isReady)
-  useTelegramLinkComplete(isReady)
   useTelegramUserSync(isReady)
 
   useEffect(() => {
@@ -63,7 +60,7 @@ function App() {
           <Route path="/search" element={<Search />} />
           <Route path="/my-list" element={<MyList />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/notifications" element={<RequireAppAuth><Notifications /></RequireAppAuth>} />
+          <Route path="/notifications" element={<Notifications />} />
         </Routes>
       </Suspense>
     </Layout>

@@ -698,7 +698,7 @@ const SimilarPosterCard = ({
 const EPISODE_DOWNLOAD_QUALITIES = [
   { id: '480p', label: '480p', available: false },
   { id: '720p', label: '720p', available: false },
-  { id: '1080p', label: '1080p', available: true },
+  { id: '1080p', label: '1080p x265 10bit', available: true },
 ] as const
 
 const EpisodeDownloadCard = ({
@@ -717,19 +717,22 @@ const EpisodeDownloadCard = ({
   onLockedQuality: (quality: string) => void
 }) => (
   <div className="overflow-hidden rounded-xl border border-border bg-card/60">
-    <div className="flex items-center gap-2 px-3 py-3">
-      <p className="shrink-0 text-sm font-semibold text-foreground">
-        قسمت {toPersianNumber(episode.number)}
-      </p>
-      <MediaSpecTags hardsubLanguage={hardsubLanguage}  />
+    <div className="flex items-center justify-between gap-3 px-3 py-3">
+      <div className="flex min-w-0 items-center gap-2">
+        <p className="shrink-0 text-sm font-semibold text-foreground">
+          قسمت {toPersianNumber(episode.number)}
+        </p>
+        <MediaSpecTags hardsubLanguage={hardsubLanguage} />
+      </div>
       {showSubtitleButton ? (
         <Button
           type="button"
           size="sm"
           variant="secondary"
-          className="shrink-0"
+          className="shrink-0 gap-1"
           onClick={onSubtitle}
         >
+          <Download01Icon className="h-3.5 w-3.5" />
           زیرنویس
         </Button>
       ) : null}
@@ -768,7 +771,14 @@ const EpisodeDownloadCard = ({
             ) : (
               <Lock className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden />
             )}
-            <span className="text-xs font-semibold tabular-nums">{quality.label}</span>
+            <span
+              className={cn(
+                'font-semibold tabular-nums leading-tight',
+                quality.id === '1080p' ? 'text-[10px]' : 'text-xs'
+              )}
+            >
+              {quality.label}
+            </span>
           </button>
         )
       })}
@@ -988,16 +998,20 @@ const AnimeDetail = () => {
     .trim()
     .toUpperCase()
 
-  const handleFavorite = () => {
+  const handleFavorite = async () => {
     if (!anime) return
     const wasFavorite = isFavorite(anime.id)
-    toggleFavorite(anime.id)
-    if (wasFavorite) {
-      showAlert('از علاقه‌مندی‌ها حذف شد')
-      setProgressEditorOpen(false)
-    } else {
-      showAlert('به علاقه‌مندی‌ها اضافه شد')
-      setProgressEditorOpen(true)
+    try {
+      await toggleFavorite(anime.id)
+      if (wasFavorite) {
+        showAlert('از علاقه‌مندی‌ها حذف شد')
+        setProgressEditorOpen(false)
+      } else {
+        showAlert('به علاقه‌مندی‌ها اضافه شد')
+        setProgressEditorOpen(true)
+      }
+    } catch (e) {
+      showAlert(formatUserListSaveError(e))
     }
   }
 
@@ -1240,9 +1254,15 @@ const AnimeDetail = () => {
         saving={isSavingProgress}
         onSave={handleSaveProgress}
         onRemove={() => {
-          toggleFavorite(anime.id)
-          setProgressEditorOpen(false)
-          showAlert('از علاقه‌مندی‌ها حذف شد')
+          void (async () => {
+            try {
+              await toggleFavorite(anime.id)
+              setProgressEditorOpen(false)
+              showAlert('از علاقه‌مندی‌ها حذف شد')
+            } catch (e) {
+              showAlert(formatUserListSaveError(e))
+            }
+          })()
         }}
       />
 

@@ -1,13 +1,20 @@
 import { shioriFetch } from '../lib/shioriApi'
 import { resolveCatalogAnimeRecordId } from '../lib/resolveCatalogAnimeId'
+import { assertUserAnimeListAuth } from '../lib/userListAuth'
 import type {
   AnimeFavoriteCountMap,
   UserAnimeListRow,
 } from '../utils/userListStats'
 
+const resolveListAnimeId = async (animeId: number | string): Promise<string> => {
+  const recordId = await resolveCatalogAnimeRecordId(animeId)
+  return String(recordId)
+}
+
 export const getUserAnimeList = async (
   _telegramUserId: number
 ): Promise<UserAnimeListRow[]> => {
+  assertUserAnimeListAuth()
   const result = await shioriFetch<{ items: UserAnimeListRow[] }>('/user-anime-list')
   return result.items ?? []
 }
@@ -20,11 +27,13 @@ export const upsertUserAnimeListEntry = async (
     user_rating?: number | null
   }
 ): Promise<void> => {
+  assertUserAnimeListAuth()
+  const recordId = await resolveListAnimeId(animeId)
   await shioriFetch('/user-anime-list', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      anime_id: String(animeId),
+      anime_id: recordId,
       episodes_watched: payload.episodes_watched,
       user_rating: payload.user_rating,
     }),
@@ -35,7 +44,9 @@ export const removeUserAnimeListEntry = async (
   _telegramUserId: number,
   animeId: number | string
 ): Promise<void> => {
-  await shioriFetch(`/user-anime-list/${encodeURIComponent(String(animeId))}`, {
+  assertUserAnimeListAuth()
+  const recordId = await resolveListAnimeId(animeId)
+  await shioriFetch(`/user-anime-list/${encodeURIComponent(recordId)}`, {
     method: 'DELETE',
   })
 }

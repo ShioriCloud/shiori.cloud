@@ -9,6 +9,7 @@ import {
   upsertUserAnimeListEntry,
   type AnimeFavoriteCountMap,
 } from '../services/userDataSource'
+import { canSyncUserAnimeList } from '@/lib/userListAuth'
 import { queryKeys } from './queries/keys'
 
 const toProgress = (row: {
@@ -32,10 +33,13 @@ export const useUserAnimeList = () => {
   const setFavoriteProgress = useAnimeStore((s) => s.setFavoriteProgress)
   const hydrateFavoritesFromRemote = useAnimeStore((s) => s.hydrateFavoritesFromRemote)
 
+  const listSyncEnabled =
+    isReady && typeof telegramUserId === 'number' && canSyncUserAnimeList()
+
   const { data: remoteRows = [], isLoading: remoteLoading } = useQuery({
     queryKey: queryKeys.userAnimeList(telegramUserId ?? 0),
     queryFn: () => getUserAnimeList(telegramUserId!),
-    enabled: isReady && typeof telegramUserId === 'number' && (inTelegram || user?.source === 'web'),
+    enabled: listSyncEnabled && (inTelegram || user?.source === 'web'),
     staleTime: 30_000,
   })
 
@@ -62,7 +66,7 @@ export const useUserAnimeList = () => {
     }
 
     const localOnly = localIds.filter((id) => !remoteIdSet.has(id))
-    if (localOnly.length === 0) return
+    if (localOnly.length === 0 || !canSyncUserAnimeList()) return
 
     void (async () => {
       for (const id of localOnly) {
@@ -185,13 +189,26 @@ export const useUserAnimeList = () => {
       animeId: number | string
       progress: FavoriteProgress
     }) => {
-      if (typeof telegramUserId === 'number') {
+      if (typeof telegramUserId === 'number' && canSyncUserAnimeList()) {
         await upsertUserAnimeListEntry(telegramUserId, animeId, {
           episodes_watched: progress.episodesWatched,
           user_rating: progress.userRating,
         })
       }
       setFavoriteProgress(animeId, progress)
+    },
+    onMutate: async ({ animeId, progress }) => {
+      const previous = favoriteProgress[String(animeId)] ?? {
+        episodesWatched: 0,
+        userRating: null,
+      }
+      setFavoriteProgress(animeId, progress)
+      return { previous, animeId }
+    },
+    onError: (_error, { animeId }, context) => {
+      if (context?.previous) {
+        setFavoriteProgress(animeId, context.previous)
+      }
     },
     onSuccess: (_data, variables) => {
       if (typeof telegramUserId === 'number') {
@@ -207,8 +224,7 @@ export const useUserAnimeList = () => {
 
   const addFavoriteMutation = useMutation({
     mutationFn: async (animeId: number | string) => {
-      addToFavorites(animeId)
-      if (typeof telegramUserId === 'number') {
+      if (typeof telegramUserId === 'number' && canSyncUserAnimeList()) {
         await upsertUserAnimeListEntry(telegramUserId, animeId, {
           episodes_watched: 0,
           user_rating: null,
@@ -216,11 +232,13 @@ export const useUserAnimeList = () => {
       }
     },
     onMutate: (animeId) => {
+      addToFavorites(animeId)
       const snapshot = snapshotFavoriteCounts(animeId)
       const patched = applyFavoriteCountDelta(animeId, 1)
       return { ...snapshot, patched }
     },
     onError: (_error, animeId, snapshot) => {
+      removeFromFavorites(animeId)
       if (snapshot) restoreFavoriteCounts(animeId, snapshot)
     },
     onSuccess: (_data, animeId, snapshot) => {
@@ -238,18 +256,22 @@ export const useUserAnimeList = () => {
 
   const removeFavoriteMutation = useMutation({
     mutationFn: async (animeId: number | string) => {
-      removeFromFavorites(animeId)
-      if (typeof telegramUserId === 'number') {
+      if (typeof telegramUserId === 'number' && canSyncUserAnimeList()) {
         await removeUserAnimeListEntry(telegramUserId, animeId)
       }
     },
     onMutate: (animeId) => {
+      removeFromFavorites(animeId)
       const snapshot = snapshotFavoriteCounts(animeId)
       const patched = applyFavoriteCountDelta(animeId, -1)
-      return { ...snapshot, patched }
+      return { ...snapshot, patched, previousProgress: favoriteProgress[String(animeId)] }
     },
-    onError: (_error, animeId, snapshot) => {
-      if (snapshot) restoreFavoriteCounts(animeId, snapshot)
+    onError: (_error, animeId, context) => {
+      addToFavorites(animeId)
+      if (context?.previousProgress) {
+        setFavoriteProgress(animeId, context.previousProgress)
+      }
+      if (context) restoreFavoriteCounts(animeId, context)
     },
     onSuccess: (_data, animeId, snapshot) => {
       if (typeof telegramUserId === 'number') {
@@ -266,10 +288,10 @@ export const useUserAnimeList = () => {
   })
 
   const toggleFavorite = useCallback(
-    (animeId: number | string) => {
+    async (animeId: number | string) => {
       const isFav = favoriteAnime.some((id) => String(id) === String(animeId))
-      if (isFav) removeFavoriteMutation.mutate(animeId)
-      else addFavoriteMutation.mutate(animeId)
+      if (isFav) await removeFavoriteMutation.mutateAsync(animeId)
+      else await addFavoriteMutation.mutateAsync(animeId)
     },
     [favoriteAnime, addFavoriteMutation, removeFavoriteMutation]
   )
@@ -295,6 +317,7 @@ export const useUserAnimeList = () => {
     isSaving: saveMutation.isPending,
     hasTelegramUser: inTelegram && typeof telegramUserId === 'number',
     hasAppUser: typeof telegramUserId === 'number',
+    canSyncList: listSyncEnabled,
     inTelegram,
   }
 }

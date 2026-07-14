@@ -221,6 +221,18 @@ const FavoriteAnimeEditor = ({
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
+                {episodesWatched < maxEpisodes ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-3 w-full text-xs"
+                    disabled={saving}
+                    onClick={() => setEpisodesWatched(maxEpisodes)}
+                  >
+                    علامت‌گذاری همه ({toPersianNumber(maxEpisodes)} قسمت)
+                  </Button>
+                ) : null}
               </div>
 
               <div>
