@@ -182,41 +182,13 @@ export const getLocalAnimeIdsByAniListIds = async (
   const unique = [...new Set(anilistIds.filter((id) => Number.isFinite(id) && id > 0))]
   if (unique.length === 0) return new Map()
 
-  const map = new Map<number, string | number>()
-  const chunkSize = 100
-
-  for (let i = 0; i < unique.length; i += chunkSize) {
-    const chunk = unique.slice(i, i + chunkSize)
-    const qs = new URLSearchParams({ ids: chunk.join(',') })
-    const record = await shioriFetch<Record<string, string>>(`/anime-catalog/anilist/batch?${qs}`)
-
-    for (const [anilistId, localId] of Object.entries(record)) {
-      map.set(Number(anilistId), localId)
-    }
-  }
-
-  return map
-}
-
-export const getLocalAnimeIdsByMalIds = async (
-  malIds: number[]
-): Promise<Map<number, string | number>> => {
-  const unique = [...new Set(malIds.filter((id) => Number.isFinite(id) && id > 0))]
-  if (unique.length === 0) return new Map()
+  const qs = new URLSearchParams({ ids: unique.join(',') })
+  const record = await shioriFetch<Record<string, string>>(`/anime-catalog/anilist/batch?${qs}`)
 
   const map = new Map<number, string | number>()
-  const chunkSize = 100
-
-  for (let i = 0; i < unique.length; i += chunkSize) {
-    const chunk = unique.slice(i, i + chunkSize)
-    const qs = new URLSearchParams({ ids: chunk.join(',') })
-    const record = await shioriFetch<Record<string, string>>(`/anime-catalog/mal/batch?${qs}`)
-
-    for (const [malId, localId] of Object.entries(record)) {
-      map.set(Number(malId), localId)
-    }
+  for (const [anilistId, localId] of Object.entries(record)) {
+    map.set(Number(anilistId), localId)
   }
-
   return map
 }
 

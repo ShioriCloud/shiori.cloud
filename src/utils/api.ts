@@ -297,7 +297,6 @@ export const fetchAnimeByStudioSlug = async (slug: string): Promise<UiAnimeCard[
 
 type ScheduleAnimeItem = {
   id: number
-  malId?: number | null
   title: string
   time: string
   episode: string
@@ -312,69 +311,17 @@ type SchedulePayload = {
   currentYear: number
 }
 
-type CatalogLookup = {
-  byAnilist: Map<number, string | number>
-  byMal: Map<number, string | number>
-}
-
-const loadCatalogLookup = async (): Promise<CatalogLookup> => {
-  try {
-    const cards = await catalog.getAllAnime()
-    const byAnilist = new Map<number, string | number>()
-    const byMal = new Map<number, string | number>()
-
-    for (const card of cards) {
-      if (typeof card.anilist_id === 'number' && card.anilist_id > 0) {
-        byAnilist.set(card.anilist_id, card.id)
-      }
-      if (typeof card.mal_id === 'number' && card.mal_id > 0) {
-        byMal.set(card.mal_id, card.id)
-      }
-    }
-
-    return { byAnilist, byMal }
-  } catch {
-    return { byAnilist: new Map(), byMal: new Map() }
-  }
-}
-
-const resolveScheduleLocalId = (
-  anime: ScheduleAnimeItem,
-  byAnilist: Map<number, string | number>,
-  byMal: Map<number, string | number>,
-  catalog: CatalogLookup
-): string | number | null => {
-  const fromAnilist =
-    byAnilist.get(anime.id) ??
-    catalog.byAnilist.get(anime.id) ??
-    null
-
-  if (fromAnilist != null) return fromAnilist
-
-  const malId = typeof anime.malId === 'number' && anime.malId > 0 ? anime.malId : null
-  if (!malId) return null
-
-  return byMal.get(malId) ?? catalog.byMal.get(malId) ?? null
-}
-
 const enrichScheduleWithLocalIds = async (payload: SchedulePayload): Promise<SchedulePayload> => {
-  const items = Object.values(payload.schedule).flat()
-  const anilistIds = items.map((item) => item.id)
-  const malIds = items
-    .map((item) => item.malId)
-    .filter((id): id is number => typeof id === 'number' && id > 0)
-
-  const [byAnilistResult, byMalResult, catalogLookup] = await Promise.all([
-    catalog.getLocalAnimeIdsByAniListIds(anilistIds).catch(() => new Map<number, string | number>()),
-    catalog.getLocalAnimeIdsByMalIds(malIds).catch(() => new Map<number, string | number>()),
-    loadCatalogLookup(),
-  ])
+  const anilistIds = Object.values(payload.schedule)
+    .flat()
+    .map((item) => item.id)
+  const localMap = await catalog.getLocalAnimeIdsByAniListIds(anilistIds)
 
   const schedule: Record<string, ScheduleAnimeItem[]> = {}
   for (const [day, list] of Object.entries(payload.schedule)) {
     schedule[day] = list.map((anime) => ({
       ...anime,
-      localId: resolveScheduleLocalId(anime, byAnilistResult, byMalResult, catalogLookup),
+      localId: localMap.get(anime.id) ?? null,
     }))
   }
 
@@ -382,7 +329,7 @@ const enrichScheduleWithLocalIds = async (payload: SchedulePayload): Promise<Sch
 }
 
 export const fetchSchedule = async () => {
-  const cacheKey = 'anilist_schedule_v2'
+  const cacheKey = 'anilist_schedule_v1'
   const cacheTtlMs = 10 * 60 * 1000
 
   const emptySchedule: Record<string, ScheduleAnimeItem[]> = {
@@ -428,11 +375,6 @@ export const fetchSchedule = async () => {
   const query = `
     query ($page: Int, $perPage: Int, $season: MediaSeason, $seasonYear: Int) {
       Page(page: $page, perPage: $perPage) {
-        pageInfo {
-          hasNextPage
-          currentPage
-          lastPage
-        }
         media(
           season: $season
           seasonYear: $seasonYear
@@ -441,7 +383,6 @@ export const fetchSchedule = async () => {
           sort: POPULARITY_DESC
         ) {
           id
-          idMal
           format
           title { romaji english native }
           coverImage { large }
@@ -452,51 +393,33 @@ export const fetchSchedule = async () => {
     }
   `
 
-  const fetchAniListPage = async (page: number, perPage: number) => {
-    const res = await fetch('https://graphql.anilist.co', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({
-        query,
-        variables: {
-          page,
-          perPage,
-          season: currentSeason,
-          seasonYear: currentYear,
-        },
-      }),
-    })
-
-    if (!res.ok) {
-      const text = await res.text().catch(() => '')
-      throw new Error(`AniList request failed: ${res.status} ${text}`)
-    }
-
-    const json = await res.json()
-    if (json?.errors?.length) {
-      throw new Error(json.errors?.[0]?.message || 'AniList query error')
-    }
-
-    return json?.data?.Page ?? null
+  const variables = {
+    page: 1,
+    perPage: 50,
+    season: currentSeason,
+    seasonYear: currentYear,
   }
 
-  const perPage = 50
-  const mediaList: any[] = []
-  let page = 1
-  let hasNextPage = true
+  const res = await fetch('https://graphql.anilist.co', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({ query, variables }),
+  })
 
-  while (hasNextPage && page <= 10) {
-    const pageData = await fetchAniListPage(page, perPage)
-    const batch: any[] = pageData?.media ?? []
-    mediaList.push(...batch)
-
-    hasNextPage = Boolean(pageData?.pageInfo?.hasNextPage) && batch.length === perPage
-    page += 1
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`AniList request failed: ${res.status} ${text}`)
   }
 
+  const json = await res.json()
+  if (json?.errors?.length) {
+    throw new Error(json.errors?.[0]?.message || 'AniList query error')
+  }
+
+  const mediaList: any[] = json?.data?.Page?.media ?? []
   const schedule: Record<string, any[]> = { ...emptySchedule }
 
   const toPersianDay = (d: Date): string => {
@@ -538,7 +461,6 @@ export const fetchSchedule = async () => {
 
     schedule[day].push({
       id: m.id,
-      malId: typeof m.idMal === 'number' && m.idMal > 0 ? m.idMal : null,
       title,
       time,
       episode: String(ep.episode ?? ''),
@@ -558,11 +480,12 @@ export const fetchSchedule = async () => {
   }
 
   const data: SchedulePayload = { schedule, currentSeason, currentYear }
+  const enriched = await enrichScheduleWithLocalIds(data)
   try {
-    sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data }))
+    sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data: enriched }))
   } catch {
     // ignore
   }
 
-  return enrichScheduleWithLocalIds(data)
+  return enriched
 }
