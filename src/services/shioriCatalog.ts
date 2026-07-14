@@ -135,6 +135,9 @@ export const searchAnimeCards = async (params: AnimeSearchParams): Promise<Anime
   if (params.year != null) qs.set('year', String(params.year))
   if (params.season) qs.set('season', params.season)
   if (params.genreSlug) qs.set('genreSlug', params.genreSlug)
+  if (params.format) qs.set('format', params.format)
+  if (params.airingStatus) qs.set('airingStatus', params.airingStatus)
+  if (params.sortBy) qs.set('sortBy', params.sortBy)
   if (params.limit != null) qs.set('limit', String(params.limit))
   if (params.offset != null) qs.set('offset', String(params.offset))
 
@@ -197,6 +200,18 @@ export const getAnimeCardsByStudioSlug = async (slug: string): Promise<AnimeCard
     `/anime-catalog/studios/${encodeURIComponent(slug)}/anime`
   )
   return rows.map(toCard)
+}
+
+export const listGenres = async (): Promise<GenreAdminItem[]> => {
+  const rows = await shioriFetch<
+    Array<{ id: string; slug: string; nameEn?: string | null; nameFa?: string | null }>
+  >('/anime-catalog/genres')
+  return rows.map((row) => ({
+    id: row.id,
+    slug: row.slug,
+    name_en: row.nameEn ?? null,
+    name_fa: row.nameFa ?? null,
+  }))
 }
 
 export const getGenreBySlug = async (slug: string): Promise<GenreAdminItem | null> => {

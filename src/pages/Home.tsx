@@ -191,9 +191,9 @@ const Home = () => {
         title: `فصل ${currentSeasonFa} ${toPersianNumber(currentYearNumber)}`,
         seeAll: `/search?year=${currentYearNumber}&season=${encodeURIComponent(currentSeasonKey)}`,
       },
-      popular: { title: 'محبوب‌ترین‌ها', seeAll: '/search' },
-      donghua: { title: 'دونگهوا', seeAll: '/search' },
-      movies: { title: 'انیمه سینمایی', seeAll: '/search' },
+      popular: { title: 'محبوب‌ترین‌ها', seeAll: '/search?sort=popular' },
+      donghua: { title: 'دونگهوا', seeAll: '/search?format=DONGHUA' },
+      movies: { title: 'انیمه سینمایی', seeAll: '/search?format=MOVIE' },
     }),
     [currentSeasonFa, currentSeasonKey, currentYearNumber]
   )

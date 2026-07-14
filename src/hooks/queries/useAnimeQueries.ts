@@ -11,7 +11,7 @@ import {
   type AnimeSearchFilters,
   type UiAnimeCard,
 } from '../../utils/api'
-import { getTranslatorLinksByAnimeId } from '../../services/catalogSource'
+import { getTranslatorLinksByAnimeId, listGenres } from '../../services/catalogSource'
 import { fetchExternalScores } from '../../services/externalScores'
 import { getAnimeFavoriteCount, getAnimeFavoriteCounts } from '../../services/userDataSource'
 import { queryClient } from '../../lib/queryClient'
@@ -25,6 +25,9 @@ export const buildAnimeSearchQueryKey = (filters: AnimeSearchBaseFilters) =>
     year: filters.year ?? null,
     season: filters.season ?? null,
     genreSlug: filters.genreSlug ?? null,
+    format: filters.format ?? null,
+    airingStatus: filters.airingStatus ?? null,
+    sortBy: filters.sortBy ?? 'created_at',
   })
 
 export const useAnimeCardsQuery = () =>
@@ -96,6 +99,13 @@ export const useScheduleQuery = () =>
   useQuery({
     queryKey: queryKeys.schedule,
     queryFn: fetchSchedule,
+  })
+
+export const useGenresQuery = () =>
+  useQuery({
+    queryKey: queryKeys.genres,
+    queryFn: listGenres,
+    staleTime: 10 * 60_000,
   })
 
 export const useAnimeSearchQuery = (filters: AnimeSearchFilters, enabled = true) =>

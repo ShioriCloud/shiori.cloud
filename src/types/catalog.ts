@@ -38,6 +38,9 @@ export type AnimeSearchParams = {
   year?: number | null
   season?: string | null
   genreSlug?: string | null
+  format?: string | null
+  airingStatus?: string | null
+  sortBy?: 'created_at' | 'popular' | 'title' | 'score'
   limit?: number
   offset?: number
 }

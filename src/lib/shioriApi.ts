@@ -1,5 +1,7 @@
 import { getAppSessionHeaders } from './appSessionStorage'
+import { isTelegramMiniApp } from './platform'
 import { getTelegramInitData } from './telegramRequestHeaders'
+import { getTelegramMiniAppSessionHeaders } from './telegramSessionStorage'
 
 const rawBase = String(import.meta.env.VITE_SHIORI_API_URL ?? '').trim()
 
@@ -14,7 +16,11 @@ const buildHeaders = (extra?: HeadersInit): HeadersInit => {
   const initData = getTelegramInitData()
   if (initData) headers.set('x-telegram-init-data', initData)
 
-  for (const [key, value] of Object.entries(getAppSessionHeaders())) {
+  const sessionHeaders = isTelegramMiniApp()
+    ? getTelegramMiniAppSessionHeaders()
+    : getAppSessionHeaders()
+
+  for (const [key, value] of Object.entries(sessionHeaders)) {
     headers.set(key, value)
   }
 

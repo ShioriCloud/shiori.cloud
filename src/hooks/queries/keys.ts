@@ -24,6 +24,7 @@ export const queryKeys = {
   notificationPreferences: (telegramUserId: number) =>
     ['notification-preferences', telegramUserId] as const,
   animeFavoriteCounts: ['anime', 'favorite-counts'] as const,
+  genres: ['anime', 'genres'] as const,
   animeFavoriteCount: (animeId: string | number) =>
     ['anime', 'favorite-count', String(animeId)] as const,
 }

@@ -1,6 +1,7 @@
 import { shioriFetch } from '../lib/shioriApi'
 import { resolveCatalogAnimeRecordId } from '../lib/resolveCatalogAnimeId'
 import { assertUserAnimeListAuth } from '../lib/userListAuth'
+import { getTelegramInitData } from '../lib/telegramRequestHeaders'
 import type {
   AnimeFavoriteCountMap,
   UserAnimeListRow,
@@ -36,6 +37,7 @@ export const upsertUserAnimeListEntry = async (
       anime_id: recordId,
       episodes_watched: payload.episodes_watched,
       user_rating: payload.user_rating,
+      telegram_init_data: getTelegramInitData() || undefined,
     }),
   })
 }

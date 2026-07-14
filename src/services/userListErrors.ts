@@ -1,6 +1,14 @@
 export const formatUserListSaveError = (error: unknown): string => {
   const msg = error instanceof Error ? error.message : String(error)
 
+  if (msg.includes('invalid_session')) {
+    return 'نشست شما منقضی شده — مینی‌اپ را ببندید و دوباره باز کنید.'
+  }
+
+  if (msg.includes('auth_date_expired')) {
+    return 'نشست Telegram منقضی شده — مینی‌اپ را ببندید و دوباره باز کنید.'
+  }
+
   if (msg.includes('hash_mismatch')) {
     return 'خطا در تأیید Telegram — توکن بات API باید همان باتی باشد که مینی‌اپ به آن وصل است (BotFather → Mini Apps).'
   }
