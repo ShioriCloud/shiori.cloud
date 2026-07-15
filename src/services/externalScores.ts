@@ -9,6 +9,19 @@ export type ExternalScores = {
   malScore: number | null
 }
 
+const normalizeExternalId = (value: unknown): number | null => {
+  if (value == null || value === '') return null
+  const n = typeof value === 'number' ? value : Number(String(value).trim())
+  if (!Number.isFinite(n) || n <= 0) return null
+  return Math.floor(n)
+}
+
+const parseExternalScore = (value: unknown): number | null => {
+  if (value == null || value === '') return null
+  const n = typeof value === 'number' ? value : Number(String(value).trim())
+  return Number.isFinite(n) && n > 0 ? n : null
+}
+
 const fetchAnilistScorePercent = async (anilistId: number): Promise<number | null> => {
   const res = await fetch('https://graphql.anilist.co', {
     method: 'POST',
@@ -35,29 +48,23 @@ const fetchAnilistScorePercent = async (anilistId: number): Promise<number | nul
   const media = json.data?.Media
   if (!media) return null
 
-  if (typeof media.averageScore === 'number' && media.averageScore > 0) {
-    return media.averageScore
-  }
-  if (typeof media.meanScore === 'number' && media.meanScore > 0) {
-    return media.meanScore
-  }
-
-  return null
+  return parseExternalScore(media.averageScore) ?? parseExternalScore(media.meanScore)
 }
 
 const fetchMalScore = async (malId: number): Promise<number | null> => {
-  const res = await fetch(`https://api.jikan.moe/v4/anime/${malId}`)
+  const res = await fetch(`https://api.jikan.moe/v4/anime/${malId}`, {
+    headers: { Accept: 'application/json' },
+  })
   if (!res.ok) return null
 
-  const json = (await res.json()) as { data?: { score?: number | null } }
-  const score = json.data?.score
-  return typeof score === 'number' && Number.isFinite(score) ? score : null
+  const json = (await res.json()) as { data?: { score?: unknown } }
+  return parseExternalScore(json.data?.score)
 }
 
 /** امتیاز زنده AniList / MAL */
 export const fetchExternalScores = async (ids: ExternalScoreIds): Promise<ExternalScores> => {
-  const anilistId = typeof ids.anilist_id === 'number' && ids.anilist_id > 0 ? ids.anilist_id : null
-  const malId = typeof ids.mal_id === 'number' && ids.mal_id > 0 ? ids.mal_id : null
+  const anilistId = normalizeExternalId(ids.anilist_id)
+  const malId = normalizeExternalId(ids.mal_id)
 
   const [anilistResult, malResult] = await Promise.allSettled([
     anilistId ? fetchAnilistScorePercent(anilistId) : Promise.resolve(null),
