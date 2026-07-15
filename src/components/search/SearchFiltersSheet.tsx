@@ -136,9 +136,12 @@ const GenreMultiSelect = ({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="flex h-10 w-full items-center justify-between rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground"
+          dir="rtl"
+          className="grid h-10 w-full grid-cols-[1fr_auto] items-center gap-2 rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground"
         >
-          <span className={cn(!selectedSlugs.length && 'text-muted-foreground')}>{summary}</span>
+          <span className={cn('min-w-0 truncate text-start', !selectedSlugs.length && 'text-muted-foreground')}>
+            {summary}
+          </span>
           <ChevronDown className="h-4 w-4 shrink-0 opacity-70" />
         </button>
       </PopoverTrigger>
@@ -395,11 +398,22 @@ export const SearchFiltersSheet = ({
           </section>
         </div>
 
-        <SheetFooter className="shrink-0 flex-row gap-2 border-t border-border/60 px-4 py-3 sm:flex-row">
-          <Button type="button" className="flex-1" onClick={onApply}>
+        <SheetFooter className="shrink-0 flex-row gap-3 border-t border-border/60 px-4 py-4 sm:flex-row">
+          <Button
+            type="button"
+            size="lg"
+            className="h-12 flex-1 text-base font-semibold bg-primary-500 text-white hover:bg-primary-500/90"
+            onClick={onApply}
+          >
             اعمال فیلتر
           </Button>
-          <Button type="button" variant="outline" className="flex-1" onClick={onReset}>
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className="h-12 flex-1 text-base font-semibold"
+            onClick={onReset}
+          >
             حذف فیلترها
           </Button>
         </SheetFooter>
