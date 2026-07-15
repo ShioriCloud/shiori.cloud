@@ -34,8 +34,7 @@ export type SearchSortKey = (typeof SEARCH_SORT_OPTIONS)[number]['key']
 
 export type SearchUrlFilters = {
   query: string
-  genreSlug: string | null
-  genreLabel: string | null
+  genreSlugs: string[]
   year: number | null
   season: SearchSeasonKey | null
   format: SearchFormatKey | null
@@ -45,8 +44,7 @@ export type SearchUrlFilters = {
 
 export const DEFAULT_SEARCH_FILTERS: SearchUrlFilters = {
   query: '',
-  genreSlug: null,
-  genreLabel: null,
+  genreSlugs: [],
   year: null,
   season: null,
   format: null,
@@ -64,7 +62,7 @@ export const getCurrentSeasonKey = (): SearchSeasonKey => {
 
 export const getCurrentSeasonYear = () => new Date().getFullYear()
 
-export const buildSearchYearOptions = (span = 10): number[] => {
+export const buildSearchYearOptions = (span = 12): number[] => {
   const current = getCurrentSeasonYear()
   return Array.from({ length: span }, (_, i) => current + 1 - i)
 }
@@ -110,11 +108,18 @@ const parseSort = (value: string | null): SearchSortKey => {
 export const parseSearchParams = (params: URLSearchParams): SearchUrlFilters => {
   const yearRaw = params.get('year')
   const parsedYear = yearRaw ? Number(yearRaw) : null
+  const genreSlugs = [
+    ...new Set(
+      params
+        .getAll('genre')
+        .map((g) => g.trim().toLowerCase())
+        .filter(Boolean)
+    ),
+  ]
 
   return {
     query: params.get('q')?.trim() ?? '',
-    genreSlug: params.get('genre')?.trim().toLowerCase() || null,
-    genreLabel: params.get('label')?.trim() || null,
+    genreSlugs,
     year: parsedYear != null && Number.isFinite(parsedYear) ? parsedYear : null,
     season: parseSeason(params.get('season')),
     format: parseFormat(params.get('format')),
@@ -126,8 +131,7 @@ export const parseSearchParams = (params: URLSearchParams): SearchUrlFilters => 
 export const buildSearchParams = (filters: SearchUrlFilters): URLSearchParams => {
   const params = new URLSearchParams()
   if (filters.query.trim()) params.set('q', filters.query.trim())
-  if (filters.genreSlug) params.set('genre', filters.genreSlug)
-  if (filters.genreLabel) params.set('label', filters.genreLabel)
+  filters.genreSlugs.forEach((slug) => params.append('genre', slug))
   if (filters.year != null) params.set('year', String(filters.year))
   if (filters.season) params.set('season', filters.season)
   if (filters.format) params.set('format', filters.format)
@@ -138,11 +142,12 @@ export const buildSearchParams = (filters: SearchUrlFilters): URLSearchParams =>
 
 export const countActiveSearchFilters = (filters: SearchUrlFilters): number => {
   let count = 0
-  if (filters.genreSlug) count++
+  count += filters.genreSlugs.length
   if (filters.year != null) count++
   if (filters.season) count++
   if (filters.format) count++
   if (filters.airingStatus) count++
+  if (filters.sortBy !== 'created_at') count++
   return count
 }
 
@@ -150,7 +155,7 @@ export const toApiSearchFilters = (filters: SearchUrlFilters) => ({
   query: filters.query.trim() || undefined,
   year: filters.year,
   season: filters.season,
-  genreSlug: filters.genreSlug,
+  genreSlugs: filters.genreSlugs.length > 0 ? filters.genreSlugs : undefined,
   format: filters.format,
   airingStatus: filters.airingStatus,
   sortBy: filters.sortBy,

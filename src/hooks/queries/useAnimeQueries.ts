@@ -24,7 +24,7 @@ export const buildAnimeSearchQueryKey = (filters: AnimeSearchBaseFilters) =>
     query: filters.query ?? '',
     year: filters.year ?? null,
     season: filters.season ?? null,
-    genreSlug: filters.genreSlug ?? null,
+    genreSlugs: filters.genreSlugs ?? [],
     format: filters.format ?? null,
     airingStatus: filters.airingStatus ?? null,
     sortBy: filters.sortBy ?? 'created_at',

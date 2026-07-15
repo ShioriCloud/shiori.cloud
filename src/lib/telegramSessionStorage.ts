@@ -5,9 +5,9 @@ export type TelegramMiniAppSession = {
   expiresAt: string
 }
 
-export const readTelegramMiniAppSession = (): TelegramMiniAppSession | null => {
+const readRaw = (): TelegramMiniAppSession | null => {
   try {
-    const raw = sessionStorage.getItem(TELEGRAM_MINI_APP_SESSION_KEY)
+    const raw = localStorage.getItem(TELEGRAM_MINI_APP_SESSION_KEY)
     if (!raw) return null
 
     const parsed = JSON.parse(raw) as TelegramMiniAppSession
@@ -15,7 +15,7 @@ export const readTelegramMiniAppSession = (): TelegramMiniAppSession | null => {
 
     const expiresMs = Date.parse(parsed.expiresAt)
     if (Number.isFinite(expiresMs) && expiresMs <= Date.now()) {
-      sessionStorage.removeItem(TELEGRAM_MINI_APP_SESSION_KEY)
+      localStorage.removeItem(TELEGRAM_MINI_APP_SESSION_KEY)
       return null
     }
 
@@ -28,13 +28,15 @@ export const readTelegramMiniAppSession = (): TelegramMiniAppSession | null => {
   }
 }
 
+export const readTelegramMiniAppSession = (): TelegramMiniAppSession | null => readRaw()
+
 export const writeTelegramMiniAppSession = (session: TelegramMiniAppSession): void => {
-  sessionStorage.setItem(TELEGRAM_MINI_APP_SESSION_KEY, JSON.stringify(session))
+  localStorage.setItem(TELEGRAM_MINI_APP_SESSION_KEY, JSON.stringify(session))
 }
 
 export const clearTelegramMiniAppSession = (): void => {
   try {
-    sessionStorage.removeItem(TELEGRAM_MINI_APP_SESSION_KEY)
+    localStorage.removeItem(TELEGRAM_MINI_APP_SESSION_KEY)
   } catch {
     // ignore
   }

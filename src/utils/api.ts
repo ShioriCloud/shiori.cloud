@@ -150,6 +150,7 @@ export type AnimeSearchFilters = {
   year?: number | null
   season?: string | null
   genreSlug?: string | null
+  genreSlugs?: string[]
   format?: string | null
   airingStatus?: string | null
   sortBy?: 'created_at' | 'popular' | 'title' | 'score'

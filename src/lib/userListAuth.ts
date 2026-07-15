@@ -5,7 +5,9 @@ import { readTelegramMiniAppSession } from './telegramSessionStorage'
 /** True when list sync requests can include valid auth headers. */
 export const canSyncUserAnimeList = (): boolean => {
   if (isTelegramMiniApp()) {
-    return hasTelegramSignedInitData() || Boolean(readTelegramMiniAppSession()?.token?.trim())
+    return (
+      hasTelegramSignedInitData() || Boolean(readTelegramMiniAppSession()?.token?.trim())
+    )
   }
   return Boolean(readStoredAppSession()?.token?.trim())
 }

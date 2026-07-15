@@ -1,16 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Search01Icon } from 'hugeicons-react'
+import { Filter, Search as SearchIcon } from 'lucide-react'
 import type { UiAnimeCard } from '../utils/api'
-import * as catalog from '../services/catalogSource'
-import type { GenreItem } from '../services/catalogSource'
+import type { GenreAdminItem } from '../services/catalogSource'
+import type { GenreItem } from '../types/catalog'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import {
   buildSearchParams,
   countActiveSearchFilters,
   DEFAULT_SEARCH_FILTERS,
-  getCurrentSeasonKey,
-  getCurrentSeasonYear,
   parseSearchParams,
   toApiSearchFilters,
   translateSeason,
@@ -19,10 +17,9 @@ import {
 import { Button } from '@/components/ui/button'
 import AnimePrefetchLink from '../components/AnimePrefetchLink'
 import { BidiText } from '../components/BidiText'
-import { ActiveFilterChips } from '../components/search/ActiveFilterChips'
-import { SearchControlBar } from '../components/search/SearchControlBar'
 import { SearchFiltersSheet } from '../components/search/SearchFiltersSheet'
 import { useGenresQuery, useInfiniteAnimeSearchQuery } from '../hooks/queries/useAnimeQueries'
+import { cn } from '@/lib/utils'
 import frieren from '../assets/images/frieren-03.webp'
 
 const toPersianNumber = (num: number | string): string => {
@@ -30,7 +27,9 @@ const toPersianNumber = (num: number | string): string => {
   return String(num).replace(/[0-9]/g, (w) => persianDigits[+w])
 }
 
-const genreLabel = (g: GenreItem) => g.name_fa || g.name_en || g.slug
+const genreLabel = (g: GenreAdminItem) => g.name_fa || g.name_en || g.slug
+
+const cardGenreLabel = (g: GenreItem) => g.name_fa || g.name_en || g.slug
 
 type EmptyStateProps = {
   image?: string
@@ -90,7 +89,7 @@ const AnimeGridCard = ({ anime }: { anime: UiAnimeCard }) => {
                   key={g.slug}
                   className="text-[9px] leading-none px-1 py-0.5 rounded-md bg-white/15 text-white/90 border border-white/10 max-w-full truncate"
                 >
-                  {genreLabel(g)}
+                  {cardGenreLabel(g)}
                 </span>
               ))}
             </div>
@@ -111,8 +110,6 @@ const Search = () => {
   const [debouncedQuery, setDebouncedQuery] = useState(urlFilters.query)
   const [filtersSheetOpen, setFiltersSheetOpen] = useState(false)
   const [draftFilters, setDraftFilters] = useState<SearchUrlFilters>(urlFilters)
-  const [genreDisplayName, setGenreDisplayName] = useState<string | null>(urlFilters.genreLabel)
-  const [genreNameLoading, setGenreNameLoading] = useState(false)
 
   useEffect(() => {
     setSearchInput(urlFilters.query)
@@ -130,54 +127,33 @@ const Search = () => {
     return () => window.clearTimeout(timer)
   }, [searchInput, urlFilters, setSearchParams])
 
-  useEffect(() => {
-    if (!urlFilters.genreSlug) {
-      setGenreDisplayName(null)
-      setGenreNameLoading(false)
-      return
-    }
-
-    if (urlFilters.genreLabel) {
-      setGenreDisplayName(urlFilters.genreLabel)
-      setGenreNameLoading(false)
-      return
-    }
-
-    setGenreNameLoading(true)
-    let cancelled = false
-    void catalog.getGenreBySlug(urlFilters.genreSlug).then((genre) => {
-      if (cancelled) return
-      setGenreDisplayName(
-        genre ? genre.name_fa || genre.name_en || genre.slug : urlFilters.genreSlug
-      )
-      setGenreNameLoading(false)
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [urlFilters.genreSlug, urlFilters.genreLabel])
-
   const activeFilters = useMemo(
     () => ({ ...urlFilters, query: debouncedQuery.trim() }),
     [urlFilters, debouncedQuery]
   )
 
+  const searchFilters = useMemo(() => toApiSearchFilters(activeFilters), [activeFilters])
+  const filterCount = countActiveSearchFilters(activeFilters)
+
+  const { data: genres = [], isLoading: genresLoading } = useGenresQuery()
+
+  const genreTitle = useMemo(() => {
+    if (activeFilters.genreSlugs.length === 0) return null
+    const labels = activeFilters.genreSlugs.map((slug) => {
+      const match = genres.find((g) => g.slug === slug)
+      return match ? genreLabel(match) : slug
+    })
+    if (labels.length === 1) return `انیمه‌های ژانر ${labels[0]}`
+    return `انیمه‌های ${labels.join(' و ')}`
+  }, [activeFilters.genreSlugs, genres])
+
   const pageTitle = (() => {
     if (activeFilters.season && activeFilters.year != null) {
       return `انیمه‌های فصل ${translateSeason(activeFilters.season)} ${toPersianNumber(activeFilters.year)}`
     }
-    if (activeFilters.genreSlug && genreDisplayName) {
-      return `انیمه‌های ژانر ${genreDisplayName}`
-    }
+    if (genreTitle) return genreTitle
     return null
   })()
-
-  const showGenreTitleSkeleton = Boolean(activeFilters.genreSlug && !genreDisplayName && genreNameLoading)
-
-  const searchFilters = useMemo(() => toApiSearchFilters(activeFilters), [activeFilters])
-
-  const { data: genres = [], isLoading: genresLoading } = useGenresQuery()
 
   const {
     data,
@@ -203,60 +179,47 @@ const Search = () => {
     setFiltersSheetOpen(true)
   }
 
-  const isCurrentSeasonActive =
-    activeFilters.year === getCurrentSeasonYear() &&
-    activeFilters.season === getCurrentSeasonKey()
-
-  const isPopularSort = activeFilters.sortBy === 'popular'
-
   const hasAnyFilter =
-    countActiveSearchFilters(activeFilters) > 0 ||
-    activeFilters.sortBy !== 'created_at' ||
-    debouncedQuery.trim().length > 0
+    filterCount > 0 || debouncedQuery.trim().length > 0
 
   return (
     <div className="pb-24">
       <div className="sticky top-[4.5rem] z-20 bg-background/95 backdrop-blur-md border-b border-border/50">
-        <div className="space-y-3 p-4">
-          <div className="relative flex items-center gap-2 rounded-xl border border-border bg-card p-3 ps-10">
-            <Search01Icon className="text-muted-foreground absolute start-3 h-5 w-5" />
-            <input
-              type="search"
-              enterKeyHint="search"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="نام انیمه را جستجو کن..."
-              className="bg-transparent w-full text-sm focus:outline-none"
-            />
+        <div className="p-4">
+          <div className="flex items-center gap-2">
+            <div className="relative flex min-w-0 flex-1 items-center rounded-xl border border-border bg-card p-3 ps-10">
+              <SearchIcon className="text-muted-foreground absolute start-3 h-5 w-5" />
+              <input
+                type="search"
+                enterKeyHint="search"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="نام انیمه را جستجو کن..."
+                className="bg-transparent w-full text-sm focus:outline-none"
+              />
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="relative h-12 w-12 shrink-0 rounded-xl"
+              onClick={openFiltersSheet}
+              aria-label="فیلترها"
+            >
+              <Filter className="h-5 w-5" />
+              {filterCount > 0 ? (
+                <span
+                  className={cn(
+                    'absolute -top-1.5 -start-1.5 flex h-5 min-w-5 items-center justify-center',
+                    'rounded-full bg-primary-500 px-1 text-[10px] font-bold text-white tabular-nums'
+                  )}
+                >
+                  {toPersianNumber(filterCount)}
+                </span>
+              ) : null}
+            </Button>
           </div>
-
-          <SearchControlBar
-            filters={activeFilters}
-            onOpenFilters={openFiltersSheet}
-            isCurrentSeasonActive={isCurrentSeasonActive}
-            isPopularSort={isPopularSort}
-            onQuickCurrentSeason={() =>
-              applyFilters({
-                ...urlFilters,
-                query: debouncedQuery.trim(),
-                year: getCurrentSeasonYear(),
-                season: getCurrentSeasonKey(),
-              })
-            }
-            onQuickPopular={() =>
-              applyFilters({
-                ...urlFilters,
-                query: debouncedQuery.trim(),
-                sortBy: isPopularSort ? 'created_at' : 'popular',
-              })
-            }
-          />
         </div>
-
-        <ActiveFilterChips
-          filters={activeFilters}
-          onChange={(next) => applyFilters({ ...next, query: debouncedQuery.trim() })}
-        />
 
         {!isLoading && !isError && total > 0 ? (
           <p className="text-muted-foreground px-4 pb-3 text-xs">
@@ -266,13 +229,9 @@ const Search = () => {
         ) : null}
       </div>
 
-      {(pageTitle || showGenreTitleSkeleton) && (
+      {pageTitle && (
         <div className="px-4 pt-3 pb-1">
-          {showGenreTitleSkeleton ? (
-            <div className="h-6 w-56 max-w-full bg-muted animate-pulse rounded" aria-hidden />
-          ) : (
-            <h1 className="text-base font-semibold text-foreground">{pageTitle}</h1>
-          )}
+          <h1 className="text-base font-semibold text-foreground">{pageTitle}</h1>
         </div>
       )}
 
@@ -281,19 +240,21 @@ const Search = () => {
         onOpenChange={setFiltersSheetOpen}
         draft={draftFilters}
         onDraftChange={setDraftFilters}
-        genres={genres}
-        genresLoading={genresLoading}
         onApply={() => {
           applyFilters({ ...draftFilters, query: debouncedQuery.trim() })
           setFiltersSheetOpen(false)
         }}
         onReset={() => {
-          setDraftFilters({
+          const cleared: SearchUrlFilters = {
             ...DEFAULT_SEARCH_FILTERS,
             query: debouncedQuery.trim(),
-            sortBy: draftFilters.sortBy,
-          })
+          }
+          setDraftFilters(cleared)
+          applyFilters(cleared)
+          setFiltersSheetOpen(false)
         }}
+        genres={genres}
+        genresLoading={genresLoading}
       />
 
       {isLoading && <SkeletonGrid />}
@@ -337,7 +298,7 @@ const Search = () => {
           subtitle={
             hasAnyFilter
               ? 'فیلترها را کم کن یا عبارت جستجو را عوض کن.'
-              : 'نام انیمه را بنویس یا از «فیلتر و مرتب‌سازی» شروع کن.'
+              : 'نام انیمه را بنویس یا از دکمه فیلتر شروع کن.'
           }
         />
       )}
