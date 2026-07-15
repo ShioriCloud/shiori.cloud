@@ -162,6 +162,7 @@ export type SchedulePayload = {
   schedule: Record<string, ScheduleAnimeItem[]>
   currentSeason: string
   currentYear: number
+  degraded?: boolean
 }
 
 export const getAiringSchedule = async (): Promise<SchedulePayload> =>

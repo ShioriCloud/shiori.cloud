@@ -378,8 +378,185 @@ export const fetchAnimeByStudioSlug = async (slug: string): Promise<UiAnimeCard[
   return list.map(toCacheAnime)
 }
 
+const SCHEDULE_DAYS = [
+  'شنبه',
+  'یکشنبه',
+  'دوشنبه',
+  'سه‌شنبه',
+  'چهارشنبه',
+  'پنج‌شنبه',
+  'جمعه',
+] as const
+
+const buildEmptySchedulePayload = (): catalog.SchedulePayload => {
+  const schedule: Record<string, catalog.ScheduleAnimeItem[]> = {}
+  for (const day of SCHEDULE_DAYS) schedule[day] = []
+  return { schedule, currentSeason: '', currentYear: 0 }
+}
+
+const getCurrentAiringSeason = (): 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' => {
+  const m = new Date().getMonth() + 1
+  if (m >= 1 && m <= 3) return 'WINTER'
+  if (m >= 4 && m <= 6) return 'SPRING'
+  if (m >= 7 && m <= 9) return 'SUMMER'
+  return 'FALL'
+}
+
+const toPersianWeekday = (d: Date): string => {
+  const dayMap: Record<number, string> = {
+    0: 'یکشنبه',
+    1: 'دوشنبه',
+    2: 'سه‌شنبه',
+    3: 'چهارشنبه',
+    4: 'پنج‌شنبه',
+    5: 'جمعه',
+    6: 'شنبه',
+  }
+  return dayMap[d.getDay()] ?? ''
+}
+
+const enrichScheduleWithLocalIds = async (
+  payload: catalog.SchedulePayload
+): Promise<catalog.SchedulePayload> => {
+  const anilistIds = Object.values(payload.schedule)
+    .flat()
+    .map((item) => item.id)
+    .filter((id) => Number.isFinite(id) && id > 0)
+
+  if (anilistIds.length === 0) return payload
+
+  const localMap = await catalog.getLocalAnimeIdsByAniListIds(anilistIds)
+  const schedule: Record<string, catalog.ScheduleAnimeItem[]> = {}
+  for (const [day, list] of Object.entries(payload.schedule)) {
+    schedule[day] = list.map((anime) => ({
+      ...anime,
+      localId: localMap.get(anime.id) ?? null,
+    }))
+  }
+
+  return { ...payload, schedule }
+}
+
+const countScheduleItems = (payload: catalog.SchedulePayload): number =>
+  Object.values(payload.schedule).reduce((sum, list) => sum + list.length, 0)
+
+const fetchScheduleFromAniListClient = async (): Promise<catalog.SchedulePayload> => {
+  const currentSeason = getCurrentAiringSeason()
+  const currentYear = new Date().getFullYear()
+  const empty = buildEmptySchedulePayload()
+  empty.currentSeason = currentSeason
+  empty.currentYear = currentYear
+
+  const query = `
+    query ($page: Int, $perPage: Int, $season: MediaSeason, $seasonYear: Int) {
+      Page(page: $page, perPage: $perPage) {
+        media(
+          season: $season
+          seasonYear: $seasonYear
+          status: RELEASING
+          type: ANIME
+          sort: POPULARITY_DESC
+        ) {
+          id
+          format
+          title { romaji english native }
+          coverImage { large }
+          genres
+          nextAiringEpisode { airingAt episode }
+        }
+      }
+    }
+  `
+
+  const res = await fetch('https://graphql.anilist.co', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({
+      query,
+      variables: { page: 1, perPage: 50, season: currentSeason, seasonYear: currentYear },
+    }),
+  })
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`AniList request failed: ${res.status} ${text}`)
+  }
+
+  const json = await res.json()
+  if (json?.errors?.length) {
+    throw new Error(json.errors?.[0]?.message || 'AniList query error')
+  }
+
+  const mediaList: any[] = json?.data?.Page?.media ?? []
+  const schedule = { ...empty.schedule }
+
+  for (const m of mediaList) {
+    const allowedFormats = new Set(['TV', 'ONA', 'OVA', 'SPECIAL'])
+    const format = typeof m?.format === 'string' ? m.format.trim().toUpperCase() : ''
+    if (!allowedFormats.has(format)) continue
+
+    const ep = m?.nextAiringEpisode
+    if (!ep || typeof ep.airingAt !== 'number') continue
+
+    const airingAtMs = ep.airingAt * 1000
+    if (!Number.isFinite(airingAtMs)) continue
+
+    const d = new Date(airingAtMs)
+    const day = toPersianWeekday(d)
+    if (!schedule[day]) continue
+
+    const title =
+      (typeof m?.title?.english === 'string' && m.title.english.trim()) ||
+      (typeof m?.title?.romaji === 'string' && m.title.romaji.trim()) ||
+      (typeof m?.title?.native === 'string' && m.title.native.trim()) ||
+      'بدون عنوان'
+
+    const time = new Intl.DateTimeFormat('fa-IR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Asia/Tehran',
+    }).format(d)
+
+    schedule[day].push({
+      id: m.id,
+      title,
+      time,
+      episode: String(ep.episode ?? ''),
+      image: m?.coverImage?.large ?? '',
+      genres: Array.isArray(m?.genres)
+        ? m.genres
+            .filter((g: unknown) => typeof g === 'string' && g.trim().length > 0)
+            .map((g: string) => ({ slug: g.trim().toLowerCase(), name_en: g }))
+        : [],
+      localId: null,
+    })
+  }
+
+  for (const day of Object.keys(schedule)) {
+    schedule[day].sort((a, b) => String(a.time).localeCompare(String(b.time), 'fa'))
+  }
+
+  return enrichScheduleWithLocalIds({ schedule, currentSeason, currentYear })
+}
+
+const loadSchedulePayload = async (): Promise<catalog.SchedulePayload> => {
+  try {
+    const fromApi = await catalog.getAiringSchedule()
+    if (!fromApi.degraded && countScheduleItems(fromApi) > 0) {
+      return fromApi
+    }
+  } catch {
+    // API unavailable or returned degraded payload — fall back to client AniList
+  }
+
+  return fetchScheduleFromAniListClient()
+}
+
 export const fetchSchedule = async () => {
-  const cacheKey = 'shiori_schedule_v1'
+  const cacheKey = 'shiori_schedule_v2'
   const cacheTtlMs = 10 * 60 * 1000
 
   try {
@@ -401,7 +578,7 @@ export const fetchSchedule = async () => {
     // ignore
   }
 
-  const data = await catalog.getAiringSchedule()
+  const data = await loadSchedulePayload()
 
   try {
     sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data }))
