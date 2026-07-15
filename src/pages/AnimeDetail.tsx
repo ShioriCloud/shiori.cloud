@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import AnimePrefetchLink from '../components/AnimePrefetchLink'
 import { BidiText } from '../components/BidiText'
@@ -534,6 +534,9 @@ const SeriesSeasonSwitcher = ({
   currentAnimeId: string | number
   onSelect: (member: { id: string | number; slug?: string | null }) => void
 }) => {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const activeItemRef = useRef<HTMLButtonElement>(null)
+
   const currentIndex = series.members.findIndex(
     (member) => String(member.id) === String(currentAnimeId)
   )
@@ -541,6 +544,22 @@ const SeriesSeasonSwitcher = ({
     currentIndex >= 0
       ? `${toPersianNumber(currentIndex + 1)} از ${toPersianNumber(series.members.length)}`
       : null
+
+  useEffect(() => {
+    const container = scrollRef.current
+    const activeEl = activeItemRef.current
+    if (!container || !activeEl) return
+
+    const frame = requestAnimationFrame(() => {
+      const containerRect = container.getBoundingClientRect()
+      const activeRect = activeEl.getBoundingClientRect()
+      const activeCenter = activeRect.left + activeRect.width / 2
+      const containerCenter = containerRect.left + containerRect.width / 2
+      container.scrollLeft += activeCenter - containerCenter
+    })
+
+    return () => cancelAnimationFrame(frame)
+  }, [currentAnimeId, series.members.length])
 
   return (
     <div className="mx-4 mt-4">
@@ -568,7 +587,10 @@ const SeriesSeasonSwitcher = ({
           ) : null}
         </div>
 
-        <div className="relative -mx-0.5 flex gap-2 overflow-x-auto px-0.5 pb-1 scrollbar-none snap-x snap-mandatory">
+        <div
+          ref={scrollRef}
+          className="relative -mx-0.5 flex gap-2 overflow-x-auto px-0.5 pb-1 scrollbar-none snap-x snap-mandatory scroll-smooth"
+        >
           {series.members.map((member) => {
             const isActive = String(member.id) === String(currentAnimeId)
             const memberLabel = formatSeriesMemberLabel(member)
@@ -576,13 +598,14 @@ const SeriesSeasonSwitcher = ({
             return (
               <button
                 key={String(member.id)}
+                ref={isActive ? activeItemRef : undefined}
                 type="button"
                 onClick={() => !isActive && onSelect(member)}
                 aria-current={isActive ? 'true' : undefined}
                 aria-label={`${memberLabel}${member.title ? `: ${member.title}` : ''}`}
                 className={cn(
-                  'group shrink-0 snap-start text-right transition-all duration-300',
-                  isActive ? 'scale-100' : 'scale-[0.94] opacity-75 hover:scale-[0.97] hover:opacity-100'
+                  'group shrink-0 snap-center scroll-mx-8 text-right transition-all duration-300',
+                  isActive ? 'z-10 scale-100' : 'scale-[0.94] opacity-75 hover:scale-[0.97] hover:opacity-100'
                 )}
               >
                 <div
