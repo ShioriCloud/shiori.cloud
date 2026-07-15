@@ -28,10 +28,8 @@ export type AnimeCard = {
   episode?: string
   averageScore?: number
   malScore?: number
-  imdbScore?: number
   anilist_id?: number
   mal_id?: number
-  imdb_id?: string
 }
 
 export type AnimeSearchParams = {

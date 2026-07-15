@@ -32,7 +32,6 @@ import type { GenreItem } from '../types/catalog'
 import {
   buildAnilistUrl,
   buildAnimeMiniAppLink,
-  buildImdbUrl,
   buildMalUrl,
   parseAnimeDetailTab,
 } from '../utils/externalLinks'
@@ -45,7 +44,6 @@ import { cn } from '@/lib/utils'
 
 import malLogo from '../assets/images/mal-logo.png'
 import alLogo from '../assets/images/anilist-logo.svg'
-import imdbLogo from '../assets/images/imdb-logo.svg'
 
 interface Episode {
   id: string | number
@@ -86,11 +84,9 @@ interface Anime {
   averageScore?: number
   animeListScore?: number
   malScore?: number
-  imdbScore?: number
   shioriScore?: number
   anilist_id?: number
   mal_id?: number
-  imdb_id?: string
   studios: string[]
   studio_links?: Array<{ slug: string; name: string }>
   producers: string[]
@@ -865,9 +861,8 @@ const AnimeDetail = () => {
     () => ({
       anilist_id: anime?.anilist_id,
       mal_id: anime?.mal_id,
-      imdb_id: anime?.imdb_id,
     }),
-    [anime?.anilist_id, anime?.mal_id, anime?.imdb_id]
+    [anime?.anilist_id, anime?.mal_id]
   )
 
   const needsLiveAnilist =
@@ -878,11 +873,7 @@ const AnimeDetail = () => {
     Boolean(anime?.mal_id && anime.mal_id > 0) &&
     !(typeof anime?.malScore === 'number' && Number.isFinite(anime.malScore))
 
-  const needsLiveImdb =
-    Boolean(anime?.imdb_id && String(anime.imdb_id).trim()) &&
-    !(typeof anime?.imdbScore === 'number' && Number.isFinite(anime.imdbScore))
-
-  const needsLiveScores = needsLiveAnilist || needsLiveMal || needsLiveImdb
+  const needsLiveScores = needsLiveAnilist || needsLiveMal
 
   const {
     data: liveScores,
@@ -994,19 +985,12 @@ const AnimeDetail = () => {
   const resolvedMalScore =
     liveScores?.malScore ?? (typeof anime?.malScore === 'number' ? anime.malScore : null)
 
-  const resolvedImdbScore =
-    liveScores?.imdbScore ?? (typeof anime?.imdbScore === 'number' ? anime.imdbScore : null)
-
   const malScoreLabel =
     resolvedMalScore !== null ? toPersianNumber(resolvedMalScore.toFixed(1)) : '—'
-
-  const imdbScoreLabel =
-    resolvedImdbScore !== null ? toPersianNumber(resolvedImdbScore.toFixed(1)) : '—'
 
   const malChipLoading = needsLiveMal && liveScoresFetching && resolvedMalScore === null
   const anilistChipLoading =
     needsLiveAnilist && liveScoresFetching && anilistScoreLabel === '—'
-  const imdbChipLoading = needsLiveImdb && liveScoresFetching && resolvedImdbScore === null
 
   const handleShare = () => {
     if (!anime) return
@@ -1214,14 +1198,6 @@ const AnimeDetail = () => {
                 value={anilistScoreLabel}
                 loading={anilistChipLoading}
                 href={anime.anilist_id ? buildAnilistUrl(anime.anilist_id) : undefined}
-                onOpenLink={openLink}
-              />
-              <ScoreChip
-                logo={imdbLogo}
-                logoAlt="IMDb"
-                value={imdbScoreLabel}
-                loading={imdbChipLoading}
-                href={anime.imdb_id ? buildImdbUrl(anime.imdb_id) : undefined}
                 onOpenLink={openLink}
               />
             </div>

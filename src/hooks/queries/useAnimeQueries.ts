@@ -210,7 +210,6 @@ export const useExternalScoresQuery = (
   ids: {
     anilist_id?: number | null
     mal_id?: number | null
-    imdb_id?: string | null
   },
   enabled = true
 ) =>
@@ -220,8 +219,7 @@ export const useExternalScoresQuery = (
     enabled:
       enabled &&
       (Boolean(ids.anilist_id && ids.anilist_id > 0) ||
-        Boolean(ids.mal_id && ids.mal_id > 0) ||
-        Boolean(ids.imdb_id && String(ids.imdb_id).trim())),
+        Boolean(ids.mal_id && ids.mal_id > 0)),
     staleTime: 60 * 60 * 1000,
     gcTime: 2 * 60 * 60 * 1000,
   })

@@ -34,11 +34,9 @@ type ApiCard = {
   isFeatured?: boolean
   averageScore?: number
   malScore?: number
-  imdbScore?: number
   shioriScore?: number
   anilist_id?: number
   mal_id?: number
-  imdb_id?: string
   favoriteCount?: number
 }
 
@@ -118,10 +116,8 @@ const toCard = (row: ApiCard): AnimeCard => ({
   isFeatured: row.isFeatured,
   averageScore: row.averageScore,
   malScore: row.malScore,
-  imdbScore: row.imdbScore,
   anilist_id: row.anilist_id,
   mal_id: row.mal_id,
-  imdb_id: row.imdb_id,
   favoriteCount: row.favoriteCount,
 })
 
