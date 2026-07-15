@@ -71,26 +71,14 @@ const fetchOmdbScore = async (imdbId: string, apiKey: string): Promise<number | 
   return Number.isFinite(score) ? score : null
 }
 
-const fetchImdbApiDevScore = async (imdbId: string): Promise<number | null> => {
-  const res = await fetch(`https://api.imdbapi.dev/titles/${encodeURIComponent(imdbId.trim())}`)
-  if (!res.ok) return null
-
-  const json = (await res.json()) as { rating?: { aggregateRating?: number | null } }
-  const score = json.rating?.aggregateRating
-  return typeof score === 'number' && Number.isFinite(score) ? score : null
-}
-
 const fetchImdbScore = async (imdbId: string): Promise<number | null> => {
   const cleanId = imdbId.trim()
   if (!cleanId) return null
 
   const apiKey = import.meta.env.VITE_OMDB_API_KEY as string | undefined
-  if (apiKey?.trim()) {
-    const fromOmdb = await fetchOmdbScore(cleanId, apiKey)
-    if (fromOmdb !== null) return fromOmdb
-  }
+  if (!apiKey?.trim()) return null
 
-  return fetchImdbApiDevScore(cleanId)
+  return fetchOmdbScore(cleanId, apiKey)
 }
 
 /** امتیاز زنده AniList / MAL / IMDb */

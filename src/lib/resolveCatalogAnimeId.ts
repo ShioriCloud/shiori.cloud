@@ -6,26 +6,6 @@ import {
 } from '@/lib/animePaths'
 import * as catalog from '@/services/catalogSource'
 
-let cachedCards: AnimeRouteRef[] | null = null
-let cachedCardsPromise: Promise<AnimeRouteRef[]> | null = null
-
-const loadCatalogCards = async (): Promise<AnimeRouteRef[]> => {
-  if (cachedCards) return cachedCards
-  if (!cachedCardsPromise) {
-    cachedCardsPromise = catalog
-      .getAllAnime()
-      .then((rows) => {
-        cachedCards = rows
-        return rows
-      })
-      .catch((error) => {
-        cachedCardsPromise = null
-        throw error
-      })
-  }
-  return cachedCardsPromise
-}
-
 const findCardByRouteParam = (
   cards: AnimeRouteRef[],
   routeParam: string,
@@ -33,7 +13,7 @@ const findCardByRouteParam = (
 
 /**
  * Resolve public route param (uuid or slug) to catalog record id.
- * Avoids calling GET /anime-catalog/:slug on APIs that only accept uuid.
+ * Uses GET /anime-catalog/:slug on the API — not the full /all catalog.
  */
 export const resolveCatalogAnimeRecordId = async (
   routeParam: string | number,
@@ -48,14 +28,13 @@ export const resolveCatalogAnimeRecordId = async (
     : undefined
   if (fromPrefetched?.id != null) return fromPrefetched.id
 
-  const cards = prefetchedCards ?? (await loadCatalogCards())
-  const match = findCardByRouteParam(cards, raw)
-  if (match?.id != null) return match.id
+  const bySlug = await catalog.getAnimeCardById(raw)
+  if (bySlug?.id != null) return bySlug.id
 
   const normalized = normalizeAnimeSlug(raw)
-  if (normalized !== raw) {
-    const alt = cards.find((card) => String(card.slug ?? '').trim() === normalized)
-    if (alt?.id != null) return alt.id
+  if (normalized && normalized !== raw) {
+    const byNormalized = await catalog.getAnimeCardById(normalized)
+    if (byNormalized?.id != null) return byNormalized.id
   }
 
   const search = await catalog.searchAnimeCards({ query: raw, limit: 50 })

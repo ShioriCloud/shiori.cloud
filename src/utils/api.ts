@@ -3,6 +3,7 @@ import * as catalog from '../services/catalogSource'
 import * as shiori from '../services/shioriCatalog'
 import { deriveAnimeSlug } from '../lib/animePaths'
 import { resolveCatalogAnimeRecordId } from '../lib/resolveCatalogAnimeId'
+import { fetchAllAnimeRowsCached, invalidateAllAnimeRowsCache } from '../lib/animeCatalogCache'
 
 // Lightweight card shape used across Home/Search UIs
 export type UiAnimeCard = {
@@ -97,22 +98,11 @@ export const normalizeAnimeFormat = (f: unknown) =>
     .trim()
     .toUpperCase()
 
-let allAnimeRawCache: { data: Awaited<ReturnType<typeof catalog.getAllAnime>>; ts: number } | null =
-  null
-const ALL_ANIME_CACHE_TTL_MS = 5 * 60 * 1000
-
-const getAllAnimeCached = async () => {
-  if (allAnimeRawCache && Date.now() - allAnimeRawCache.ts < ALL_ANIME_CACHE_TTL_MS) {
-    return allAnimeRawCache.data
-  }
-  const data = await catalog.getAllAnime()
-  allAnimeRawCache = { data, ts: Date.now() }
-  return data
-}
+const getAllAnimeCached = fetchAllAnimeRowsCached
 
 /** پاک کردن cache (مثلاً بعد از edit در پنل ادمین) */
 export const invalidateAnimeCache = () => {
-  allAnimeRawCache = null
+  invalidateAllAnimeRowsCache()
 }
 
 export const fetchAllAnimeCards = async (): Promise<UiAnimeCard[]> => {
@@ -253,8 +243,7 @@ export const fetchSimilarAnime = async (
   genreSlugs: string[],
   limit = 12
 ): Promise<UiAnimeCard[]> => {
-  const recordId = await resolveCatalogAnimeRecordId(animeId)
-  const list = await catalog.getSimilarAnimeCards(recordId, genreSlugs, limit)
+  const list = await catalog.getSimilarAnimeCards(animeId, genreSlugs, limit)
   return list.map(toCacheAnime)
 }
 
@@ -264,8 +253,16 @@ export const fetchAnimeById = async (
   options?: { includeSeries?: boolean }
 ) => {
   const includeSeries = options?.includeSeries !== false
-  const id = await resolveCatalogAnimeRecordId(idOrSlug)
-  const detail = await shiori.getAnimeDetailById(id)
+  const raw = String(idOrSlug ?? '').trim()
+
+  let detail: Awaited<ReturnType<typeof shiori.getAnimeDetailById>>
+  try {
+    detail = await shiori.getAnimeDetailById(raw)
+  } catch {
+    const resolvedId = await resolveCatalogAnimeRecordId(raw)
+    detail = await shiori.getAnimeDetailById(resolvedId)
+  }
+
   const parts = shiori.mapShioriDetailParts(detail)
 
   const subtitleMap = new Map<number, string>()

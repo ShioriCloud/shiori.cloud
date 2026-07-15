@@ -16,7 +16,7 @@ import {
   Share08Icon,
 } from 'hugeicons-react'
 import { ExternalLink, Lock } from 'lucide-react'
-import { useAnime } from '../hooks/useAnime'
+import { useUserAnimeList } from '../hooks/useUserAnimeList'
 import { useTelegramApp } from '../hooks/useTelegramApp'
 import {
   useAnimeDetailQuery,
@@ -819,11 +819,13 @@ const EpisodePackDownloadCard = ({
   onDownload: () => void
 }) => (
   <div className="episode-pack-card-wrap">
-    <div className="episode-pack-card-inner flex items-center gap-2 bg-card p-3">
-      <p className="min-w-0 shrink-0 text-sm font-semibold text-foreground line-clamp-1 max-w-[42%]">
-        {pack.title?.trim() || 'دانلود تمام قسمت‌ها'}
-      </p>
-      <MediaSpecTags hardsubLanguage={hardsubLanguage}/>
+    <div className="episode-pack-card-inner flex items-center justify-between gap-3 bg-card p-3">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        <p className="min-w-0 truncate text-sm font-semibold text-foreground">
+          {pack.title?.trim() || 'دانلود تمام قسمت‌ها'}
+        </p>
+        <MediaSpecTags hardsubLanguage={hardsubLanguage} />
+      </div>
       <Button type="button" size="sm" className="shrink-0 gap-1 font-semibold" onClick={onDownload}>
         <Download01Icon className="w-3.5 h-3.5" />
         دانلود
@@ -836,7 +838,8 @@ const AnimeDetail = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const { toggleFavorite, isFavorite, getProgress, saveProgress, isSavingProgress } = useAnime()
+  const { toggleFavorite, isFavorite, getProgress, saveProgress, isSaving: isSavingProgress } =
+    useUserAnimeList()
   const { showAlert, openLink, shareUrl } = useTelegramApp()
 
   const {
