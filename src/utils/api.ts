@@ -17,6 +17,7 @@ export type UiAnimeCard = {
   year?: number
   isNew?: boolean
   isFeatured?: boolean
+  favoriteCount?: number
   description?: string
   genres?: catalog.GenreItem[]
 }
@@ -63,6 +64,12 @@ const toCacheAnime = (c: any): UiAnimeCard => ({
       ? c.isFeatured
       : typeof c.is_featured === 'boolean'
         ? c.is_featured
+        : undefined,
+  favoriteCount:
+    typeof c.favoriteCount === 'number'
+      ? c.favoriteCount
+      : typeof c.favorite_count === 'number'
+        ? c.favorite_count
         : undefined,
   description: c.description ?? '',
   genres: Array.isArray(c.genres)
@@ -111,6 +118,78 @@ export const invalidateAnimeCache = () => {
 export const fetchAllAnimeCards = async (): Promise<UiAnimeCard[]> => {
   const data = await getAllAnimeCached()
   return data.map(toCacheAnime)
+}
+
+export const fetchFeaturedAnimeCards = async (limit = 10): Promise<UiAnimeCard[]> => {
+  const rows = await catalog.getFeaturedAnime(limit)
+  return rows.map(toCacheAnime)
+}
+
+export const fetchPopularAnimeCards = async (limit = 20): Promise<UiAnimeCard[]> => {
+  const rows = await catalog.getPopularAnime(limit)
+  return rows.map(toCacheAnime)
+}
+
+export const fetchRecentAnimeCards = async (limit = 20): Promise<UiAnimeCard[]> => {
+  const rows = await catalog.getRecentAnime(limit)
+  return rows.map(toCacheAnime)
+}
+
+export type HomeFeaturedTab = 'anime' | 'movie' | 'donghua'
+
+export const fetchHomeFeaturedCards = async (tab: HomeFeaturedTab): Promise<UiAnimeCard[]> => {
+  if (tab === 'movie') {
+    const result = await catalog.searchAnimeCards({
+      format: 'MOVIE',
+      limit: 12,
+      sortBy: 'score',
+    })
+    const featured = result.items.filter((item) => item.isFeatured)
+    return (featured.length > 0 ? featured : result.items).slice(0, 8).map(toCacheAnime)
+  }
+
+  if (tab === 'donghua') {
+    const result = await catalog.searchAnimeCards({
+      format: 'DONGHUA',
+      limit: 12,
+      sortBy: 'score',
+    })
+    const featured = result.items.filter((item) => item.isFeatured)
+    return (featured.length > 0 ? featured : result.items).slice(0, 8).map(toCacheAnime)
+  }
+
+  const rows = await catalog.getFeaturedAnime(12)
+  const filtered = rows.filter((item) => {
+    const format = normalizeAnimeFormat(item.format)
+    return format !== 'MOVIE' && format !== 'ONA (CHINESE)'
+  })
+  return filtered.slice(0, 8).map(toCacheAnime)
+}
+
+export const fetchHomeLatestSeasonCards = async (
+  year: number,
+  season: string,
+  limit = 20
+): Promise<UiAnimeCard[]> => {
+  const result = await catalog.searchAnimeCards({
+    year,
+    season: season.toUpperCase(),
+    limit,
+    sortBy: 'created_at',
+  })
+  return result.items.map(toCacheAnime)
+}
+
+export const fetchHomeFormatSectionCards = async (
+  format: 'DONGHUA' | 'MOVIE',
+  limit = 20
+): Promise<UiAnimeCard[]> => {
+  const result = await catalog.searchAnimeCards({
+    format,
+    limit,
+    sortBy: 'created_at',
+  })
+  return result.items.map(toCacheAnime)
 }
 
 export const filterAnimeCardsBySection = (
@@ -299,63 +378,9 @@ export const fetchAnimeByStudioSlug = async (slug: string): Promise<UiAnimeCard[
   return list.map(toCacheAnime)
 }
 
-type ScheduleAnimeItem = {
-  id: number
-  title: string
-  time: string
-  episode: string
-  image: string
-  genres?: { slug: string; name_en?: string }[]
-  localId?: string | number | null
-}
-
-type SchedulePayload = {
-  schedule: Record<string, ScheduleAnimeItem[]>
-  currentSeason: string
-  currentYear: number
-}
-
-const enrichScheduleWithLocalIds = async (payload: SchedulePayload): Promise<SchedulePayload> => {
-  const anilistIds = Object.values(payload.schedule)
-    .flat()
-    .map((item) => item.id)
-  const localMap = await catalog.getLocalAnimeIdsByAniListIds(anilistIds)
-
-  const schedule: Record<string, ScheduleAnimeItem[]> = {}
-  for (const [day, list] of Object.entries(payload.schedule)) {
-    schedule[day] = list.map((anime) => ({
-      ...anime,
-      localId: localMap.get(anime.id) ?? null,
-    }))
-  }
-
-  return { ...payload, schedule }
-}
-
 export const fetchSchedule = async () => {
-  const cacheKey = 'anilist_schedule_v1'
+  const cacheKey = 'shiori_schedule_v1'
   const cacheTtlMs = 10 * 60 * 1000
-
-  const emptySchedule: Record<string, ScheduleAnimeItem[]> = {
-    شنبه: [],
-    یکشنبه: [],
-    دوشنبه: [],
-    سه‌شنبه: [],
-    چهارشنبه: [],
-    پنج‌شنبه: [],
-    جمعه: [],
-  }
-
-  const getCurrentSeason = (): 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' => {
-    const m = new Date().getMonth() + 1
-    if (m >= 1 && m <= 3) return 'WINTER'
-    if (m >= 4 && m <= 6) return 'SPRING'
-    if (m >= 7 && m <= 9) return 'SUMMER'
-    return 'FALL'
-  }
-
-  const currentSeason = getCurrentSeason()
-  const currentYear = new Date().getFullYear()
 
   try {
     const raw = sessionStorage.getItem(cacheKey)
@@ -369,127 +394,20 @@ export const fetchSchedule = async () => {
         parsed.data &&
         typeof parsed.data === 'object'
       ) {
-        return enrichScheduleWithLocalIds(parsed.data as SchedulePayload)
+        return parsed.data as catalog.SchedulePayload
       }
     }
   } catch {
     // ignore
   }
 
-  const query = `
-    query ($page: Int, $perPage: Int, $season: MediaSeason, $seasonYear: Int) {
-      Page(page: $page, perPage: $perPage) {
-        media(
-          season: $season
-          seasonYear: $seasonYear
-          status: RELEASING
-          type: ANIME
-          sort: POPULARITY_DESC
-        ) {
-          id
-          format
-          title { romaji english native }
-          coverImage { large }
-          genres
-          nextAiringEpisode { airingAt episode }
-        }
-      }
-    }
-  `
+  const data = await catalog.getAiringSchedule()
 
-  const variables = {
-    page: 1,
-    perPage: 50,
-    season: currentSeason,
-    seasonYear: currentYear,
-  }
-
-  const res = await fetch('https://graphql.anilist.co', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify({ query, variables }),
-  })
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    throw new Error(`AniList request failed: ${res.status} ${text}`)
-  }
-
-  const json = await res.json()
-  if (json?.errors?.length) {
-    throw new Error(json.errors?.[0]?.message || 'AniList query error')
-  }
-
-  const mediaList: any[] = json?.data?.Page?.media ?? []
-  const schedule: Record<string, any[]> = { ...emptySchedule }
-
-  const toPersianDay = (d: Date): string => {
-    const dayNumber = d.getDay()
-    const dayMap: Record<number, string> = {
-      0: 'یکشنبه',
-      1: 'دوشنبه',
-      2: 'سه‌شنبه',
-      3: 'چهارشنبه',
-      4: 'پنج‌شنبه',
-      5: 'جمعه',
-      6: 'شنبه',
-    }
-    return dayMap[dayNumber]
-  }
-
-  for (const m of mediaList) {
-    const allowedFormats = new Set(['TV', 'ONA', 'OVA', 'SPECIAL'])
-    const format = typeof m?.format === 'string' ? m.format.trim().toUpperCase() : ''
-    if (!allowedFormats.has(format)) continue
-
-    const ep = m?.nextAiringEpisode
-    if (!ep || typeof ep.airingAt !== 'number') continue
-
-    const airingAtMs = ep.airingAt * 1000
-    if (!Number.isFinite(airingAtMs)) continue
-
-    const d = new Date(airingAtMs)
-    const day = toPersianDay(d)
-    if (!schedule[day]) continue
-
-    const title =
-      (typeof m?.title?.english === 'string' && m.title.english.trim()) ||
-      (typeof m?.title?.romaji === 'string' && m.title.romaji.trim()) ||
-      (typeof m?.title?.native === 'string' && m.title.native.trim()) ||
-      'بدون عنوان'
-
-    const time = d.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })
-
-    schedule[day].push({
-      id: m.id,
-      title,
-      time,
-      episode: String(ep.episode ?? ''),
-      image: m?.coverImage?.large ?? '',
-      genres: Array.isArray(m?.genres)
-        ? m.genres
-            .filter((g: any) => typeof g === 'string' && g.trim().length > 0)
-            .map((g: string) => ({ slug: g.trim().toLowerCase(), name_en: g }))
-        : [],
-    })
-  }
-
-  for (const day of Object.keys(schedule)) {
-    schedule[day].sort((a: any, b: any) =>
-      String(a?.time ?? '').localeCompare(String(b?.time ?? ''))
-    )
-  }
-
-  const data: SchedulePayload = { schedule, currentSeason, currentYear }
-  const enriched = await enrichScheduleWithLocalIds(data)
   try {
-    sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data: enriched }))
+    sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data }))
   } catch {
     // ignore
   }
 
-  return enriched
+  return data
 }

@@ -89,8 +89,7 @@ const Profile = () => {
   const displayName = user?.displayName ?? 'کاربر'
 
   const initials = useMemo(() => getInitials(displayName), [displayName])
-  const username =
-    user?.source === 'telegram' && user.username ? `@${user.username}` : null
+  const username = user?.username ? `@${user.username}` : null
   const avatarUrl = user?.photoUrl && !avatarFailed ? user.photoUrl : null
   const favoritesCount = stats.animeCount
   const avgRatingLabel =
@@ -258,9 +257,7 @@ const Profile = () => {
         </div>
         <div className="px-4 py-4">
           <p className="text-sm text-muted-foreground leading-7">
-            {inTelegram
-              ? 'شیوری یک مینی‌اپ تلگرامی برای دنبال کردن انیمه‌هاست — علاقه‌مندی‌ها، برنامه پخش هفتگی و اعلان‌های جدید را یک‌جا مدیریت کن.'
-              : 'شیوری — کاتالوگ و لیست شخصی انیمه (ذخیره‌شده در این مرورگر).'}
+            شیوری یک مینی‌اپ تلگرامی برای دنبال کردن انیمه‌هاست — علاقه‌مندی‌ها، برنامه پخش هفتگی و اعلان‌های جدید را یک‌جا مدیریت کن.
           </p>
           <p className="text-xs text-muted-foreground/80 mt-4">نسخه {APP_VERSION}</p>
         </div>

@@ -1,5 +1,3 @@
-import { getAppSessionHeaders } from './appSessionStorage'
-import { isTelegramMiniApp } from './platform'
 import { getTelegramInitData } from './telegramRequestHeaders'
 import { getTelegramMiniAppSessionHeaders } from './telegramSessionStorage'
 
@@ -16,9 +14,7 @@ const buildHeaders = (extra?: HeadersInit): HeadersInit => {
   const initData = getTelegramInitData()
   if (initData) headers.set('x-telegram-init-data', initData)
 
-  const sessionHeaders = isTelegramMiniApp()
-    ? getTelegramMiniAppSessionHeaders()
-    : getAppSessionHeaders()
+  const sessionHeaders = getTelegramMiniAppSessionHeaders()
 
   for (const [key, value] of Object.entries(sessionHeaders)) {
     headers.set(key, value)

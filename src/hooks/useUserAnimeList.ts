@@ -39,7 +39,7 @@ export const useUserAnimeList = () => {
   const { data: remoteRows = [], isLoading: remoteLoading } = useQuery({
     queryKey: queryKeys.userAnimeList(telegramUserId ?? 0),
     queryFn: () => getUserAnimeList(telegramUserId!),
-    enabled: listSyncEnabled && (inTelegram || user?.source === 'web'),
+    enabled: listSyncEnabled && inTelegram,
     staleTime: 30_000,
   })
 
@@ -97,7 +97,7 @@ export const useUserAnimeList = () => {
 
   useEffect(() => {
     syncedRef.current = false
-  }, [telegramUserId])
+  }, [telegramUserId, listSyncEnabled])
 
   const stats = useMemo(() => {
     const rows = favoriteAnime.map((animeId) => {

@@ -6,9 +6,14 @@ import {
   fetchAnimeById,
   fetchAnimeList,
   fetchAnimeSearch,
+  fetchHomeFeaturedCards,
+  fetchHomeFormatSectionCards,
+  fetchHomeLatestSeasonCards,
+  fetchPopularAnimeCards,
   fetchSchedule,
   fetchSimilarAnime,
   type AnimeSearchFilters,
+  type HomeFeaturedTab,
   type UiAnimeCard,
 } from '../../utils/api'
 import { getTranslatorLinksByAnimeId, listGenres } from '../../services/catalogSource'
@@ -34,6 +39,41 @@ export const useAnimeCardsQuery = () =>
   useQuery({
     queryKey: queryKeys.animeCards,
     queryFn: fetchAllAnimeCards,
+  })
+
+export const useHomeFeaturedQuery = (tab: HomeFeaturedTab) =>
+  useQuery({
+    queryKey: queryKeys.homeFeatured(tab),
+    queryFn: () => fetchHomeFeaturedCards(tab),
+    staleTime: 60_000,
+  })
+
+export const useHomeLatestQuery = (year: number, season: string) =>
+  useQuery({
+    queryKey: queryKeys.homeLatest(year, season),
+    queryFn: () => fetchHomeLatestSeasonCards(year, season, 20),
+    staleTime: 60_000,
+  })
+
+export const useHomePopularQuery = () =>
+  useQuery({
+    queryKey: queryKeys.homePopular,
+    queryFn: () => fetchPopularAnimeCards(20),
+    staleTime: 60_000,
+  })
+
+export const useHomeDonghuaQuery = () =>
+  useQuery({
+    queryKey: queryKeys.homeDonghua,
+    queryFn: () => fetchHomeFormatSectionCards('DONGHUA', 20),
+    staleTime: 60_000,
+  })
+
+export const useHomeMoviesQuery = () =>
+  useQuery({
+    queryKey: queryKeys.homeMovies,
+    queryFn: () => fetchHomeFormatSectionCards('MOVIE', 20),
+    staleTime: 60_000,
   })
 
 export const useAnimeFavoriteCountsQuery = () =>

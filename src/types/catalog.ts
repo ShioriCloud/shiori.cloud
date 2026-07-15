@@ -24,6 +24,7 @@ export type AnimeCard = {
   endDate?: string
   isNew?: boolean
   isFeatured?: boolean
+  favoriteCount?: number
   episode?: string
   averageScore?: number
   malScore?: number

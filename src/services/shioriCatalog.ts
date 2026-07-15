@@ -122,12 +122,50 @@ const toCard = (row: ApiCard): AnimeCard => ({
   anilist_id: row.anilist_id,
   mal_id: row.mal_id,
   imdb_id: row.imdb_id,
+  favoriteCount: row.favoriteCount,
 })
 
 export const getAllAnime = async (): Promise<AnimeCard[]> => {
   const rows = await shioriFetch<ApiCard[]>('/anime-catalog/all')
   return rows.map(toCard)
 }
+
+export const getFeaturedAnime = async (limit = 10): Promise<AnimeCard[]> => {
+  const qs = limit > 0 ? `?limit=${encodeURIComponent(String(limit))}` : ''
+  const rows = await shioriFetch<ApiCard[]>(`/anime-catalog/featured${qs}`)
+  return rows.map(toCard)
+}
+
+export const getPopularAnime = async (limit = 20): Promise<AnimeCard[]> => {
+  const qs = limit > 0 ? `?limit=${encodeURIComponent(String(limit))}` : ''
+  const rows = await shioriFetch<ApiCard[]>(`/anime-catalog/popular${qs}`)
+  return rows.map(toCard)
+}
+
+export const getRecentAnime = async (limit = 20): Promise<AnimeCard[]> => {
+  const qs = limit > 0 ? `?limit=${encodeURIComponent(String(limit))}` : ''
+  const rows = await shioriFetch<ApiCard[]>(`/anime-catalog/recent${qs}`)
+  return rows.map(toCard)
+}
+
+export type ScheduleAnimeItem = {
+  id: number
+  title: string
+  time: string
+  episode: string
+  image: string
+  genres?: { slug: string; name_en?: string }[]
+  localId?: string | number | null
+}
+
+export type SchedulePayload = {
+  schedule: Record<string, ScheduleAnimeItem[]>
+  currentSeason: string
+  currentYear: number
+}
+
+export const getAiringSchedule = async (): Promise<SchedulePayload> =>
+  shioriFetch<SchedulePayload>('/anime-catalog/schedule')
 
 export const searchAnimeCards = async (params: AnimeSearchParams): Promise<AnimeSearchResult> => {
   const qs = new URLSearchParams()

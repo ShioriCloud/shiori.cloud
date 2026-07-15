@@ -9,14 +9,24 @@ export const formatUserListSaveError = (error: unknown): string => {
     return 'نشست Telegram منقضی شده — مینی‌اپ را ببندید و دوباره باز کنید.'
   }
 
+  if (msg.includes('bot_token_missing')) {
+    return 'سرور API توکن بات Telegram را ندارد — TELEGRAM_BOT_TOKEN را در .env سرور تنظیم و API را restart کنید.'
+  }
+
   if (msg.includes('hash_mismatch')) {
     return 'خطا در تأیید Telegram — توکن بات API باید همان باتی باشد که مینی‌اپ به آن وصل است (BotFather → Mini Apps).'
   }
 
   if (msg.includes('invalid telegram init data')) {
+    if (msg.includes('bot_token_missing')) {
+      return 'سرور API توکن بات Telegram را ندارد — TELEGRAM_BOT_TOKEN را در .env سرور تنظیم و API را restart کنید.'
+    }
+    if (msg.includes('hash_mismatch')) {
+      return 'خطا در تأیید Telegram — توکن بات API باید همان باتی باشد که مینی‌اپ به آن وصل است (BotFather → Mini Apps).'
+    }
     return msg.includes('(')
-      ? msg
-      : 'خطا در تأیید Telegram — توکن Vault باید همان bot مینی‌اپ باشد (BotFather → Mini Apps).'
+      ? msg.replace(/^API \d+: /, '').replace(/^"|"$/g, '')
+      : 'خطا در تأیید Telegram — مینی‌اپ را ببندید و دوباره باز کنید.'
   }
 
   if (msg.includes('API 401') || msg.includes('authentication required')) {

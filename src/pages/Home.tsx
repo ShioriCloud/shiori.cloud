@@ -16,9 +16,11 @@ import { BidiText } from '@/components/BidiText'
 import { Button } from '@/components/ui/button'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import {
-  filterAnimeCardsBySection,
-  useAnimeCardsQuery,
-  useAnimeFavoriteCountsQuery,
+  useHomeDonghuaQuery,
+  useHomeFeaturedQuery,
+  useHomeLatestQuery,
+  useHomeMoviesQuery,
+  useHomePopularQuery,
   type UiAnimeCard,
 } from '../hooks/queries/useAnimeQueries'
 
@@ -138,8 +140,6 @@ const SectionSkeleton = () => (
 
 const Home = () => {
   const [selectedType, setSelectedType] = useState<ContentType>('anime')
-  const { data: allCards = [], isLoading, isError, error, refetch } = useAnimeCardsQuery()
-  const { data: favoriteCounts = {} } = useAnimeFavoriteCountsQuery()
 
   const fallbackSeason = getFallbackSeason()
   const currentYearNumber = new Date().getFullYear()
@@ -147,46 +147,23 @@ const Home = () => {
   const currentSeasonFa = translateSeason(fallbackSeason)
   const seasonLabel = `فصل ${currentSeasonFa} ${toPersianNumber(currentYearNumber)}`
 
-  const sectionData = useMemo((): Record<SectionId, Anime[]> => {
-    const popularBase = filterAnimeCardsBySection(allCards, 'popular')
-    const popularSorted = [...popularBase]
-      .filter((a) => (favoriteCounts[String(a.id)] ?? 0) > 0)
-      .sort((a, b) => {
-      const countA = favoriteCounts[String(a.id)] ?? 0
-      const countB = favoriteCounts[String(b.id)] ?? 0
-      if (countB !== countA) return countB - countA
-      return a.title.localeCompare(b.title, 'fa')
-    })
+  const featuredQuery = useHomeFeaturedQuery(selectedType)
+  const latestQuery = useHomeLatestQuery(currentYearNumber, currentSeasonKey)
+  const popularQuery = useHomePopularQuery()
+  const donghuaQuery = useHomeDonghuaQuery()
+  const moviesQuery = useHomeMoviesQuery()
 
-    return {
-      latest: filterAnimeCardsBySection(allCards, 'latest'),
-      popular: popularSorted,
-      donghua: filterAnimeCardsBySection(allCards, 'donghua'),
-      movies: filterAnimeCardsBySection(allCards, 'movies'),
-    }
-  }, [allCards, favoriteCounts])
+  const sectionQueries: Record<SectionId, typeof latestQuery> = {
+    latest: latestQuery,
+    popular: popularQuery,
+    donghua: donghuaQuery,
+    movies: moviesQuery,
+  }
 
-  const featuredSectionKey: SectionId =
-    selectedType === 'movie' ? 'movies' : selectedType === 'donghua' ? 'donghua' : 'latest'
-
-  const featuredAnime = useMemo(
-    () =>
-      filterAnimeCardsBySection(allCards, featuredSectionKey).filter((a) => Boolean(a.isFeatured)),
-    [allCards, featuredSectionKey]
-  )
-
-  const initialLoading = isLoading && allCards.length === 0
-  const loadError = isError
-    ? error instanceof Error
-      ? error.message
-      : 'خطا در بارگذاری'
-    : null
+  const featuredAnime = featuredQuery.data ?? []
 
   const sectionMeta = useMemo(
-    (): Record<
-      SectionId,
-      { title: string; seeAll: string }
-    > => ({
+    (): Record<SectionId, { title: string; seeAll: string }> => ({
       latest: {
         title: `فصل ${currentSeasonFa} ${toPersianNumber(currentYearNumber)}`,
         seeAll: `/search?year=${currentYearNumber}&season=${encodeURIComponent(currentSeasonKey)}`,
@@ -198,22 +175,16 @@ const Home = () => {
     [currentSeasonFa, currentSeasonKey, currentYearNumber]
   )
 
-  const filterLatest = (list: Anime[]) =>
-    list.filter(
-      (a) =>
-        typeof a.year === 'number' &&
-        a.year === currentYearNumber &&
-        String(a.season ?? '').toUpperCase() === currentSeasonKey
-    )
-
-  const getSectionList = (id: SectionId): Anime[] => {
-    const raw = sectionData[id] || []
-    return id === 'latest' ? filterLatest(raw) : raw
-  }
-
   const renderSection = (id: SectionId) => {
-    const list = getSectionList(id)
+    const query = sectionQueries[id]
+    const list = query.data ?? []
     const meta = sectionMeta[id]
+    const loading = query.isLoading && list.length === 0
+    const loadError = query.isError
+      ? query.error instanceof Error
+        ? query.error.message
+        : 'خطا در بارگذاری'
+      : null
 
     return (
       <section key={id} className="space-y-3">
@@ -228,7 +199,7 @@ const Home = () => {
           </Link>
         </div>
 
-        {initialLoading && list.length === 0 ? (
+        {loading ? (
           <SectionSkeleton />
         ) : loadError && list.length === 0 ? (
           <div className="px-4">
@@ -238,7 +209,7 @@ const Home = () => {
               variant="secondary"
               size="sm"
               className="mx-auto flex"
-              onClick={() => refetch()}
+              onClick={() => void query.refetch()}
             >
               تلاش مجدد
             </Button>
@@ -258,7 +229,9 @@ const Home = () => {
                 <PosterCardContent
                   anime={anime}
                   favoriteCount={
-                    id === 'popular' ? favoriteCounts[String(anime.id)] : undefined
+                    id === 'popular' && typeof anime.favoriteCount === 'number'
+                      ? anime.favoriteCount
+                      : undefined
                   }
                 />
               </SwiperSlide>
@@ -269,9 +242,15 @@ const Home = () => {
     )
   }
 
+  const featuredLoading = featuredQuery.isLoading && featuredAnime.length === 0
+  const featuredError = featuredQuery.isError
+    ? featuredQuery.error instanceof Error
+      ? featuredQuery.error.message
+      : 'خطا در بارگذاری'
+    : null
+
   return (
     <div className="pb-24">
-      {/* Type filter */}
       <div className="px-4 pt-4">
         <div className="relative flex rounded-xl border border-border bg-muted/20 p-0">
           {TYPE_TABS.map((tab) => {
@@ -301,7 +280,6 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Featured */}
       <div className="mt-4 px-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
@@ -311,11 +289,14 @@ const Home = () => {
           <span className="text-xs text-primary-400 font-medium">{seasonLabel}</span>
         </div>
 
-        {initialLoading ? (
+        {featuredLoading ? (
           <div className="h-52 rounded-2xl bg-muted animate-pulse" />
-        ) : loadError ? (
-          <div className="h-40 rounded-2xl border border-dashed border-border flex items-center justify-center px-4">
-            <p className="text-sm text-red-500 text-center">{loadError}</p>
+        ) : featuredError ? (
+          <div className="h-40 rounded-2xl border border-dashed border-border flex flex-col items-center justify-center px-4 gap-3">
+            <p className="text-sm text-red-500 text-center">{featuredError}</p>
+            <Button type="button" variant="secondary" size="sm" onClick={() => void featuredQuery.refetch()}>
+              تلاش مجدد
+            </Button>
           </div>
         ) : featuredAnime.length > 0 ? (
           <div className="home-featured-wrap">
@@ -329,45 +310,45 @@ const Home = () => {
               slidesPerView={1.08}
               className="home-featured-swiper"
             >
-            {featuredAnime.slice(0, 8).map((anime) => (
-              <SwiperSlide key={anime.id}>
-                <AnimePrefetchLink
-                  animeId={animePublicSegment(anime)}
-                  to={animeDetailPath(anime)}
-                  className="block group h-52"
-                >
-                  <div className="relative h-full w-full rounded-2xl overflow-hidden border border-border">
-                    <img
-                      src={anime.featuredImage || anime.image}
-                      alt=""
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-                    <div className="absolute inset-x-0 bottom-0 p-4">
-                      <BidiText
-                        as="h3"
-                        className="text-base font-bold text-white text-left line-clamp-2 leading-6"
-                      >
-                        {anime.title}
-                      </BidiText>
-                      {(anime.genres || []).length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1 justify-end">
-                          {(anime.genres || []).slice(0, 3).map((g) => (
-                            <span
-                              key={g.slug}
-                              className="text-[10px] px-2 py-0.5 rounded-md bg-white/15 text-white/90 backdrop-blur-sm border border-white/10"
-                            >
-                              {genreLabel(g)}
-                            </span>
-                          ))}
-                        </div>
-                      )}
+              {featuredAnime.map((anime) => (
+                <SwiperSlide key={anime.id}>
+                  <AnimePrefetchLink
+                    animeId={animePublicSegment(anime)}
+                    to={animeDetailPath(anime)}
+                    className="block group h-52"
+                  >
+                    <div className="relative h-full w-full rounded-2xl overflow-hidden border border-border">
+                      <img
+                        src={anime.featuredImage || anime.image}
+                        alt=""
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+                      <div className="absolute inset-x-0 bottom-0 p-4">
+                        <BidiText
+                          as="h3"
+                          className="text-base font-bold text-white text-left line-clamp-2 leading-6"
+                        >
+                          {anime.title}
+                        </BidiText>
+                        {(anime.genres || []).length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1 justify-end">
+                            {(anime.genres || []).slice(0, 3).map((g) => (
+                              <span
+                                key={g.slug}
+                                className="text-[10px] px-2 py-0.5 rounded-md bg-white/15 text-white/90 backdrop-blur-sm border border-white/10"
+                              >
+                                {genreLabel(g)}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </AnimePrefetchLink>
-              </SwiperSlide>
-            ))}
+                  </AnimePrefetchLink>
+                </SwiperSlide>
+              ))}
             </Swiper>
             <div className="home-featured-pagination" />
           </div>
@@ -378,7 +359,6 @@ const Home = () => {
         )}
       </div>
 
-      {/* Catalog sections */}
       <div className="space-y-8 pt-6">
         {renderSection('latest')}
         {renderSection('popular')}

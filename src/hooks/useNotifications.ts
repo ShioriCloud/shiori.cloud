@@ -15,7 +15,7 @@ export const useNotifications = () => {
   const telegramUserId = user?.id
   const queryClient = useQueryClient()
 
-  const enabled = isReady && typeof telegramUserId === 'number' && (inTelegram || user?.source === 'web')
+  const enabled = isReady && inTelegram && typeof telegramUserId === 'number'
 
   const notificationsQuery = useQuery({
     queryKey: queryKeys.notifications(telegramUserId ?? 0),

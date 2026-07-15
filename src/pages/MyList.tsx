@@ -306,15 +306,12 @@ const MyList = () => {
 
   const detailQueries = useFavoriteAnimeDetailsQueries(favoriteAnime)
 
-  const loading =
-    favoriteAnime.length > 0 && detailQueries.some((query) => query.isLoading || query.isFetching)
-  const hasError = detailQueries.some((query) => query.isError)
-
   const items = useMemo((): FavoriteAnime[] => {
-    return detailQueries
-      .map((query) => query.data)
-      .filter((details): details is NonNullable<typeof details> => details != null)
-      .map((details) => ({
+    const byId = new Map<string, FavoriteAnime>()
+    detailQueries.forEach((query, index) => {
+      const details = query.data
+      if (!details) return
+      byId.set(String(favoriteAnime[index]), {
         id: details.id,
         slug: details.slug ?? null,
         title: details.title,
@@ -324,8 +321,22 @@ const MyList = () => {
             ? details.episodes_count
             : details.episodes.length,
         genres: details.genres ?? [],
-      }))
-  }, [detailQueries])
+      })
+    })
+
+    return favoriteAnime
+      .map((id) => byId.get(String(id)))
+      .filter((item): item is FavoriteAnime => item != null)
+  }, [detailQueries, favoriteAnime])
+
+  const loading =
+    favoriteAnime.length > 0 &&
+    items.length === 0 &&
+    detailQueries.some((query) => query.isLoading || query.isFetching)
+
+  const failedDetailCount = detailQueries.filter((query) => query.isError).length
+  const hasError =
+    favoriteAnime.length > 0 && items.length === 0 && !loading && failedDetailCount > 0
 
   const retry = () => {
     detailQueries.forEach((query) => {
@@ -423,6 +434,12 @@ const MyList = () => {
       </div>
 
       {loading && (view === 'grid' ? <SkeletonGrid /> : <SkeletonList />)}
+
+      {failedDetailCount > 0 && items.length > 0 && (
+        <div className="mx-4 mb-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+          {toPersianNumber(failedDetailCount)} مورد بارگذاری نشد؛ بقیه نمایش داده می‌شوند.
+        </div>
+      )}
 
       {hasError && (
         <div className="px-4 py-12 text-center space-y-3">

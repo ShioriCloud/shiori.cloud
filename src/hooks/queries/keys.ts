@@ -1,5 +1,10 @@
 export const queryKeys = {
   animeCards: ['anime', 'cards'] as const,
+  homeFeatured: (tab: string) => ['home', 'featured', tab] as const,
+  homeLatest: (year: number, season: string) => ['home', 'latest', year, season] as const,
+  homePopular: ['home', 'popular'] as const,
+  homeDonghua: ['home', 'donghua'] as const,
+  homeMovies: ['home', 'movies'] as const,
   animeDetail: (id: string | number) => ['anime', 'detail', 'v2', String(id)] as const,
   animeList: ['anime', 'list'] as const,
   schedule: ['schedule'] as const,
