@@ -304,6 +304,18 @@ export const fetchAnimeById = async (
     subtitle_packs: parts.subtitlePacks,
     episode_pack: parts.episodePack,
     episodes_count: typeof detail.episodes_count === 'number' ? detail.episodes_count : 0,
+    hardsub_language: detail.hardsub_language === 'en' ? 'en' : 'fa',
+    video_file_type: detail.video_file_type === 'hardsub' ? 'hardsub' : 'softsub',
+    video_resolution:
+      detail.video_resolution === '480p' || detail.video_resolution === '720p'
+        ? detail.video_resolution
+        : '1080p',
+    video_encode:
+      detail.video_encode === 'x264' ||
+      detail.video_encode === 'x265' ||
+      detail.video_encode === 'bluray'
+        ? detail.video_encode
+        : 'x265_10bit',
     averageScore: detail.averageScore,
     malScore: detail.malScore,
     shioriScore: detail.shioriScore,
@@ -350,6 +362,10 @@ export const buildAnimeDetailPlaceholder = (card: UiAnimeCard): AnimeDetailShell
   subtitle_packs: [],
   episode_pack: null,
   episodes_count: 0,
+  hardsub_language: 'fa',
+  video_file_type: 'softsub',
+  video_resolution: '1080p',
+  video_encode: 'x265_10bit',
   averageScore: undefined,
   malScore: undefined,
   shioriScore: undefined,

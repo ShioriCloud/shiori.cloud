@@ -38,6 +38,10 @@ type ApiCard = {
   anilist_id?: number
   mal_id?: number
   favoriteCount?: number
+  hardsub_language?: 'fa' | 'en'
+  video_file_type?: 'softsub' | 'hardsub'
+  video_resolution?: '480p' | '720p' | '1080p'
+  video_encode?: 'x264' | 'x265' | 'x265_10bit' | 'bluray'
 }
 
 type ApiDetail = ApiCard & {
@@ -119,6 +123,18 @@ const toCard = (row: ApiCard): AnimeCard => ({
   anilist_id: row.anilist_id,
   mal_id: row.mal_id,
   favoriteCount: row.favoriteCount,
+  hardsub_language: row.hardsub_language === 'en' ? 'en' : 'fa',
+  video_file_type: row.video_file_type === 'hardsub' ? 'hardsub' : 'softsub',
+  video_resolution:
+    row.video_resolution === '480p' || row.video_resolution === '720p'
+      ? row.video_resolution
+      : '1080p',
+  video_encode:
+    row.video_encode === 'x264' ||
+    row.video_encode === 'x265' ||
+    row.video_encode === 'bluray'
+      ? row.video_encode
+      : 'x265_10bit',
 })
 
 export const getAllAnime = async (): Promise<AnimeCard[]> => {

@@ -55,7 +55,7 @@
 
 | #   | فایل / action                                         | مسیر / توضیح                                                   |
 | --- | ----------------------------------------------------- | -------------------------------------------------------------- |
-| 12  | Shiori API cron `sync-external-scores`                | `api.shiori.cloud` — `CRON_SECRET`, `OMDB_API_KEY`             |
+| 12  | Shiori API cron `sync-external-scores`                | `api.shiori.cloud` — `CRON_SECRET`                             |
 | 14  | `cron-sync-external-scores.sql`              | **`sql/optional/`** — راهنمای Cron                             |
 | 16  | `admin-portal-auth.sql`                      | **`sql/bootstrap/`** — ورود وب                                 |
 | 17  | `sql/archive/unify-portal-users.sql`         | فقط DB قدیمی با `admin_portal_*`                               |

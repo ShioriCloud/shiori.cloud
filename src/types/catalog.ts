@@ -30,6 +30,10 @@ export type AnimeCard = {
   malScore?: number
   anilist_id?: number
   mal_id?: number
+  hardsub_language?: 'fa' | 'en'
+  video_file_type?: 'softsub' | 'hardsub'
+  video_resolution?: '480p' | '720p' | '1080p'
+  video_encode?: 'x264' | 'x265' | 'x265_10bit' | 'bluray'
 }
 
 export type AnimeSearchParams = {

@@ -38,7 +38,17 @@ import {
 import { isAnimeDetailShell } from '../utils/api'
 import { animeCardMatchesRouteParam, animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { MediaSpecTags } from '../components/anime/MediaSpecTags'
-import { resolveHardsubLanguage, type HardsubLanguage } from '../utils/animeMediaTags'
+import {
+  normalizeVideoEncode,
+  normalizeVideoFileType,
+  normalizeVideoResolution,
+  resolveHardsubLanguage,
+  videoQualityButtonLabel,
+  type HardsubLanguage,
+  type VideoEncode,
+  type VideoFileType,
+  type VideoResolution,
+} from '../utils/animeMediaTags'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -81,6 +91,10 @@ interface Anime {
   subtitle_packs?: SubtitlePack[]
   episode_pack?: EpisodePack | null
   episodes_count: number
+  hardsub_language?: 'fa' | 'en'
+  video_file_type?: 'softsub' | 'hardsub'
+  video_resolution?: '480p' | '720p' | '1080p'
+  video_encode?: 'x264' | 'x265' | 'x265_10bit' | 'bluray'
   averageScore?: number
   animeListScore?: number
   malScore?: number
@@ -714,34 +728,55 @@ const SimilarPosterCard = ({
   </AnimePrefetchLink>
 )
 
-const EPISODE_DOWNLOAD_QUALITIES = [
-  { id: '480p', label: '480p', available: false },
-  { id: '720p', label: '720p', available: false },
-  { id: '1080p', label: '1080p x265 10bit', available: true },
-] as const
-
 const EpisodeDownloadCard = ({
   episode,
   showSubtitleButton,
   hardsubLanguage,
-  onDownload1080,
+  videoFileType,
+  videoResolution,
+  videoEncode,
+  onDownloadAvailable,
   onSubtitle,
   onLockedQuality,
 }: {
   episode: Episode
   showSubtitleButton: boolean
   hardsubLanguage: HardsubLanguage
-  onDownload1080: () => void
+  videoFileType: VideoFileType
+  videoResolution: VideoResolution
+  videoEncode: VideoEncode
+  onDownloadAvailable: () => void
   onSubtitle: () => void
   onLockedQuality: (quality: string) => void
-}) => (
+}) => {
+  const qualities = (
+    [
+      { id: '480p' as const, shortLabel: '480p' },
+      { id: '720p' as const, shortLabel: '720p' },
+      { id: '1080p' as const, shortLabel: '1080p' },
+    ] as const
+  ).map((quality) => {
+    const available = quality.id === videoResolution
+    return {
+      ...quality,
+      available,
+      label: available
+        ? videoQualityButtonLabel(videoResolution, videoEncode)
+        : quality.shortLabel,
+    }
+  })
+
+  return (
   <div className="overflow-hidden rounded-xl border border-border bg-card/60">
     <div className="flex items-center justify-between gap-3 px-3 py-3">
       <div className="flex min-w-0 items-center gap-2">
         <p className="shrink-0 text-sm font-semibold text-foreground">
           قسمت {toPersianNumber(episode.number)}
         </p>
-        <MediaSpecTags hardsubLanguage={hardsubLanguage} />
+        <MediaSpecTags
+          hardsubLanguage={hardsubLanguage}
+          videoFileType={videoFileType}
+        />
       </div>
       {showSubtitleButton ? (
         <Button
@@ -758,7 +793,7 @@ const EpisodeDownloadCard = ({
     </div>
 
     <div className="grid grid-cols-3 gap-1.5 border-t border-border/60 bg-muted/10 p-2">
-      {EPISODE_DOWNLOAD_QUALITIES.map((quality) => {
+      {qualities.map((quality) => {
         const isAvailable = quality.available
 
         return (
@@ -779,7 +814,7 @@ const EpisodeDownloadCard = ({
             )}
             onClick={() => {
               if (isAvailable) {
-                onDownload1080()
+                onDownloadAvailable()
                 return
               }
               onLockedQuality(quality.label)
@@ -793,7 +828,7 @@ const EpisodeDownloadCard = ({
             <span
               className={cn(
                 'font-semibold tabular-nums leading-tight',
-                quality.id === '1080p' ? 'text-[10px]' : 'text-xs'
+                isAvailable && quality.label.length > 8 ? 'text-[10px]' : 'text-xs'
               )}
             >
               {quality.label}
@@ -803,15 +838,18 @@ const EpisodeDownloadCard = ({
       })}
     </div>
   </div>
-)
+  )
+}
 
 const EpisodePackDownloadCard = ({
   pack,
   hardsubLanguage,
+  videoFileType,
   onDownload,
 }: {
   pack: EpisodePack
   hardsubLanguage: HardsubLanguage
+  videoFileType: VideoFileType
   onDownload: () => void
 }) => (
   <div className="episode-pack-card-wrap">
@@ -820,7 +858,10 @@ const EpisodePackDownloadCard = ({
         <p className="min-w-0 truncate text-sm font-semibold text-foreground">
           {pack.title?.trim() || 'دانلود تمام قسمت‌ها'}
         </p>
-        <MediaSpecTags hardsubLanguage={hardsubLanguage} />
+        <MediaSpecTags
+          hardsubLanguage={hardsubLanguage}
+          videoFileType={videoFileType}
+        />
       </div>
       <Button type="button" size="sm" className="shrink-0 gap-1 font-semibold" onClick={onDownload}>
         <Download01Icon className="w-3.5 h-3.5" />
@@ -1057,11 +1098,25 @@ const AnimeDetail = () => {
   const hardsubLanguage = useMemo(
     () =>
       resolveHardsubLanguage({
+        hardsub_language: anime?.hardsub_language,
         episodes: anime?.episodes,
         subtitle_packs: anime?.subtitle_packs,
         subtitles: anime?.subtitles,
       }),
-    [anime?.episodes, anime?.subtitle_packs, anime?.subtitles]
+    [anime?.hardsub_language, anime?.episodes, anime?.subtitle_packs, anime?.subtitles]
+  )
+
+  const videoFileType = useMemo(
+    () => normalizeVideoFileType(anime?.video_file_type),
+    [anime?.video_file_type]
+  )
+  const videoResolution = useMemo(
+    () => normalizeVideoResolution(anime?.video_resolution),
+    [anime?.video_resolution]
+  )
+  const videoEncode = useMemo(
+    () => normalizeVideoEncode(anime?.video_encode),
+    [anime?.video_encode]
   )
 
   const downloadTabs = useMemo(() => {
@@ -1431,6 +1486,7 @@ const AnimeDetail = () => {
                     <EpisodePackDownloadCard
                       pack={anime.episode_pack}
                       hardsubLanguage={hardsubLanguage}
+                      videoFileType={videoFileType}
                       onDownload={() => window.open(episodePackLink, '_blank')}
                     />
                   ) : null}
@@ -1444,8 +1500,13 @@ const AnimeDetail = () => {
                       key={episode.id}
                       episode={episode}
                       hardsubLanguage={hardsubLanguage}
-                      showSubtitleButton={!isFinished || isMovie}
-                      onDownload1080={() => {
+                      videoFileType={videoFileType}
+                      videoResolution={videoResolution}
+                      videoEncode={videoEncode}
+                      showSubtitleButton={
+                        videoFileType === 'softsub' && (!isFinished || isMovie)
+                      }
+                      onDownloadAvailable={() => {
                         const link =
                           episode.download_link ||
                           `https://t.me/ShioriUploadBot?start=get_${episode.id}`
