@@ -376,6 +376,7 @@ export const buildAnimeDetailPlaceholder = (card: UiAnimeCard): AnimeDetailShell
   averageScore: undefined,
   malScore: undefined,
   shioriScore: undefined,
+  favoriteCount: card.favoriteCount,
   anilist_id: undefined,
   mal_id: undefined,
   studios: [],
