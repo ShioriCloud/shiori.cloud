@@ -70,6 +70,13 @@ export const parseTelegramFilePackLink = (link: string): string | null => {
 }
 
 export const parseAnimeDetailTab = (value: string | null): AnimeDetailTab => {
-  if (value === 'episodes' || value === 'similar' || value === 'info') return value
+  if (
+    value === 'episodes' ||
+    value === 'similar' ||
+    value === 'translators' ||
+    value === 'info'
+  ) {
+    return value
+  }
   return 'info'
 }

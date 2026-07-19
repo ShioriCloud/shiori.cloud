@@ -318,7 +318,14 @@ export const fetchAnimeById = async (
         : 'x265_10bit',
     averageScore: detail.averageScore,
     malScore: detail.malScore,
-    shioriScore: detail.shioriScore,
+    shioriScore: (() => {
+      const raw = detail.shioriScore as number | string | null | undefined
+      if (typeof raw === 'number' && Number.isFinite(raw)) return raw
+      if (raw == null || raw === '') return undefined
+      const n = Number(raw)
+      return Number.isFinite(n) ? n : undefined
+    })(),
+    favoriteCount: detail.favoriteCount,
     anilist_id: detail.anilist_id,
     mal_id: detail.mal_id,
     studios: parts.studioNames,

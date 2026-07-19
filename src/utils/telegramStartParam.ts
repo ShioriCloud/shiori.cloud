@@ -1,4 +1,4 @@
-export type AnimeDetailTab = 'info' | 'episodes' | 'similar'
+export type AnimeDetailTab = 'info' | 'episodes' | 'similar' | 'translators'
 
 export type TelegramStartRoute = {
   path: string
@@ -6,7 +6,14 @@ export type TelegramStartRoute = {
 }
 
 const parseTab = (value?: string | null): AnimeDetailTab => {
-  if (value === 'episodes' || value === 'similar' || value === 'info') return value
+  if (
+    value === 'episodes' ||
+    value === 'similar' ||
+    value === 'translators' ||
+    value === 'info'
+  ) {
+    return value
+  }
   return 'info'
 }
 
@@ -36,7 +43,7 @@ export const parseTelegramStartParam = (raw: string): TelegramStartRoute | null 
     }
   }
 
-  const match = param.match(/^anime_([^_]+)(?:_(info|episodes|similar))?$/)
+  const match = param.match(/^anime_([^_]+)(?:_(info|episodes|similar|translators))?$/)
   if (!match) return null
 
   const id = match[1]?.trim()

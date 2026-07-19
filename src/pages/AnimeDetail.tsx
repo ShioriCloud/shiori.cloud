@@ -14,13 +14,16 @@ import {
   Download01Icon,
   UserIcon,
   Share08Icon,
+  TelegramIcon,
+  CheckmarkCircle02Icon,
 } from 'hugeicons-react'
 import { ExternalLink, Lock } from 'lucide-react'
 import { useUserAnimeList } from '../hooks/useUserAnimeList'
+import { useNotifications } from '../hooks/useNotifications'
 import { useTelegramApp } from '../hooks/useTelegramApp'
+import { useAiringReminderStore } from '../store/airingReminderStore'
 import {
   useAnimeDetailQuery,
-  useAnimeFavoriteCountQuery,
   useExternalScoresQuery,
   useSimilarAnimeQuery,
   useTranslatorLinksQuery,
@@ -51,9 +54,24 @@ import {
 } from '../utils/animeMediaTags'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import {
+  useClaimFreeDownload,
+  useDownloadTokenBalance,
+} from '../hooks/useDownloadTokens'
+import {
+  useClaimEpisodePackDownload,
+  useClaimPaidEpisodeDownload,
+  useSubscriptionMe,
+} from '../hooks/useSubscription'
+import {
+  ENABLE_FREE_TOKEN_WALLET_UI,
+  ENABLE_SUBSCRIPTION_DOWNLOAD_GATE,
+  SHOW_HARD_AND_FREE_DOWNLOAD_TABS,
+} from '../config/monetizationFlags'
 
 import malLogo from '../assets/images/mal-logo.png'
 import alLogo from '../assets/images/anilist-logo.svg'
+import shioriLogo from '../assets/images/shiori-logo.svg'
 
 interface Episode {
   id: string | number
@@ -61,6 +79,7 @@ interface Episode {
   title: string
   download_link?: string
   subtitle_link?: string
+  video_file_type?: 'softsub' | 'hardsub' | 'free'
 }
 
 interface SubtitlePack {
@@ -99,6 +118,7 @@ interface Anime {
   animeListScore?: number
   malScore?: number
   shioriScore?: number
+  favoriteCount?: number
   anilist_id?: number
   mal_id?: number
   studios: string[]
@@ -123,14 +143,37 @@ interface Anime {
   } | null
 }
 
-type TabType = 'info' | 'episodes' | 'similar'
-type DownloadTabType = 'episodes' | 'subtitle_packs' | 'translators'
+type TabType = 'info' | 'episodes' | 'similar' | 'translators'
+type EpisodeKindTab = 'hardsub' | 'softsub' | 'free'
+/** Launch download sub-tabs (when hard/free kind tabs are hidden). */
+type LaunchDownloadTab = 'episodes' | 'subtitles'
 
 const MAIN_TABS: { id: TabType; label: string }[] = [
   { id: 'info', label: 'اطلاعات' },
   { id: 'episodes', label: 'دانلود' },
   { id: 'similar', label: 'مشابه' },
+  { id: 'translators', label: 'مترجم' },
 ]
+
+/** Softsub / hardsub / free — restored when SHOW_HARD_AND_FREE_DOWNLOAD_TABS is true */
+const EPISODE_KIND_TABS: { id: EpisodeKindTab; label: string }[] = [
+  { id: 'hardsub', label: 'هاردساب' },
+  { id: 'softsub', label: 'سافت‌ساب' },
+  { id: 'free', label: 'رایگان' },
+]
+
+const EPISODE_KIND_TABS_SUBSCRIBED: { id: EpisodeKindTab; label: string }[] = [
+  { id: 'hardsub', label: 'هاردساب' },
+  { id: 'softsub', label: 'سافت‌ساب' },
+]
+
+const LAUNCH_DOWNLOAD_TABS: { id: LaunchDownloadTab; label: string }[] = [
+  { id: 'episodes', label: 'قسمت‌ها' },
+  { id: 'subtitles', label: 'زیرنویس' },
+]
+
+const useLaunchDownloadTabs =
+  !SHOW_HARD_AND_FREE_DOWNLOAD_TABS && !ENABLE_SUBSCRIPTION_DOWNLOAD_GATE
 
 const toPersianNumber = (num: number | string): string => {
   const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
@@ -266,17 +309,15 @@ const DetailSkeleton = () => (
   </div>
 )
 
+const TELEGRAM_BLUE = '#229ED9'
+
 const StatsRowSkeleton = () => (
-  <div className="mx-4 mt-5 grid grid-cols-3 gap-2">
-    {Array.from({ length: 3 }).map((_, i) => (
-      <div
-        key={i}
-        className="rounded-xl border border-border bg-card/60 py-3 px-2 text-center space-y-2"
-      >
-        <PulseBlock className="h-5 w-10 mx-auto" />
-        <PulseBlock className="h-3 w-14 mx-auto" />
-      </div>
-    ))}
+  <div className="mx-4 mt-5 flex items-stretch gap-2">
+    <div className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-card/60 px-3">
+      <PulseBlock className="h-5 w-5 shrink-0 rounded" />
+      <PulseBlock className="h-3 w-28" />
+    </div>
+    <PulseBlock className="h-12 w-12 shrink-0 rounded-xl" />
   </div>
 )
 
@@ -363,11 +404,89 @@ const TranslatorsTabSkeleton = () => (
   </div>
 )
 
-const StatCard = ({ value, label }: { value: string; label: string }) => (
-  <div className="rounded-xl border border-border bg-card/60 py-3 px-2 text-center">
-    <p className="text-base font-bold text-foreground">{value}</p>
-    <p className="text-[11px] text-muted-foreground mt-0.5">{label}</p>
-  </div>
+const ReminderStatCard = ({
+  active,
+  busy = false,
+  onClick,
+}: {
+  active: boolean
+  busy?: boolean
+  onClick: () => void
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    disabled={busy}
+    className={cn(
+      'flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-center transition-colors disabled:opacity-60',
+      active
+        ? 'border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/15'
+        : 'border-border bg-card/60 hover:bg-muted/40'
+    )}
+    aria-label={active ? 'یادآوری پخش فعال است' : 'یادآوری پخش در تلگرام'}
+    aria-pressed={active}
+  >
+    {active ? (
+      <CheckmarkCircle02Icon className="h-5 w-5 shrink-0 text-emerald-400" />
+    ) : (
+      <TelegramIcon className="h-5 w-5 shrink-0" style={{ color: TELEGRAM_BLUE }} />
+    )}
+    <span
+      className={cn(
+        'text-[12px] font-medium leading-tight',
+        active ? 'text-emerald-300' : 'text-foreground'
+      )}
+    >
+      {active ? 'یادآوری پخش فعال شد' : 'یادآوری پخش در تلگرام'}
+    </span>
+  </button>
+)
+
+const FavoriteStatCard = ({
+  active,
+  favoriteCount,
+  favoriteCountLoading,
+  onClick,
+}: {
+  active: boolean
+  favoriteCount?: number
+  favoriteCountLoading?: boolean
+  onClick: () => void
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={cn(
+      'relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border transition-colors',
+      active
+        ? 'border-red-500/35 bg-red-500/10 hover:bg-red-500/15'
+        : 'border-border bg-card/60 hover:bg-muted/40'
+    )}
+    aria-label={active ? 'ویرایش پیشرفت و امتیاز' : 'افزودن به علاقه‌مندی‌ها'}
+  >
+    {favoriteCountLoading ? (
+      <span
+        className="absolute -top-1 -start-1 h-5 w-5 rounded-full bg-muted animate-pulse"
+        aria-hidden
+      />
+    ) : typeof favoriteCount === 'number' && favoriteCount > 0 ? (
+      <span
+        className={cn(
+          'absolute -top-1 -start-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[9px] font-semibold tabular-nums leading-none',
+          active ? 'bg-red-500 text-white' : 'bg-muted-foreground text-background'
+        )}
+        aria-label={`${toPersianNumber(favoriteCount)} علاقه‌مند`}
+      >
+        {toPersianNumber(favoriteCount)}
+      </span>
+    ) : null}
+    <FavouriteIcon
+      className={cn(
+        'h-5 w-5',
+        active ? 'fill-red-500 text-red-500' : 'text-muted-foreground'
+      )}
+    />
+  </button>
 )
 
 const ScoreChip = ({
@@ -378,6 +497,8 @@ const ScoreChip = ({
   loading = false,
   href,
   onOpenLink,
+  logoClassName,
+  logoWrapClassName,
 }: {
   value: string
   logo?: string
@@ -386,16 +507,39 @@ const ScoreChip = ({
   loading?: boolean
   href?: string
   onOpenLink?: (url: string) => void
+  logoClassName?: string
+  logoWrapClassName?: string
 }) => {
+  const logoEl = logo ? (
+    logoWrapClassName ? (
+      <span
+        className={cn(
+          'flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded',
+          logoWrapClassName
+        )}
+      >
+        <img
+          src={logo}
+          className={cn('h-3.5 w-3.5 object-contain', logoClassName)}
+          alt={logoAlt ?? ''}
+        />
+      </span>
+    ) : (
+      <img
+        src={logo}
+        className={cn('h-5 w-5 shrink-0 rounded', logoClassName)}
+        alt={logoAlt ?? ''}
+      />
+    )
+  ) : (
+    <span className="text-[10px] font-bold text-yellow-500 leading-none shrink-0">
+      {fallbackLabel ?? '—'}
+    </span>
+  )
+
   const inner = (
     <>
-      {logo ? (
-        <img src={logo} className="w-5 h-5 rounded shrink-0" alt={logoAlt ?? ''} />
-      ) : (
-        <span className="text-[10px] font-bold text-yellow-500 leading-none shrink-0">
-          {fallbackLabel ?? '—'}
-        </span>
-      )}
+      {logoEl}
       {loading ? (
         <span className="h-4 w-9 rounded-md bg-muted animate-pulse" aria-hidden />
       ) : (
@@ -424,59 +568,6 @@ const ScoreChip = ({
 
   return <div className={className}>{inner}</div>
 }
-
-const FavoriteStatCard = ({
-  active,
-  favoriteCount,
-  favoriteCountLoading,
-  onClick,
-}: {
-  active: boolean
-  favoriteCount?: number
-  favoriteCountLoading?: boolean
-  onClick: () => void
-}) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={cn(
-      'relative rounded-xl border py-3 px-2 text-center transition-colors',
-      active
-        ? 'border-red-500/35 bg-red-500/10 hover:bg-red-500/15'
-        : 'border-border bg-card/60 hover:bg-muted/40'
-    )}
-    aria-label={active ? 'حذف از علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها'}
-  >
-    {favoriteCountLoading ? (
-      <span
-        className="absolute top-1.5 start-1.5 h-4 w-7 rounded-md bg-muted animate-pulse"
-        aria-hidden
-      />
-    ) : typeof favoriteCount === 'number' && favoriteCount > 0 ? (
-      <span
-        className={cn(
-          'absolute top-1.5 start-1.5 inline-flex items-center gap-0.5 rounded-md border px-1 py-0.5 text-[9px] font-medium tabular-nums leading-none',
-          active
-            ? 'border-red-500/25 bg-red-500/15 text-red-400'
-            : 'border-border/70 bg-background/70 text-muted-foreground'
-        )}
-        aria-label={`${toPersianNumber(favoriteCount)} علاقه‌مند`}
-      >
-        <FavouriteIcon className="h-2.5 w-2.5 shrink-0" aria-hidden />
-        {toPersianNumber(favoriteCount)}
-      </span>
-    ) : null}
-    <FavouriteIcon
-      className={cn(
-        'w-5 h-5 mx-auto',
-        active ? 'text-red-500 fill-red-500' : 'text-muted-foreground'
-      )}
-    />
-    <p className="text-[11px] text-muted-foreground mt-1.5">
-      {active ? 'در لیست من' : 'علاقه‌مندی'}
-    </p>
-  </button>
-)
 
 const posterStatusClass = (status: string) => {
   switch (status) {
@@ -735,6 +826,7 @@ const EpisodeDownloadCard = ({
   videoFileType,
   videoResolution,
   videoEncode,
+  subscriptionLocked = false,
   onDownloadAvailable,
   onSubtitle,
   onLockedQuality,
@@ -745,6 +837,7 @@ const EpisodeDownloadCard = ({
   videoFileType: VideoFileType
   videoResolution: VideoResolution
   videoEncode: VideoEncode
+  subscriptionLocked?: boolean
   onDownloadAvailable: () => void
   onSubtitle: () => void
   onLockedQuality: (quality: string) => void
@@ -756,7 +849,7 @@ const EpisodeDownloadCard = ({
       { id: '1080p' as const, shortLabel: '1080p' },
     ] as const
   ).map((quality) => {
-    const available = quality.id === videoResolution
+    const available = !subscriptionLocked && quality.id === videoResolution
     return {
       ...quality,
       available,
@@ -802,9 +895,11 @@ const EpisodeDownloadCard = ({
             type="button"
             aria-disabled={!isAvailable}
             aria-label={
-              isAvailable
-                ? `دانلود قسمت ${episode.number} با کیفیت ${quality.label}`
-                : `کیفیت ${quality.label} فعلاً در دسترس نیست`
+              subscriptionLocked
+                ? `دانلود قسمت ${episode.number} نیازمند اشتراک`
+                : isAvailable
+                  ? `دانلود قسمت ${episode.number} با کیفیت ${quality.label}`
+                  : `کیفیت ${quality.label} فعلاً در دسترس نیست`
             }
             className={cn(
               'flex min-h-[3.25rem] flex-col items-center justify-center gap-1 rounded-lg border px-2 py-2 text-center transition-colors',
@@ -813,6 +908,10 @@ const EpisodeDownloadCard = ({
                 : 'cursor-not-allowed border-border/60 bg-muted/20 text-muted-foreground opacity-70'
             )}
             onClick={() => {
+              if (subscriptionLocked) {
+                onLockedQuality('اشتراک')
+                return
+              }
               if (isAvailable) {
                 onDownloadAvailable()
                 return
@@ -831,7 +930,7 @@ const EpisodeDownloadCard = ({
                 isAvailable && quality.label.length > 8 ? 'text-[10px]' : 'text-xs'
               )}
             >
-              {quality.label}
+              {subscriptionLocked ? 'قفل' : quality.label}
             </span>
           </button>
         )
@@ -846,11 +945,13 @@ const EpisodePackDownloadCard = ({
   hardsubLanguage,
   videoFileType,
   onDownload,
+  locked = false,
 }: {
   pack: EpisodePack
   hardsubLanguage: HardsubLanguage
   videoFileType: VideoFileType
   onDownload: () => void
+  locked?: boolean
 }) => (
   <div className="episode-pack-card-wrap">
     <div className="episode-pack-card-inner flex items-center justify-between gap-3 bg-card p-3">
@@ -863,10 +964,147 @@ const EpisodePackDownloadCard = ({
           videoFileType={videoFileType}
         />
       </div>
-      <Button type="button" size="sm" className="shrink-0 gap-1 font-semibold" onClick={onDownload}>
-        <Download01Icon className="w-3.5 h-3.5" />
-        دانلود
+      <Button
+        type="button"
+        size="sm"
+        className="shrink-0 gap-1 font-semibold"
+        variant={locked ? 'secondary' : 'default'}
+        onClick={onDownload}
+      >
+        {locked ? <Lock className="w-3.5 h-3.5" /> : <Download01Icon className="w-3.5 h-3.5" />}
+        {locked ? 'اشتراک' : 'دانلود'}
       </Button>
+    </div>
+  </div>
+)
+
+const FREE_QUALITY_LABEL = '1080p x265 10bit'
+
+const MOCK_FREE_EPISODES: Episode[] = [
+  {
+    id: 'mock-free-1',
+    number: 1,
+    title: 'نمونه قسمت ۱',
+    download_link: 'https://t.me/ShioriUploadBot?start=get_free_demo',
+    video_file_type: 'free',
+  },
+  {
+    id: 'mock-free-2',
+    number: 2,
+    title: 'نمونه قسمت ۲',
+    download_link: 'https://t.me/ShioriUploadBot?start=get_free_demo',
+    video_file_type: 'free',
+  },
+  {
+    id: 'mock-free-3',
+    number: 3,
+    title: 'نمونه قسمت ۳',
+    download_link: 'https://t.me/ShioriUploadBot?start=get_free_demo',
+    video_file_type: 'free',
+  },
+]
+
+const FreeTokenWalletCard = ({
+  balance,
+  pending,
+  exhausted,
+  isMock,
+}: {
+  balance: number
+  pending: boolean
+  exhausted: boolean
+  isMock?: boolean
+}) => (
+  <div
+    className={cn(
+      'overflow-hidden rounded-2xl border p-4',
+      exhausted
+        ? 'border-amber-500/35 bg-gradient-to-br from-amber-500/15 to-card/80'
+        : 'border-border bg-gradient-to-br from-primary-400/10 via-card/80 to-card/60'
+    )}
+  >
+    <div className="flex items-start justify-between gap-3">
+      <div className="min-w-0 space-y-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-sm font-semibold text-foreground">کیف توکن رایگان</p>
+          {isMock ? (
+            <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+              نمونه
+            </span>
+          ) : null}
+        </div>
+        <p className="text-[11px] leading-relaxed text-muted-foreground">
+          هر دانلود رایگان ۱ توکن · کیفیت ثابت {FREE_QUALITY_LABEL}
+        </p>
+      </div>
+      <div className="shrink-0 rounded-xl border border-border/70 bg-background/50 px-3 py-2 text-center">
+        <p className="text-[10px] text-muted-foreground">موجودی</p>
+        <p className="text-xl font-bold tabular-nums leading-tight text-foreground">
+          {pending ? '…' : toPersianNumber(balance)}
+        </p>
+      </div>
+    </div>
+    {exhausted ? (
+      <div className="mt-3 space-y-2 border-t border-border/50 pt-3">
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          توکن‌ها تمام شده. با اشتراک ماهانه به سافت‌ساب و هاردساب بدون محدودیت دسترسی دارید.
+        </p>
+        <Button asChild size="sm" className="w-full gap-1">
+          <Link to="/subscribe">خرید اشتراک ماهانه</Link>
+        </Button>
+      </div>
+    ) : (
+      <div className="mt-3 flex items-center justify-between gap-2 border-t border-border/50 pt-3">
+        <p className="text-[11px] text-muted-foreground">دسترسی نامحدود سافت/هارد</p>
+        <Button asChild size="sm" variant="secondary">
+          <Link to="/subscribe">اشتراک</Link>
+        </Button>
+      </div>
+    )}
+  </div>
+)
+
+const FreeEpisodeDownloadCard = ({
+  episode,
+  claiming,
+  disabled,
+  onClaim,
+}: {
+  episode: Episode
+  claiming: boolean
+  disabled: boolean
+  onClaim: () => void
+}) => (
+  <div className="overflow-hidden rounded-xl border border-border bg-card/60">
+    <div className="flex items-center justify-between gap-3 px-3 py-3">
+      <div className="min-w-0">
+        <p className="shrink-0 text-sm font-semibold text-foreground">
+          قسمت {toPersianNumber(episode.number)}
+        </p>
+        {episode.title ? (
+          <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">{episode.title}</p>
+        ) : null}
+      </div>
+    </div>
+    <div className="border-t border-border/60 bg-muted/10 p-2">
+      <button
+        type="button"
+        disabled={disabled || claiming}
+        aria-label={`دانلود رایگان قسمت ${episode.number} با کیفیت ${FREE_QUALITY_LABEL}`}
+        className={cn(
+          'flex min-h-[3.25rem] w-full flex-col items-center justify-center gap-1 rounded-lg border px-2 py-2 text-center transition-colors',
+          disabled
+            ? 'cursor-not-allowed border-border/60 bg-muted/20 text-muted-foreground opacity-70'
+            : 'border-primary-400/35 bg-primary-400/10 text-primary-200 hover:bg-primary-400/15 active:scale-[0.98]'
+        )}
+        onClick={onClaim}
+      >
+        <Download01Icon className="h-4 w-4 shrink-0" />
+        <span className="text-[10px] font-semibold tabular-nums leading-tight">
+          {claiming ? '…' : FREE_QUALITY_LABEL}
+        </span>
+        <span className="text-[10px] text-muted-foreground">۱ توکن</span>
+      </button>
     </div>
   </div>
 )
@@ -876,8 +1114,12 @@ const AnimeDetail = () => {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const { toggleFavorite, isFavorite, getProgress, saveProgress, isSaving: isSavingProgress } =
-    useUserAnimeList()
+    useUserAnimeList({ syncRemoteList: false })
+  const { preferences, updatePreferences, updatingPreferences } = useNotifications()
   const { showAlert, openLink, shareUrl } = useTelegramApp()
+  const [reminderBusy, setReminderBusy] = useState(false)
+  const reminderAnimeIds = useAiringReminderStore((s) => s.reminderAnimeIds)
+  const toggleAiringReminder = useAiringReminderStore((s) => s.toggleReminder)
 
   const {
     data: animeData,
@@ -887,9 +1129,10 @@ const AnimeDetail = () => {
     isPlaceholderData,
   } = useAnimeDetailQuery(id)
 
-  const { data: favoriteCount, isPending: favoriteCountPending } = useAnimeFavoriteCountQuery(id)
-
   const anime = (animeData ?? null) as Anime | null
+
+  const favoriteCount = anime?.favoriteCount
+  const favoriteCountPending = Boolean(anime) && favoriteCount === undefined && isLoading
 
   useEffect(() => {
     if (!anime || !id || isPlaceholderData) return
@@ -924,17 +1167,48 @@ const AnimeDetail = () => {
   const [activeTab, setActiveTab] = useState<TabType>(() =>
     parseAnimeDetailTab(searchParams.get('tab'))
   )
-  const [downloadTab, setDownloadTab] = useState<DownloadTabType>('episodes')
+  const [episodeKindTab, setEpisodeKindTab] = useState<EpisodeKindTab>('softsub')
+  const [launchDownloadTab, setLaunchDownloadTab] = useState<LaunchDownloadTab>('episodes')
   const [showFullDescription, setShowFullDescription] = useState(false)
   const [progressEditorOpen, setProgressEditorOpen] = useState(false)
 
   const {
     data: translatorLinks = [],
     isPending: translatorLinksPending,
-  } = useTranslatorLinksQuery(
-    anime?.id,
-    activeTab === 'episodes' && downloadTab === 'translators'
+  } = useTranslatorLinksQuery(anime?.id, activeTab === 'translators')
+
+  const claimFreeDownloadMutation = useClaimFreeDownload()
+  const claimPaidEpisodeMutation = useClaimPaidEpisodeDownload()
+  const claimEpisodePackMutation = useClaimEpisodePackDownload()
+  // Subscription + token funnel (disabled for initial launch — flip flags in monetizationFlags.ts)
+  const { data: subscriptionMe } = useSubscriptionMe(
+    ENABLE_SUBSCRIPTION_DOWNLOAD_GATE && activeTab === 'episodes'
   )
+  const hasActiveSubscription = ENABLE_SUBSCRIPTION_DOWNLOAD_GATE
+    ? Boolean(subscriptionMe?.active)
+    : true
+  const {
+    data: tokenBalanceData,
+    isPending: tokenBalancePending,
+  } = useDownloadTokenBalance(
+    ENABLE_FREE_TOKEN_WALLET_UI &&
+      activeTab === 'episodes' &&
+      episodeKindTab === 'free' &&
+      !hasActiveSubscription
+  )
+  const [claimingEpisodeId, setClaimingEpisodeId] = useState<string | null>(null)
+  const [showDonatePrompt, setShowDonatePrompt] = useState(false)
+  const [mockTokenBalance, setMockTokenBalance] = useState(10)
+
+  useEffect(() => {
+    if (
+      ENABLE_SUBSCRIPTION_DOWNLOAD_GATE &&
+      hasActiveSubscription &&
+      episodeKindTab === 'free'
+    ) {
+      setEpisodeKindTab('softsub')
+    }
+  }, [hasActiveSubscription, episodeKindTab])
 
   const genreSlugs = useMemo(
     () => (anime?.genres || []).map((g) => g.slug).filter(Boolean),
@@ -978,9 +1252,29 @@ const AnimeDetail = () => {
   }, [id, searchParams])
 
   useEffect(() => {
-    setDownloadTab('episodes')
+    setEpisodeKindTab('softsub')
+    setLaunchDownloadTab('episodes')
     setShowFullDescription(false)
   }, [id])
+
+  useEffect(() => {
+    if (useLaunchDownloadTabs) return
+    if (!anime?.episodes?.length) return
+    const hasSoft = anime.episodes.some(
+      (e) => (e.video_file_type ?? 'softsub') === 'softsub'
+    )
+    const hasHard = anime.episodes.some((e) => e.video_file_type === 'hardsub')
+    const hasFree = anime.episodes.some((e) => e.video_file_type === 'free')
+    setEpisodeKindTab((current) => {
+      if (current === 'softsub' && hasSoft) return current
+      if (current === 'hardsub' && hasHard) return current
+      if (current === 'free' && hasFree) return current
+      if (hasSoft) return 'softsub'
+      if (hasHard) return 'hardsub'
+      if (hasFree) return 'free'
+      return 'softsub'
+    })
+  }, [anime?.id, anime?.episodes])
 
   useEffect(() => {
     if (activeTab === 'similar' && anime?.id && genreSlugs.length > 0) {
@@ -993,12 +1287,11 @@ const AnimeDetail = () => {
       .trim()
       .toUpperCase() === 'FINISHED'
 
-  const showSubtitlePacksTab =
+  const showSubtitlePacks =
     Boolean(isFinished) && Array.isArray(anime?.subtitle_packs) && anime.subtitle_packs.length > 0
 
-  useEffect(() => {
-    if (downloadTab === 'subtitle_packs' && !showSubtitlePacksTab) setDownloadTab('episodes')
-  }, [downloadTab, showSubtitlePacksTab])
+  const subtitlePacksList = Array.isArray(anime?.subtitle_packs) ? anime.subtitle_packs : []
+  const hasSubtitlePacks = subtitlePacksList.length > 0
 
   const isDonghua =
     String(anime?.format ?? '')
@@ -1040,10 +1333,15 @@ const AnimeDetail = () => {
   }
 
   /** امتیاز شیوری — میانگین امتیاز کاربران */
+  const shioriScoreValue = (() => {
+    const raw = anime?.shioriScore as number | string | null | undefined
+    if (typeof raw === 'number' && Number.isFinite(raw)) return raw
+    if (raw == null || raw === '') return null
+    const n = Number(raw)
+    return Number.isFinite(n) ? n : null
+  })()
   const shioriScoreLabel =
-    typeof anime?.shioriScore === 'number' && Number.isFinite(anime.shioriScore)
-      ? toPersianNumber(anime.shioriScore.toFixed(1))
-      : '—'
+    shioriScoreValue != null ? toPersianNumber(shioriScoreValue.toFixed(1)) : '—'
 
   const statusKey = String(anime?.airing_status ?? anime?.status ?? '')
     .trim()
@@ -1051,18 +1349,42 @@ const AnimeDetail = () => {
 
   const handleFavorite = async () => {
     if (!anime) return
-    const wasFavorite = isFavorite(anime.id)
+    if (isFavorite(anime.id)) {
+      setProgressEditorOpen(true)
+      return
+    }
     try {
+      // Open first — Telegram showAlert can dismiss the sheet if shown before it.
+      setProgressEditorOpen(true)
       await toggleFavorite(anime.id)
-      if (wasFavorite) {
-        showAlert('از علاقه‌مندی‌ها حذف شد')
-        setProgressEditorOpen(false)
+    } catch (e) {
+      setProgressEditorOpen(false)
+      showAlert(formatUserListSaveError(e))
+    }
+  }
+
+  const handleAiringReminder = async () => {
+    if (!anime || reminderBusy) return
+    setReminderBusy(true)
+    try {
+      const nowOn = toggleAiringReminder(anime.id)
+      if (nowOn) {
+        const prefsNeedUpdate =
+          preferences?.notify_new_episode === false || preferences?.notify_telegram_dm === false
+        if (prefsNeedUpdate) {
+          await updatePreferences({
+            notify_new_episode: true,
+            notify_telegram_dm: true,
+          })
+        }
+        showAlert('یادآوری پخش در تلگرام فعال شد')
       } else {
-        showAlert('به علاقه‌مندی‌ها اضافه شد')
-        setProgressEditorOpen(true)
+        showAlert('یادآوری پخش غیرفعال شد')
       }
     } catch (e) {
       showAlert(formatUserListSaveError(e))
+    } finally {
+      setReminderBusy(false)
     }
   }
 
@@ -1082,17 +1404,53 @@ const AnimeDetail = () => {
 
   const episodesForList = useMemo(() => {
     if (!anime) return []
-    return (anime.episodes || []).slice().sort((a, b) => {
-      const ea = typeof a.number === 'number' ? a.number : 0
-      const eb = typeof b.number === 'number' ? b.number : 0
-      if (ea !== eb) return ea - eb
-      return String(a.id).localeCompare(String(b.id))
-    })
-  }, [anime])
+    const kindFilter: EpisodeKindTab = useLaunchDownloadTabs
+      ? 'softsub'
+      : episodeKindTab
+    return (anime.episodes || [])
+      .filter((e) => (e.video_file_type ?? 'softsub') === kindFilter)
+      .slice()
+      .sort((a, b) => {
+        const ea = typeof a.number === 'number' ? a.number : 0
+        const eb = typeof b.number === 'number' ? b.number : 0
+        if (ea !== eb) return ea - eb
+        return String(a.id).localeCompare(String(b.id))
+      })
+  }, [anime, episodeKindTab])
+
+  const usingMockFreeEpisodes =
+    ENABLE_FREE_TOKEN_WALLET_UI &&
+    import.meta.env.DEV &&
+    episodeKindTab === 'free' &&
+    episodesForList.length === 0
+
+  const freeEpisodesForList = usingMockFreeEpisodes ? MOCK_FREE_EPISODES : episodesForList
+
+  const tokenBalance = usingMockFreeEpisodes
+    ? mockTokenBalance
+    : (tokenBalanceData?.balance ?? null)
+  const displayTokenBalance =
+    typeof tokenBalance === 'number' ? tokenBalance : usingMockFreeEpisodes ? mockTokenBalance : 0
+  const tokensExhausted =
+    showDonatePrompt ||
+    (usingMockFreeEpisodes
+      ? mockTokenBalance < 1
+      : typeof tokenBalance === 'number' && tokenBalance < 1)
+
+  useEffect(() => {
+    if (typeof tokenBalance === 'number' && tokenBalance > 0) {
+      setShowDonatePrompt(false)
+    }
+  }, [tokenBalance])
+
+  const allEpisodesCount = useMemo(() => anime?.episodes?.length ?? 0, [anime?.episodes])
 
   const episodePackLink = useMemo(
     () => anime?.episode_pack?.download_link?.trim() || null,
     [anime?.episode_pack?.download_link]
+  )
+  const episodePackAvailable = Boolean(
+    episodePackLink || anime?.episode_pack
   )
 
   const hardsubLanguage = useMemo(
@@ -1119,15 +1477,6 @@ const AnimeDetail = () => {
     [anime?.video_encode]
   )
 
-  const downloadTabs = useMemo(() => {
-    const tabs: { id: DownloadTabType; label: string }[] = [
-      { id: 'episodes', label: 'قسمت‌ها' },
-    ]
-    if (showSubtitlePacksTab) tabs.push({ id: 'subtitle_packs', label: 'زیرنویس' })
-    tabs.push({ id: 'translators', label: 'مترجم' })
-    return tabs
-  }, [showSubtitlePacksTab])
-
   if (loading) return <DetailSkeleton />
 
   if (error || !anime) {
@@ -1148,6 +1497,7 @@ const AnimeDetail = () => {
     shouldTruncate && !showFullDescription ? `${description.substring(0, 180)}…` : description
 
   const favoriteActive = isFavorite(anime.id)
+  const reminderActive = reminderAnimeIds.some((id) => String(id) === String(anime.id))
 
   return (
     <div className="pb-24 bg-background text-foreground">
@@ -1240,6 +1590,12 @@ const AnimeDetail = () => {
           ) : (
             <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
               <ScoreChip
+                logo={shioriLogo}
+                logoAlt="شیوری"
+                value={shioriScoreLabel}
+                logoWrapClassName="bg-primary-500"
+              />
+              <ScoreChip
                 logo={malLogo}
                 logoAlt="MyAnimeList"
                 value={malScoreLabel}
@@ -1264,11 +1620,13 @@ const AnimeDetail = () => {
       {detailPending ? (
         <StatsRowSkeleton />
       ) : (
-        <div className="mx-4 mt-5 grid grid-cols-3 gap-2">
-          <StatCard value={shioriScoreLabel} label="امتیاز شیوری" />
-          <StatCard
-            value={toPersianNumber(anime.episodes_count || episodesForList.length)}
-            label="قسمت"
+        <div className="mx-4 mt-5 flex items-stretch gap-2">
+          <ReminderStatCard
+            active={reminderActive}
+            busy={reminderBusy || updatingPreferences}
+            onClick={() => {
+              void handleAiringReminder()
+            }}
           />
           <FavoriteStatCard
             active={favoriteActive}
@@ -1289,20 +1647,8 @@ const AnimeDetail = () => {
         />
       ) : null}
 
-      {favoriteActive && (
-        <div className="mx-4 mt-2 text-center">
-          <button
-            type="button"
-            onClick={() => setProgressEditorOpen(true)}
-            className="text-xs font-medium text-primary-400 hover:text-primary-300"
-          >
-            ویرایش پیشرفت و امتیاز من
-          </button>
-        </div>
-      )}
-
       <FavoriteAnimeEditor
-        open={progressEditorOpen && favoriteActive}
+        open={progressEditorOpen}
         onOpenChange={setProgressEditorOpen}
         title={anime.title}
         image={anime.image}
@@ -1452,61 +1798,294 @@ const AnimeDetail = () => {
         {activeTab === 'episodes' &&
           (detailPending ? (
             <EpisodesTabSkeleton />
+          ) : allEpisodesCount === 0 && !episodePackAvailable && !hasSubtitlePacks ? (
+            <EmptyBlock
+              message={
+                statusKey === 'RELEASING'
+                  ? 'هنوز قسمتی برای دانلود ثبت نشده'
+                  : 'فایل دانلودی برای این انیمه ثبت نشده'
+              }
+              hint={
+                statusKey === 'RELEASING'
+                  ? 'با انتشار قسمت‌های جدید، لینک‌ها اینجا قرار می‌گیرند.'
+                  : undefined
+              }
+            />
           ) : (
-          <div className="space-y-4">
-            <SegmentedTabs tabs={downloadTabs} active={downloadTab} onChange={setDownloadTab} />
+            <div className="space-y-3">
+              <SegmentedTabs
+                tabs={
+                  useLaunchDownloadTabs
+                    ? LAUNCH_DOWNLOAD_TABS
+                    : ENABLE_SUBSCRIPTION_DOWNLOAD_GATE && hasActiveSubscription
+                      ? EPISODE_KIND_TABS_SUBSCRIBED
+                      : EPISODE_KIND_TABS
+                }
+                active={useLaunchDownloadTabs ? launchDownloadTab : episodeKindTab}
+                onChange={(tab) => {
+                  if (useLaunchDownloadTabs) {
+                    setLaunchDownloadTab(tab as LaunchDownloadTab)
+                    return
+                  }
+                  setEpisodeKindTab(tab as EpisodeKindTab)
+                }}
+                className="text-[13px]"
+              />
 
-            {downloadTab === 'episodes' &&
-              (episodesForList.length === 0 && !episodePackLink ? (
-                <EmptyBlock
-                  message={
-                    statusKey === 'RELEASING'
-                      ? 'هنوز قسمتی برای دانلود ثبت نشده'
-                      : 'فایل دانلودی برای این انیمه ثبت نشده'
-                  }
-                  hint={
-                    statusKey === 'RELEASING'
-                      ? 'با انتشار قسمت‌های جدید، لینک‌ها اینجا قرار می‌گیرند.'
-                      : translatorLinks.length > 0
-                        ? 'می‌توانید از تب مترجم، اطلاعات تیم ترجمه را ببینید.'
-                        : undefined
-                  }
-                  action={
-                    translatorLinks.length > 0
-                      ? {
-                          label: 'مشاهده مترجم‌ها',
-                          onClick: () => setDownloadTab('translators'),
-                        }
-                      : undefined
-                  }
-                />
+              {useLaunchDownloadTabs && launchDownloadTab === 'subtitles' ? (
+                hasSubtitlePacks ? (
+                  <div className="space-y-2">
+                    {subtitlePacksList.map((p) => (
+                      <div
+                        key={String(p.id)}
+                        className="rounded-xl border border-border bg-card/60 p-3 flex items-center justify-between gap-3"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-foreground line-clamp-1">
+                            {p.title || 'پک زیرنویس'}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
+                            زیرنویس کامل
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="secondary"
+                          className="shrink-0 gap-1"
+                          onClick={() => {
+                            if (!p.subtitle_link) {
+                              showAlert('لینک پک زیرنویس موجود نیست')
+                              return
+                            }
+                            window.open(String(p.subtitle_link), '_blank')
+                          }}
+                        >
+                          <Download01Icon className="w-3.5 h-3.5" />
+                          دانلود
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyBlock message="پک زیرنویس ثبت نشده" />
+                )
               ) : (
-                <div className="space-y-2">
-                  {episodePackLink && anime.episode_pack ? (
-                    <EpisodePackDownloadCard
-                      pack={anime.episode_pack}
-                      hardsubLanguage={hardsubLanguage}
-                      videoFileType={videoFileType}
-                      onDownload={() => window.open(episodePackLink, '_blank')}
-                    />
-                  ) : null}
-                  {episodesForList.length === 0 && episodePackLink ? (
-                    <p className="text-xs text-muted-foreground text-center py-1">
-                      لینک تک‌تک قسمت‌ها هنوز ثبت نشده.
+                <>
+              {ENABLE_SUBSCRIPTION_DOWNLOAD_GATE &&
+              !hasActiveSubscription &&
+              (episodeKindTab === 'softsub' || episodeKindTab === 'hardsub') ? (
+                <div className="rounded-xl border border-primary-400/30 bg-primary-400/10 p-3 space-y-2">
+                  <p className="text-sm font-semibold text-foreground">
+                    دانلود این بخش با اشتراک ماهانه
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    سافت‌ساب و هاردساب برای مشترکین باز است. از تب رایگان می‌توانید با توکن محدود امتحان
+                    کنید.
+                  </p>
+                  <Button asChild size="sm" className="w-full">
+                    <Link to="/subscribe">خرید اشتراک</Link>
+                  </Button>
+                </div>
+              ) : null}
+              {episodePackAvailable &&
+              anime.episode_pack &&
+              (useLaunchDownloadTabs
+                ? launchDownloadTab === 'episodes'
+                : episodeKindTab !== 'free') &&
+              (useLaunchDownloadTabs ||
+                episodeKindTab === videoFileType ||
+                (ENABLE_SUBSCRIPTION_DOWNLOAD_GATE && hasActiveSubscription)) ? (
+                <EpisodePackDownloadCard
+                  pack={anime.episode_pack}
+                  hardsubLanguage={hardsubLanguage}
+                  videoFileType={videoFileType}
+                  locked={
+                    ENABLE_SUBSCRIPTION_DOWNLOAD_GATE && !hasActiveSubscription
+                  }
+                  onDownload={() => {
+                    if (
+                      ENABLE_SUBSCRIPTION_DOWNLOAD_GATE &&
+                      !hasActiveSubscription
+                    ) {
+                      showAlert('برای دانلود پک، اشتراک ماهانه لازم است')
+                      return
+                    }
+                    if (!ENABLE_SUBSCRIPTION_DOWNLOAD_GATE) {
+                      const link =
+                        anime.episode_pack?.download_link?.trim() || null
+                      if (!link) {
+                        showAlert('لینک پک موجود نیست')
+                        return
+                      }
+                      window.open(link, '_blank')
+                      return
+                    }
+                    void (async () => {
+                      const result = await claimEpisodePackMutation.mutateAsync(
+                        String(anime.id)
+                      )
+                      if (result.ok) {
+                        window.open(result.download_link, '_blank')
+                        return
+                      }
+                      if (result.code === 'subscription_required') {
+                        showAlert(result.message)
+                        return
+                      }
+                      showAlert(result.message || 'خطا در دانلود پک')
+                    })()
+                  }}
+                />
+              ) : null}
+              {episodesForList.length === 0 &&
+              !(
+                !useLaunchDownloadTabs &&
+                episodeKindTab === 'free' &&
+                usingMockFreeEpisodes
+              ) ? (
+                <p className="text-xs text-muted-foreground text-center py-6">
+                  {allEpisodesCount === 0 &&
+                  episodePackAvailable &&
+                  (useLaunchDownloadTabs || episodeKindTab === videoFileType)
+                    ? 'لینک تک‌تک قسمت‌ها هنوز ثبت نشده.'
+                    : 'قسمتی در این دسته ثبت نشده'}
+                </p>
+              ) : !useLaunchDownloadTabs &&
+                episodeKindTab === 'free' &&
+                ENABLE_FREE_TOKEN_WALLET_UI ? (
+                <div className="space-y-3">
+                  <FreeTokenWalletCard
+                    balance={displayTokenBalance}
+                    pending={!usingMockFreeEpisodes && tokenBalancePending}
+                    exhausted={tokensExhausted}
+                    isMock={usingMockFreeEpisodes}
+                  />
+                  {usingMockFreeEpisodes ? (
+                    <p className="text-[11px] text-muted-foreground text-center px-1">
+                      دیتای نمونه برای پیش‌نمایش UI — روی دانلود، توکن موک کم می‌شود.
                     </p>
                   ) : null}
-                  {episodesForList.map((episode) => (
+                  {!tokensExhausted || usingMockFreeEpisodes ? (
+                    <div className="space-y-2">
+                      {freeEpisodesForList.map((episode) => {
+                        const episodeId = String(episode.id)
+                        const claiming = claimingEpisodeId === episodeId
+                        return (
+                          <FreeEpisodeDownloadCard
+                            key={episodeId}
+                            episode={episode}
+                            claiming={claiming}
+                            disabled={
+                              tokensExhausted || claimFreeDownloadMutation.isPending
+                            }
+                            onClaim={() => {
+                              void (async () => {
+                                setClaimingEpisodeId(episodeId)
+                                try {
+                                  if (
+                                    usingMockFreeEpisodes ||
+                                    episodeId.startsWith('mock-free-')
+                                  ) {
+                                    if (mockTokenBalance < 1) {
+                                      setShowDonatePrompt(true)
+                                      showAlert('توکن‌های رایگان شما تمام شده')
+                                      return
+                                    }
+                                    setMockTokenBalance((n) => Math.max(0, n - 1))
+                                    showAlert(
+                                      `نمونه: ۱ توکن کم شد · باقی‌مانده ${Math.max(0, mockTokenBalance - 1)}`
+                                    )
+                                    return
+                                  }
+                                  const result =
+                                    await claimFreeDownloadMutation.mutateAsync(
+                                      episodeId
+                                    )
+                                  if (result.ok) {
+                                    window.open(result.download_link, '_blank')
+                                    return
+                                  }
+                                  if (result.code === 'insufficient_tokens') {
+                                    setShowDonatePrompt(true)
+                                    showAlert('توکن‌های رایگان شما تمام شده')
+                                    return
+                                  }
+                                  showAlert(result.message || 'خطا در دانلود رایگان')
+                                } catch (e) {
+                                  showAlert(
+                                    e instanceof Error
+                                      ? e.message
+                                      : 'خطا در دانلود رایگان'
+                                  )
+                                } finally {
+                                  setClaimingEpisodeId(null)
+                                }
+                              })()
+                            }}
+                          />
+                        )
+                      })}
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {(!useLaunchDownloadTabs && episodeKindTab === 'free'
+                    ? freeEpisodesForList
+                    : episodesForList
+                  ).map((episode) => (
                     <EpisodeDownloadCard
                       key={episode.id}
                       episode={episode}
                       hardsubLanguage={hardsubLanguage}
-                      videoFileType={videoFileType}
+                      videoFileType={
+                        episode.video_file_type === 'hardsub' ? 'hardsub' : 'softsub'
+                      }
                       videoResolution={videoResolution}
                       videoEncode={videoEncode}
+                      subscriptionLocked={
+                        ENABLE_SUBSCRIPTION_DOWNLOAD_GATE &&
+                        !useLaunchDownloadTabs &&
+                        episodeKindTab !== 'free' &&
+                        !hasActiveSubscription
+                      }
                       showSubtitleButton={
-                        videoFileType === 'softsub' && (!isFinished || isMovie)
+                        (useLaunchDownloadTabs || episodeKindTab === 'softsub') &&
+                        videoFileType === 'softsub' &&
+                        (!isFinished || isMovie) &&
+                        (!ENABLE_SUBSCRIPTION_DOWNLOAD_GATE || hasActiveSubscription)
                       }
                       onDownloadAvailable={() => {
+                        if (
+                          ENABLE_SUBSCRIPTION_DOWNLOAD_GATE &&
+                          !useLaunchDownloadTabs &&
+                          episodeKindTab !== 'free' &&
+                          !hasActiveSubscription
+                        ) {
+                          showAlert(
+                            'برای دانلود سافت‌ساب و هاردساب اشتراک ماهانه لازم است'
+                          )
+                          return
+                        }
+                        if (
+                          ENABLE_SUBSCRIPTION_DOWNLOAD_GATE &&
+                          !useLaunchDownloadTabs &&
+                          episodeKindTab !== 'free'
+                        ) {
+                          void (async () => {
+                            const result =
+                              await claimPaidEpisodeMutation.mutateAsync(
+                                String(episode.id)
+                              )
+                            if (result.ok) {
+                              window.open(result.download_link, '_blank')
+                              return
+                            }
+                            showAlert(result.message || 'خطا در دانلود')
+                          })()
+                          return
+                        }
                         const link =
                           episode.download_link ||
                           `https://t.me/ShioriUploadBot?start=get_${episode.id}`
@@ -1520,17 +2099,25 @@ const AnimeDetail = () => {
                         window.open(String(episode.subtitle_link), '_blank')
                       }}
                       onLockedQuality={(quality) => {
+                        if (
+                          ENABLE_SUBSCRIPTION_DOWNLOAD_GATE &&
+                          !hasActiveSubscription
+                        ) {
+                          showAlert('برای دانلود، اشتراک ماهانه لازم است')
+                          return
+                        }
                         showAlert(`دانلود ${quality} هنوز فعال نشده`)
                       }}
                     />
                   ))}
                 </div>
-              ))}
-
-            {downloadTab === 'subtitle_packs' &&
-              (Array.isArray(anime.subtitle_packs) && anime.subtitle_packs.length > 0 ? (
-                <div className="space-y-2">
-                  {anime.subtitle_packs.map((p) => (
+              )}
+              {!useLaunchDownloadTabs &&
+              episodeKindTab === 'softsub' &&
+              showSubtitlePacks ? (
+                <div className="space-y-2 pt-1">
+                  <h3 className="text-sm font-semibold text-foreground px-0.5">پک زیرنویس</h3>
+                  {anime.subtitle_packs!.map((p) => (
                     <div
                       key={String(p.id)}
                       className="rounded-xl border border-border bg-card/60 p-3 flex items-center justify-between gap-3"
@@ -1562,54 +2149,10 @@ const AnimeDetail = () => {
                     </div>
                   ))}
                 </div>
-              ) : (
-                <EmptyBlock message="پک زیرنویس ثبت نشده" />
-              ))}
-
-            {downloadTab === 'translators' &&
-              (translatorLinksPending ? (
-                <TranslatorsTabSkeleton />
-              ) : translatorLinks.length === 0 ? (
-                <EmptyBlock message="مترجمی ثبت نشده" />
-              ) : (
-                <div className="space-y-2">
-                  {translatorLinks.map((l) => (
-                    <Link
-                      key={String(l.id)}
-                      to={`/translators/${encodeURIComponent(String(l.translator.slug))}`}
-                      className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card/60 p-3 hover:bg-muted/30 transition-colors"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-xl overflow-hidden bg-muted border border-border shrink-0">
-                          {l.translator.avatar_url ? (
-                            <img
-                              src={String(l.translator.avatar_url)}
-                              alt={l.translator.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <UserIcon className="w-5 h-5 text-muted-foreground/50" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-foreground line-clamp-1">
-                            {l.translator.name}
-                          </p>
-                          {l.role ? (
-                            <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
-                              {l.role}
-                            </p>
-                          ) : null}
-                        </div>
-                      </div>
-                      <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
-                    </Link>
-                  ))}
-                </div>
-              ))}
-          </div>
+              ) : null}
+                </>
+              )}
+            </div>
           ))}
 
         {activeTab === 'similar' && (
@@ -1648,6 +2191,50 @@ const AnimeDetail = () => {
             )}
           </div>
         )}
+
+        {activeTab === 'translators' &&
+          (detailPending || translatorLinksPending ? (
+            <TranslatorsTabSkeleton />
+          ) : translatorLinks.length === 0 ? (
+            <EmptyBlock message="مترجمی ثبت نشده" />
+          ) : (
+            <div className="space-y-2">
+              {translatorLinks.map((l) => (
+                <Link
+                  key={String(l.id)}
+                  to={`/translators/${encodeURIComponent(String(l.translator.slug))}`}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card/60 p-3 hover:bg-muted/30 transition-colors"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl overflow-hidden bg-muted border border-border shrink-0">
+                      {l.translator.avatar_url ? (
+                        <img
+                          src={String(l.translator.avatar_url)}
+                          alt={l.translator.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <UserIcon className="w-5 h-5 text-muted-foreground/50" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-foreground line-clamp-1">
+                        {l.translator.name}
+                      </p>
+                      {l.role ? (
+                        <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+                          {l.role}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                  <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
+                </Link>
+              ))}
+            </div>
+          ))}
       </div>
     </div>
   )

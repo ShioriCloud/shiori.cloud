@@ -47,11 +47,13 @@ type ApiCard = {
 type ApiDetail = ApiCard & {
   episode_pack_title?: string | null
   episode_pack_link?: string | null
+  episode_pack_available?: boolean
   episodes?: Array<{
     id: string
     episode_number: number
     title?: string | null
     download_link?: string | null
+    video_file_type?: 'softsub' | 'hardsub' | 'free' | null
   }>
   subtitles?: Array<{
     id: string
@@ -120,6 +122,12 @@ const toCard = (row: ApiCard): AnimeCard => ({
   isFeatured: row.isFeatured,
   averageScore: row.averageScore,
   malScore: row.malScore,
+  shioriScore:
+    typeof row.shioriScore === 'number'
+      ? row.shioriScore
+      : row.shioriScore != null && row.shioriScore !== ''
+        ? Number(row.shioriScore)
+        : undefined,
   anilist_id: row.anilist_id,
   mal_id: row.mal_id,
   favoriteCount: row.favoriteCount,
@@ -226,6 +234,17 @@ export const getAnimeCardById = async (animeId: string | number): Promise<AnimeC
   } catch {
     return null
   }
+}
+
+/** Batch card fetch for My List (single request). */
+export const getAnimeCardsByIds = async (
+  ids: Array<string | number>
+): Promise<AnimeCard[]> => {
+  const unique = [...new Set(ids.map(String).map((id) => id.trim()).filter(Boolean))]
+  if (unique.length === 0) return []
+  const qs = encodeURIComponent(unique.join(','))
+  const rows = await shioriFetch<ApiCard[]>(`/anime-catalog/by-ids?ids=${qs}`)
+  return (rows ?? []).map(toCard)
 }
 
 export const getAnimeDetailById = async (animeId: string | number): Promise<ApiDetail> =>
@@ -376,6 +395,12 @@ export const mapShioriDetailParts = (detail: ApiDetail): ShioriAnimeDetailParts 
     number: e.episode_number,
     title: e.title?.trim() || `قسمت ${e.episode_number}`,
     download_link: e.download_link ?? undefined,
+    video_file_type:
+      e.video_file_type === 'hardsub'
+        ? 'hardsub'
+        : e.video_file_type === 'free'
+          ? 'free'
+          : 'softsub',
   }))
 
   const subtitlePacks: SubtitlePackItem[] = (detail.subtitle_packs ?? []).map((p) => ({
@@ -390,7 +415,12 @@ export const mapShioriDetailParts = (detail: ApiDetail): ShioriAnimeDetailParts 
           title: detail.episode_pack_title ?? null,
           download_link: detail.episode_pack_link,
         }
-      : null
+      : detail.episode_pack_available
+        ? {
+            title: detail.episode_pack_title ?? null,
+            download_link: null,
+          }
+        : null
 
   const studioLinks = detail.studio_links ?? []
   const studioNames = studioLinks.map((s) => s.name)

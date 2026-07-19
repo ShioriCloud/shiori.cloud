@@ -1,5 +1,6 @@
 export type HardsubLanguage = 'fa' | 'en'
 export type VideoFileType = 'softsub' | 'hardsub'
+export type EpisodeVideoFileType = VideoFileType | 'free'
 export type VideoResolution = '480p' | '720p' | '1080p'
 export type VideoEncode = 'x264' | 'x265' | 'x265_10bit' | 'bluray'
 
@@ -9,6 +10,13 @@ type SubtitleSource = {
 
 export function normalizeVideoFileType(value: unknown): VideoFileType {
   return String(value ?? '').trim().toLowerCase() === 'hardsub' ? 'hardsub' : 'softsub'
+}
+
+export function normalizeEpisodeVideoFileType(value: unknown): EpisodeVideoFileType {
+  const v = String(value ?? '').trim().toLowerCase()
+  if (v === 'hardsub') return 'hardsub'
+  if (v === 'free') return 'free'
+  return 'softsub'
 }
 
 export function normalizeVideoResolution(value: unknown): VideoResolution {

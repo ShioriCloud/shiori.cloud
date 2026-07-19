@@ -28,6 +28,7 @@ export type AnimeCard = {
   episode?: string
   averageScore?: number
   malScore?: number
+  shioriScore?: number
   anilist_id?: number
   mal_id?: number
   hardsub_language?: 'fa' | 'en'
@@ -60,6 +61,8 @@ export type EpisodeItem = {
   number: number
   title: string
   download_link?: string
+  subtitle_link?: string
+  video_file_type?: 'softsub' | 'hardsub' | 'free'
 }
 
 export type SubtitlePackItem = {

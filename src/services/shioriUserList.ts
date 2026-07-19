@@ -1,4 +1,5 @@
 import { ensureTelegramListAuth } from '../lib/ensureTelegramListAuth'
+import { ensureDevAppAuth } from '../lib/ensureDevAppAuth'
 import { shioriFetch } from '../lib/shioriApi'
 import { resolveCatalogAnimeRecordId } from '../lib/resolveCatalogAnimeId'
 import { assertUserAnimeListAuth } from '../lib/userListAuth'
@@ -8,12 +9,19 @@ import type {
   UserAnimeListRow,
 } from '../utils/userListStats'
 
+export type UserAnimeListMutationResult = {
+  ok?: boolean
+  shiori_score?: number | null
+  favorite_count?: number
+}
+
 const resolveListAnimeId = async (animeId: number | string): Promise<string> => {
   const recordId = await resolveCatalogAnimeRecordId(animeId)
   return String(recordId)
 }
 
 const withListAuth = async <T>(fn: () => Promise<T>): Promise<T> => {
+  await ensureDevAppAuth()
   await ensureTelegramListAuth()
   assertUserAnimeListAuth()
   return fn()
@@ -35,10 +43,10 @@ export const upsertUserAnimeListEntry = async (
     episodes_watched?: number
     user_rating?: number | null
   }
-): Promise<void> => {
-  await withListAuth(async () => {
+): Promise<UserAnimeListMutationResult> => {
+  return withListAuth(async () => {
     const recordId = await resolveListAnimeId(animeId)
-    await shioriFetch('/user-anime-list', {
+    return shioriFetch<UserAnimeListMutationResult>('/user-anime-list', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -54,12 +62,15 @@ export const upsertUserAnimeListEntry = async (
 export const removeUserAnimeListEntry = async (
   _telegramUserId: number,
   animeId: number | string
-): Promise<void> => {
-  await withListAuth(async () => {
+): Promise<UserAnimeListMutationResult> => {
+  return withListAuth(async () => {
     const recordId = await resolveListAnimeId(animeId)
-    await shioriFetch(`/user-anime-list/${encodeURIComponent(recordId)}`, {
-      method: 'DELETE',
-    })
+    return shioriFetch<UserAnimeListMutationResult>(
+      `/user-anime-list/${encodeURIComponent(recordId)}`,
+      {
+        method: 'DELETE',
+      }
+    )
   })
 }
 

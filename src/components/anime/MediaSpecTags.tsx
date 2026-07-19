@@ -19,11 +19,14 @@ export function MediaSpecTags({
   className,
 }: MediaSpecTagsProps) {
   const fileType = normalizeVideoFileType(videoFileType)
+  // Softsub is already labeled by the episode-kind tab; only hardsub needs a chip.
+  if (fileType !== 'hardsub') return null
+
   const label = mediaSpecTagLabel({
     video_file_type: fileType,
     hardsub_language: hardsubLanguage,
   })
-  const isEnglishHardsub = fileType === 'hardsub' && hardsubLanguage === 'en'
+  const isEnglishHardsub = hardsubLanguage === 'en'
 
   return (
     <Badge

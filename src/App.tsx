@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { useEffect, lazy, Suspense } from 'react'
 import WebApp from '@twa-dev/sdk'
 import Layout from './components/Layout'
@@ -18,6 +18,8 @@ const Profile = lazy(() => import('./pages/Profile'))
 const Notifications = lazy(() => import('./pages/Notifications'))
 const TranslatorProfile = lazy(() => import('./pages/TranslatorProfile'))
 const StudioDetail = lazy(() => import('./pages/StudioDetail'))
+// Subscribe page kept for later monetization relaunch (see monetizationFlags.ts)
+const Subscribe = lazy(() => import('./pages/Subscribe'))
 
 function App() {
   const { isReady } = useAppAuth()
@@ -60,6 +62,9 @@ function App() {
           <Route path="/search" element={<Search />} />
           <Route path="/my-list" element={<MyList />} />
           <Route path="/profile" element={<Profile />} />
+          {/* Monetization routes kept; UI entry points gated by ENABLE_SUBSCRIPTION_DOWNLOAD_GATE */}
+          <Route path="/donate" element={<Navigate to="/subscribe" replace />} />
+          <Route path="/subscribe" element={<Subscribe />} />
           <Route path="/notifications" element={<Notifications />} />
         </Routes>
       </Suspense>

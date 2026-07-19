@@ -16,7 +16,11 @@ import {
   type HomeFeaturedTab,
   type UiAnimeCard,
 } from '../../utils/api'
-import { getTranslatorLinksByAnimeId, listGenres } from '../../services/catalogSource'
+import {
+  getAnimeCardsByIds,
+  getTranslatorLinksByAnimeId,
+  listGenres,
+} from '../../services/catalogSource'
 import { fetchExternalScores } from '../../services/externalScores'
 import { getAnimeFavoriteCount, getAnimeFavoriteCounts } from '../../services/userDataSource'
 import { queryClient } from '../../lib/queryClient'
@@ -184,6 +188,18 @@ export const useFavoriteAnimeDetailsQueries = (ids: (string | number)[]) =>
       enabled: ids.length > 0,
     })),
   })
+
+/** Single batch request for My List cards (title/image/genres) — not full detail. */
+export const useFavoriteAnimeCardsQuery = (ids: (string | number)[]) => {
+  const sortedIds = [...ids].map(String).filter(Boolean).sort()
+
+  return useQuery({
+    queryKey: queryKeys.favoriteAnimeCards(sortedIds),
+    queryFn: () => getAnimeCardsByIds(sortedIds),
+    enabled: sortedIds.length > 0,
+    staleTime: 60_000,
+  })
+}
 
 export const useSimilarAnimeQuery = (
   animeId: string | number | undefined,

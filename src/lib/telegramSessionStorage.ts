@@ -3,6 +3,7 @@ export const TELEGRAM_MINI_APP_SESSION_KEY = 'shiori_telegram_mini_app_session'
 export type TelegramMiniAppSession = {
   token: string
   expiresAt: string
+  telegramUserId?: number
 }
 
 const readRaw = (): TelegramMiniAppSession | null => {
@@ -19,9 +20,15 @@ const readRaw = (): TelegramMiniAppSession | null => {
       return null
     }
 
+    const telegramUserId =
+      typeof parsed.telegramUserId === 'number' && Number.isFinite(parsed.telegramUserId)
+        ? parsed.telegramUserId
+        : undefined
+
     return {
       token: String(parsed.token),
       expiresAt: parsed.expiresAt,
+      ...(telegramUserId != null ? { telegramUserId } : {}),
     }
   } catch {
     return null
@@ -46,4 +53,9 @@ export const getTelegramMiniAppSessionHeaders = (): Record<string, string> => {
   const token = readTelegramMiniAppSession()?.token?.trim()
   if (!token) return {}
   return { 'x-app-session-token': token }
+}
+
+export const getSessionTelegramUserId = (): number | null => {
+  const id = readTelegramMiniAppSession()?.telegramUserId
+  return typeof id === 'number' && Number.isFinite(id) ? id : null
 }

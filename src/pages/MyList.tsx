@@ -8,7 +8,7 @@ import { useAppAuth } from '../hooks/useAppAuth'
 import { Button } from '@/components/ui/button'
 import AnimePrefetchLink from '../components/AnimePrefetchLink'
 import { BidiText } from '../components/BidiText'
-import { useFavoriteAnimeDetailsQueries } from '../hooks/queries/useAnimeQueries'
+import { useFavoriteAnimeCardsQuery } from '../hooks/queries/useAnimeQueries'
 import emptyListImage from '../assets/images/frieren-03.webp'
 import type { GenreItem } from '../types/catalog'
 import type { FavoriteProgress } from '../store/animeStore'
@@ -304,44 +304,43 @@ const MyList = () => {
   const [editingAnime, setEditingAnime] = useState<FavoriteAnime | null>(null)
   const [view, setView] = useState<ViewMode>(() => readStoredView())
 
-  const detailQueries = useFavoriteAnimeDetailsQueries(favoriteAnime)
+  const {
+    data: favoriteCards = [],
+    isLoading: cardsLoading,
+    isError: cardsError,
+    refetch: refetchCards,
+  } = useFavoriteAnimeCardsQuery(favoriteAnime)
 
   const items = useMemo((): FavoriteAnime[] => {
     const byId = new Map<string, FavoriteAnime>()
-    detailQueries.forEach((query, index) => {
-      const details = query.data
-      if (!details) return
-      byId.set(String(favoriteAnime[index]), {
-        id: details.id,
-        slug: details.slug ?? null,
-        title: details.title,
-        image: details.image,
+    for (const card of favoriteCards) {
+      byId.set(String(card.id), {
+        id: card.id,
+        slug: card.slug ?? null,
+        title: card.title,
+        image: card.image,
         episodesCount:
-          typeof details.episodes_count === 'number' && details.episodes_count > 0
-            ? details.episodes_count
-            : details.episodes.length,
-        genres: details.genres ?? [],
+          typeof card.episodes_count === 'number' && card.episodes_count > 0
+            ? card.episodes_count
+            : 1,
+        genres: card.genres ?? [],
       })
-    })
+    }
 
     return favoriteAnime
       .map((id) => byId.get(String(id)))
       .filter((item): item is FavoriteAnime => item != null)
-  }, [detailQueries, favoriteAnime])
+  }, [favoriteCards, favoriteAnime])
 
-  const loading =
-    favoriteAnime.length > 0 &&
-    items.length === 0 &&
-    detailQueries.some((query) => query.isLoading || query.isFetching)
+  const loading = favoriteAnime.length > 0 && items.length === 0 && cardsLoading
 
-  const failedDetailCount = detailQueries.filter((query) => query.isError).length
-  const hasError =
-    favoriteAnime.length > 0 && items.length === 0 && !loading && failedDetailCount > 0
+  const hasError = favoriteAnime.length > 0 && items.length === 0 && !loading && cardsError
+
+  const missingCardCount =
+    !loading && !hasError ? Math.max(0, favoriteAnime.length - items.length) : 0
 
   const retry = () => {
-    detailQueries.forEach((query) => {
-      void query.refetch()
-    })
+    void refetchCards()
   }
 
   const isEmpty = !loading && !hasError && favoriteAnime.length === 0
@@ -435,9 +434,9 @@ const MyList = () => {
 
       {loading && (view === 'grid' ? <SkeletonGrid /> : <SkeletonList />)}
 
-      {failedDetailCount > 0 && items.length > 0 && (
+      {missingCardCount > 0 && items.length > 0 && (
         <div className="mx-4 mb-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
-          {toPersianNumber(failedDetailCount)} مورد بارگذاری نشد؛ بقیه نمایش داده می‌شوند.
+          {toPersianNumber(missingCardCount)} مورد بارگذاری نشد؛ بقیه نمایش داده می‌شوند.
         </div>
       )}
 

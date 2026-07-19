@@ -1,10 +1,12 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { AlarmClockIcon, FavouriteIcon, UserIcon } from 'hugeicons-react'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, Crown } from 'lucide-react'
 import { useAppAuth } from '../hooks/useAppAuth'
 import { useUserAnimeList } from '../hooks/useUserAnimeList'
 import { useNotifications } from '../hooks/useNotifications'
+import { useSubscriptionMe } from '../hooks/useSubscription'
+import { ENABLE_SUBSCRIPTION_DOWNLOAD_GATE } from '../config/monetizationFlags'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import logo from '../assets/images/shiori-logo.svg'
@@ -77,6 +79,7 @@ const ProfileSkeleton = () => (
 const Profile = () => {
   const { user, isReady, inTelegram } = useAppAuth()
   const { stats } = useUserAnimeList()
+  const { data: subscriptionMe } = useSubscriptionMe(ENABLE_SUBSCRIPTION_DOWNLOAD_GATE)
   const {
     unreadCount,
     preferences,
@@ -188,6 +191,20 @@ const Profile = () => {
       </div>
 
       <div className="mx-4 rounded-2xl border border-border bg-card overflow-hidden divide-y divide-border">
+        {ENABLE_SUBSCRIPTION_DOWNLOAD_GATE ? (
+          <MenuItem
+            to="/subscribe"
+            icon={<Crown className="w-5 h-5 text-primary-300" />}
+            label="اشتراک ماهانه"
+            hint={
+              subscriptionMe?.active && subscriptionMe.expires_at
+                ? `فعال تا ${new Date(subscriptionMe.expires_at).toLocaleDateString('fa-IR')}`
+                : subscriptionMe?.status === 'expired'
+                  ? 'منقضی شده — تمدید کنید'
+                  : 'دسترسی سافت‌ساب و هاردساب'
+            }
+          />
+        ) : null}
         <MenuItem
           to="/my-list"
           icon={<FavouriteIcon className="w-5 h-5 text-red-500" />}
