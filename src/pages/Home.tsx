@@ -13,6 +13,7 @@ import {
 } from 'hugeicons-react'
 import type { GenreItem } from '../types/catalog'
 import { BidiText } from '@/components/BidiText'
+import { HomeCustomBlocksSection } from '@/components/home/HomeCustomBlocksSection'
 import { Button } from '@/components/ui/button'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import {
@@ -364,6 +365,7 @@ const Home = () => {
         {renderSection('popular')}
         {renderSection('donghua')}
         {renderSection('movies')}
+        <HomeCustomBlocksSection />
       </div>
     </div>
   )

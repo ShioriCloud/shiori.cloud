@@ -5,6 +5,15 @@ export const SEARCH_SEASONS = [
   { key: 'FALL', label: 'پاییز' },
 ] as const
 
+/** Format filters for Explore «همه انیمه‌ها» */
+export const EXPLORE_FORMATS = [
+  { key: 'TV', label: 'سریال' },
+  { key: 'MOVIE', label: 'فیلم' },
+  { key: 'OVA', label: 'OVA' },
+  { key: 'ONA', label: 'ONA' },
+  { key: 'SPECIAL', label: 'Special' },
+] as const
+
 export const SEARCH_FORMATS = [
   { key: 'TV', label: 'سریالی' },
   { key: 'MOVIE', label: 'سینمایی' },
@@ -27,10 +36,25 @@ export const SEARCH_SORT_OPTIONS = [
   { key: 'score', label: 'امتیاز' },
 ] as const
 
+export const SEARCH_HARDSUB_LANGUAGES = [
+  { key: 'fa', label: 'فارسی' },
+  { key: 'en', label: 'انگلیسی' },
+] as const
+
+/** Sort options for Explore lists */
+export const EXPLORE_SORT_OPTIONS = [
+  { key: 'popular', label: 'محبوب‌ترین‌ها' },
+  { key: 'created_at', label: 'جدیدترین‌ها' },
+  { key: 'title', label: 'حروف الفبا' },
+] as const
+
 export type SearchSeasonKey = (typeof SEARCH_SEASONS)[number]['key']
 export type SearchFormatKey = (typeof SEARCH_FORMATS)[number]['key']
+export type ExploreFormatKey = (typeof EXPLORE_FORMATS)[number]['key']
 export type SearchAiringStatusKey = (typeof SEARCH_AIRING_STATUSES)[number]['key']
 export type SearchSortKey = (typeof SEARCH_SORT_OPTIONS)[number]['key']
+export type SearchHardsubLanguageKey = (typeof SEARCH_HARDSUB_LANGUAGES)[number]['key']
+export type ExploreSortKey = (typeof EXPLORE_SORT_OPTIONS)[number]['key']
 
 export type SearchUrlFilters = {
   query: string
@@ -39,6 +63,7 @@ export type SearchUrlFilters = {
   season: SearchSeasonKey | null
   format: SearchFormatKey | null
   airingStatus: SearchAiringStatusKey | null
+  hardsubLanguage: SearchHardsubLanguageKey | null
   sortBy: SearchSortKey
 }
 
@@ -49,6 +74,7 @@ export const DEFAULT_SEARCH_FILTERS: SearchUrlFilters = {
   season: null,
   format: null,
   airingStatus: null,
+  hardsubLanguage: null,
   sortBy: 'created_at',
 }
 
@@ -67,6 +93,38 @@ export const buildSearchYearOptions = (span = 12): number[] => {
   return Array.from({ length: span }, (_, i) => current + 1 - i)
 }
 
+export type SeasonYearOption = {
+  season: SearchSeasonKey
+  year: number
+  label: string
+}
+
+/** Current season first, then previous seasons (default 12 = 3 years). */
+export const buildSeasonYearOptions = (count = 12): SeasonYearOption[] => {
+  const seasonOrder: SearchSeasonKey[] = ['WINTER', 'SPRING', 'SUMMER', 'FALL']
+  let season = getCurrentSeasonKey()
+  let year = getCurrentSeasonYear()
+  const options: SeasonYearOption[] = []
+
+  for (let i = 0; i < count; i++) {
+    const label = SEARCH_SEASONS.find((s) => s.key === season)?.label ?? season
+    options.push({
+      season,
+      year,
+      label: `${label} ${year}`,
+    })
+    const idx = seasonOrder.indexOf(season)
+    if (idx <= 0) {
+      season = 'FALL'
+      year -= 1
+    } else {
+      season = seasonOrder[idx - 1]
+    }
+  }
+
+  return options
+}
+
 export const translateSeason = (season: string): string => {
   return SEARCH_SEASONS.find((s) => s.key === season)?.label ?? season
 }
@@ -81,6 +139,19 @@ export const translateAiringStatus = (status: string): string => {
 
 export const translateSort = (sort: string): string => {
   return SEARCH_SORT_OPTIONS.find((s) => s.key === sort)?.label ?? sort
+}
+
+export const translateExploreSort = (sort: ExploreSortKey): string => {
+  return EXPLORE_SORT_OPTIONS.find((s) => s.key === sort)?.label ?? sort
+}
+
+export const formatSeasonYearLabel = (season: SearchSeasonKey, year: number): string => {
+  const seasonLabel = SEARCH_SEASONS.find((s) => s.key === season)?.label ?? season
+  return `${seasonLabel} ${year}`
+}
+
+export const translateHardsubLanguage = (lang: string): string => {
+  return SEARCH_HARDSUB_LANGUAGES.find((s) => s.key === lang)?.label ?? lang
 }
 
 const parseSeason = (value: string | null): SearchSeasonKey | null => {
@@ -105,6 +176,13 @@ const parseSort = (value: string | null): SearchSortKey => {
   return SEARCH_SORT_OPTIONS.some((s) => s.key === key) ? (key as SearchSortKey) : 'created_at'
 }
 
+const parseHardsubLanguage = (value: string | null): SearchHardsubLanguageKey | null => {
+  const key = String(value ?? '').trim().toLowerCase()
+  return SEARCH_HARDSUB_LANGUAGES.some((s) => s.key === key)
+    ? (key as SearchHardsubLanguageKey)
+    : null
+}
+
 export const parseSearchParams = (params: URLSearchParams): SearchUrlFilters => {
   const yearRaw = params.get('year')
   const parsedYear = yearRaw ? Number(yearRaw) : null
@@ -124,6 +202,7 @@ export const parseSearchParams = (params: URLSearchParams): SearchUrlFilters => 
     season: parseSeason(params.get('season')),
     format: parseFormat(params.get('format')),
     airingStatus: parseAiringStatus(params.get('status')),
+    hardsubLanguage: parseHardsubLanguage(params.get('hardsub')),
     sortBy: parseSort(params.get('sort')),
   }
 }
@@ -136,6 +215,7 @@ export const buildSearchParams = (filters: SearchUrlFilters): URLSearchParams =>
   if (filters.season) params.set('season', filters.season)
   if (filters.format) params.set('format', filters.format)
   if (filters.airingStatus) params.set('status', filters.airingStatus)
+  if (filters.hardsubLanguage) params.set('hardsub', filters.hardsubLanguage)
   if (filters.sortBy !== 'created_at') params.set('sort', filters.sortBy)
   return params
 }
@@ -147,6 +227,7 @@ export const countActiveSearchFilters = (filters: SearchUrlFilters): number => {
   if (filters.season) count++
   if (filters.format) count++
   if (filters.airingStatus) count++
+  if (filters.hardsubLanguage) count++
   if (filters.sortBy !== 'created_at') count++
   return count
 }
@@ -158,5 +239,6 @@ export const toApiSearchFilters = (filters: SearchUrlFilters) => ({
   genreSlugs: filters.genreSlugs.length > 0 ? filters.genreSlugs : undefined,
   format: filters.format,
   airingStatus: filters.airingStatus,
+  hardsubLanguage: filters.hardsubLanguage,
   sortBy: filters.sortBy,
 })

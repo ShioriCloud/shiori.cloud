@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Filter, Search as SearchIcon } from 'lucide-react'
-import type { UiAnimeCard } from '../utils/api'
 import type { GenreAdminItem } from '../services/catalogSource'
-import type { GenreItem } from '../types/catalog'
-import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import {
   buildSearchParams,
   countActiveSearchFilters,
@@ -15,8 +12,7 @@ import {
   type SearchUrlFilters,
 } from '../lib/searchFilters'
 import { Button } from '@/components/ui/button'
-import AnimePrefetchLink from '../components/AnimePrefetchLink'
-import { BidiText } from '../components/BidiText'
+import { AnimePosterCard } from '@/components/anime/AnimePosterCard'
 import { SearchFiltersSheet } from '../components/search/SearchFiltersSheet'
 import { useGenresQuery, useInfiniteAnimeSearchQuery } from '../hooks/queries/useAnimeQueries'
 import { cn } from '@/lib/utils'
@@ -28,8 +24,6 @@ const toPersianNumber = (num: number | string): string => {
 }
 
 const genreLabel = (g: GenreAdminItem) => g.name_fa || g.name_en || g.slug
-
-const cardGenreLabel = (g: GenreItem) => g.name_fa || g.name_en || g.slug
 
 type EmptyStateProps = {
   image?: string
@@ -54,53 +48,6 @@ const SkeletonGrid = () => (
     ))}
   </div>
 )
-
-const AnimeGridCard = ({ anime }: { anime: UiAnimeCard }) => {
-  const genres = (anime.genres || []).slice(0, 3)
-
-  return (
-    <AnimePrefetchLink
-      animeId={animePublicSegment(anime)}
-      to={animeDetailPath(anime)}
-      className="group block active:scale-[0.98] transition-transform"
-      aria-label={`مشاهده ${anime.title}`}
-    >
-      <div className="relative aspect-[2/3] rounded-xl overflow-hidden border border-border bg-muted shadow-sm">
-        <img
-          src={anime.image}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          loading="lazy"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent" />
-        {anime.isNew && (
-          <span className="absolute top-2 right-2 text-[10px] font-semibold bg-primary-400 text-white px-1.5 py-0.5 rounded-md">
-            جدید
-          </span>
-        )}
-        <div className="absolute inset-x-0 bottom-0 p-2.5 pt-10">
-          <BidiText as="h3" className="text-xs text-left font-semibold text-white line-clamp-2 leading-2">
-            {anime.title}
-          </BidiText>
-          {genres.length > 0 ? (
-            <div className="flex flex-wrap gap-1 mt-1 justify-end">
-              {genres.map((g) => (
-                <span
-                  key={g.slug}
-                  className="text-[9px] leading-none px-1 py-0.5 rounded-md bg-white/15 text-white/90 border border-white/10 max-w-full truncate"
-                >
-                  {cardGenreLabel(g)}
-                </span>
-              ))}
-            </div>
-          ) : (
-            <p className="text-[10px] text-white/60 mt-1">{anime.episode || 'شیوری'}</p>
-          )}
-        </div>
-      </div>
-    </AnimePrefetchLink>
-  )
-}
 
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -184,7 +131,7 @@ const Search = () => {
 
   return (
     <div className="pb-24">
-      <div className="sticky top-[4.5rem] z-20 bg-background/95 backdrop-blur-md border-b border-border/50">
+      <div className="sticky top-[4.5rem] z-20 bg-background/95 backdrop-blur-md">
         <div className="p-4">
           <div className="flex items-center gap-2">
             <div className="relative flex min-w-0 flex-1 items-center rounded-xl border border-border bg-card p-3 ps-10">
@@ -221,19 +168,26 @@ const Search = () => {
           </div>
         </div>
 
-        {!isLoading && !isError && total > 0 ? (
-          <p className="text-muted-foreground px-4 pb-3 text-xs">
+        {pageTitle ? (
+          <div className="px-4 pb-3">
+            <div className="flex items-center justify-between gap-3">
+              <h1 className="min-w-0 text-base font-semibold text-foreground text-right truncate">
+                {pageTitle}
+              </h1>
+              {!isLoading && !isError && total > 0 ? (
+                <p className="shrink-0 text-xs text-muted-foreground tabular-nums whitespace-nowrap">
+                  {toPersianNumber(total)} نتیجه
+                </p>
+              ) : null}
+            </div>
+          </div>
+        ) : !isLoading && !isError && total > 0 ? (
+          <p className="px-4 pb-3 text-xs text-muted-foreground tabular-nums">
             {toPersianNumber(total)} نتیجه
             {results.length < total ? ` · ${toPersianNumber(results.length)} نمایش داده شده` : ''}
           </p>
         ) : null}
       </div>
-
-      {pageTitle && (
-        <div className="px-4 pt-3 pb-1">
-          <h1 className="text-base font-semibold text-foreground">{pageTitle}</h1>
-        </div>
-      )}
 
       <SearchFiltersSheet
         open={filtersSheetOpen}
@@ -272,7 +226,7 @@ const Search = () => {
         <>
           <div className="grid grid-cols-3 gap-3 px-4 pt-2">
             {results.map((anime) => (
-              <AnimeGridCard key={anime.id} anime={anime} />
+              <AnimePosterCard key={anime.id} anime={anime} />
             ))}
           </div>
 

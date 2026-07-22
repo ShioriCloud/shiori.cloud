@@ -5,6 +5,7 @@ export const queryKeys = {
   homePopular: ['home', 'popular'] as const,
   homeDonghua: ['home', 'donghua'] as const,
   homeMovies: ['home', 'movies'] as const,
+  homeCustomBlocks: ['home', 'custom-blocks'] as const,
   animeDetail: (id: string | number) => ['anime', 'detail', 'v2', String(id)] as const,
   animeList: ['anime', 'list'] as const,
   schedule: ['schedule'] as const,
@@ -12,16 +13,8 @@ export const queryKeys = {
   similarAnime: (id: string | number, slugs: string[]) =>
     ['anime', 'similar', String(id), slugs.join(',')] as const,
   translatorLinks: (animeId: string | number) => ['anime', 'translators', String(animeId)] as const,
-  externalScores: (ids: {
-    anilist_id?: number | null
-    mal_id?: number | null
-  }) =>
-    [
-      'anime',
-      'external-scores',
-      ids.anilist_id ?? '',
-      ids.mal_id ?? '',
-    ] as const,
+  externalScores: (ids: { anilist_id?: number | null; mal_id?: number | null }) =>
+    ['anime', 'external-scores', ids.anilist_id ?? '', ids.mal_id ?? ''] as const,
   userAnimeList: (telegramUserId: number) => ['user', 'anime-list', telegramUserId] as const,
   notifications: (telegramUserId: number) => ['notifications', telegramUserId] as const,
   notificationPreferences: (telegramUserId: number) =>

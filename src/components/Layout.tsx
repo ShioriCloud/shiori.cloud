@@ -7,7 +7,7 @@ import {
   UserIcon,
   FavouriteIcon,
   ArrowRight01Icon,
-  RefreshIcon,
+  Compass01Icon,
 } from 'hugeicons-react'
 import logo from '../assets/images/shiori-logo.svg'
 
@@ -33,12 +33,16 @@ const Layout = ({ children }: LayoutProps) => {
     setIsScrolled(false)
   }, [location.pathname])
 
-  const isActive = (path: string) => location.pathname === path
+  const isActive = (path: string) =>
+    path === '/explore'
+      ? location.pathname === '/explore' || location.pathname.startsWith('/explore/')
+      : location.pathname === path
 
   const isAnimeDetailPage = location.pathname.startsWith('/anime/')
   const isProfileHeroPage =
     location.pathname === '/profile' || location.pathname.startsWith('/translators/')
   const isTransparentHeaderPage = isAnimeDetailPage || isProfileHeroPage
+  const isHome = location.pathname === '/'
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
@@ -52,28 +56,38 @@ const Layout = ({ children }: LayoutProps) => {
         }`}
       >
         <div className="container py-4">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center justify-center gap-1 text-foreground">
+          <div className="grid grid-cols-3 items-center">
+            <div className="justify-self-start">
+              <button
+                type="button"
+                onClick={() => navigate('/search')}
+                className="p-2 rounded-lg bg-muted hover:bg-muted/80 text-foreground transition-colors duration-200"
+                aria-label="جستجو"
+              >
+                <Search01Icon className="w-6 h-6" />
+              </button>
+            </div>
+            <Link
+              to="/"
+              className="justify-self-center flex items-center justify-center gap-1 text-foreground"
+            >
               <img src={logo} alt="logo" className="w-6 h-6" />
               <span className="text-foreground text-xl font-bold">شیوری</span>
             </Link>
-            {location.pathname === '/' ? (
-              <button
-                onClick={() => window.location.reload()}
-                className="p-2 rounded-lg bg-muted hover:bg-muted/80 text-foreground transition-colors duration-200"
-                aria-label="بارگذاری مجدد"
-              >
-                <RefreshIcon className="w-6 h-6" />
-              </button>
-            ) : (
-              <button
-                onClick={() => navigate(-1)}
-                className="p-2 rounded-lg bg-muted hover:bg-muted/80 text-foreground transition-colors duration-200"
-                aria-label="بازگشت"
-              >
-                <ArrowRight01Icon className="w-6 h-6" />
-              </button>
-            )}
+            <div className="justify-self-end">
+              {isHome ? (
+                <div aria-hidden className="w-10 h-10" />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => navigate(-1)}
+                  className="p-2 rounded-lg bg-muted hover:bg-muted/80 text-foreground transition-colors duration-200"
+                  aria-label="بازگشت"
+                >
+                  <ArrowRight01Icon className="w-6 h-6" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -104,14 +118,14 @@ const Layout = ({ children }: LayoutProps) => {
               <span className="text-xs">برنامه پخش</span>
             </Link>
             <Link
-              to="/search"
+              to="/explore"
               className={`flex flex-col items-center space-y-1 ${
-                isActive('/search') ? 'text-primary-400' : 'text-gray-400'
+                isActive('/explore') ? 'text-primary-400' : 'text-gray-400'
               }`}
-              aria-label="جستجو"
+              aria-label="گشت‌و‌گذار"
             >
-              <Search01Icon className="w-6 h-6" />
-              <span className="text-xs">جستجو</span>
+              <Compass01Icon className="w-6 h-6" />
+              <span className="text-xs">گشت‌و‌گذار</span>
             </Link>
             <Link
               to="/my-list"

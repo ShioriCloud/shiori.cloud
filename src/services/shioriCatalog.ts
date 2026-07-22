@@ -197,6 +197,7 @@ export const searchAnimeCards = async (params: AnimeSearchParams): Promise<Anime
   else if (params.genreSlug) qs.set('genreSlug', params.genreSlug)
   if (params.format) qs.set('format', params.format)
   if (params.airingStatus) qs.set('airingStatus', params.airingStatus)
+  if (params.hardsubLanguage) qs.set('hardsubLanguage', params.hardsubLanguage)
   if (params.sortBy) qs.set('sortBy', params.sortBy)
   if (params.limit != null) qs.set('limit', String(params.limit))
   if (params.offset != null) qs.set('offset', String(params.offset))
@@ -275,26 +276,38 @@ export const getAnimeCardsByStudioSlug = async (slug: string): Promise<AnimeCard
 
 export const listGenres = async (): Promise<GenreAdminItem[]> => {
   const rows = await shioriFetch<
-    Array<{ id: string; slug: string; nameEn?: string | null; nameFa?: string | null }>
+    Array<{
+      id: string
+      slug: string
+      nameEn?: string | null
+      nameFa?: string | null
+      imageUrl?: string | null
+    }>
   >('/anime-catalog/genres')
   return rows.map((row) => ({
     id: row.id,
     slug: row.slug,
     name_en: row.nameEn ?? null,
     name_fa: row.nameFa ?? null,
+    image_url: row.imageUrl ?? null,
   }))
 }
 
 export const getGenreBySlug = async (slug: string): Promise<GenreAdminItem | null> => {
   try {
-    const row = await shioriFetch<{ id: string; slug: string; nameEn?: string | null; nameFa?: string | null }>(
-      `/anime-catalog/genres/${encodeURIComponent(slug)}`
-    )
+    const row = await shioriFetch<{
+      id: string
+      slug: string
+      nameEn?: string | null
+      nameFa?: string | null
+      imageUrl?: string | null
+    }>(`/anime-catalog/genres/${encodeURIComponent(slug)}`)
     return {
       id: row.id,
       slug: row.slug,
       name_en: row.nameEn ?? null,
       name_fa: row.nameFa ?? null,
+      image_url: row.imageUrl ?? null,
     }
   } catch {
     return null
@@ -457,4 +470,14 @@ export const mapShioriDetailParts = (detail: ApiDetail): ShioriAnimeDetailParts 
     series,
     translators,
   }
+}
+
+export const getHomeCustomBlocks = async (): Promise<
+  import('../types/home').HomeCustomBlock[]
+> => {
+  const res = await shioriFetch<import('../types/home').HomeCustomBlocksResponse | undefined>(
+    '/home/custom-blocks',
+    { cache: 'no-store' }
+  )
+  return res?.blocks ?? []
 }

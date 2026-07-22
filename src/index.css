@@ -267,9 +267,21 @@
     margin-top: 14px;
   }
 
+  .home-section-swiper {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .home-section-swiper .swiper-slide {
+    width: 9.25rem !important;
+    height: auto;
+    flex-shrink: 0;
+  }
+
   .home-section-swiper .home-section-slide {
     width: 9.25rem !important;
     height: auto;
+    flex-shrink: 0;
   }
 
   .scrollbar-none {
@@ -278,6 +290,29 @@
 
   .scrollbar-none::-webkit-scrollbar {
     display: none;
+  }
+
+  .my-list-progress {
+    @apply h-0.5 overflow-hidden rounded-full bg-muted/60;
+  }
+
+  .my-list-progress-fill {
+    @apply h-full rounded-full bg-gradient-to-l from-primary-400 to-primary-500 transition-all duration-500 ease-out;
+  }
+
+  @keyframes my-list-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .my-list-enter {
+    animation: my-list-fade-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   /** Latin / English strings in RTL UI — keeps trailing ? ! . at the visual end */

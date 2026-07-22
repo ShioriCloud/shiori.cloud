@@ -222,6 +222,7 @@ export type AnimeSearchFilters = {
   genreSlugs?: string[]
   format?: string | null
   airingStatus?: string | null
+  hardsubLanguage?: 'fa' | 'en' | null
   sortBy?: 'created_at' | 'popular' | 'title' | 'score'
   limit?: number
   offset?: number

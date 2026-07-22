@@ -68,6 +68,8 @@ import {
   ENABLE_SUBSCRIPTION_DOWNLOAD_GATE,
   SHOW_HARD_AND_FREE_DOWNLOAD_TABS,
 } from '../config/monetizationFlags'
+import { trackAnimeBrowse, trackEpisodeDownload } from '../lib/myListTracking'
+import { AddToShioriListButton } from '@/components/my-list/AddToShioriListButton'
 
 import malLogo from '../assets/images/mal-logo.png'
 import alLogo from '../assets/images/anilist-logo.svg'
@@ -1141,6 +1143,11 @@ const AnimeDetail = () => {
     navigate(`${animeDetailPath(anime)}${window.location.search}`, { replace: true })
   }, [anime, id, isPlaceholderData, navigate])
 
+  useEffect(() => {
+    if (!anime?.id || isPlaceholderData) return
+    trackAnimeBrowse(anime.id)
+  }, [anime?.id, isPlaceholderData])
+
   const externalIds = useMemo(
     () => ({
       anilist_id: anime?.anilist_id,
@@ -1499,6 +1506,17 @@ const AnimeDetail = () => {
   const favoriteActive = isFavorite(anime.id)
   const reminderActive = reminderAnimeIds.some((id) => String(id) === String(anime.id))
 
+  const recordEpisodeDownload = (episode: Episode) => {
+    trackEpisodeDownload({
+      animeId: String(anime.id),
+      animeTitle: anime.title,
+      animeImage: anime.image,
+      episodeNumber: episode.number,
+      episodeTitle: episode.title,
+      quality: videoResolution,
+    })
+  }
+
   return (
     <div className="pb-24 bg-background text-foreground">
       {/* Hero — هم‌سبک TranslatorProfile */}
@@ -1636,6 +1654,12 @@ const AnimeDetail = () => {
           />
         </div>
       )}
+
+      {!detailPending ? (
+        <div className="mx-4 mt-2">
+          <AddToShioriListButton animeId={anime.id} triggerClassName="w-full" />
+        </div>
+      ) : null}
 
       {detailPending ? (
         <SeriesSwitcherSkeleton />
@@ -2003,6 +2027,7 @@ const AnimeDetail = () => {
                                       episodeId
                                     )
                                   if (result.ok) {
+                                    recordEpisodeDownload(episode)
                                     window.open(result.download_link, '_blank')
                                     return
                                   }
@@ -2079,6 +2104,7 @@ const AnimeDetail = () => {
                                 String(episode.id)
                               )
                             if (result.ok) {
+                              recordEpisodeDownload(episode)
                               window.open(result.download_link, '_blank')
                               return
                             }
@@ -2089,6 +2115,7 @@ const AnimeDetail = () => {
                         const link =
                           episode.download_link ||
                           `https://t.me/ShioriUploadBot?start=get_${episode.id}`
+                        recordEpisodeDownload(episode)
                         window.open(String(link), '_blank')
                       }}
                       onSubtitle={() => {

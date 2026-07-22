@@ -45,6 +45,7 @@ export type AnimeSearchParams = {
   genreSlugs?: string[]
   format?: string | null
   airingStatus?: string | null
+  hardsubLanguage?: 'fa' | 'en' | null
   sortBy?: 'created_at' | 'popular' | 'title' | 'score'
   limit?: number
   offset?: number
@@ -76,6 +77,7 @@ export type GenreAdminItem = {
   slug: string
   name_en?: string | null
   name_fa?: string | null
+  image_url?: string | null
 }
 
 export type StudioPublicItem = {

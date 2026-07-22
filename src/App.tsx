@@ -13,7 +13,9 @@ const Home = lazy(() => import('./pages/Home'))
 const AnimeDetail = lazy(() => import('./pages/AnimeDetail'))
 const Schedule = lazy(() => import('./pages/Schedule'))
 const Search = lazy(() => import('./pages/Search'))
+const Explore = lazy(() => import('./pages/Explore'))
 const MyList = lazy(() => import('./pages/MyList'))
+const ShioriListDetail = lazy(() => import('./pages/ShioriListDetail'))
 const Profile = lazy(() => import('./pages/Profile'))
 const Notifications = lazy(() => import('./pages/Notifications'))
 const TranslatorProfile = lazy(() => import('./pages/TranslatorProfile'))
@@ -60,7 +62,9 @@ function App() {
           <Route path="/translators/:slug" element={<TranslatorProfile />} />
           <Route path="/schedule" element={<Schedule />} />
           <Route path="/search" element={<Search />} />
+          <Route path="/explore" element={<Explore />} />
           <Route path="/my-list" element={<MyList />} />
+          <Route path="/my-list/lists/:listId" element={<ShioriListDetail />} />
           <Route path="/profile" element={<Profile />} />
           {/* Monetization routes kept; UI entry points gated by ENABLE_SUBSCRIPTION_DOWNLOAD_GATE */}
           <Route path="/donate" element={<Navigate to="/subscribe" replace />} />

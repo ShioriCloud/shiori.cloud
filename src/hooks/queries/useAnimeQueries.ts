@@ -16,8 +16,8 @@ import {
   type HomeFeaturedTab,
   type UiAnimeCard,
 } from '../../utils/api'
-import {
-  getAnimeCardsByIds,
+import { getAnimeCardsByIds,
+  getHomeCustomBlocks,
   getTranslatorLinksByAnimeId,
   listGenres,
 } from '../../services/catalogSource'
@@ -36,6 +36,7 @@ export const buildAnimeSearchQueryKey = (filters: AnimeSearchBaseFilters) =>
     genreSlugs: filters.genreSlugs ?? [],
     format: filters.format ?? null,
     airingStatus: filters.airingStatus ?? null,
+    hardsubLanguage: filters.hardsubLanguage ?? null,
     sortBy: filters.sortBy ?? 'created_at',
   })
 
@@ -78,6 +79,15 @@ export const useHomeMoviesQuery = () =>
     queryKey: queryKeys.homeMovies,
     queryFn: () => fetchHomeFormatSectionCards('MOVIE', 20),
     staleTime: 60_000,
+  })
+
+export const useHomeCustomBlocksQuery = () =>
+  useQuery({
+    queryKey: queryKeys.homeCustomBlocks,
+    queryFn: getHomeCustomBlocks,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   })
 
 export const useAnimeFavoriteCountsQuery = () =>
@@ -163,7 +173,8 @@ const DEFAULT_SEARCH_PAGE_SIZE = 48
 
 export const useInfiniteAnimeSearchQuery = (
   filters: AnimeSearchBaseFilters,
-  pageSize = DEFAULT_SEARCH_PAGE_SIZE
+  pageSize = DEFAULT_SEARCH_PAGE_SIZE,
+  enabled = true
 ) =>
   useInfiniteQuery({
     queryKey: [...buildAnimeSearchQueryKey(filters), 'infinite', pageSize] as const,
@@ -178,6 +189,8 @@ export const useInfiniteAnimeSearchQuery = (
       if (!lastPage.hasMore) return undefined
       return allPages.reduce((sum, page) => sum + page.items.length, 0)
     },
+    enabled,
+    staleTime: 60_000,
   })
 
 export const useFavoriteAnimeDetailsQueries = (ids: (string | number)[]) =>
