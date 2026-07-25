@@ -1,5 +1,4 @@
-import { Link } from 'react-router-dom'
-import { Check, ChevronLeft, Crown } from 'lucide-react'
+import { Check, Crown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSubscriptionMe, useSubscriptionPlans } from '../hooks/useSubscription'
 import { useTelegramApp } from '../hooks/useTelegramApp'
@@ -32,17 +31,7 @@ const Subscribe = () => {
 
   return (
     <div className="pb-24 px-4 pt-4 space-y-5">
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          className="flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-card/60 text-muted-foreground"
-          aria-label="بازگشت"
-          onClick={() => window.history.back()}
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </button>
-        <h1 className="text-lg font-semibold text-foreground">اشتراک ماهانه</h1>
-      </div>
+      <h1 className="text-lg font-semibold text-foreground">اشتراک ماهانه</h1>
 
       <div className="rounded-2xl border border-border bg-gradient-to-br from-primary-400/10 via-card/80 to-card/60 p-4 space-y-3">
         <div className="flex items-center gap-3">
@@ -109,9 +98,6 @@ const Subscribe = () => {
         >
           <Crown className="h-4 w-4" />
           پرداخت و فعال‌سازی
-        </Button>
-        <Button asChild type="button" variant="ghost" size="sm" className="w-full">
-          <Link to="/profile">بازگشت به پروفایل</Link>
         </Button>
       </div>
     </div>

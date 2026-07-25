@@ -1,5 +1,4 @@
-import { Link } from 'react-router-dom'
-import { ChevronLeft, HeartHandshake } from 'lucide-react'
+import { HeartHandshake } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   useDonationTokenTiers,
@@ -24,7 +23,6 @@ const Donate = () => {
   const { openLink } = useTelegramApp()
   const { data: balanceData, isPending: balancePending } = useDownloadTokenBalance(true)
   const { data: tiers = [], isPending: tiersPending } = useDonationTokenTiers(true)
-
   const balance = balanceData?.balance ?? 0
   const donateUrl = darametDonateUrl()
 
@@ -34,20 +32,7 @@ const Donate = () => {
 
   return (
     <div className="pb-24 px-4 pt-4 space-y-5">
-      <div className="flex items-center gap-2">
-        <Link
-          to={-1 as unknown as string}
-          className="flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-card/60 text-muted-foreground"
-          aria-label="بازگشت"
-          onClick={(e) => {
-            e.preventDefault()
-            window.history.back()
-          }}
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Link>
-        <h1 className="text-lg font-semibold text-foreground">دونیت و تمدید توکن</h1>
-      </div>
+      <h1 className="text-lg font-semibold text-foreground">دونیت و تمدید توکن</h1>
 
       <div className="rounded-2xl border border-border bg-card/60 p-4 space-y-3">
         <div className="flex items-center gap-3">

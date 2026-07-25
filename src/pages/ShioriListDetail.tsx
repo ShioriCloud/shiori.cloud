@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { Add01Icon, ArrowRight01Icon, Delete02Icon, Edit02Icon } from 'hugeicons-react'
+import { Add01Icon, Delete02Icon, Edit02Icon } from 'hugeicons-react'
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
 import { BidiText } from '@/components/BidiText'
 import { Button } from '@/components/ui/button'
@@ -49,7 +49,7 @@ const ShioriListDetail = () => {
       <div className="px-4 py-16 text-center space-y-4 pb-24">
         <p className="text-sm text-muted-foreground">لیست پیدا نشد</p>
         <Button asChild type="button" variant="secondary" size="sm">
-          <Link to="/my-list?tab=lists">بازگشت</Link>
+          <Link to="/my-list?tab=lists">لیست‌های من</Link>
         </Button>
       </div>
     )
@@ -67,16 +67,6 @@ const ShioriListDetail = () => {
         )}
       >
         <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            size="icon-sm"
-            variant="ghost"
-            aria-label="بازگشت"
-            onClick={() => navigate('/my-list?tab=lists')}
-          >
-            <ArrowRight01Icon className="h-5 w-5" />
-          </Button>
-
           <button
             type="button"
             onClick={() => setEditOpen(true)}

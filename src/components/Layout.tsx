@@ -6,10 +6,10 @@ import {
   Search01Icon,
   UserIcon,
   FavouriteIcon,
-  ArrowRight01Icon,
   Compass01Icon,
 } from 'hugeicons-react'
 import logo from '../assets/images/shiori-logo.svg'
+import { useTelegramBackButton } from '@/hooks/useTelegramBackButton'
 
 interface LayoutProps {
   children: ReactNode
@@ -19,6 +19,8 @@ const Layout = ({ children }: LayoutProps) => {
   const location = useLocation()
   const navigate = useNavigate()
   const [isScrolled, setIsScrolled] = useState(false)
+
+  useTelegramBackButton()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -42,7 +44,6 @@ const Layout = ({ children }: LayoutProps) => {
   const isProfileHeroPage =
     location.pathname === '/profile' || location.pathname.startsWith('/translators/')
   const isTransparentHeaderPage = isAnimeDetailPage || isProfileHeroPage
-  const isHome = location.pathname === '/'
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
@@ -74,19 +75,8 @@ const Layout = ({ children }: LayoutProps) => {
               <img src={logo} alt="logo" className="w-6 h-6" />
               <span className="text-foreground text-xl font-bold">شیوری</span>
             </Link>
-            <div className="justify-self-end">
-              {isHome ? (
-                <div aria-hidden className="w-10 h-10" />
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => navigate(-1)}
-                  className="p-2 rounded-lg bg-muted hover:bg-muted/80 text-foreground transition-colors duration-200"
-                  aria-label="بازگشت"
-                >
-                  <ArrowRight01Icon className="w-6 h-6" />
-                </button>
-              )}
+            <div className="justify-self-end" aria-hidden>
+              <div className="w-10 h-10" />
             </div>
           </div>
         </div>
