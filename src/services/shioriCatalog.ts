@@ -38,6 +38,7 @@ type ApiCard = {
   anilist_id?: number
   mal_id?: number
   favoriteCount?: number
+  viewCount?: number
   hardsub_language?: 'fa' | 'en'
   video_file_type?: 'softsub' | 'hardsub'
   video_resolution?: '480p' | '720p' | '1080p'
@@ -131,6 +132,7 @@ const toCard = (row: ApiCard): AnimeCard => ({
   anilist_id: row.anilist_id,
   mal_id: row.mal_id,
   favoriteCount: row.favoriteCount,
+  viewCount: typeof row.viewCount === 'number' ? row.viewCount : 0,
   hardsub_language: row.hardsub_language === 'en' ? 'en' : 'fa',
   video_file_type: row.video_file_type === 'hardsub' ? 'hardsub' : 'softsub',
   video_resolution:
@@ -250,6 +252,15 @@ export const getAnimeCardsByIds = async (
 
 export const getAnimeDetailById = async (animeId: string | number): Promise<ApiDetail> =>
   shioriFetch<ApiDetail>(`/anime-catalog/${encodeURIComponent(String(animeId))}`)
+
+/** Fire-and-forget increment of anime detail views (session-deduped on the caller). */
+export const recordAnimeView = async (
+  animeId: string | number
+): Promise<{ viewCount: number }> =>
+  shioriFetch<{ viewCount: number }>(
+    `/anime-catalog/${encodeURIComponent(String(animeId))}/view`,
+    { method: 'POST' }
+  )
 
 export const getLocalAnimeIdsByAniListIds = async (
   anilistIds: number[]

@@ -19,6 +19,7 @@ export type UiAnimeCard = {
   isNew?: boolean
   isFeatured?: boolean
   favoriteCount?: number
+  viewCount?: number
   description?: string
   genres?: catalog.GenreItem[]
 }
@@ -72,6 +73,12 @@ const toCacheAnime = (c: any): UiAnimeCard => ({
       : typeof c.favorite_count === 'number'
         ? c.favorite_count
         : undefined,
+  viewCount:
+    typeof c.viewCount === 'number'
+      ? c.viewCount
+      : typeof c.view_count === 'number'
+        ? c.view_count
+        : 0,
   description: c.description ?? '',
   genres: Array.isArray(c.genres)
     ? c.genres
@@ -327,6 +334,7 @@ export const fetchAnimeById = async (
       return Number.isFinite(n) ? n : undefined
     })(),
     favoriteCount: detail.favoriteCount,
+    viewCount: typeof detail.viewCount === 'number' ? detail.viewCount : undefined,
     anilist_id: detail.anilist_id,
     mal_id: detail.mal_id,
     studios: parts.studioNames,
@@ -378,6 +386,7 @@ export const buildAnimeDetailPlaceholder = (card: UiAnimeCard): AnimeDetailShell
   malScore: undefined,
   shioriScore: undefined,
   favoriteCount: card.favoriteCount,
+  viewCount: card.viewCount,
   anilist_id: undefined,
   mal_id: undefined,
   studios: [],

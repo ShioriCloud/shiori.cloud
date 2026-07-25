@@ -7,7 +7,6 @@ import {
   getUserAnimeList,
   removeUserAnimeListEntry,
   upsertUserAnimeListEntry,
-  type AnimeFavoriteCountMap,
   type UserAnimeListMutationResult,
 } from '../services/userDataSource'
 import { canSyncUserAnimeList } from '@/lib/userListAuth'
@@ -16,7 +15,6 @@ import { getSessionTelegramUserId } from '@/lib/telegramSessionStorage'
 import {
   invalidateAnimeDetailQuery,
   patchAnimeDetailShioriScore,
-  patchAnimeFavoriteCount,
 } from './queries/invalidate'
 import { queryKeys } from './queries/keys'
 
@@ -158,56 +156,8 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
     [favoriteProgress]
   )
 
-  type FavoriteCountSnapshot = {
-    perAnime: number | undefined
-    allCounts: AnimeFavoriteCountMap | undefined
-  }
-
-  const getFavoriteCountBaseline = useCallback(
-    (animeId: number | string): number => {
-      const perAnime = queryClient.getQueryData<number>(queryKeys.animeFavoriteCount(animeId))
-      if (typeof perAnime === 'number' && Number.isFinite(perAnime)) return perAnime
-      const bulk = queryClient.getQueryData<AnimeFavoriteCountMap>(queryKeys.animeFavoriteCounts)
-      const fromBulk = bulk?.[String(animeId)]
-      if (typeof fromBulk === 'number' && Number.isFinite(fromBulk)) return fromBulk
-
-      // Fall back to any alias key found via detail cache.
-      for (const [key, data] of queryClient.getQueriesData<{ id?: string | number }>({
-        queryKey: ['anime', 'detail', 'v2'],
-      })) {
-        if (data != null && String(data.id) === String(animeId) && key[3] != null) {
-          const alias = queryClient.getQueryData<number>(
-            queryKeys.animeFavoriteCount(String(key[3]))
-          )
-          if (typeof alias === 'number' && Number.isFinite(alias)) return alias
-        }
-      }
-      return 0
-    },
-    [queryClient]
-  )
-
-  const snapshotFavoriteCounts = useCallback(
-    (animeId: number | string): FavoriteCountSnapshot => ({
-      perAnime: queryClient.getQueryData<number>(queryKeys.animeFavoriteCount(animeId)),
-      allCounts: queryClient.getQueryData<AnimeFavoriteCountMap>(queryKeys.animeFavoriteCounts),
-    }),
-    [queryClient]
-  )
-
-  const restoreFavoriteCounts = useCallback(
-    (animeId: number | string, snapshot: FavoriteCountSnapshot) => {
-      queryClient.setQueryData(queryKeys.animeFavoriteCount(animeId), snapshot.perAnime)
-      queryClient.setQueryData(queryKeys.animeFavoriteCounts, snapshot.allCounts)
-    },
-    [queryClient]
-  )
-
   const applyMutationResult = useCallback(
     (animeId: number | string, result: UserAnimeListMutationResult | undefined) => {
-      if (typeof result?.favorite_count === 'number') {
-        patchAnimeFavoriteCount(animeId, result.favorite_count)
-      }
       if (result && 'shiori_score' in result) {
         patchAnimeDetailShioriScore(animeId, result.shiori_score)
       }
@@ -283,22 +233,15 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
     },
     onMutate: (animeId) => {
       addToFavorites(animeId)
-      const snapshot = snapshotFavoriteCounts(animeId)
-      patchAnimeFavoriteCount(animeId, getFavoriteCountBaseline(animeId) + 1)
-      return snapshot
     },
-    onError: (_error, animeId, snapshot) => {
+    onError: (_error, animeId) => {
       removeFromFavorites(animeId)
-      if (snapshot) restoreFavoriteCounts(animeId, snapshot)
     },
-    onSuccess: (result, animeId) => {
+    onSuccess: (_result, _animeId) => {
       if (typeof telegramUserId === 'number') {
         void queryClient.invalidateQueries({
           queryKey: queryKeys.userAnimeList(telegramUserId),
         })
-      }
-      if (typeof result?.favorite_count === 'number') {
-        patchAnimeFavoriteCount(animeId, result.favorite_count)
       }
     },
   })
@@ -314,16 +257,13 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
     },
     onMutate: (animeId) => {
       removeFromFavorites(animeId)
-      const snapshot = snapshotFavoriteCounts(animeId)
-      patchAnimeFavoriteCount(animeId, getFavoriteCountBaseline(animeId) - 1)
-      return { ...snapshot, previousProgress: favoriteProgress[String(animeId)] }
+      return { previousProgress: favoriteProgress[String(animeId)] }
     },
     onError: (_error, animeId, context) => {
       addToFavorites(animeId)
       if (context?.previousProgress) {
         setFavoriteProgress(animeId, context.previousProgress)
       }
-      if (context) restoreFavoriteCounts(animeId, context)
     },
     onSuccess: (result, animeId) => {
       if (typeof telegramUserId === 'number') {
@@ -332,9 +272,6 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
         })
       }
       applyMutationResult(animeId, result)
-      if (typeof result?.favorite_count === 'number') {
-        patchAnimeFavoriteCount(animeId, result.favorite_count)
-      }
       invalidateAnimeDetailQuery(animeId)
     },
   })

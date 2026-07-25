@@ -69,6 +69,7 @@ import {
   SHOW_HARD_AND_FREE_DOWNLOAD_TABS,
 } from '../config/monetizationFlags'
 import { trackAnimeBrowse, trackEpisodeDownload } from '../lib/myListTracking'
+import { recordAnimeView } from '../services/shioriCatalog'
 import { AddToShioriListButton } from '@/components/my-list/AddToShioriListButton'
 
 import malLogo from '../assets/images/mal-logo.png'
@@ -153,8 +154,8 @@ type LaunchDownloadTab = 'episodes' | 'subtitles'
 const MAIN_TABS: { id: TabType; label: string }[] = [
   { id: 'info', label: 'اطلاعات' },
   { id: 'episodes', label: 'دانلود' },
-  { id: 'similar', label: 'مشابه' },
   { id: 'translators', label: 'مترجم' },
+  { id: 'similar', label: 'مشابه' },
 ]
 
 /** Softsub / hardsub / free — restored when SHOW_HARD_AND_FREE_DOWNLOAD_TABS is true */
@@ -446,13 +447,9 @@ const ReminderStatCard = ({
 
 const FavoriteStatCard = ({
   active,
-  favoriteCount,
-  favoriteCountLoading,
   onClick,
 }: {
   active: boolean
-  favoriteCount?: number
-  favoriteCountLoading?: boolean
   onClick: () => void
 }) => (
   <button
@@ -466,22 +463,6 @@ const FavoriteStatCard = ({
     )}
     aria-label={active ? 'ویرایش پیشرفت و امتیاز' : 'افزودن به علاقه‌مندی‌ها'}
   >
-    {favoriteCountLoading ? (
-      <span
-        className="absolute -top-1 -start-1 h-5 w-5 rounded-full bg-muted animate-pulse"
-        aria-hidden
-      />
-    ) : typeof favoriteCount === 'number' && favoriteCount > 0 ? (
-      <span
-        className={cn(
-          'absolute -top-1 -start-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[9px] font-semibold tabular-nums leading-none',
-          active ? 'bg-red-500 text-white' : 'bg-muted-foreground text-background'
-        )}
-        aria-label={`${toPersianNumber(favoriteCount)} علاقه‌مند`}
-      >
-        {toPersianNumber(favoriteCount)}
-      </span>
-    ) : null}
     <FavouriteIcon
       className={cn(
         'h-5 w-5',
@@ -1133,9 +1114,6 @@ const AnimeDetail = () => {
 
   const anime = (animeData ?? null) as Anime | null
 
-  const favoriteCount = anime?.favoriteCount
-  const favoriteCountPending = Boolean(anime) && favoriteCount === undefined && isLoading
-
   useEffect(() => {
     if (!anime || !id || isPlaceholderData) return
     const canonical = animePublicSegment(anime)
@@ -1146,6 +1124,20 @@ const AnimeDetail = () => {
   useEffect(() => {
     if (!anime?.id || isPlaceholderData) return
     trackAnimeBrowse(anime.id)
+  }, [anime?.id, isPlaceholderData])
+
+  useEffect(() => {
+    if (!anime?.id || isPlaceholderData) return
+    const key = `shiori:anime-view:${String(anime.id)}`
+    try {
+      if (sessionStorage.getItem(key)) return
+      sessionStorage.setItem(key, '1')
+    } catch {
+      // sessionStorage may be unavailable in some WebViews
+    }
+    void recordAnimeView(anime.id).catch(() => {
+      // Non-blocking; popularity still works without a perfect count
+    })
   }, [anime?.id, isPlaceholderData])
 
   const externalIds = useMemo(
@@ -1648,8 +1640,6 @@ const AnimeDetail = () => {
           />
           <FavoriteStatCard
             active={favoriteActive}
-            favoriteCount={favoriteCount}
-            favoriteCountLoading={favoriteCountPending && favoriteCount === undefined}
             onClick={handleFavorite}
           />
         </div>

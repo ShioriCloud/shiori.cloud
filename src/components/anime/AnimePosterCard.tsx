@@ -1,26 +1,22 @@
 import type { GenreItem } from '@/types/catalog'
 import type { UiAnimeCard } from '@/utils/api'
-import { FavouriteIcon } from 'hugeicons-react'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
+import { AnimeViewCountBadge } from '@/components/anime/AnimeViewCountBadge'
 import { BidiText } from '@/components/BidiText'
-
-const toPersianNumber = (num: number | string): string => {
-  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
-  return String(num).replace(/[0-9]/g, (w) => persianDigits[+w])
-}
 
 const cardGenreLabel = (g: GenreItem) => g.name_fa || g.name_en || g.slug
 
 export type AnimePosterCardProps = {
   anime: UiAnimeCard
-  favoriteCount?: number
+  viewCount?: number
   priority?: boolean
 }
 
 /** Shared poster card — Home, Search, Explore */
-export const AnimePosterCard = ({ anime, favoriteCount, priority }: AnimePosterCardProps) => {
+export const AnimePosterCard = ({ anime, viewCount, priority }: AnimePosterCardProps) => {
   const genres = (anime.genres || []).slice(0, 3)
+  const views = typeof viewCount === 'number' ? viewCount : anime.viewCount
 
   return (
     <AnimePrefetchLink
@@ -39,15 +35,7 @@ export const AnimePosterCard = ({ anime, favoriteCount, priority }: AnimePosterC
           fetchPriority={priority ? 'high' : 'auto'}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent" />
-        {typeof favoriteCount === 'number' && favoriteCount > 0 ? (
-          <span
-            className="absolute top-2 start-2 inline-flex items-center gap-0.5 rounded-md border border-white/20 bg-black/50 backdrop-blur-sm px-1 py-0.5 text-[9px] font-medium tabular-nums leading-none text-white/95"
-            aria-label={`${toPersianNumber(favoriteCount)} علاقه‌مند`}
-          >
-            <FavouriteIcon className="h-2.5 w-2.5 shrink-0 text-red-400 fill-red-400" aria-hidden />
-            {toPersianNumber(favoriteCount)}
-          </span>
-        ) : null}
+        <AnimeViewCountBadge count={views} />
         {anime.isNew ? (
           <span className="absolute top-2 end-2 text-[10px] font-semibold bg-primary-400 text-white px-1.5 py-0.5 rounded-md">
             جدید

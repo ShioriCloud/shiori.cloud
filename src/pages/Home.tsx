@@ -8,11 +8,11 @@ import 'swiper/css/free-mode'
 import 'swiper/css/pagination'
 import {
   ArrowLeft01Icon,
-  FavouriteIcon,
   SparklesIcon,
 } from 'hugeicons-react'
 import type { GenreItem } from '../types/catalog'
 import { BidiText } from '@/components/BidiText'
+import { AnimeViewCountBadge } from '@/components/anime/AnimeViewCountBadge'
 import { HomeCustomBlocksSection } from '@/components/home/HomeCustomBlocksSection'
 import { Button } from '@/components/ui/button'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
@@ -67,13 +67,7 @@ const getFallbackSeason = (): 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' => {
 
 const genreLabel = (g: GenreItem) => g.name_fa || g.name_en || g.slug
 
-const PosterCardContent = ({
-  anime,
-  favoriteCount,
-}: {
-  anime: Anime
-  favoriteCount?: number
-}) => {
+const PosterCardContent = ({ anime }: { anime: Anime }) => {
   const genres = (anime.genres || []).slice(0, 3)
 
   return (
@@ -91,15 +85,7 @@ const PosterCardContent = ({
           loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent" />
-        {typeof favoriteCount === 'number' && favoriteCount > 0 ? (
-          <span
-            className="absolute top-2 start-2 inline-flex items-center gap-0.5 rounded-md border border-white/20 bg-black/50 backdrop-blur-sm px-1 py-0.5 text-[9px] font-medium tabular-nums leading-none text-white/95"
-            aria-label={`${toPersianNumber(favoriteCount)} علاقه‌مند`}
-          >
-            <FavouriteIcon className="h-2.5 w-2.5 shrink-0 text-red-400 fill-red-400" aria-hidden />
-            {toPersianNumber(favoriteCount)}
-          </span>
-        ) : null}
+        <AnimeViewCountBadge count={anime.viewCount} />
         {anime.isNew && (
           <span className="absolute top-2 end-2 text-[10px] font-semibold bg-primary-400 text-white px-1.5 py-0.5 rounded-md">
             جدید
@@ -227,14 +213,7 @@ const Home = () => {
           >
             {list.map((anime) => (
               <SwiperSlide key={anime.id} className="home-section-slide">
-                <PosterCardContent
-                  anime={anime}
-                  favoriteCount={
-                    id === 'popular' && typeof anime.favoriteCount === 'number'
-                      ? anime.favoriteCount
-                      : undefined
-                  }
-                />
+                <PosterCardContent anime={anime} />
               </SwiperSlide>
             ))}
           </Swiper>
@@ -326,6 +305,7 @@ const Home = () => {
                         loading="lazy"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+                      <AnimeViewCountBadge count={anime.viewCount} />
                       <div className="absolute inset-x-0 bottom-0 p-4">
                         <BidiText
                           as="h3"
