@@ -13,6 +13,7 @@ import {
 import type { GenreItem } from '../types/catalog'
 import { BidiText } from '@/components/BidiText'
 import { AnimeViewCountBadge } from '@/components/anime/AnimeViewCountBadge'
+import { AppHeader } from '@/components/AppHeader'
 import { HomeCustomBlocksSection } from '@/components/home/HomeCustomBlocksSection'
 import { Button } from '@/components/ui/button'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
@@ -231,7 +232,9 @@ const Home = () => {
 
   return (
     <div className="pb-24">
-      <div className="px-4 pt-4">
+      <AppHeader />
+
+      <div className="px-4">
         <div className="relative flex rounded-xl border border-border bg-muted/20 p-0">
           {TYPE_TABS.map((tab) => {
             const active = selectedType === tab.id

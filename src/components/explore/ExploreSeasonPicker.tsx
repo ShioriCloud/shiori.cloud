@@ -5,7 +5,12 @@ import {
   type SearchSeasonKey,
 } from '@/lib/searchFilters'
 import { cn } from '@/lib/utils'
-import { ExploreOptionButton, ExploreSectionTitle } from './ExploreUi'
+import {
+  EXPLORE_CHIP_CLASS,
+  EXPLORE_STICKY_SHELL_CLASS,
+  ExploreOptionButton,
+  ExploreSectionTitle,
+} from './ExploreUi'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -41,7 +46,7 @@ type ExploreSeasonHeaderProps = {
   className?: string
 }
 
-/** Section header: tappable title + chevron (right), result count (left). */
+/** Section header: tappable title + chevron (right), result count chip (left). */
 export const ExploreSeasonHeader = ({
   season,
   year,
@@ -60,31 +65,24 @@ export const ExploreSeasonHeader = ({
         : null
 
   return (
-    <div
-      className={cn(
-        'sticky top-16 z-20 flex items-center justify-between gap-3 px-4 py-3',
-        'bg-background/95 backdrop-blur-md border-b border-border/60',
-        className
-      )}
-    >
-      <button
-        type="button"
-        onClick={onOpenPicker}
-        className={cn(
-          'flex min-w-0 flex-1 items-center gap-1 self-stretch -my-3 py-3 pe-3 ps-0',
-          'text-start transition-colors active:bg-muted/40 rounded-none'
-        )}
-        aria-haspopup="dialog"
-        aria-label={`انتخاب فصل، ${seasonLabel} ${year}`}
-      >
-        <h2 className="text-base font-semibold text-foreground truncate">
-          {seasonLabel} {toPersianNumber(year)}
-        </h2>
-        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-      </button>
-      {countLabel != null ? (
-        <span className="shrink-0 text-xs text-muted-foreground tabular-nums">{countLabel}</span>
-      ) : null}
+    <div className={cn(EXPLORE_STICKY_SHELL_CLASS, className)}>
+      <div className="flex h-8 items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={onOpenPicker}
+          className="flex min-w-0 flex-1 items-center gap-1 text-start"
+          aria-haspopup="dialog"
+          aria-label={`انتخاب فصل، ${seasonLabel} ${year}`}
+        >
+          <h2 className="text-sm font-semibold text-foreground truncate">
+            {seasonLabel} {toPersianNumber(year)}
+          </h2>
+          <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
+        </button>
+        {countLabel != null ? (
+          <span className={cn(EXPLORE_CHIP_CLASS, 'shrink-0 tabular-nums')}>{countLabel}</span>
+        ) : null}
+      </div>
     </div>
   )
 }

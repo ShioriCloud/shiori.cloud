@@ -16,6 +16,7 @@ export type ExploreTab = 'all' | 'seasonal' | 'genres'
 
 export type ExploreState = {
   tab: ExploreTab
+  query: string
   format: ExploreFormatKey | null
   hardsub: SearchHardsubLanguageKey | null
   sortBy: ExploreSortKey
@@ -52,6 +53,7 @@ export const parseExploreParams = (params: URLSearchParams): ExploreState => {
   const yearRaw = Number(params.get('year'))
   return {
     tab: parseTab(params.get('tab')),
+    query: String(params.get('q') ?? '').trim(),
     format: parseExploreFormat(params.get('format')),
     hardsub: parseHardsub(params.get('hardsub')),
     sortBy: parseExploreSort(params.get('sort')),
@@ -62,7 +64,7 @@ export const parseExploreParams = (params: URLSearchParams): ExploreState => {
 
 export const buildExploreScrollKey = (state: ExploreState): string => {
   if (state.tab === 'all') {
-    return `explore:all:${state.format ?? ''}:${state.hardsub ?? ''}:${state.sortBy}`
+    return `explore:all:${state.query}:${state.format ?? ''}:${state.hardsub ?? ''}:${state.sortBy}`
   }
   if (state.tab === 'seasonal') {
     return `explore:seasonal:${state.season}:${state.year}`
@@ -76,17 +78,29 @@ export const buildExploreParams = (
   const params = new URLSearchParams()
   params.set('tab', state.tab)
 
-  if (state.tab === 'all') {
-    if (state.format) params.set('format', state.format)
-    if (state.hardsub) params.set('hardsub', state.hardsub)
-    params.set('sort', state.sortBy ?? 'popular')
-    return params
+  // Persist filters across tabs so switching Explore tabs does not reset them.
+  const query = String(state.query ?? '').trim()
+  if (query) params.set('q', query)
+  if (state.format) params.set('format', state.format)
+  if (state.hardsub) params.set('hardsub', state.hardsub)
+  if (state.sortBy) params.set('sort', state.sortBy)
+
+  const season = state.season ?? null
+  const year = state.year
+  if (season) params.set('season', season)
+  if (year != null && Number.isFinite(year) && year > 0) {
+    params.set('year', String(year))
   }
 
+  // Seasonal tab always needs an explicit season/year in the URL.
   if (state.tab === 'seasonal') {
-    params.set('season', state.season ?? getCurrentSeasonKey())
-    params.set('year', String(state.year ?? getCurrentSeasonYear()))
-    return params
+    if (!params.get('season')) params.set('season', getCurrentSeasonKey())
+    if (!params.get('year')) params.set('year', String(getCurrentSeasonYear()))
+  }
+
+  // All tab defaults sort when absent.
+  if (state.tab === 'all' && !params.get('sort')) {
+    params.set('sort', 'popular')
   }
 
   return params

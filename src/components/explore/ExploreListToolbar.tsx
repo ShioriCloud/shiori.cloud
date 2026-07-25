@@ -1,5 +1,6 @@
-import { Filter, ArrowUpDown } from 'lucide-react'
+import { Filter, ArrowUpDown, Search as SearchIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { EXPLORE_CHIP_CLASS, EXPLORE_STICKY_SHELL_CLASS } from './ExploreUi'
 
 const toPersianNumber = (num: number | string): string => {
   const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
@@ -11,6 +12,8 @@ type ExploreListToolbarProps = {
   filterCount?: number
   onFilterClick: () => void
   onSortClick: () => void
+  searchValue: string
+  onSearchChange: (value: string) => void
   className?: string
 }
 
@@ -20,21 +23,18 @@ export const ExploreListToolbar = ({
   filterCount = 0,
   onFilterClick,
   onSortClick,
+  searchValue,
+  onSearchChange,
   className,
 }: ExploreListToolbarProps) => (
-  <div
-    className={cn(
-      'sticky top-16 z-20 -mx-4 px-4 py-2.5 bg-background/95 backdrop-blur-md border-b border-border/60',
-      className
-    )}
-  >
-    <div className="flex items-center justify-between gap-3">
+  <div className={cn(EXPLORE_STICKY_SHELL_CLASS, className)}>
+    <div className="flex h-8 items-center justify-between gap-3">
       <p className="text-sm font-semibold text-foreground truncate">{sortLabel}</p>
       <div className="flex items-center gap-1.5 shrink-0">
         <button
           type="button"
           onClick={onFilterClick}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/40 px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted/70 transition-colors"
+          className={cn(EXPLORE_CHIP_CLASS, 'hover:bg-muted/70')}
           aria-label="فیلتر"
         >
           <Filter className="h-3.5 w-3.5" />
@@ -48,13 +48,26 @@ export const ExploreListToolbar = ({
         <button
           type="button"
           onClick={onSortClick}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/40 px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted/70 transition-colors"
+          className={cn(EXPLORE_CHIP_CLASS, 'hover:bg-muted/70')}
           aria-label="مرتب‌سازی"
         >
           <ArrowUpDown className="h-3.5 w-3.5" />
           مرتب‌سازی
         </button>
       </div>
+    </div>
+
+    <div className="relative mt-2.5 flex h-10 min-w-0 items-center rounded-xl border border-border bg-card px-2.5 ps-10">
+      <SearchIcon className="text-muted-foreground absolute start-3 h-4 w-4" />
+      <input
+        type="search"
+        enterKeyHint="search"
+        value={searchValue}
+        onChange={(e) => onSearchChange(e.target.value)}
+        placeholder="نام انیمه را جستجو کن..."
+        className="bg-transparent w-full text-sm focus:outline-none"
+        aria-label="جستجو"
+      />
     </div>
   </div>
 )

@@ -18,6 +18,7 @@ import {
 } from '@/lib/searchFilters'
 import { useGenresQuery, useInfiniteAnimeSearchQuery } from '@/hooks/queries/useAnimeQueries'
 import { useTabScrollRestoration } from '@/hooks/useTabScrollRestoration'
+import { AppHeader } from '@/components/AppHeader'
 import { ExploreGenreGrid } from '@/components/explore/ExploreGenreGrid'
 import {
   ExploreInfiniteAnimeList,
@@ -43,6 +44,7 @@ const Explore = () => {
   const [filterOpen, setFilterOpen] = useState(false)
   const [sortOpen, setSortOpen] = useState(false)
   const [seasonOpen, setSeasonOpen] = useState(false)
+  const [searchInput, setSearchInput] = useState(state.query)
 
   const [draftFormat, setDraftFormat] = useState<ExploreFormatKey | null>(state.format)
   const [draftHardsub, setDraftHardsub] = useState<SearchHardsubLanguageKey | null>(state.hardsub)
@@ -51,17 +53,64 @@ const Explore = () => {
   const [draftYear, setDraftYear] = useState(state.year)
 
   useEffect(() => {
+    setSearchInput(state.query)
+  }, [state.query])
+
+  useEffect(() => {
+    if (state.tab !== 'all') return
+    const timer = window.setTimeout(() => {
+      const next = searchInput.trim()
+      if (next === state.query) return
+      setSearchParams(
+        buildExploreParams({
+          tab: 'all',
+          query: next,
+          format: state.format,
+          hardsub: state.hardsub,
+          sortBy: state.sortBy,
+          season: state.season,
+          year: state.year,
+        }),
+        { replace: true }
+      )
+    }, 500)
+    return () => window.clearTimeout(timer)
+  }, [
+    searchInput,
+    state.tab,
+    state.query,
+    state.format,
+    state.hardsub,
+    state.sortBy,
+    state.season,
+    state.year,
+    setSearchParams,
+  ])
+
+  useEffect(() => {
     if (state.tab !== 'seasonal') return
     if (searchParams.get('season') && searchParams.get('year')) return
     setSearchParams(
       buildExploreParams({
         tab: 'seasonal',
+        query: state.query,
+        format: state.format,
+        hardsub: state.hardsub,
+        sortBy: state.sortBy,
         season: getCurrentSeasonKey(),
         year: getCurrentSeasonYear(),
       }),
       { replace: true }
     )
-  }, [state.tab, searchParams, setSearchParams])
+  }, [
+    state.tab,
+    state.query,
+    state.format,
+    state.hardsub,
+    state.sortBy,
+    searchParams,
+    setSearchParams,
+  ])
 
   useEffect(() => {
     if (!filterOpen) return
@@ -84,6 +133,7 @@ const Explore = () => {
     setSearchParams(
       buildExploreParams({
         tab,
+        query: state.query,
         format: state.format,
         hardsub: state.hardsub,
         sortBy: state.sortBy,
@@ -96,11 +146,12 @@ const Explore = () => {
 
   const allFilters = useMemo(
     () => ({
+      query: state.query || undefined,
       format: state.format,
       hardsubLanguage: state.hardsub,
       sortBy: state.sortBy,
     }),
-    [state.format, state.hardsub, state.sortBy]
+    [state.query, state.format, state.hardsub, state.sortBy]
   )
 
   const seasonalFilters = useMemo(
@@ -123,7 +174,9 @@ const Explore = () => {
 
   return (
     <div className="min-h-full pb-24">
-      <div className="px-4 pt-4">
+      <AppHeader />
+
+      <div className="px-4">
         <ExploreTabBar tabs={TABS} active={state.tab} onChange={setTab} />
       </div>
 
@@ -135,6 +188,8 @@ const Explore = () => {
               filterCount={filterCount}
               onFilterClick={() => setFilterOpen(true)}
               onSortClick={() => setSortOpen(true)}
+              searchValue={searchInput}
+              onSearchChange={setSearchInput}
             />
           </div>
           <ExploreInfiniteAnimeList
@@ -144,20 +199,26 @@ const Explore = () => {
             hasNextPage={allQuery.hasNextPage}
             isFetchingNextPage={allQuery.isFetchingNextPage}
             onLoadMore={() => void allQuery.fetchNextPage()}
-            emptySubtitle="فیلترها را تغییر دهید."
+            emptySubtitle={
+              state.query
+                ? 'عبارت جستجو یا فیلترها را تغییر دهید.'
+                : 'فیلترها را تغییر دهید.'
+            }
           />
         </>
       ) : null}
 
       {state.tab === 'seasonal' ? (
         <>
-          <ExploreSeasonHeader
-            season={state.season}
-            year={state.year}
-            resultCount={seasonalQuery.data?.pages[0]?.total}
-            isLoadingCount={seasonalQuery.isLoading}
-            onOpenPicker={() => setSeasonOpen(true)}
-          />
+          <div className="px-4 mt-3">
+            <ExploreSeasonHeader
+              season={state.season}
+              year={state.year}
+              resultCount={seasonalQuery.data?.pages[0]?.total}
+              isLoadingCount={seasonalQuery.isLoading}
+              onOpenPicker={() => setSeasonOpen(true)}
+            />
+          </div>
           <ExploreInfiniteAnimeList
             items={seasonalItems}
             isLoading={seasonalQuery.isLoading}
@@ -195,9 +256,12 @@ const Explore = () => {
           setSearchParams(
             buildExploreParams({
               tab: 'all',
+              query: state.query,
               format: draftFormat,
               hardsub: draftHardsub,
               sortBy: state.sortBy,
+              season: state.season,
+              year: state.year,
             }),
             { replace: true }
           )
@@ -214,9 +278,12 @@ const Explore = () => {
           setSearchParams(
             buildExploreParams({
               tab: 'all',
+              query: state.query,
               format: state.format,
               hardsub: state.hardsub,
               sortBy: draftSort,
+              season: state.season,
+              year: state.year,
             }),
             { replace: true }
           )
@@ -237,6 +304,10 @@ const Explore = () => {
           setSearchParams(
             buildExploreParams({
               tab: 'seasonal',
+              query: state.query,
+              format: state.format,
+              hardsub: state.hardsub,
+              sortBy: state.sortBy,
               season: draftSeason,
               year: draftYear,
             }),

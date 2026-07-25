@@ -1,15 +1,15 @@
 import { ReactNode, useEffect, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import {
   Home01Icon,
   Calendar01Icon,
-  Search01Icon,
   UserIcon,
   FavouriteIcon,
   Compass01Icon,
 } from 'hugeicons-react'
-import logo from '../assets/images/shiori-logo.svg'
+import { AppHeader, APP_HEADER_PAD_CLASS } from '@/components/AppHeader'
 import { useTelegramBackButton } from '@/hooks/useTelegramBackButton'
+import { cn } from '@/lib/utils'
 
 interface LayoutProps {
   children: ReactNode
@@ -17,7 +17,6 @@ interface LayoutProps {
 
 const Layout = ({ children }: LayoutProps) => {
   const location = useLocation()
-  const navigate = useNavigate()
   const [isScrolled, setIsScrolled] = useState(false)
 
   useTelegramBackButton()
@@ -40,49 +39,44 @@ const Layout = ({ children }: LayoutProps) => {
       ? location.pathname === '/explore' || location.pathname.startsWith('/explore/')
       : location.pathname === path
 
+  const isHomePage = location.pathname === '/'
+  const isExplorePage =
+    location.pathname === '/explore' || location.pathname.startsWith('/explore/')
+  /** Home/Explore render AppHeader in-page (below Telegram fullscreen chrome). */
+  const usesInPageHeader = isHomePage || isExplorePage
   const isAnimeDetailPage = location.pathname.startsWith('/anime/')
   const isProfileHeroPage =
     location.pathname === '/profile' || location.pathname.startsWith('/translators/')
   const isTransparentHeaderPage = isAnimeDetailPage || isProfileHeroPage
+  const showFixedHeader = !usesInPageHeader
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
-      <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-200 ${
-          isScrolled
-            ? 'bg-background'
-            : isTransparentHeaderPage
-              ? 'bg-transparent'
-              : 'bg-gradient-to-b from-background/90 via-background/60 to-transparent'
-        }`}
-      >
-        <div className="container py-4">
-          <div className="grid grid-cols-3 items-center">
-            <div className="justify-self-start">
-              <button
-                type="button"
-                onClick={() => navigate('/search')}
-                className="p-2 rounded-lg bg-muted hover:bg-muted/80 text-foreground transition-colors duration-200"
-                aria-label="جستجو"
-              >
-                <Search01Icon className="w-6 h-6" />
-              </button>
-            </div>
-            <Link
-              to="/"
-              className="justify-self-center flex items-center justify-center gap-1 text-foreground"
-            >
-              <img src={logo} alt="logo" className="w-6 h-6" />
-              <span className="text-foreground text-xl font-bold">شیوری</span>
-            </Link>
-            <div className="justify-self-end" aria-hidden>
-              <div className="w-10 h-10" />
-            </div>
+      {showFixedHeader && (
+        <header
+          className={cn(
+            'fixed top-0 left-0 right-0 z-50 transition-colors duration-200',
+            isScrolled
+              ? 'bg-background'
+              : isTransparentHeaderPage
+                ? 'bg-transparent'
+                : 'bg-gradient-to-b from-background/90 via-background/60 to-transparent'
+          )}
+        >
+          <div className={cn('container', APP_HEADER_PAD_CLASS)}>
+            <AppHeader bare />
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
-      <main className={`flex-1 ${!isTransparentHeaderPage ? 'pt-16' : ''} pb-20`}>{children}</main>
+      <main
+        className={cn(
+          'flex-1 pb-20',
+          showFixedHeader && !isTransparentHeaderPage && 'pt-16'
+        )}
+      >
+        {children}
+      </main>
 
       <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 pb-[env(safe-area-inset-bottom,0px)]">
         <div className="container">
