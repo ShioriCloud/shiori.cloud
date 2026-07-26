@@ -43,11 +43,11 @@ export const shouldShowTelegramBackButton = (pathname: string): boolean => {
 export const fallbackBackPath = (pathname: string): string => {
   if (pathname.startsWith('/my-list/lists/')) return '/my-list?tab=lists'
   if (pathname.startsWith('/notifications')) return '/profile'
+  if (pathname.startsWith('/support')) return '/profile'
   if (pathname.startsWith('/subscribe') || pathname.startsWith('/donate')) return '/profile'
   if (pathname.startsWith('/anime/')) return '/'
   if (pathname.startsWith('/studios/')) return '/'
   if (pathname.startsWith('/translators/')) return '/'
-  if (pathname.startsWith('/search')) return '/'
-  if (pathname.startsWith('/explore/')) return '/explore'
+  if (pathname.startsWith('/search') || pathname.startsWith('/explore')) return '/'
   return '/'
 }

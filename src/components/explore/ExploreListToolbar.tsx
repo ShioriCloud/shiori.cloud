@@ -8,7 +8,8 @@ const toPersianNumber = (num: number | string): string => {
 }
 
 type ExploreListToolbarProps = {
-  sortLabel: string
+  /** Contextual list title (sort label, genre name, season, …). */
+  listTitle: string
   filterCount?: number
   onFilterClick: () => void
   onSortClick: () => void
@@ -17,9 +18,9 @@ type ExploreListToolbarProps = {
   className?: string
 }
 
-/** RTL: sort title on the right (start), action buttons on the left (end). */
+/** RTL: list title on the right (start), action buttons on the left (end). */
 export const ExploreListToolbar = ({
-  sortLabel,
+  listTitle,
   filterCount = 0,
   onFilterClick,
   onSortClick,
@@ -29,7 +30,7 @@ export const ExploreListToolbar = ({
 }: ExploreListToolbarProps) => (
   <div className={cn(EXPLORE_STICKY_SHELL_CLASS, className)}>
     <div className="flex h-8 items-center justify-between gap-3">
-      <p className="text-sm font-semibold text-foreground truncate">{sortLabel}</p>
+      <p className="text-sm font-semibold text-foreground truncate">{listTitle}</p>
       <div className="flex items-center gap-1.5 shrink-0">
         <button
           type="button"

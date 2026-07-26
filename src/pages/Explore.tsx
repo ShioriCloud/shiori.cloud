@@ -1,20 +1,23 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
+  applySearchUrlFiltersToExplore,
+  buildExploreAllListTitle,
   buildExploreParams,
   buildExploreScrollKey,
   countExploreFilters,
+  exploreStateToSearchUrlFilters,
   parseExploreParams,
+  type ExploreState,
   type ExploreTab,
 } from '@/lib/exploreParams'
 import {
+  DEFAULT_SEARCH_FILTERS,
   getCurrentSeasonKey,
   getCurrentSeasonYear,
-  translateExploreSort,
-  type ExploreFormatKey,
   type ExploreSortKey,
-  type SearchHardsubLanguageKey,
   type SearchSeasonKey,
+  type SearchUrlFilters,
 } from '@/lib/searchFilters'
 import { useGenresQuery, useInfiniteAnimeSearchQuery } from '@/hooks/queries/useAnimeQueries'
 import { useTabScrollRestoration } from '@/hooks/useTabScrollRestoration'
@@ -25,9 +28,10 @@ import {
   useExploreAnimeItems,
 } from '@/components/explore/ExploreInfiniteAnimeList'
 import { ExploreListToolbar } from '@/components/explore/ExploreListToolbar'
-import { ExploreFilterSheet, ExploreSortSheet } from '@/components/explore/ExploreSheets'
+import { ExploreSortSheet } from '@/components/explore/ExploreSheets'
 import { ExploreSeasonHeader, ExploreSeasonSheet } from '@/components/explore/ExploreSeasonPicker'
 import { ExploreTabBar } from '@/components/explore/ExploreUi'
+import { SearchFiltersSheet } from '@/components/search/SearchFiltersSheet'
 
 const TABS: { id: ExploreTab; label: string }[] = [
   { id: 'all', label: 'همه انیمه‌ها' },
@@ -45,12 +49,16 @@ const Explore = () => {
   const [sortOpen, setSortOpen] = useState(false)
   const [seasonOpen, setSeasonOpen] = useState(false)
   const [searchInput, setSearchInput] = useState(state.query)
-
-  const [draftFormat, setDraftFormat] = useState<ExploreFormatKey | null>(state.format)
-  const [draftHardsub, setDraftHardsub] = useState<SearchHardsubLanguageKey | null>(state.hardsub)
+  const [draftFilters, setDraftFilters] = useState<SearchUrlFilters>(() =>
+    exploreStateToSearchUrlFilters(state)
+  )
   const [draftSort, setDraftSort] = useState<ExploreSortKey>(state.sortBy)
   const [draftSeason, setDraftSeason] = useState<SearchSeasonKey>(state.season)
   const [draftYear, setDraftYear] = useState(state.year)
+
+  const replaceState = (next: ExploreState) => {
+    setSearchParams(buildExploreParams(next), { replace: true })
+  }
 
   useEffect(() => {
     setSearchInput(state.query)
@@ -61,62 +69,28 @@ const Explore = () => {
     const timer = window.setTimeout(() => {
       const next = searchInput.trim()
       if (next === state.query) return
-      setSearchParams(
-        buildExploreParams({
-          tab: 'all',
-          query: next,
-          format: state.format,
-          hardsub: state.hardsub,
-          sortBy: state.sortBy,
-          season: state.season,
-          year: state.year,
-        }),
-        { replace: true }
-      )
+      replaceState({ ...state, query: next })
     }, 500)
     return () => window.clearTimeout(timer)
-  }, [
-    searchInput,
-    state.tab,
-    state.query,
-    state.format,
-    state.hardsub,
-    state.sortBy,
-    state.season,
-    state.year,
-    setSearchParams,
-  ])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sync debounce against current URL state
+  }, [searchInput, state.tab, state.query, searchParams])
 
   useEffect(() => {
     if (state.tab !== 'seasonal') return
     if (searchParams.get('season') && searchParams.get('year')) return
-    setSearchParams(
-      buildExploreParams({
-        tab: 'seasonal',
-        query: state.query,
-        format: state.format,
-        hardsub: state.hardsub,
-        sortBy: state.sortBy,
-        season: getCurrentSeasonKey(),
-        year: getCurrentSeasonYear(),
-      }),
-      { replace: true }
-    )
-  }, [
-    state.tab,
-    state.query,
-    state.format,
-    state.hardsub,
-    state.sortBy,
-    searchParams,
-    setSearchParams,
-  ])
+    replaceState({
+      ...state,
+      tab: 'seasonal',
+      season: getCurrentSeasonKey(),
+      year: getCurrentSeasonYear(),
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.tab, searchParams])
 
   useEffect(() => {
     if (!filterOpen) return
-    setDraftFormat(state.format)
-    setDraftHardsub(state.hardsub)
-  }, [filterOpen, state.format, state.hardsub])
+    setDraftFilters(exploreStateToSearchUrlFilters(state))
+  }, [filterOpen, state])
 
   useEffect(() => {
     if (!sortOpen) return
@@ -130,18 +104,7 @@ const Explore = () => {
   }, [seasonOpen, state.season, state.year])
 
   const setTab = (tab: ExploreTab) => {
-    setSearchParams(
-      buildExploreParams({
-        tab,
-        query: state.query,
-        format: state.format,
-        hardsub: state.hardsub,
-        sortBy: state.sortBy,
-        season: state.season,
-        year: state.year,
-      }),
-      { replace: true }
-    )
+    replaceState({ ...state, tab })
   }
 
   const allFilters = useMemo(
@@ -149,9 +112,22 @@ const Explore = () => {
       query: state.query || undefined,
       format: state.format,
       hardsubLanguage: state.hardsub,
+      airingStatus: state.airingStatus,
+      genreSlugs: state.genreSlugs.length > 0 ? state.genreSlugs : undefined,
+      season: state.listSeason,
+      year: state.listYear,
       sortBy: state.sortBy,
     }),
-    [state.query, state.format, state.hardsub, state.sortBy]
+    [
+      state.query,
+      state.format,
+      state.hardsub,
+      state.airingStatus,
+      state.genreSlugs,
+      state.listSeason,
+      state.listYear,
+      state.sortBy,
+    ]
   )
 
   const seasonalFilters = useMemo(
@@ -171,6 +147,7 @@ const Explore = () => {
   const seasonalItems = useExploreAnimeItems(seasonalQuery.data?.pages)
 
   const filterCount = countExploreFilters(state)
+  const listTitle = buildExploreAllListTitle(state, genresQuery.data ?? [])
 
   return (
     <div className="min-h-full pb-24">
@@ -184,7 +161,7 @@ const Explore = () => {
         <>
           <div className="px-4 mt-3">
             <ExploreListToolbar
-              sortLabel={translateExploreSort(state.sortBy)}
+              listTitle={listTitle}
               filterCount={filterCount}
               onFilterClick={() => setFilterOpen(true)}
               onSortClick={() => setSortOpen(true)}
@@ -200,7 +177,7 @@ const Explore = () => {
             isFetchingNextPage={allQuery.isFetchingNextPage}
             onLoadMore={() => void allQuery.fetchNextPage()}
             emptySubtitle={
-              state.query
+              state.query || filterCount > 0
                 ? 'عبارت جستجو یا فیلترها را تغییر دهید.'
                 : 'فیلترها را تغییر دهید.'
             }
@@ -241,30 +218,28 @@ const Explore = () => {
         </div>
       ) : null}
 
-      <ExploreFilterSheet
+      <SearchFiltersSheet
         open={filterOpen}
         onOpenChange={setFilterOpen}
-        draftFormat={draftFormat}
-        draftHardsub={draftHardsub}
-        onDraftFormat={setDraftFormat}
-        onDraftHardsub={setDraftHardsub}
-        onReset={() => {
-          setDraftFormat(null)
-          setDraftHardsub(null)
-        }}
+        draft={draftFilters}
+        onDraftChange={setDraftFilters}
+        showSort={false}
+        showHardsub
+        title="فیلتر"
+        genres={genresQuery.data ?? []}
+        genresLoading={genresQuery.isLoading}
         onApply={() => {
-          setSearchParams(
-            buildExploreParams({
-              tab: 'all',
-              query: state.query,
-              format: draftFormat,
-              hardsub: draftHardsub,
-              sortBy: state.sortBy,
-              season: state.season,
-              year: state.year,
-            }),
-            { replace: true }
-          )
+          replaceState(applySearchUrlFiltersToExplore(state, draftFilters))
+          setFilterOpen(false)
+        }}
+        onReset={() => {
+          const cleared: SearchUrlFilters = {
+            ...DEFAULT_SEARCH_FILTERS,
+            query: state.query,
+            sortBy: state.sortBy,
+          }
+          setDraftFilters(cleared)
+          replaceState(applySearchUrlFiltersToExplore(state, cleared))
           setFilterOpen(false)
         }}
       />
@@ -275,18 +250,7 @@ const Explore = () => {
         draftSort={draftSort}
         onDraftSort={setDraftSort}
         onApply={() => {
-          setSearchParams(
-            buildExploreParams({
-              tab: 'all',
-              query: state.query,
-              format: state.format,
-              hardsub: state.hardsub,
-              sortBy: draftSort,
-              season: state.season,
-              year: state.year,
-            }),
-            { replace: true }
-          )
+          replaceState({ ...state, tab: 'all', sortBy: draftSort })
           setSortOpen(false)
         }}
       />
@@ -301,18 +265,12 @@ const Explore = () => {
         onDraftSeason={setDraftSeason}
         onDraftYear={setDraftYear}
         onApply={() => {
-          setSearchParams(
-            buildExploreParams({
-              tab: 'seasonal',
-              query: state.query,
-              format: state.format,
-              hardsub: state.hardsub,
-              sortBy: state.sortBy,
-              season: draftSeason,
-              year: draftYear,
-            }),
-            { replace: true }
-          )
+          replaceState({
+            ...state,
+            tab: 'seasonal',
+            season: draftSeason,
+            year: draftYear,
+          })
           setSeasonOpen(false)
         }}
       />

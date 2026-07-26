@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import type { GenreAdminItem } from '@/types/catalog'
+import { exploreAllHref } from '@/lib/exploreParams'
 import { genreIconForSlug } from './genreIcons'
 import { ExploreEmptyState } from './ExploreUi'
 
@@ -30,7 +31,7 @@ export const ExploreGenreGrid = ({ genres, isLoading, isError }: ExploreGenreGri
         return (
           <Link
             key={String(genre.id ?? genre.slug)}
-            to={`/search?genre=${encodeURIComponent(genre.slug)}`}
+            to={exploreAllHref({ genreSlugs: [genre.slug] })}
             className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-border bg-muted active:scale-[0.98] transition-transform duration-200"
             aria-label={title}
           >

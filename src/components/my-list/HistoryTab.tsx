@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { Delete02Icon } from 'hugeicons-react'
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
 import { BidiText } from '@/components/BidiText'
 import { useFavoriteAnimeCardsQuery } from '@/hooks/queries/useAnimeQueries'
@@ -9,9 +8,10 @@ import { formatRelativeTimeFa, toPersianNumber } from '@/lib/myListUtils'
 import type { GenreItem } from '@/types/catalog'
 import { MyListAnimeRow, MyListBadge } from '@/components/my-list/MyListAnimeRow'
 import {
+  MyListClearChip,
+  MyListDeleteChip,
   MyListEmptyState,
   MyListErrorState,
-  MyListGhostButton,
   MyListPoster,
   MyListSkeletonCards,
   MyListTabHeader,
@@ -81,15 +81,7 @@ export const HistoryTab = () => {
       <MyListTabHeader
         title="تاریخچه"
         meta={`${toPersianNumber(browseHistory.length)} بازدید`}
-        action={
-          <button
-            type="button"
-            onClick={clearHistory}
-            className="text-xs text-muted-foreground hover:text-red-400 transition-colors"
-          >
-            پاک کردن
-          </button>
-        }
+        action={<MyListClearChip onClick={clearHistory} />}
       />
 
       {loading && <MyListSkeletonCards />}
@@ -121,7 +113,7 @@ export const HistoryTab = () => {
                 >
                   <BidiText
                     as="h3"
-                    className="text-sm font-semibold text-foreground line-clamp-1 text-right leading-5"
+                    className="text-sm font-semibold text-foreground text-end leading-snug line-clamp-2 break-words"
                   >
                     {entry.title}
                   </BidiText>
@@ -140,13 +132,10 @@ export const HistoryTab = () => {
                 </>
               }
               trailing={
-                <MyListGhostButton
+                <MyListDeleteChip
                   aria-label="حذف از تاریخچه"
-                  destructive
                   onClick={() => removeHistoryEntry(entry.animeId)}
-                >
-                  <Delete02Icon className="h-4 w-4" />
-                </MyListGhostButton>
+                />
               }
             />
           ))}

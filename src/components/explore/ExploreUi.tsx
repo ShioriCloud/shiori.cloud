@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils'
 
 /** Shared sticky chrome for Explore list / season headers (keep heights in sync). */
 export const EXPLORE_STICKY_SHELL_CLASS =
-  'sticky top-0 z-20 -mx-4 px-4 py-2.5 bg-background/95 backdrop-blur-md'
+  'sticky top-[var(--app-tg-top-inset)] z-20 -mx-4 px-4 py-2.5 bg-background/95 backdrop-blur-md'
 
 /** Chip style shared by filter/sort buttons and season result count. */
 export const EXPLORE_CHIP_CLASS =

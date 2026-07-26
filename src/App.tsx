@@ -18,6 +18,8 @@ const MyList = lazy(() => import('./pages/MyList'))
 const ShioriListDetail = lazy(() => import('./pages/ShioriListDetail'))
 const Profile = lazy(() => import('./pages/Profile'))
 const Notifications = lazy(() => import('./pages/Notifications'))
+const Support = lazy(() => import('./pages/Support'))
+const SupportTicketDetail = lazy(() => import('./pages/SupportTicketDetail'))
 const TranslatorProfile = lazy(() => import('./pages/TranslatorProfile'))
 const StudioDetail = lazy(() => import('./pages/StudioDetail'))
 // Subscribe page kept for later monetization relaunch (see monetizationFlags.ts)
@@ -70,6 +72,8 @@ function App() {
           <Route path="/donate" element={<Navigate to="/subscribe" replace />} />
           <Route path="/subscribe" element={<Subscribe />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/support/:ticketId" element={<SupportTicketDetail />} />
         </Routes>
       </Suspense>
     </Layout>

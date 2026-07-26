@@ -114,8 +114,8 @@ const StudioDetail = () => {
             {pageTitle ?? `انیمه‌های استودیو ${slug}`}
           </h2>
         )}
-        <Link to="/search" className="text-sm text-muted-foreground shrink-0">
-          جستجو
+        <Link to="/explore?tab=all" className="text-sm text-muted-foreground shrink-0">
+          گشت‌و‌گذار
         </Link>
       </div>
 

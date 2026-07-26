@@ -17,6 +17,7 @@ import { AppHeader } from '@/components/AppHeader'
 import { HomeCustomBlocksSection } from '@/components/home/HomeCustomBlocksSection'
 import { Button } from '@/components/ui/button'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
+import { exploreAllHref } from '@/lib/exploreParams'
 import {
   useHomeDonghuaQuery,
   useHomeFeaturedQuery,
@@ -154,11 +155,14 @@ const Home = () => {
     (): Record<SectionId, { title: string; seeAll: string }> => ({
       latest: {
         title: `فصل ${currentSeasonFa} ${toPersianNumber(currentYearNumber)}`,
-        seeAll: `/search?year=${currentYearNumber}&season=${encodeURIComponent(currentSeasonKey)}`,
+        seeAll: exploreAllHref({
+          listYear: currentYearNumber,
+          listSeason: currentSeasonKey,
+        }),
       },
-      popular: { title: 'محبوب‌ترین‌ها', seeAll: '/search?sort=popular' },
-      donghua: { title: 'دونگهوا', seeAll: '/search?format=DONGHUA' },
-      movies: { title: 'انیمه سینمایی', seeAll: '/search?format=MOVIE' },
+      popular: { title: 'محبوب‌ترین‌ها', seeAll: exploreAllHref({ sortBy: 'popular' }) },
+      donghua: { title: 'دونگهوا', seeAll: exploreAllHref({ format: 'DONGHUA' }) },
+      movies: { title: 'انیمه سینمایی', seeAll: exploreAllHref({ format: 'MOVIE' }) },
     }),
     [currentSeasonFa, currentSeasonKey, currentYearNumber]
   )

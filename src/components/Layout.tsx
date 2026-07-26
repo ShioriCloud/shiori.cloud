@@ -9,6 +9,7 @@ import {
 } from 'hugeicons-react'
 import { AppHeader, APP_HEADER_PAD_CLASS } from '@/components/AppHeader'
 import { useTelegramBackButton } from '@/hooks/useTelegramBackButton'
+import { useTelegramSafeArea } from '@/hooks/useTelegramSafeArea'
 import { cn } from '@/lib/utils'
 
 interface LayoutProps {
@@ -20,6 +21,7 @@ const Layout = ({ children }: LayoutProps) => {
   const [isScrolled, setIsScrolled] = useState(false)
 
   useTelegramBackButton()
+  useTelegramSafeArea()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -72,13 +74,13 @@ const Layout = ({ children }: LayoutProps) => {
       <main
         className={cn(
           'flex-1 pb-20',
-          showFixedHeader && !isTransparentHeaderPage && 'pt-16'
+          showFixedHeader && !isTransparentHeaderPage && 'pt-[var(--app-header-offset)]'
         )}
       >
         {children}
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 pb-[env(safe-area-inset-bottom,0px)]">
+      <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 pb-[var(--app-tg-bottom-inset)]">
         <div className="container">
           <div className="flex justify-around py-4">
             <Link

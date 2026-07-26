@@ -29,4 +29,8 @@ export const queryKeys = {
   donationTokenTiers: ['download-tokens', 'tiers'] as const,
   subscriptionMe: ['subscriptions', 'me'] as const,
   subscriptionPlans: ['subscriptions', 'plans'] as const,
+  supportTickets: (telegramUserId: number) =>
+    ['support-tickets', telegramUserId] as const,
+  supportTicket: (telegramUserId: number, ticketId: string) =>
+    ['support-tickets', telegramUserId, ticketId] as const,
 }

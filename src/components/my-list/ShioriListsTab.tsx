@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft01Icon, Edit02Icon } from 'hugeicons-react'
+import { Add01Icon, ArrowLeft01Icon } from 'hugeicons-react'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -17,12 +17,10 @@ import { useFavoriteAnimeCardsQuery } from '@/hooks/queries/useAnimeQueries'
 import { toPersianNumber } from '@/lib/myListUtils'
 import { cn } from '@/lib/utils'
 import { getListIcon, SHIORI_LIST_ICONS } from './listIcons'
-import { EditListSheet } from './ShioriListEditSheet'
 import {
   MyListCompactCard,
   MyListEmptyState,
   MyListTabHeader,
-  MyListTextAction,
 } from './MyListUi'
 
 const CreateListSheet = ({
@@ -63,13 +61,13 @@ const CreateListSheet = ({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="rounded-t-2xl">
+      <SheetContent side="bottom" className="rounded-t-2xl pb-[var(--app-tg-bottom-inset)]">
         <SheetHeader>
           <SheetTitle>ساخت لیست جدید</SheetTitle>
         </SheetHeader>
-        <div className="py-4 space-y-4">
+        <div className="px-4 pt-4 pb-2 space-y-4">
           <div>
-            <label htmlFor="list-name" className="text-xs text-muted-foreground mb-1.5 block">
+            <label htmlFor="list-name" className="text-sm font-semibold text-foreground mb-2 block">
               نام لیست
             </label>
             <Input
@@ -81,7 +79,7 @@ const CreateListSheet = ({
             />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground mb-2">آیکون</p>
+            <p className="text-sm font-semibold text-foreground mb-2">آیکون</p>
             <div className="flex flex-wrap gap-2">
               {SHIORI_LIST_ICONS.map(({ id, label, Icon }) => (
                 <button
@@ -89,10 +87,10 @@ const CreateListSheet = ({
                   type="button"
                   onClick={() => setIcon(id)}
                   className={cn(
-                    'rounded-lg border p-2.5 transition-colors',
+                    'inline-flex h-11 w-11 items-center justify-center rounded-lg border transition-colors',
                     icon === id
-                      ? 'border-primary-400/50 bg-primary-400/15 text-primary-400'
-                      : 'border-border bg-muted/30 text-muted-foreground hover:bg-muted/50'
+                      ? 'border-primary-400/45 bg-primary-400/15 text-primary-300'
+                      : 'border-border/60 bg-muted/35 text-muted-foreground hover:bg-muted/55 hover:text-foreground'
                   )}
                   aria-label={label}
                 >
@@ -102,13 +100,13 @@ const CreateListSheet = ({
             </div>
           </div>
         </div>
-        <SheetFooter className="gap-2 flex-row">
-          <Button type="button" variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
+        <SheetFooter className="gap-2 flex-row border-t-0">
+          <Button type="button" variant="outline" className="flex-1 h-11" onClick={() => onOpenChange(false)}>
             انصراف
           </Button>
           <Button
             type="button"
-            className="flex-1 bg-primary-500 hover:bg-primary-500/90"
+            className="flex-1 h-11 bg-primary-500 hover:bg-primary-500/90"
             disabled={atLimit}
             onClick={handleCreate}
           >
@@ -130,21 +128,25 @@ const CollectionPosterStack = ({
   const shown = images.slice(0, 3)
   if (shown.length === 0) {
     return (
-      <div className="flex h-[4.25rem] w-[4.25rem] shrink-0 items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20">
-        <FallbackIcon className="h-5 w-5 text-primary-400/50" />
+      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md border border-dashed border-primary-400/25 bg-primary-400/5">
+        <FallbackIcon className="h-5 w-5 text-primary-300/70" />
       </div>
     )
   }
 
   return (
-    <div className="relative h-[4.25rem] w-[4.75rem] shrink-0">
+    <div className="relative h-14 w-[4.25rem] shrink-0">
       {shown.map((src, i) => (
         <div
           key={`${src}-${i}`}
-          className="absolute top-0 w-9 aspect-[2/3] overflow-hidden rounded-md border border-border/80 bg-muted shadow-sm"
-          style={{ insetInlineStart: `${i * 11}px`, zIndex: 3 - i }}
+          className={cn(
+            'absolute top-0 h-14 w-10 overflow-hidden rounded-md',
+            'border border-border/50 bg-muted ring-1 ring-black/20',
+            'shadow-[0_2px_8px_-2px_rgba(0,0,0,0.5)]'
+          )}
+          style={{ insetInlineStart: `${i * 9}px`, zIndex: 3 - i }}
         >
-          <img src={src} alt="" className="h-full w-full object-cover" loading="lazy" />
+          <img src={src} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" />
         </div>
       ))}
     </div>
@@ -157,14 +159,12 @@ const ShioriCollectionCard = ({
   icon,
   animeIds,
   previewImages,
-  onEdit,
 }: {
   id: string
   name: string
   icon: ShioriListIcon
   animeIds: string[]
   previewImages: string[]
-  onEdit: () => void
 }) => {
   const { Icon } = getListIcon(icon)
 
@@ -172,47 +172,60 @@ const ShioriCollectionCard = ({
     <MyListCompactCard className="group overflow-hidden">
       <Link
         to={`/my-list/lists/${id}`}
-        className="block p-2.5 active:scale-[0.995] transition-transform"
+        className="flex items-center gap-2.5 p-2 active:opacity-90 transition-opacity"
         aria-label={`مشاهده لیست ${name}`}
       >
-        <div className="flex items-center gap-3">
-          <CollectionPosterStack images={previewImages} fallbackIcon={Icon} />
-          <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0 text-right flex-1">
-                <h3 className="text-sm font-semibold text-foreground line-clamp-1">{name}</h3>
-                <p className="text-xs text-muted-foreground mt-0.5 tabular-nums">
-                  {toPersianNumber(animeIds.length)} انیمه
-                </p>
-              </div>
-              <button
-                type="button"
-                aria-label="ویرایش لیست"
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  onEdit()
-                }}
-                className="shrink-0 rounded-lg p-1.5 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
-              >
-                <Edit02Icon className="h-3.5 w-3.5" />
-              </button>
-            </div>
-            <div className="mt-2 flex items-center justify-between text-[11px] text-primary-400 font-medium">
-              <span>مشاهده مجموعه</span>
-              <ArrowLeft01Icon className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
-            </div>
+        <CollectionPosterStack images={previewImages} fallbackIcon={Icon} />
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Icon className="h-3.5 w-3.5 shrink-0 text-primary-300" aria-hidden />
+            <h3 className="min-w-0 flex-1 text-sm font-semibold text-foreground line-clamp-1 leading-5">
+              {name}
+            </h3>
           </div>
+          <p className="mt-1 text-xs text-muted-foreground tabular-nums">
+            {toPersianNumber(animeIds.length)} انیمه
+          </p>
         </div>
+
+        <span
+          className={cn(
+            'inline-flex h-8 shrink-0 items-center justify-center gap-1 self-center rounded-md border px-2.5',
+            'border-border/50 bg-muted/35 text-[11px] font-medium text-muted-foreground',
+            'transition-colors group-hover:bg-muted/50 group-hover:text-foreground'
+          )}
+        >
+          مشاهده
+          <ArrowLeft01Icon className="h-3 w-3 transition-transform group-hover:-translate-x-0.5" />
+        </span>
       </Link>
     </MyListCompactCard>
   )
 }
 
+const CreateListCta = ({ onClick }: { onClick: () => void }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={cn(
+      'w-full flex items-center justify-center gap-2 rounded-lg border border-dashed',
+      'border-primary-400/30 bg-primary-400/[0.06] px-4 py-3.5',
+      'text-sm font-medium text-primary-300',
+      'transition-colors hover:bg-primary-400/10 hover:border-primary-400/45',
+      'active:scale-[0.995]'
+    )}
+  >
+    <span className="flex h-7 w-7 items-center justify-center rounded-md border border-primary-400/30 bg-primary-400/10">
+      <Add01Icon className="h-4 w-4" />
+    </span>
+    ساخت لیست جدید
+  </button>
+)
+
 export const ShioriListsTab = () => {
   const customLists = useMyListStore((s) => s.customLists)
   const [createOpen, setCreateOpen] = useState(false)
-  const [editListId, setEditListId] = useState<string | null>(null)
 
   const allAnimeIds = useMemo(
     () => [...new Set(customLists.flatMap((l) => l.animeIds))],
@@ -245,7 +258,7 @@ export const ShioriListsTab = () => {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <MyListTabHeader
         title="شیوری‌لیست"
         meta={
@@ -266,25 +279,13 @@ export const ShioriListsTab = () => {
             previewImages={list.animeIds
               .map((id) => imageById.get(id))
               .filter((src): src is string => Boolean(src))}
-            onEdit={() => setEditListId(list.id)}
           />
         ))}
       </div>
 
-      {!atLimit && (
-        <MyListTextAction onClick={() => setCreateOpen(true)}>
-          + ساخت لیست جدید
-        </MyListTextAction>
-      )}
+      {!atLimit ? <CreateListCta onClick={() => setCreateOpen(true)} /> : null}
 
       <CreateListSheet open={createOpen} onOpenChange={setCreateOpen} />
-      <EditListSheet
-        listId={editListId}
-        open={Boolean(editListId)}
-        onOpenChange={(open) => {
-          if (!open) setEditListId(null)
-        }}
-      />
     </div>
   )
 }

@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { MinusSignIcon, PlusSignIcon, StarIcon } from 'hugeicons-react'
+import { Link } from 'react-router-dom'
+import { ArrowLeft01Icon, MinusSignIcon, PlusSignIcon } from 'hugeicons-react'
 import type { FavoriteProgress } from '../store/animeStore'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetFooter,
   SheetHeader,
   SheetTitle,
@@ -32,6 +32,8 @@ type Props = {
   onOpenChange: (open: boolean) => void
   title: string
   image: string
+  /** When set, shows a link next to the title to open the anime page. */
+  detailHref?: string
   episodesCount: number
   progress: FavoriteProgress
   saving?: boolean
@@ -44,6 +46,7 @@ const FavoriteAnimeEditor = ({
   onOpenChange,
   title,
   image,
+  detailHref,
   episodesCount,
   progress,
   saving = false,
@@ -148,7 +151,8 @@ const FavoriteAnimeEditor = ({
             : undefined
         }
         className={cn(
-          'flex max-h-[88vh] flex-col overflow-hidden rounded-t-2xl border-t border-border bg-background p-0 pb-8',
+          'flex max-h-[88vh] flex-col overflow-hidden rounded-t-2xl border-t border-border bg-background p-0',
+          'pb-[max(1rem,var(--app-tg-bottom-inset))]',
           isSheetMoved && '[animation:none!important]',
           !isDragging &&
             dragOffset !== 0 &&
@@ -168,11 +172,27 @@ const FavoriteAnimeEditor = ({
             <div className="h-1.5 w-12 rounded-full bg-muted-foreground/35" />
           </div>
 
-          <SheetHeader className="space-y-1 border-b-0 px-4 pb-0 pt-0 text-right">
-            <SheetTitle className="line-clamp-2 text-base leading-7">
-              <BidiText>{title}</BidiText>
-            </SheetTitle>
-            <SheetDescription>پیشرفت تماشا و امتیاز شخصی</SheetDescription>
+          <SheetHeader className="space-y-0 border-b-0 px-4 pb-0 pt-0 text-right">
+            <div className="flex items-start gap-2">
+              <SheetTitle className="min-w-0 flex-1 line-clamp-2 text-base leading-7">
+                <BidiText>{title}</BidiText>
+              </SheetTitle>
+              {detailHref ? (
+                <Link
+                  to={detailHref}
+                  onClick={() => onOpenChange(false)}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  className={cn(
+                    'inline-flex h-9 shrink-0 items-center gap-1 rounded-lg border px-2.5',
+                    'border-border/50 bg-muted/35 text-xs font-medium text-muted-foreground',
+                    'transition-colors hover:bg-muted/50 hover:text-foreground active:scale-[0.98]'
+                  )}
+                >
+                  صفحه انیمه
+                  <ArrowLeft01Icon className="h-3.5 w-3.5" />
+                </Link>
+              ) : null}
+            </div>
           </SheetHeader>
         </div>
 
@@ -182,22 +202,22 @@ const FavoriteAnimeEditor = ({
               <img src={image} alt="" className="h-full w-full object-cover" />
             </div>
 
-            <div className="min-w-0 flex-1 space-y-4">
+            <div className="min-w-0 flex-1 space-y-5">
               <div>
-                <p className="mb-2 text-xs font-medium text-muted-foreground">قسمت‌های دیده‌شده</p>
+                <p className="mb-2.5 text-xs font-medium text-muted-foreground">قسمت‌های دیده‌شده</p>
                 <div className="flex items-center justify-between gap-2">
                   <Button
                     type="button"
                     size="icon"
                     variant="secondary"
-                    className="h-9 w-9 shrink-0"
+                    className="h-11 w-11 shrink-0"
                     disabled={episodesWatched <= 0}
                     onClick={() => bumpEpisodes(-1)}
                   >
-                    <MinusSignIcon className="h-4 w-4" />
+                    <MinusSignIcon className="h-5 w-5" />
                   </Button>
                   <div className="flex-1 text-center">
-                    <p className="text-lg font-bold tabular-nums">
+                    <p className="text-xl font-bold tabular-nums">
                       {toPersianNumber(episodesWatched)}
                       <span className="mx-1 text-sm font-normal text-muted-foreground">/</span>
                       {toPersianNumber(maxEpisodes)}
@@ -208,11 +228,11 @@ const FavoriteAnimeEditor = ({
                     type="button"
                     size="icon"
                     variant="secondary"
-                    className="h-9 w-9 shrink-0"
+                    className="h-11 w-11 shrink-0"
                     disabled={episodesWatched >= maxEpisodes}
                     onClick={() => bumpEpisodes(1)}
                   >
-                    <PlusSignIcon className="h-4 w-4" />
+                    <PlusSignIcon className="h-5 w-5" />
                   </Button>
                 </div>
                 <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
@@ -225,8 +245,7 @@ const FavoriteAnimeEditor = ({
                   <Button
                     type="button"
                     variant="outline"
-                    size="sm"
-                    className="mt-3 w-full text-xs"
+                    className="mt-3 h-10 w-full text-sm"
                     disabled={saving}
                     onClick={() => setEpisodesWatched(maxEpisodes)}
                   >
@@ -236,8 +255,8 @@ const FavoriteAnimeEditor = ({
               </div>
 
               <div>
-                <p className="mb-2 text-xs font-medium text-muted-foreground">امتیاز شما</p>
-                <div className="grid grid-cols-5 gap-1.5">
+                <p className="mb-2.5 text-xs font-medium text-muted-foreground">امتیاز شما</p>
+                <div className="grid grid-cols-5 gap-2">
                   {Array.from({ length: 10 }, (_, i) => i + 1).map((score) => {
                     const active = userRating === score
                     return (
@@ -246,7 +265,7 @@ const FavoriteAnimeEditor = ({
                         type="button"
                         onClick={() => setUserRating(active ? null : score)}
                         className={cn(
-                          'h-9 rounded-lg border text-sm font-semibold tabular-nums transition-colors',
+                          'h-11 rounded-lg border text-sm font-semibold tabular-nums transition-colors',
                           active
                             ? 'border-primary-400/50 bg-primary-500/20 text-primary-300'
                             : 'border-border bg-card/60 text-muted-foreground hover:bg-muted/50'
@@ -257,37 +276,31 @@ const FavoriteAnimeEditor = ({
                     )
                   })}
                 </div>
-                {userRating != null && (
-                  <p className="mt-2 flex items-center gap-1 text-[11px] text-primary-300">
-                    <StarIcon className="h-3.5 w-3.5 fill-primary-400 text-primary-400" />
-                    {toPersianNumber(userRating)} از ۱۰
-                  </p>
-                )}
               </div>
             </div>
           </div>
         </div>
 
-        <SheetFooter className="mt-2 flex-col gap-2 border-t-0 px-4 sm:flex-col">
+        <SheetFooter className="mt-3 flex-row gap-2 border-t-0 px-4 sm:flex-row">
           <Button
             type="button"
-            className="w-full"
+            className="h-11 flex-1"
             disabled={saving}
             onClick={() => onSave({ episodesWatched, userRating })}
           >
             {saving ? 'در حال ذخیره…' : 'ذخیره'}
           </Button>
-          {onRemove && (
+          {onRemove ? (
             <Button
               type="button"
-              variant="destructive"
-              className="w-full"
+              variant="outline"
+              className="h-11 flex-1"
               disabled={saving}
               onClick={onRemove}
             >
-              حذف از علاقه‌مندی‌ها
+              حذف
             </Button>
-          )}
+          ) : null}
         </SheetFooter>
       </SheetContent>
     </Sheet>

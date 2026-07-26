@@ -1,6 +1,8 @@
-import type { ReactNode } from 'react'
+import type { MouseEvent, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { Delete02Icon } from 'hugeicons-react'
 import { Button } from '@/components/ui/button'
+import { EXPLORE_CHIP_CLASS } from '@/components/explore/ExploreUi'
 import { cn } from '@/lib/utils'
 import emptyListImage from '@/assets/images/frieren-03.webp'
 
@@ -19,13 +21,58 @@ export const MyListTabHeader = ({
     <h2 className="text-sm font-semibold text-foreground truncate">{title}</h2>
     <div className="flex items-center gap-2 shrink-0">
       {meta ? (
-        <span className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
-          {meta}
-        </span>
+        <span className={cn(EXPLORE_CHIP_CLASS, 'shrink-0 tabular-nums')}>{meta}</span>
       ) : null}
       {action}
     </div>
   </div>
+)
+
+/** Header clear action — same chip size as Explore/MyList meta badges. */
+export const MyListClearChip = ({
+  onClick,
+  children = 'پاک کردن',
+  'aria-label': ariaLabel,
+}: {
+  onClick?: () => void
+  children?: ReactNode
+  'aria-label'?: string
+}) => (
+  <button
+    type="button"
+    aria-label={ariaLabel}
+    onClick={onClick}
+    className={cn(
+      EXPLORE_CHIP_CLASS,
+      'shrink-0 border-border/50 bg-muted/35 text-muted-foreground',
+      'hover:bg-muted/50 hover:text-foreground'
+    )}
+  >
+    {children}
+  </button>
+)
+
+/** Compact delete chip — shared by History / list-detail anime rows. */
+export const MyListDeleteChip = ({
+  onClick,
+  'aria-label': ariaLabel = 'حذف',
+}: {
+  onClick?: (e: MouseEvent<HTMLButtonElement>) => void
+  'aria-label'?: string
+}) => (
+  <button
+    type="button"
+    aria-label={ariaLabel}
+    onClick={onClick}
+    className={cn(
+      'inline-flex h-7 shrink-0 items-center justify-center gap-1 rounded-md border px-2',
+      'border-border/50 bg-muted/35 text-[11px] font-medium text-muted-foreground',
+      'transition-colors hover:bg-muted/50 hover:text-foreground'
+    )}
+  >
+    <Delete02Icon className="h-3.5 w-3.5" />
+    حذف
+  </button>
 )
 
 /** @deprecated */
@@ -38,15 +85,33 @@ export const MyListCompactCard = ({
   children,
   className,
   as: Tag = 'article',
+  onClick,
 }: {
   children: ReactNode
   className?: string
   as?: 'article' | 'section' | 'div'
+  onClick?: () => void
 }) => (
   <Tag
+    role={onClick ? 'button' : undefined}
+    tabIndex={onClick ? 0 : undefined}
+    onClick={onClick}
+    onKeyDown={
+      onClick
+        ? (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              onClick()
+            }
+          }
+        : undefined
+    }
     className={cn(
-      'rounded-xl border border-border/50 bg-card/50',
-      'transition-transform duration-150 active:scale-[0.995]',
+      'rounded-lg border border-border/40 bg-card/55',
+      'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]',
+      'transition-[transform,background-color,border-color] duration-150',
+      'active:scale-[0.995] active:bg-card/70',
+      onClick && 'cursor-pointer',
       className
     )}
   >
@@ -68,12 +133,18 @@ export const MyListPoster = ({
 }) => (
   <div
     className={cn(
-      'relative w-14 aspect-[2/3] shrink-0 overflow-hidden rounded-lg',
-      'border border-border/80 bg-muted',
+      'relative w-12 aspect-[2/3] shrink-0 overflow-hidden rounded-md',
+      'border border-border/50 bg-muted ring-1 ring-black/20',
       className
     )}
   >
-    <img src={src} alt={alt} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+    <img
+      src={src}
+      alt={alt}
+      className="absolute inset-0 h-full w-full object-cover"
+      loading="lazy"
+      decoding="async"
+    />
   </div>
 )
 
@@ -89,12 +160,12 @@ export const MyListPosterThumb = ({
   size?: 'sm' | 'md' | 'lg'
   className?: string
 }) => {
-  const sizes = { sm: 'w-11', md: 'w-14', lg: 'w-16' }
+  const sizes = { sm: 'w-10', md: 'w-12', lg: 'w-14' }
   return <MyListPoster src={src} alt={alt} className={cn(size ? sizes[size] : undefined, className)} />
 }
 
 export const MyListProgressBar = ({ percent }: { percent: number }) => (
-  <div className="my-list-progress">
+  <div className="my-list-progress mt-0.5">
     <div
       className="my-list-progress-fill"
       style={{ width: `${Math.min(100, Math.max(0, percent))}%` }}
@@ -109,12 +180,7 @@ export const MyListBadgeRow = ({
   children: ReactNode
   className?: string
 }) => (
-  <div
-    className={cn(
-      'flex items-center gap-1 overflow-x-auto scrollbar-none',
-      className
-    )}
-  >
+  <div className={cn('flex items-center gap-1 overflow-x-auto scrollbar-none', className)}>
     {children}
   </div>
 )
@@ -129,18 +195,19 @@ export const MyListBadge = ({
   className?: string
 }) => {
   const tones = {
-    default: 'border-border/60 bg-muted/40 text-muted-foreground',
-    primary: 'border-primary-400/30 bg-primary-400/10 text-primary-400',
-    muted: 'border-border/50 bg-background/40 text-muted-foreground',
-    success: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400',
-    warning: 'border-amber-500/20 bg-amber-500/10 text-amber-400',
-    time: 'border-primary-400/25 bg-primary-400/10 text-primary-400',
+    default: 'border-white/15 bg-white/12 text-white/90',
+    primary: 'border-primary-400/35 bg-primary-400/20 text-primary-100',
+    muted: 'border-white/15 bg-white/12 text-white/85',
+    success: 'border-emerald-400/30 bg-emerald-400/20 text-emerald-200',
+    warning: 'border-amber-400/30 bg-amber-400/20 text-amber-200',
+    time: 'border-primary-400/35 bg-primary-400/20 text-primary-100',
   }
   return (
     <span
       className={cn(
-        'inline-flex shrink-0 items-center rounded-md border px-1.5 py-px',
-        'text-[10px] leading-4 font-medium whitespace-nowrap',
+        'inline-flex shrink-0 items-center rounded-md border px-1.5 py-1',
+        'text-[10px] leading-none font-medium whitespace-nowrap',
+        'backdrop-blur-md shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]',
         tones[tone],
         className
       )}
@@ -205,13 +272,13 @@ export const MyListSkeletonCards = ({ count = 4 }: { count?: number }) => (
     {Array.from({ length: count }).map((_, i) => (
       <div
         key={i}
-        className="animate-pulse flex gap-2.5 rounded-xl border border-border/40 bg-card/30 p-2.5"
+        className="animate-pulse flex gap-2 rounded-lg border border-border/40 bg-card/40 p-2"
       >
-        <div className="w-14 aspect-[2/3] rounded-lg bg-muted shrink-0" />
-        <div className="flex-1 space-y-2 py-0.5">
-          <div className="h-3.5 bg-muted rounded w-4/5" />
-          <div className="h-3 bg-muted/70 rounded w-2/3" />
-          <div className="h-1 bg-muted/50 rounded-full w-full" />
+        <div className="w-12 aspect-[2/3] rounded-md bg-muted shrink-0" />
+        <div className="flex-1 space-y-1.5 py-0.5">
+          <div className="h-3.5 bg-muted rounded-md w-4/5" />
+          <div className="h-3 bg-muted/70 rounded-md w-1/2" />
+          <div className="h-1 bg-muted/50 rounded-full w-full mt-1" />
         </div>
       </div>
     ))}
@@ -226,7 +293,7 @@ export const MyListGhostButton = ({
   'aria-label': ariaLabel,
 }: {
   children: ReactNode
-  onClick?: () => void
+  onClick?: (e: MouseEvent<HTMLButtonElement>) => void
   className?: string
   destructive?: boolean
   'aria-label'?: string

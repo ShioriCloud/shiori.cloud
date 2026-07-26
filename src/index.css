@@ -14,6 +14,29 @@
     @apply bg-background text-foreground;
   }
   :root {
+    /*
+      Telegram Mini App (Bot API 8.0+): device notch + Telegram UI chrome.
+      JS may also set these on :root; defaults keep browser / old clients at 0.
+    */
+    --tg-safe-area-inset-top: 0px;
+    --tg-safe-area-inset-bottom: 0px;
+    --tg-safe-area-inset-left: 0px;
+    --tg-safe-area-inset-right: 0px;
+    --tg-content-safe-area-inset-top: 0px;
+    --tg-content-safe-area-inset-bottom: 0px;
+    --tg-content-safe-area-inset-left: 0px;
+    --tg-content-safe-area-inset-right: 0px;
+    --app-tg-top-inset: calc(
+      max(var(--tg-safe-area-inset-top), env(safe-area-inset-top, 0px)) +
+        var(--tg-content-safe-area-inset-top)
+    );
+    --app-tg-bottom-inset: calc(
+      max(var(--tg-safe-area-inset-bottom), env(safe-area-inset-bottom, 0px)) +
+        var(--tg-content-safe-area-inset-bottom)
+    );
+    /* AppHeader: top inset + py-2.5 + h-9 + pb-2.5 */
+    --app-header-offset: calc(var(--app-tg-top-inset) + 3.5rem);
+
     --background: 0.145 0 0;
     --foreground: 0.985 0 0;
     --card: 0.205 0 0;
@@ -293,11 +316,11 @@
   }
 
   .my-list-progress {
-    @apply h-0.5 overflow-hidden rounded-full bg-muted/60;
+    @apply h-1 overflow-hidden rounded-full bg-muted/50;
   }
 
   .my-list-progress-fill {
-    @apply h-full rounded-full bg-gradient-to-l from-primary-400 to-primary-500 transition-all duration-500 ease-out;
+    @apply h-full rounded-full bg-gradient-to-l from-primary-400/90 to-primary-500 transition-all duration-500 ease-out;
   }
 
   @keyframes my-list-fade-in {

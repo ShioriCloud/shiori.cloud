@@ -27,6 +27,7 @@ import { cn } from '@/lib/utils'
 import {
   SEARCH_AIRING_STATUSES,
   SEARCH_FORMATS,
+  SEARCH_HARDSUB_LANGUAGES,
   SEARCH_SEASONS,
   SEARCH_SORT_OPTIONS,
   buildSearchYearOptions,
@@ -44,6 +45,10 @@ type SearchFiltersSheetProps = {
   onReset: () => void
   genres: GenreAdminItem[]
   genresLoading?: boolean
+  /** Explore keeps sort in a separate sheet. */
+  showSort?: boolean
+  showHardsub?: boolean
+  title?: string
 }
 
 const genreLabel = (g: GenreAdminItem) => g.name_fa || g.name_en || g.slug
@@ -213,6 +218,9 @@ export const SearchFiltersSheet = ({
   onReset,
   genres,
   genresLoading,
+  showSort = true,
+  showHardsub = false,
+  title = 'فیلتر و مرتب‌سازی',
 }: SearchFiltersSheetProps) => {
   const years = useMemo(() => buildSearchYearOptions(12), [])
 
@@ -231,24 +239,26 @@ export const SearchFiltersSheet = ({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="flex max-h-[88vh] flex-col rounded-t-2xl p-0">
         <SheetHeader className="shrink-0 border-b border-border/60 px-4 py-3">
-          <SheetTitle className="text-base">فیلتر و مرتب‌سازی</SheetTitle>
+          <SheetTitle className="text-base">{title}</SheetTitle>
         </SheetHeader>
 
         <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 py-4">
-          <section>
-            <SectionTitle>مرتب‌سازی</SectionTitle>
-            <OptionGrid>
-              {SEARCH_SORT_OPTIONS.map((option) => (
-                <OptionButton
-                  key={option.key}
-                  active={draft.sortBy === option.key}
-                  onClick={() => setDraft({ sortBy: option.key })}
-                >
-                  {option.label}
-                </OptionButton>
-              ))}
-            </OptionGrid>
-          </section>
+          {showSort ? (
+            <section>
+              <SectionTitle>مرتب‌سازی</SectionTitle>
+              <OptionGrid>
+                {SEARCH_SORT_OPTIONS.map((option) => (
+                  <OptionButton
+                    key={option.key}
+                    active={draft.sortBy === option.key}
+                    onClick={() => setDraft({ sortBy: option.key })}
+                  >
+                    {option.label}
+                  </OptionButton>
+                ))}
+              </OptionGrid>
+            </section>
+          ) : null}
 
           <section>
             <SectionTitle>فیلتر سریع</SectionTitle>
@@ -396,6 +406,29 @@ export const SearchFiltersSheet = ({
               onChange={(genreSlugs) => setDraft({ genreSlugs })}
             />
           </section>
+
+          {showHardsub ? (
+            <section>
+              <SectionTitle>زبان زیرنویس</SectionTitle>
+              <OptionGrid>
+                <OptionButton
+                  active={draft.hardsubLanguage == null}
+                  onClick={() => setDraft({ hardsubLanguage: null })}
+                >
+                  همه
+                </OptionButton>
+                {SEARCH_HARDSUB_LANGUAGES.map((option) => (
+                  <OptionButton
+                    key={option.key}
+                    active={draft.hardsubLanguage === option.key}
+                    onClick={() => setDraft({ hardsubLanguage: option.key })}
+                  >
+                    {option.label}
+                  </OptionButton>
+                ))}
+              </OptionGrid>
+            </section>
+          ) : null}
         </div>
 
         <SheetFooter className="shrink-0 flex-row gap-3 border-t border-border/60 px-4 py-4 sm:flex-row">

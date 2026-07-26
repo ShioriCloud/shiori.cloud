@@ -9,7 +9,7 @@ const Notifications = () => {
 
   return (
     <div className="pb-24">
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm">
+      <div className="sticky top-[var(--app-header-offset)] z-10 bg-background/95 backdrop-blur-sm">
         <div className="px-4 py-4 flex items-center justify-between border-b border-border">
           <div className="flex items-center gap-2">
             <AlarmClockIcon className="w-6 h-6 text-muted-foreground" />

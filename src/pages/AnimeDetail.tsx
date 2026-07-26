@@ -40,6 +40,7 @@ import {
 } from '../utils/externalLinks'
 import { isAnimeDetailShell } from '../utils/api'
 import { animeCardMatchesRouteParam, animeDetailPath, animePublicSegment } from '../lib/animePaths'
+import { exploreAllHref } from '@/lib/exploreParams'
 import { MediaSpecTags } from '../components/anime/MediaSpecTags'
 import {
   normalizeVideoEncode,
@@ -1584,9 +1585,7 @@ const AnimeDetail = () => {
                   type="button"
                   className="text-[10px] px-2 py-0.5 rounded-md bg-primary-500/15 border border-primary-400/25 text-primary-300 hover:bg-primary-500/25 transition-colors"
                   onClick={() =>
-                    navigate(
-                      `/search?genre=${encodeURIComponent(genre.slug)}&label=${encodeURIComponent(genreLabel(genre))}`
-                    )
+                    navigate(exploreAllHref({ genreSlugs: [genre.slug] }))
                   }
                 >
                   {genreLabel(genre)}
@@ -1705,7 +1704,7 @@ const AnimeDetail = () => {
       )}
 
       {/* Main tabs — sticky زیر هدر، استایل مثل Home */}
-      <div className="sticky top-14 z-30 px-4 pt-5 pb-2 bg-background/90 backdrop-blur-md border-b border-border/50">
+      <div className="sticky top-[var(--app-header-offset)] z-30 px-4 pt-5 pb-2 bg-background/90 backdrop-blur-md border-b border-border/50">
         <SegmentedTabs tabs={MAIN_TABS} active={activeTab} onChange={handleMainTabChange} />
       </div>
 
@@ -1778,7 +1777,14 @@ const AnimeDetail = () => {
                     onClick={() => {
                       const seasonKey = String(anime.season).toUpperCase()
                       navigate(
-                        `/search?year=${anime.year}&season=${encodeURIComponent(seasonKey)}`
+                        exploreAllHref({
+                          listYear: anime.year,
+                          listSeason: seasonKey as
+                            | 'WINTER'
+                            | 'SPRING'
+                            | 'SUMMER'
+                            | 'FALL',
+                        })
                       )
                     }}
                   >

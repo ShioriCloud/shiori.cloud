@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { Add01Icon, Delete02Icon, Edit02Icon } from 'hugeicons-react'
+import { Add01Icon, Edit02Icon } from 'hugeicons-react'
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
 import { BidiText } from '@/components/BidiText'
 import { Button } from '@/components/ui/button'
@@ -8,17 +8,21 @@ import { useFavoriteAnimeCardsQuery } from '@/hooks/queries/useAnimeQueries'
 import { useMyListStore } from '@/store/myListStore'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
 import { toPersianNumber } from '@/lib/myListUtils'
+import { translateSeason } from '@/lib/searchFilters'
 import { getListIcon } from '@/components/my-list/listIcons'
-import { MyListAnimeRow } from '@/components/my-list/MyListAnimeRow'
+import { MyListAnimeRow, MyListBadge } from '@/components/my-list/MyListAnimeRow'
 import {
+  MyListDeleteChip,
   MyListEmptyState,
-  MyListGhostButton,
   MyListPoster,
   MyListSkeletonCards,
   MyListTabHeader,
 } from '@/components/my-list/MyListUi'
 import { EditListSheet } from '@/components/my-list/ShioriListEditSheet'
 import { cn } from '@/lib/utils'
+import type { GenreItem } from '@/types/catalog'
+
+const genreLabel = (g: GenreItem) => g.name_fa || g.name_en || g.slug
 
 const ShioriListDetail = () => {
   const { listId } = useParams<{ listId: string }>()
@@ -62,7 +66,7 @@ const ShioriListDetail = () => {
     <div className="pb-24">
       <div
         className={cn(
-          'sticky top-16 z-20 px-4 py-2.5',
+          'sticky top-[var(--app-header-offset)] z-20 px-4 py-2.5',
           'bg-background/95 backdrop-blur-md border-b border-border/60'
         )}
       >
@@ -118,44 +122,75 @@ const ShioriListDetail = () => {
 
             {!loading && items.length > 0 && (
               <div className="space-y-2">
-                {items.map((anime) => (
-                  <MyListAnimeRow
-                    key={anime.id}
-                    image={anime.image}
-                    link={
-                      <AnimePrefetchLink
-                        animeId={animePublicSegment(anime)}
-                        to={animeDetailPath(anime)}
-                        className="shrink-0 active:scale-[0.97] transition-transform"
-                      >
-                        <MyListPoster src={anime.image} />
-                      </AnimePrefetchLink>
-                    }
-                    title={
-                      <AnimePrefetchLink
-                        animeId={animePublicSegment(anime)}
-                        to={animeDetailPath(anime)}
-                        className="block active:scale-[0.99] transition-transform"
-                      >
-                        <BidiText
-                          as="h3"
-                          className="text-sm font-semibold text-foreground line-clamp-1 text-right leading-5"
+                {items.map((anime) => {
+                  const episodes =
+                    typeof anime.episodes_count === 'number' && anime.episodes_count > 0
+                      ? anime.episodes_count
+                      : null
+                  const seasonKey = anime.season ? String(anime.season).toUpperCase() : ''
+                  const seasonYearLabel =
+                    seasonKey && typeof anime.year === 'number'
+                      ? `${translateSeason(seasonKey)} ${toPersianNumber(anime.year)}`
+                      : typeof anime.year === 'number'
+                        ? toPersianNumber(anime.year)
+                        : seasonKey
+                          ? translateSeason(seasonKey)
+                          : null
+                  const genres = (anime.genres ?? []).slice(0, 2)
+
+                  return (
+                    <MyListAnimeRow
+                      key={String(anime.id)}
+                      image={anime.image}
+                      link={
+                        <AnimePrefetchLink
+                          animeId={animePublicSegment(anime)}
+                          to={animeDetailPath(anime)}
+                          className="shrink-0 active:scale-[0.97] transition-transform"
                         >
-                          {anime.title}
-                        </BidiText>
-                      </AnimePrefetchLink>
-                    }
-                    trailing={
-                      <MyListGhostButton
-                        aria-label="حذف از لیست"
-                        destructive
-                        onClick={() => removeAnimeFromList(list.id, anime.id)}
-                      >
-                        <Delete02Icon className="h-4 w-4" />
-                      </MyListGhostButton>
-                    }
-                  />
-                ))}
+                          <MyListPoster src={anime.image} />
+                        </AnimePrefetchLink>
+                      }
+                      title={
+                        <AnimePrefetchLink
+                          animeId={animePublicSegment(anime)}
+                          to={animeDetailPath(anime)}
+                          className="block active:scale-[0.99] transition-transform"
+                        >
+                          <BidiText
+                            as="h3"
+                            className="text-sm font-semibold text-foreground text-end leading-snug line-clamp-2 break-words"
+                          >
+                            {anime.title}
+                          </BidiText>
+                        </AnimePrefetchLink>
+                      }
+                      badges={
+                        <>
+                          {genres.map((g) => (
+                            <MyListBadge key={g.slug} tone="muted">
+                              {genreLabel(g)}
+                            </MyListBadge>
+                          ))}
+                          {episodes != null ? (
+                            <MyListBadge tone="default">
+                              {toPersianNumber(episodes)} قسمت
+                            </MyListBadge>
+                          ) : null}
+                          {seasonYearLabel ? (
+                            <MyListBadge tone="default">{seasonYearLabel}</MyListBadge>
+                          ) : null}
+                        </>
+                      }
+                      trailing={
+                        <MyListDeleteChip
+                          aria-label="حذف از لیست"
+                          onClick={() => removeAnimeFromList(list.id, String(anime.id))}
+                        />
+                      }
+                    />
+                  )
+                })}
               </div>
             )}
           </>
