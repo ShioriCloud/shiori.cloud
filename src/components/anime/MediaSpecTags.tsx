@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import {
+  hardsubLanguageLabel,
   mediaSpecTagLabel,
   normalizeVideoFileType,
   type HardsubLanguage,
@@ -19,14 +20,18 @@ export function MediaSpecTags({
   className,
 }: MediaSpecTagsProps) {
   const fileType = normalizeVideoFileType(videoFileType)
-  // Softsub is already labeled by the episode-kind tab; only hardsub needs a chip.
-  if (fileType !== 'hardsub') return null
-
-  const label = mediaSpecTagLabel({
-    video_file_type: fileType,
-    hardsub_language: hardsubLanguage,
-  })
   const isEnglishHardsub = hardsubLanguage === 'en'
+
+  // Softsub + Persian: no chip. English hardsub language always gets a notice.
+  // Persian hardsub keeps the existing hardsub chip.
+  if (!isEnglishHardsub && fileType !== 'hardsub') return null
+
+  const label = isEnglishHardsub
+    ? hardsubLanguageLabel('en')
+    : mediaSpecTagLabel({
+        video_file_type: fileType,
+        hardsub_language: hardsubLanguage,
+      })
 
   return (
     <Badge
