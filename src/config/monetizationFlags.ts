@@ -12,7 +12,8 @@ export const ENABLE_SUBSCRIPTION_DOWNLOAD_GATE = false
 export const ENABLE_FREE_TOKEN_WALLET_UI = false
 
 /**
- * When false (launch): download sub-tabs are «قسمت‌ها» + «زیرنویس».
+ * When false (launch): download sub-tabs are «قسمت‌ها» + «زیرنویس»,
+ * and «قسمت‌ها» only lists free episodes (softsub/hardsub hidden).
  * When true: show softsub / hardsub / free kind tabs again.
  */
 export const SHOW_HARD_AND_FREE_DOWNLOAD_TABS = false

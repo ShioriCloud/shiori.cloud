@@ -1404,8 +1404,9 @@ const AnimeDetail = () => {
 
   const episodesForList = useMemo(() => {
     if (!anime) return []
+    // Launch UX: only free episodes in mini-app; softsub/hardsub stay admin-only until gates reopen.
     const kindFilter: EpisodeKindTab = useLaunchDownloadTabs
-      ? 'softsub'
+      ? 'free'
       : episodeKindTab
     return (anime.episodes || [])
       .filter((e) => (e.video_file_type ?? 'softsub') === kindFilter)
@@ -1910,11 +1911,9 @@ const AnimeDetail = () => {
               ) : null}
               {episodePackAvailable &&
               anime.episode_pack &&
-              (useLaunchDownloadTabs
-                ? launchDownloadTab === 'episodes'
-                : episodeKindTab !== 'free') &&
-              (useLaunchDownloadTabs ||
-                episodeKindTab === videoFileType ||
+              !useLaunchDownloadTabs &&
+              episodeKindTab !== 'free' &&
+              (episodeKindTab === videoFileType ||
                 (ENABLE_SUBSCRIPTION_DOWNLOAD_GATE && hasActiveSubscription)) ? (
                 <EpisodePackDownloadCard
                   pack={anime.episode_pack}
@@ -1965,11 +1964,13 @@ const AnimeDetail = () => {
                 usingMockFreeEpisodes
               ) ? (
                 <p className="text-xs text-muted-foreground text-center py-6">
-                  {allEpisodesCount === 0 &&
-                  episodePackAvailable &&
-                  (useLaunchDownloadTabs || episodeKindTab === videoFileType)
-                    ? 'لینک تک‌تک قسمت‌ها هنوز ثبت نشده.'
-                    : 'قسمتی در این دسته ثبت نشده'}
+                  {useLaunchDownloadTabs
+                    ? 'قسمت رایگانی برای دانلود ثبت نشده'
+                    : allEpisodesCount === 0 &&
+                        episodePackAvailable &&
+                        episodeKindTab === videoFileType
+                      ? 'لینک تک‌تک قسمت‌ها هنوز ثبت نشده.'
+                      : 'قسمتی در این دسته ثبت نشده'}
                 </p>
               ) : !useLaunchDownloadTabs &&
                 episodeKindTab === 'free' &&
@@ -2072,7 +2073,8 @@ const AnimeDetail = () => {
                         !hasActiveSubscription
                       }
                       showSubtitleButton={
-                        (useLaunchDownloadTabs || episodeKindTab === 'softsub') &&
+                        !useLaunchDownloadTabs &&
+                        episodeKindTab === 'softsub' &&
                         videoFileType === 'softsub' &&
                         (!isFinished || isMovie) &&
                         (!ENABLE_SUBSCRIPTION_DOWNLOAD_GATE || hasActiveSubscription)
