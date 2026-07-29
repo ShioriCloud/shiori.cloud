@@ -337,6 +337,16 @@ export const fetchAnimeById = async (
     viewCount: typeof detail.viewCount === 'number' ? detail.viewCount : undefined,
     anilist_id: detail.anilist_id,
     mal_id: detail.mal_id,
+    next_airing: (() => {
+      const raw = detail.next_airing
+      if (!raw) return null
+      const episode = Number(raw.episode)
+      const airingAt = Number(raw.airing_at)
+      if (!Number.isFinite(episode) || !Number.isFinite(airingAt) || airingAt <= 0) {
+        return null
+      }
+      return { episode, airing_at: airingAt }
+    })(),
     studios: parts.studioNames,
     studio_links: studioLinks,
     producers: [],
@@ -389,6 +399,7 @@ export const buildAnimeDetailPlaceholder = (card: UiAnimeCard): AnimeDetailShell
   viewCount: card.viewCount,
   anilist_id: undefined,
   mal_id: undefined,
+  next_airing: null,
   studios: [],
   studio_links: [],
   producers: [],

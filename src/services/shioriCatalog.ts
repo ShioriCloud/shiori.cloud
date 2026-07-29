@@ -49,6 +49,7 @@ type ApiDetail = ApiCard & {
   episode_pack_title?: string | null
   episode_pack_link?: string | null
   episode_pack_available?: boolean
+  next_airing?: { episode: number; airing_at: number } | null
   episodes?: Array<{
     id: string
     episode_number: number

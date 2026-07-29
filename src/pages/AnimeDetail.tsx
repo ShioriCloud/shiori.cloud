@@ -11,13 +11,13 @@ import {
   Calendar01Icon,
   Calendar02Icon,
   LeftToRightListNumberIcon,
-  Download01Icon,
   UserIcon,
   Share08Icon,
   TelegramIcon,
   CheckmarkCircle02Icon,
+  Download04Icon,
 } from 'hugeicons-react'
-import { ExternalLink, Lock } from 'lucide-react'
+import { ExternalLink, Lock, Captions } from 'lucide-react'
 import { useUserAnimeList } from '../hooks/useUserAnimeList'
 import { useNotifications } from '../hooks/useNotifications'
 import { useTelegramApp } from '../hooks/useTelegramApp'
@@ -41,16 +41,13 @@ import {
 import { isAnimeDetailShell } from '../utils/api'
 import { animeCardMatchesRouteParam, animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { exploreAllHref } from '@/lib/exploreParams'
-import { MediaSpecTags } from '../components/anime/MediaSpecTags'
 import {
   normalizeVideoEncode,
   normalizeVideoFileType,
   normalizeVideoResolution,
   resolveHardsubLanguage,
   videoQualityButtonLabel,
-  type HardsubLanguage,
   type VideoEncode,
-  type VideoFileType,
   type VideoResolution,
 } from '../utils/animeMediaTags'
 import { Button } from '@/components/ui/button'
@@ -125,6 +122,7 @@ interface Anime {
   favoriteCount?: number
   anilist_id?: number
   mal_id?: number
+  next_airing?: { episode: number; airing_at: number } | null
   studios: string[]
   studio_links?: Array<{ slug: string; name: string }>
   producers: string[]
@@ -446,6 +444,46 @@ const ReminderStatCard = ({
   </button>
 )
 
+const formatNextAiringTehran = (airingAtUnix: number) => {
+  const d = new Date(airingAtUnix * 1000)
+  if (!Number.isFinite(d.getTime())) return null
+  const weekday = new Intl.DateTimeFormat('fa-IR', {
+    weekday: 'long',
+    timeZone: 'Asia/Tehran',
+  }).format(d)
+  const time = new Intl.DateTimeFormat('fa-IR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Asia/Tehran',
+  }).format(d)
+  return { weekday, time }
+}
+
+const NextAiringCard = ({
+  episode,
+  airingAt,
+}: {
+  episode: number
+  airingAt: number
+}) => {
+  const formatted = formatNextAiringTehran(airingAt)
+  if (!formatted) return null
+
+  return (
+    <div className="mx-4 mt-2 flex items-center gap-3 rounded-2xl border border-primary-400/20 bg-gradient-to-l from-primary-500/[0.10] to-card/60 px-3.5 py-2.5">
+      <Calendar01Icon className="h-5 w-5 shrink-0 text-primary-400" />
+      <div className="min-w-0 flex-1">
+        <p className="text-[13px] font-semibold text-foreground">
+          قسمت بعدی · {toPersianNumber(episode)}
+        </p>
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
+          {formatted.weekday} · ساعت {formatted.time} (تهران)
+        </p>
+      </div>
+    </div>
+  )
+}
+
 const FavoriteStatCard = ({
   active,
   onClick,
@@ -763,7 +801,7 @@ const EmptyBlock = ({
 }) => (
   <div className="rounded-2xl border border-dashed border-border bg-muted/20 py-12 px-6 text-center space-y-3">
     {icon ?? (
-      <Download01Icon className="w-10 h-10 mx-auto text-muted-foreground/35" aria-hidden />
+      <Download04Icon className="w-10 h-10 mx-auto text-muted-foreground/35" aria-hidden />
     )}
     <p className="text-sm text-muted-foreground">{message}</p>
     {hint ? <p className="text-xs text-muted-foreground/75 leading-6">{hint}</p> : null}
@@ -803,11 +841,41 @@ const SimilarPosterCard = ({
   </AnimePrefetchLink>
 )
 
+const formatEpisodeLabel = (num: number | string): string => {
+  const n = typeof num === 'number' ? num : Number(num)
+  if (!Number.isFinite(n)) return toPersianNumber(num)
+  const raw = Number.isInteger(n) ? String(n).padStart(2, '0') : String(n)
+  return toPersianNumber(raw)
+}
+
+const EpisodeQualityBadge = ({
+  resolution,
+  encode,
+}: {
+  resolution: VideoResolution
+  encode: VideoEncode
+}) => {
+  const label = videoQualityButtonLabel(resolution, encode)
+  return (
+    <span
+      className="inline-flex max-w-full shrink items-center justify-center truncate rounded-md border border-primary-400/25 bg-primary-400/10 px-2 py-1 text-[11px] font-semibold font-mono tabular-nums tracking-wide text-primary-300 leading-none"
+      dir="ltr"
+      title={label}
+    >
+      {label}
+    </span>
+  )
+}
+
+const episodeOneLineShellClass =
+  'group relative flex items-center gap-3 overflow-hidden rounded-xl border border-border/60 bg-gradient-to-l from-primary-500/[0.09] via-card/75 to-card/55 px-3 py-2.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] transition-all duration-200 hover:border-primary-400/30 hover:from-primary-500/[0.14] cursor-pointer active:scale-[0.99]'
+
+const episodeActionBtnClass =
+  'relative z-10 inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-lg border px-2.5 text-[11px] font-semibold transition-colors active:scale-[0.97]'
+
 const EpisodeDownloadCard = ({
   episode,
   showSubtitleButton,
-  hardsubLanguage,
-  videoFileType,
   videoResolution,
   videoEncode,
   subscriptionLocked = false,
@@ -817,8 +885,6 @@ const EpisodeDownloadCard = ({
 }: {
   episode: Episode
   showSubtitleButton: boolean
-  hardsubLanguage: HardsubLanguage
-  videoFileType: VideoFileType
   videoResolution: VideoResolution
   videoEncode: VideoEncode
   subscriptionLocked?: boolean
@@ -826,141 +892,172 @@ const EpisodeDownloadCard = ({
   onSubtitle: () => void
   onLockedQuality: (quality: string) => void
 }) => {
-  const qualities = (
-    [
-      { id: '480p' as const, shortLabel: '480p' },
-      { id: '720p' as const, shortLabel: '720p' },
-      { id: '1080p' as const, shortLabel: '1080p' },
-    ] as const
-  ).map((quality) => {
-    const available = !subscriptionLocked && quality.id === videoResolution
-    return {
-      ...quality,
-      available,
-      label: available
-        ? videoQualityButtonLabel(videoResolution, videoEncode)
-        : quality.shortLabel,
+  const qualityLabel = videoQualityButtonLabel(videoResolution, videoEncode)
+
+  const handleCardClick = () => {
+    if (subscriptionLocked) {
+      onLockedQuality('اشتراک')
+      return
     }
-  })
+    onDownloadAvailable()
+  }
 
   return (
-  <div className="overflow-hidden rounded-xl border border-border bg-card/60">
-    <div className="flex items-center justify-between gap-3 px-3 py-3">
-      <div className="flex min-w-0 items-center gap-2">
-        <p className="shrink-0 text-sm font-semibold text-foreground">
-          قسمت {toPersianNumber(episode.number)}
+    <div
+      className={episodeOneLineShellClass}
+      role="button"
+      tabIndex={0}
+      aria-label={
+        subscriptionLocked
+          ? `دانلود قسمت ${episode.number} نیازمند اشتراک`
+          : `دانلود قسمت ${episode.number} با کیفیت ${qualityLabel}`
+      }
+      onClick={handleCardClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          handleCardClick()
+        }
+      }}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-primary-400/[0.12] to-transparent"
+      />
+
+      <div className="relative flex min-w-0 flex-1 items-center gap-2">
+        <p className="min-w-0 truncate text-sm font-bold text-foreground">
+          قسمت {formatEpisodeLabel(episode.number)}
         </p>
-        <MediaSpecTags
-          hardsubLanguage={hardsubLanguage}
-          videoFileType={videoFileType}
-        />
+        <EpisodeQualityBadge resolution={videoResolution} encode={videoEncode} />
       </div>
-      {showSubtitleButton ? (
-        <Button
-          type="button"
-          size="sm"
-          variant="secondary"
-          className="shrink-0 gap-1"
-          onClick={onSubtitle}
-        >
-          <Download01Icon className="h-3.5 w-3.5" />
-          زیرنویس
-        </Button>
-      ) : null}
-    </div>
 
-    <div className="grid grid-cols-3 gap-1.5 border-t border-border/60 bg-muted/10 p-2">
-      {qualities.map((quality) => {
-        const isAvailable = quality.available
-
-        return (
+      <div className="relative flex shrink-0 items-center gap-1.5">
+        {showSubtitleButton ? (
           <button
-            key={quality.id}
             type="button"
-            aria-disabled={!isAvailable}
-            aria-label={
-              subscriptionLocked
-                ? `دانلود قسمت ${episode.number} نیازمند اشتراک`
-                : isAvailable
-                  ? `دانلود قسمت ${episode.number} با کیفیت ${quality.label}`
-                  : `کیفیت ${quality.label} فعلاً در دسترس نیست`
-            }
+            aria-label={`دانلود زیرنویس قسمت ${episode.number}`}
             className={cn(
-              'flex min-h-[3.25rem] flex-col items-center justify-center gap-1 rounded-lg border px-2 py-2 text-center transition-colors',
-              isAvailable
-                ? 'border-primary-400/35 bg-primary-400/10 text-primary-200 hover:bg-primary-400/15 active:scale-[0.98]'
-                : 'cursor-not-allowed border-border/60 bg-muted/20 text-muted-foreground opacity-70'
+              episodeActionBtnClass,
+              'border-border/70 bg-background/40 text-muted-foreground hover:border-border hover:bg-muted/40 hover:text-foreground'
             )}
-            onClick={() => {
-              if (subscriptionLocked) {
-                onLockedQuality('اشتراک')
-                return
-              }
-              if (isAvailable) {
-                onDownloadAvailable()
-                return
-              }
-              onLockedQuality(quality.label)
+            onClick={(e) => {
+              e.stopPropagation()
+              onSubtitle()
             }}
           >
-            {isAvailable ? (
-              <Download01Icon className="h-4 w-4 shrink-0" />
-            ) : (
-              <Lock className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden />
-            )}
-            <span
-              className={cn(
-                'font-semibold tabular-nums leading-tight',
-                isAvailable && quality.label.length > 8 ? 'text-[10px]' : 'text-xs'
-              )}
-            >
-              {subscriptionLocked ? 'قفل' : quality.label}
-            </span>
+            <Captions className="h-3.5 w-3.5" aria-hidden />
+            زیرنویس
           </button>
-        )
-      })}
+        ) : null}
+        <button
+          type="button"
+          aria-label={
+            subscriptionLocked
+              ? `دانلود قسمت ${episode.number} نیازمند اشتراک`
+              : `دانلود قسمت ${episode.number}`
+          }
+          className={cn(
+            episodeActionBtnClass,
+            subscriptionLocked
+              ? 'border-border/60 bg-muted/25 text-muted-foreground'
+              : 'border-primary-400/35 bg-primary-400/10 text-primary-300 hover:bg-primary-400/15'
+          )}
+          onClick={(e) => {
+            e.stopPropagation()
+            handleCardClick()
+          }}
+        >
+          {subscriptionLocked ? (
+            <Lock className="h-3.5 w-3.5" aria-hidden />
+          ) : (
+            <Download04Icon className="h-3.5 w-3.5" aria-hidden />
+          )}
+          دانلود
+        </button>
+      </div>
     </div>
-  </div>
   )
 }
 
 const EpisodePackDownloadCard = ({
   pack,
-  hardsubLanguage,
-  videoFileType,
+  videoResolution,
+  videoEncode,
   onDownload,
   locked = false,
 }: {
   pack: EpisodePack
-  hardsubLanguage: HardsubLanguage
-  videoFileType: VideoFileType
+  videoResolution: VideoResolution
+  videoEncode: VideoEncode
   onDownload: () => void
   locked?: boolean
-}) => (
-  <div className="episode-pack-card-wrap">
-    <div className="episode-pack-card-inner flex items-center justify-between gap-3 bg-card p-3">
-      <div className="flex min-w-0 flex-1 items-center gap-2">
-        <p className="min-w-0 truncate text-sm font-semibold text-foreground">
-          {pack.title?.trim() || 'دانلود تمام قسمت‌ها'}
-        </p>
-        <MediaSpecTags
-          hardsubLanguage={hardsubLanguage}
-          videoFileType={videoFileType}
+}) => {
+  const qualityLabel = videoQualityButtonLabel(videoResolution, videoEncode)
+  const title = pack.title?.trim() || 'دانلود تمام قسمت‌ها'
+
+  return (
+    <div
+      className="episode-pack-card-wrap cursor-pointer active:scale-[0.99] transition-transform"
+      role="button"
+      tabIndex={0}
+      aria-label={
+        locked
+          ? `${title} نیازمند اشتراک`
+          : `دانلود ${title} با کیفیت ${qualityLabel}`
+      }
+      onClick={onDownload}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onDownload()
+        }
+      }}
+    >
+      <div className="episode-pack-card-inner group relative flex items-center gap-3 overflow-hidden bg-card px-3 py-2.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-gradient-to-l from-primary-500/[0.09] to-transparent"
         />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-primary-400/[0.12] to-transparent"
+        />
+
+        <div className="relative flex min-w-0 flex-1 items-center gap-2">
+          <p className="min-w-0 truncate text-sm font-bold text-foreground">
+            {title}
+          </p>
+          <EpisodeQualityBadge resolution={videoResolution} encode={videoEncode} />
+        </div>
+
+        <div className="relative flex shrink-0 items-center gap-1.5">
+          {locked ? (
+            <span
+              className={cn(
+                episodeActionBtnClass,
+                'border-border/60 bg-muted/25 text-muted-foreground'
+              )}
+            >
+              <Lock className="h-3.5 w-3.5" aria-hidden />
+              اشتراک
+            </span>
+          ) : (
+            <span
+              className={cn(
+                episodeActionBtnClass,
+                'border-primary-400/35 bg-primary-400/10 text-primary-300'
+              )}
+            >
+              <Download04Icon className="h-3.5 w-3.5" aria-hidden />
+              دانلود
+            </span>
+          )}
+        </div>
       </div>
-      <Button
-        type="button"
-        size="sm"
-        className="shrink-0 gap-1 font-semibold"
-        variant={locked ? 'secondary' : 'default'}
-        onClick={onDownload}
-      >
-        {locked ? <Lock className="w-3.5 h-3.5" /> : <Download01Icon className="w-3.5 h-3.5" />}
-        {locked ? 'اشتراک' : 'دانلود'}
-      </Button>
     </div>
-  </div>
-)
+  )
+}
 
 const FREE_QUALITY_LABEL = '1080p x265 10bit'
 
@@ -1053,45 +1150,63 @@ const FreeEpisodeDownloadCard = ({
   claiming,
   disabled,
   onClaim,
+  videoResolution = '1080p',
+  videoEncode = 'x265_10bit',
 }: {
   episode: Episode
   claiming: boolean
   disabled: boolean
   onClaim: () => void
-}) => (
-  <div className="overflow-hidden rounded-xl border border-border bg-card/60">
-    <div className="flex items-center justify-between gap-3 px-3 py-3">
-      <div className="min-w-0">
-        <p className="shrink-0 text-sm font-semibold text-foreground">
-          قسمت {toPersianNumber(episode.number)}
+  videoResolution?: VideoResolution
+  videoEncode?: VideoEncode
+}) => {
+  const qualityLabel = videoQualityButtonLabel(videoResolution, videoEncode)
+  const isDisabled = disabled || claiming
+
+  return (
+    <div
+      className={cn(
+        episodeOneLineShellClass,
+        isDisabled && 'pointer-events-none opacity-60'
+      )}
+      role="button"
+      tabIndex={isDisabled ? -1 : 0}
+      aria-disabled={isDisabled}
+      aria-label={`دانلود رایگان قسمت ${episode.number} با کیفیت ${qualityLabel}`}
+      onClick={() => { if (!isDisabled) onClaim() }}
+      onKeyDown={(e) => {
+        if (!isDisabled && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault()
+          onClaim()
+        }
+      }}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-primary-400/[0.12] to-transparent"
+      />
+
+      <div className="relative flex min-w-0 flex-1 items-center gap-2">
+        <p className="min-w-0 truncate text-sm font-bold text-foreground">
+          قسمت {formatEpisodeLabel(episode.number)}
         </p>
-        {episode.title ? (
-          <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">{episode.title}</p>
-        ) : null}
+        <EpisodeQualityBadge resolution={videoResolution} encode={videoEncode} />
+      </div>
+
+      <div className="relative flex shrink-0 items-center gap-1.5">
+        <span
+          className={cn(
+            episodeActionBtnClass,
+            'border-primary-400/35 bg-primary-400/10 text-primary-300'
+          )}
+        >
+          <Download04Icon className="h-3.5 w-3.5" aria-hidden />
+          دانلود
+        </span>
       </div>
     </div>
-    <div className="border-t border-border/60 bg-muted/10 p-2">
-      <button
-        type="button"
-        disabled={disabled || claiming}
-        aria-label={`دانلود رایگان قسمت ${episode.number} با کیفیت ${FREE_QUALITY_LABEL}`}
-        className={cn(
-          'flex min-h-[3.25rem] w-full flex-col items-center justify-center gap-1 rounded-lg border px-2 py-2 text-center transition-colors',
-          disabled
-            ? 'cursor-not-allowed border-border/60 bg-muted/20 text-muted-foreground opacity-70'
-            : 'border-primary-400/35 bg-primary-400/10 text-primary-200 hover:bg-primary-400/15 active:scale-[0.98]'
-        )}
-        onClick={onClaim}
-      >
-        <Download01Icon className="h-4 w-4 shrink-0" />
-        <span className="text-[10px] font-semibold tabular-nums leading-tight">
-          {claiming ? '…' : FREE_QUALITY_LABEL}
-        </span>
-        <span className="text-[10px] text-muted-foreground">۱ توکن</span>
-      </button>
-    </div>
-  </div>
-)
+  )
+}
 
 const AnimeDetail = () => {
   const { id } = useParams<{ id: string }>()
@@ -1623,14 +1738,36 @@ const AnimeDetail = () => {
               />
             </div>
           )}
+          {!detailPending && hardsubLanguage ? (
+            <div className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-emerald-500/20 bg-gradient-to-l from-emerald-500/[0.08] to-card/60 px-3.5 py-2.5">
+              <CheckmarkCircle02Icon className="h-5 w-5 shrink-0 text-emerald-400" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[13px] font-semibold text-foreground">
+                  {hardsubLanguage === 'en' ? 'زیرنویس انگلیسی' : 'زیرنویس چسبیده فارسی'}
+                </p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  {hardsubLanguage === 'en'
+                    ? 'تمام قسمت‌ها با زیرنویس انگلیسی چسبیده هستند'
+                    : 'تمام قسمت‌ها دارای نسخه‌ی سافت‌ساب و هاردساب فارسی هستند.'}
+                </p>
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
+
+      {!detailPending && anime.next_airing ? (
+        <NextAiringCard
+          episode={anime.next_airing.episode}
+          airingAt={anime.next_airing.airing_at}
+        />
+      ) : null}
 
       {/* Quick stats */}
       {detailPending ? (
         <StatsRowSkeleton />
       ) : (
-        <div className="mx-4 mt-5 flex items-stretch gap-2">
+        <div className="mx-4 mt-2 flex items-stretch gap-2">
           <ReminderStatCard
             active={reminderActive}
             busy={reminderBusy || updatingPreferences}
@@ -1882,7 +2019,7 @@ const AnimeDetail = () => {
                             window.open(String(p.subtitle_link), '_blank')
                           }}
                         >
-                          <Download01Icon className="w-3.5 h-3.5" />
+                          <Download04Icon className="w-4 h-4" />
                           دانلود
                         </Button>
                       </div>
@@ -1911,14 +2048,16 @@ const AnimeDetail = () => {
               ) : null}
               {episodePackAvailable &&
               anime.episode_pack &&
-              !useLaunchDownloadTabs &&
-              episodeKindTab !== 'free' &&
-              (episodeKindTab === videoFileType ||
+              (useLaunchDownloadTabs
+                ? launchDownloadTab === 'episodes'
+                : episodeKindTab !== 'free') &&
+              (useLaunchDownloadTabs ||
+                episodeKindTab === videoFileType ||
                 (ENABLE_SUBSCRIPTION_DOWNLOAD_GATE && hasActiveSubscription)) ? (
                 <EpisodePackDownloadCard
                   pack={anime.episode_pack}
-                  hardsubLanguage={hardsubLanguage}
-                  videoFileType={videoFileType}
+                  videoResolution={videoResolution}
+                  videoEncode={videoEncode}
                   locked={
                     ENABLE_SUBSCRIPTION_DOWNLOAD_GATE && !hasActiveSubscription
                   }
@@ -1997,6 +2136,8 @@ const AnimeDetail = () => {
                             key={episodeId}
                             episode={episode}
                             claiming={claiming}
+                            videoResolution={videoResolution}
+                            videoEncode={videoEncode}
                             disabled={
                               tokensExhausted || claimFreeDownloadMutation.isPending
                             }
@@ -2060,10 +2201,6 @@ const AnimeDetail = () => {
                     <EpisodeDownloadCard
                       key={episode.id}
                       episode={episode}
-                      hardsubLanguage={hardsubLanguage}
-                      videoFileType={
-                        episode.video_file_type === 'hardsub' ? 'hardsub' : 'softsub'
-                      }
                       videoResolution={videoResolution}
                       videoEncode={videoEncode}
                       subscriptionLocked={
@@ -2073,10 +2210,9 @@ const AnimeDetail = () => {
                         !hasActiveSubscription
                       }
                       showSubtitleButton={
-                        !useLaunchDownloadTabs &&
-                        episodeKindTab === 'softsub' &&
-                        videoFileType === 'softsub' &&
                         (!isFinished || isMovie) &&
+                        videoFileType === 'softsub' &&
+                        (useLaunchDownloadTabs || episodeKindTab === 'softsub') &&
                         (!ENABLE_SUBSCRIPTION_DOWNLOAD_GATE || hasActiveSubscription)
                       }
                       onDownloadAvailable={() => {
@@ -2168,7 +2304,7 @@ const AnimeDetail = () => {
                           window.open(String(p.subtitle_link), '_blank')
                         }}
                       >
-                        <Download01Icon className="w-3.5 h-3.5" />
+                        <Download04Icon className="w-4 h-4" />
                         دانلود
                       </Button>
                     </div>

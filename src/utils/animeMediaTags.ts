@@ -42,6 +42,32 @@ export function videoEncodeLabel(encode: VideoEncode): string {
   return 'x265'
 }
 
+/** One-liner meta chips for episode cards, e.g. `10bit • HEVC • 1080p`. */
+export function videoQualityMetaParts(
+  resolution: VideoResolution,
+  encode: VideoEncode
+): string[] {
+  const parts: string[] = []
+  if (encode === 'x265_10bit') {
+    parts.push('10bit', 'HEVC')
+  } else if (encode === 'x265') {
+    parts.push('HEVC')
+  } else if (encode === 'x264') {
+    parts.push('AVC')
+  } else if (encode === 'bluray') {
+    parts.push('Bluray')
+  }
+  parts.push(resolution)
+  return parts
+}
+
+export function videoQualityOneLiner(
+  resolution: VideoResolution,
+  encode: VideoEncode
+): string {
+  return videoQualityMetaParts(resolution, encode).join(' • ')
+}
+
 export function videoQualityButtonLabel(
   resolution: VideoResolution,
   encode: VideoEncode
