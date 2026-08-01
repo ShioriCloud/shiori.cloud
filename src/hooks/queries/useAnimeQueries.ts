@@ -10,6 +10,7 @@ import {
   fetchHomeFormatSectionCards,
   fetchHomeLatestSeasonCards,
   fetchPopularAnimeCards,
+  fetchRecentAnimeCards,
   fetchSchedule,
   fetchSimilarAnime,
   type AnimeSearchFilters,
@@ -64,6 +65,13 @@ export const useHomePopularQuery = () =>
   useQuery({
     queryKey: queryKeys.homePopular,
     queryFn: () => fetchPopularAnimeCards(20),
+    staleTime: 60_000,
+  })
+
+export const useHomeRecentQuery = () =>
+  useQuery({
+    queryKey: queryKeys.homeRecent,
+    queryFn: () => fetchRecentAnimeCards(20),
     staleTime: 60_000,
   })
 

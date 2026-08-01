@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { isTelegramMiniApp } from '@/lib/platform'
 import {
-  canUseTelegramSafeArea,
+  ensureTelegramFullscreenLayout,
   subscribeTelegramSafeArea,
   syncTelegramSafeAreaCss,
 } from '@/lib/telegramSafeArea'
@@ -11,18 +11,16 @@ export const useTelegramSafeArea = () => {
   useEffect(() => {
     if (!isTelegramMiniApp()) return
 
+    ensureTelegramFullscreenLayout()
     syncTelegramSafeAreaCss()
-    if (!canUseTelegramSafeArea()) return
 
     const onChange = () => syncTelegramSafeAreaCss()
-    // Re-read shortly after launch — insets often arrive after first paint.
-    const t1 = window.setTimeout(onChange, 50)
-    const t2 = window.setTimeout(onChange, 300)
+    // Insets often arrive after first paint / after fullscreen settles.
+    const timers = [50, 150, 400, 1000].map((ms) => window.setTimeout(onChange, ms))
     const unsubscribe = subscribeTelegramSafeArea(onChange)
 
     return () => {
-      window.clearTimeout(t1)
-      window.clearTimeout(t2)
+      timers.forEach((id) => window.clearTimeout(id))
       unsubscribe()
     }
   }, [])

@@ -1,4 +1,5 @@
 import { getTelegramInitData } from './telegramRequestHeaders'
+import { getAppSessionHeaders } from './appSessionStorage'
 import { getTelegramMiniAppSessionHeaders } from './telegramSessionStorage'
 
 const rawBase = String(import.meta.env.VITE_SHIORI_API_URL ?? '').trim()
@@ -31,7 +32,11 @@ const buildHeaders = (extra?: HeadersInit): HeadersInit => {
   const initData = getTelegramInitData()
   if (initData) headers.set('x-telegram-init-data', initData)
 
-  const sessionHeaders = getTelegramMiniAppSessionHeaders()
+  // Prefer Telegram mini-app session; fall back to web email session.
+  const sessionHeaders = {
+    ...getAppSessionHeaders(),
+    ...getTelegramMiniAppSessionHeaders(),
+  }
 
   for (const [key, value] of Object.entries(sessionHeaders)) {
     headers.set(key, value)

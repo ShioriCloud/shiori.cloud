@@ -1,6 +1,10 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+/**
+ * Local (this device) list of anime the user marked for new-episode reminders.
+ * Delivery still depends on Profile notification prefs (inbox / Telegram DM).
+ */
 type AiringReminderState = {
   reminderAnimeIds: string[]
   isReminderOn: (animeId: number | string) => boolean

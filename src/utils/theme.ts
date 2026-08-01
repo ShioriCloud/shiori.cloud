@@ -1,37 +1,93 @@
-import { useThemeStore } from "../store/themeStore";
+import { useCallback, useEffect, useMemo } from 'react'
+import WebApp from '@twa-dev/sdk'
+import { isTelegramMiniApp } from '../lib/platform'
+import { useThemeStore, type ThemePreference } from '../store/themeStore'
+
+const resolveAutoIsDark = (): boolean => {
+  if (typeof window === 'undefined') return true
+  if (isTelegramMiniApp()) {
+    const scheme = String(
+      (WebApp as unknown as { colorScheme?: string }).colorScheme ?? ''
+    ).toLowerCase()
+    if (scheme === 'light') return false
+    if (scheme === 'dark') return true
+  }
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+}
+
+type ThemeEventsApi = {
+  onEvent?: (event: string, cb: () => void) => void
+  offEvent?: (event: string, cb: () => void) => void
+}
 
 export const useTheme = () => {
-  const { isDarkMode, toggleTheme } = useThemeStore();
+  const preference = useThemeStore((s) => s.preference)
+  const setPreference = useThemeStore((s) => s.setPreference)
+  const toggleTheme = useThemeStore((s) => s.toggleTheme)
 
-  const applyTheme = () => {
+  const isDarkMode = useMemo(() => {
+    if (preference === 'dark') return true
+    if (preference === 'light') return false
+    return resolveAutoIsDark()
+  }, [preference])
+
+  const applyTheme = useCallback(() => {
     if (isDarkMode) {
-      document.documentElement.classList.add("dark");
+      document.documentElement.classList.add('dark')
     } else {
-      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.remove('dark')
     }
-  };
+  }, [isDarkMode])
+
+  useEffect(() => {
+    applyTheme()
+  }, [applyTheme])
+
+  useEffect(() => {
+    if (preference !== 'auto') return
+
+    if (isTelegramMiniApp()) {
+      const wa = WebApp as unknown as ThemeEventsApi
+      const onThemeChanged = () => applyTheme()
+      try {
+        wa.onEvent?.('themeChanged', onThemeChanged)
+        return () => {
+          wa.offEvent?.('themeChanged', onThemeChanged)
+        }
+      } catch {
+        return undefined
+      }
+    }
+
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    const onChange = () => applyTheme()
+    media.addEventListener('change', onChange)
+    return () => media.removeEventListener('change', onChange)
+  }, [preference, applyTheme])
 
   return {
+    preference,
+    setPreference: (next: ThemePreference) => setPreference(next),
     isDarkMode,
     toggleTheme,
     applyTheme,
-  };
-};
+  }
+}
 
 export const getSystemTheme = () => {
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-};
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
 
-export const watchSystemTheme = (callback: (theme: "dark" | "light") => void) => {
-  const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+export const watchSystemTheme = (callback: (theme: 'dark' | 'light') => void) => {
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
 
   const handleChange = (e: MediaQueryListEvent) => {
-    callback(e.matches ? "dark" : "light");
-  };
+    callback(e.matches ? 'dark' : 'light')
+  }
 
-  mediaQuery.addEventListener("change", handleChange);
+  mediaQuery.addEventListener('change', handleChange)
 
   return () => {
-    mediaQuery.removeEventListener("change", handleChange);
-  };
-};
+    mediaQuery.removeEventListener('change', handleChange)
+  }
+}

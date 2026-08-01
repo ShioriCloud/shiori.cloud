@@ -15,27 +15,19 @@
   }
   :root {
     /*
-      Telegram Mini App (Bot API 8.0+): device notch + Telegram UI chrome.
-      JS may also set these on :root; defaults keep browser / old clients at 0.
+      Telegram Mini App (Bot API 8.0+): notch + fullscreen chrome (Close / menu).
+      Do NOT default --tg-* to 0px — that overrides Telegram/SDK CSS injection.
+      JS sets --app-tg-* after reading safeAreaInset + contentSafeAreaInset.
     */
-    --tg-safe-area-inset-top: 0px;
-    --tg-safe-area-inset-bottom: 0px;
-    --tg-safe-area-inset-left: 0px;
-    --tg-safe-area-inset-right: 0px;
-    --tg-content-safe-area-inset-top: 0px;
-    --tg-content-safe-area-inset-bottom: 0px;
-    --tg-content-safe-area-inset-left: 0px;
-    --tg-content-safe-area-inset-right: 0px;
-    --app-tg-top-inset: calc(
-      max(var(--tg-safe-area-inset-top), env(safe-area-inset-top, 0px)) +
-        var(--tg-content-safe-area-inset-top)
-    );
+    --app-tg-safe-top: max(var(--tg-safe-area-inset-top, 0px), env(safe-area-inset-top, 0px));
+    --app-tg-content-top: var(--tg-content-safe-area-inset-top, 0px);
+    --app-tg-top-inset: calc(var(--app-tg-safe-top) + var(--app-tg-content-top));
     --app-tg-bottom-inset: calc(
-      max(var(--tg-safe-area-inset-bottom), env(safe-area-inset-bottom, 0px)) +
-        var(--tg-content-safe-area-inset-bottom)
+      max(var(--tg-safe-area-inset-bottom, 0px), env(safe-area-inset-bottom, 0px)) +
+        var(--tg-content-safe-area-inset-bottom, 0px)
     );
-    /* AppHeader: top inset + py-2.5 + h-9 + pb-2.5 */
-    --app-header-offset: calc(var(--app-tg-top-inset) + 3.5rem);
+    /* Fixed header pages: safe + chrome row + logo row padding */
+    --app-header-offset: calc(var(--app-tg-top-inset) + 0.625rem);
 
     --background: 0.145 0 0;
     --foreground: 0.985 0 0;

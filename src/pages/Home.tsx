@@ -18,12 +18,14 @@ import { HomeCustomBlocksSection } from '@/components/home/HomeCustomBlocksSecti
 import { Button } from '@/components/ui/button'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { exploreAllHref } from '@/lib/exploreParams'
+import { hapticSelection } from '@/lib/telegramHaptics'
 import {
   useHomeDonghuaQuery,
   useHomeFeaturedQuery,
   useHomeLatestQuery,
   useHomeMoviesQuery,
   useHomePopularQuery,
+  useHomeRecentQuery,
   type UiAnimeCard,
 } from '../hooks/queries/useAnimeQueries'
 
@@ -31,7 +33,7 @@ type ContentType = 'anime' | 'movie' | 'donghua'
 
 type Anime = UiAnimeCard
 
-type SectionId = 'latest' | 'popular' | 'donghua' | 'movies'
+type SectionId = 'recent' | 'latest' | 'popular' | 'donghua' | 'movies'
 
 const TYPE_TABS: { id: ContentType; label: string }[] = [
   { id: 'anime', label: 'انیمه' },
@@ -137,12 +139,14 @@ const Home = () => {
   const seasonLabel = `فصل ${currentSeasonFa} ${toPersianNumber(currentYearNumber)}`
 
   const featuredQuery = useHomeFeaturedQuery(selectedType)
+  const recentQuery = useHomeRecentQuery()
   const latestQuery = useHomeLatestQuery(currentYearNumber, currentSeasonKey)
   const popularQuery = useHomePopularQuery()
   const donghuaQuery = useHomeDonghuaQuery()
   const moviesQuery = useHomeMoviesQuery()
 
   const sectionQueries: Record<SectionId, typeof latestQuery> = {
+    recent: recentQuery,
     latest: latestQuery,
     popular: popularQuery,
     donghua: donghuaQuery,
@@ -153,6 +157,10 @@ const Home = () => {
 
   const sectionMeta = useMemo(
     (): Record<SectionId, { title: string; seeAll: string }> => ({
+      recent: {
+        title: 'تازه‌اضافه‌شده',
+        seeAll: exploreAllHref({ sortBy: 'created_at' }),
+      },
       latest: {
         title: `فصل ${currentSeasonFa} ${toPersianNumber(currentYearNumber)}`,
         seeAll: exploreAllHref({
@@ -246,7 +254,10 @@ const Home = () => {
               <button
                 key={tab.id}
                 type="button"
-                onClick={() => setSelectedType(tab.id)}
+                onClick={() => {
+                  hapticSelection()
+                  setSelectedType(tab.id)
+                }}
                 className={`relative flex-1 py-2.5 rounded-xl text-sm transition-all duration-200 ${
                   active
                     ? 'text-primary-400 font-semibold'
@@ -348,6 +359,7 @@ const Home = () => {
       </div>
 
       <div className="space-y-8 pt-6">
+        {renderSection('recent')}
         {renderSection('latest')}
         {renderSection('popular')}
         {renderSection('donghua')}

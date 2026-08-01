@@ -7,7 +7,8 @@ import type { GenreItem } from '../types/catalog'
 import { Button } from '@/components/ui/button'
 import { useScheduleQuery } from '../hooks/queries/useAnimeQueries'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
-import shioriLogo from '../assets/images/shiori-logo.svg'
+import { hapticSelection } from '../lib/telegramHaptics'
+import shioriLogo from '../assets/images/shiori.svg'
 
 type Anime = {
   id: number
@@ -123,14 +124,36 @@ const Schedule = () => {
   const { data, isLoading, isError, refetch } = useScheduleQuery()
   const [activeDay, setActiveDay] = useState<PersianDay>(getCurrentPersianDay())
   const [toast, setToast] = useState<string | null>(null)
+  const [toastAnime, setToastAnime] = useState<Anime | null>(null)
   const [toastClosing, setToastClosing] = useState(false)
 
   const dismissToast = () => {
     setToastClosing(true)
     window.setTimeout(() => {
       setToast(null)
+      setToastAnime(null)
       setToastClosing(false)
     }, 220)
+  }
+
+  const buildTranslationRequestHref = (anime: Anime) => {
+    const params = new URLSearchParams()
+    params.set('compose', '1')
+    params.set('category', 'feature_request')
+    params.set('subject', `درخواست ترجمه: ${anime.title}`)
+    params.set(
+      'body',
+      [
+        `لطفاً ترجمهٔ این عنوان را به کاتالوگ شیوری اضافه کنید.`,
+        ``,
+        `عنوان: ${anime.title}`,
+        `AniList ID: ${anime.id}`,
+        anime.episode ? `قسمت برنامه پخش: ${anime.episode}` : null,
+      ]
+        .filter(Boolean)
+        .join('\n')
+    )
+    return `/support?${params.toString()}`
   }
 
   const scheduleInfo = data as ScheduleInfo | undefined
@@ -163,7 +186,8 @@ const Schedule = () => {
       return
     }
 
-    setToast('این انیمه در لیست ترجمه‌ی شیوری نیست یا فعلاً امکان ترجمه‌ی آن وجود ندارد.')
+    setToastAnime(anime)
+    setToast('این انیمه هنوز در کاتالوگ ترجمهٔ شیوری نیست.')
   }
 
   if (loading) return <ScheduleSkeleton />
@@ -191,21 +215,36 @@ const Schedule = () => {
           <div
             role="alert"
             key={toast}
-            className={`max-w-xl mx-auto rounded-xl border border-red-800/80 bg-red-500/20 backdrop-blur-md px-4 py-3 flex items-start gap-3 shadow-xl ${
+            className={`max-w-xl mx-auto rounded-xl border border-amber-800/80 bg-amber-500/15 backdrop-blur-md px-4 py-3 flex flex-col gap-3 shadow-xl ${
               toastClosing ? 'schedule-toast-exit' : 'schedule-toast-enter'
             }`}
           >
-            <Alert02Icon className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-            <p className="text-xs font-medium leading-5 text-amber-50 flex-1">{toast}</p>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              className="shrink-0 border-red-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-50"
-              onClick={dismissToast}
-            >
-              بستن
-            </Button>
+            <div className="flex items-start gap-3">
+              <Alert02Icon className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+              <p className="text-xs font-medium leading-5 text-amber-50 flex-1">{toast}</p>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="shrink-0 border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-50"
+                onClick={dismissToast}
+              >
+                بستن
+              </Button>
+            </div>
+            {toastAnime ? (
+              <Button
+                type="button"
+                size="sm"
+                className="w-full"
+                onClick={() => {
+                  hapticSelection()
+                  navigate(buildTranslationRequestHref(toastAnime))
+                }}
+              >
+                درخواست ترجمه
+              </Button>
+            ) : null}
           </div>
         </div>
       )}
@@ -228,7 +267,10 @@ const Schedule = () => {
                 key={day}
                 type="button"
                 title={day}
-                onClick={() => setActiveDay(day)}
+                onClick={() => {
+                  hapticSelection()
+                  setActiveDay(day)
+                }}
                 className="flex-1 flex justify-center py-1"
               >
                 <span

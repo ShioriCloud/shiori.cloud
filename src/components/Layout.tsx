@@ -10,6 +10,7 @@ import {
 import { AppHeader, APP_HEADER_PAD_CLASS } from '@/components/AppHeader'
 import { useTelegramBackButton } from '@/hooks/useTelegramBackButton'
 import { useTelegramSafeArea } from '@/hooks/useTelegramSafeArea'
+import { hapticSelection } from '@/lib/telegramHaptics'
 import { cn } from '@/lib/utils'
 
 interface LayoutProps {
@@ -85,6 +86,7 @@ const Layout = ({ children }: LayoutProps) => {
           <div className="flex justify-around py-4">
             <Link
               to="/"
+              onClick={() => hapticSelection()}
               className={`flex flex-col items-center space-y-1 ${
                 isActive('/') ? 'text-primary-400' : 'text-gray-400'
               }`}
@@ -95,6 +97,7 @@ const Layout = ({ children }: LayoutProps) => {
             </Link>
             <Link
               to="/schedule"
+              onClick={() => hapticSelection()}
               className={`flex flex-col items-center space-y-1 ${
                 isActive('/schedule') ? 'text-primary-400' : 'text-gray-400'
               }`}
@@ -105,6 +108,7 @@ const Layout = ({ children }: LayoutProps) => {
             </Link>
             <Link
               to="/explore"
+              onClick={() => hapticSelection()}
               className={`flex flex-col items-center space-y-1 ${
                 isActive('/explore') ? 'text-primary-400' : 'text-gray-400'
               }`}
@@ -115,6 +119,7 @@ const Layout = ({ children }: LayoutProps) => {
             </Link>
             <Link
               to="/my-list"
+              onClick={() => hapticSelection()}
               className={`flex flex-col items-center space-y-1 ${
                 isActive('/my-list') ? 'text-primary-400' : 'text-gray-400'
               }`}
@@ -125,6 +130,7 @@ const Layout = ({ children }: LayoutProps) => {
             </Link>
             <Link
               to="/profile"
+              onClick={() => hapticSelection()}
               className={`flex flex-col items-center space-y-1 ${
                 isActive('/profile') ? 'text-primary-400' : 'text-gray-400'
               }`}

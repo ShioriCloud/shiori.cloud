@@ -1,5 +1,12 @@
-import { useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { isTelegramMiniApp } from '../lib/platform'
+import { readStoredAppSession, type AppSession } from '../lib/appSessionStorage'
+import {
+  loginAppUser,
+  logoutAppUser,
+  registerAppUser,
+  verifyAppSession,
+} from '../services/shioriAppAuth'
 import { useTelegramApp } from './useTelegramApp'
 
 export type AppAuthUser = {
@@ -8,31 +15,90 @@ export type AppAuthUser = {
   username?: string | null
   photoUrl?: string | null
   isPremium?: boolean
+  email?: string | null
+  source: 'telegram' | 'web'
 }
 
 export const useAppAuth = () => {
   const inTelegram = isTelegramMiniApp()
   const telegram = useTelegramApp()
+  const [webSession, setWebSession] = useState<AppSession | null>(() =>
+    inTelegram ? null : readStoredAppSession()
+  )
+  const [webReady, setWebReady] = useState(() => inTelegram || !readStoredAppSession())
+
+  useEffect(() => {
+    if (inTelegram) {
+      setWebReady(true)
+      return
+    }
+
+    let cancelled = false
+    void (async () => {
+      const session = await verifyAppSession()
+      if (!cancelled) {
+        setWebSession(session)
+        setWebReady(true)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [inTelegram])
 
   const user = useMemo<AppAuthUser | null>(() => {
-    if (!inTelegram || !telegram.user) return null
-
-    const parts = [telegram.user.first_name, telegram.user.last_name].filter(Boolean)
-    return {
-      id: telegram.user.id,
-      displayName: parts.join(' ').trim() || 'کاربر',
-      username: telegram.user.username ?? null,
-      photoUrl: telegram.user.photo_url ?? null,
-      isPremium: telegram.user.is_premium,
+    if (inTelegram && telegram.user) {
+      const parts = [telegram.user.first_name, telegram.user.last_name].filter(Boolean)
+      return {
+        id: telegram.user.id,
+        displayName: parts.join(' ').trim() || 'کاربر',
+        username: telegram.user.username ?? null,
+        photoUrl: telegram.user.photo_url ?? null,
+        isPremium: telegram.user.is_premium,
+        source: 'telegram',
+      }
     }
-  }, [inTelegram, telegram.user])
+
+    if (!inTelegram && webSession) {
+      return {
+        id: webSession.userId,
+        displayName: webSession.displayName,
+        email: webSession.email,
+        source: 'web',
+      }
+    }
+
+    return null
+  }, [inTelegram, telegram.user, webSession])
+
+  const login = useCallback(async (email: string, password: string) => {
+    const session = await loginAppUser(email, password)
+    setWebSession(session)
+    return session
+  }, [])
+
+  const register = useCallback(async (email: string, password: string, displayName: string) => {
+    const session = await registerAppUser(email, password, displayName)
+    setWebSession(session)
+    return session
+  }, [])
+
+  const logout = useCallback(async () => {
+    await logoutAppUser()
+    setWebSession(null)
+  }, [])
 
   return {
     user,
     isAuthenticated: Boolean(user),
-    isReady: inTelegram ? telegram.isReady : true,
+    isReady: inTelegram ? telegram.isReady : webReady,
     inTelegram,
-    platform: 'telegram' as const,
+    platform: (inTelegram ? 'telegram' : 'web') as 'telegram' | 'web',
+    canLinkTelegram: Boolean(webSession?.canLinkTelegram),
+    login,
+    register,
+    logout,
     showAlert: telegram.showAlert,
     showConfirm: telegram.showConfirm,
     openLink: telegram.openLink,

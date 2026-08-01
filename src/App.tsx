@@ -8,6 +8,7 @@ import { useAppAuth } from './hooks/useAppAuth'
 import { isTelegramMiniApp } from './lib/platform'
 import { useTelegramStartNavigation } from './hooks/useTelegramStartNavigation'
 import { useTelegramUserSync } from './hooks/useTelegramUserSync'
+import { useTelegramLinkComplete } from './hooks/useTelegramLinkComplete'
 
 const Home = lazy(() => import('./pages/Home'))
 const AnimeDetail = lazy(() => import('./pages/AnimeDetail'))
@@ -30,11 +31,33 @@ function App() {
   const { applyTheme } = useTheme()
   useTelegramStartNavigation(isReady)
   useTelegramUserSync(isReady)
+  useTelegramLinkComplete(isReady)
 
   useEffect(() => {
     if (!isReady) return
     if (isTelegramMiniApp()) {
-      WebApp.expand()
+      try {
+        WebApp.expand()
+      } catch {
+        // ignore
+      }
+      // BotFather fullscreen + explicit request so contentSafeAreaInset includes chrome.
+      try {
+        const wa = WebApp as unknown as {
+          isFullscreen?: boolean
+          requestFullscreen?: () => void
+          isVersionAtLeast?: (v: string) => boolean
+        }
+        if (
+          !wa.isFullscreen &&
+          typeof wa.requestFullscreen === 'function' &&
+          (typeof wa.isVersionAtLeast !== 'function' || wa.isVersionAtLeast('8.0'))
+        ) {
+          wa.requestFullscreen()
+        }
+      } catch {
+        // Unsupported client
+      }
     }
     applyTheme()
   }, [isReady, applyTheme])

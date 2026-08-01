@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { AlarmClockIcon, CustomerServiceIcon, FavouriteIcon, UserIcon } from 'hugeicons-react'
-import { ChevronLeft, Crown } from 'lucide-react'
+import { ChevronLeft, Crown, Moon, Sun } from 'lucide-react'
 import { useAppAuth } from '../hooks/useAppAuth'
 import { useUserAnimeList } from '../hooks/useUserAnimeList'
 import { useNotifications } from '../hooks/useNotifications'
@@ -11,6 +11,11 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { MyListCompactCard } from '@/components/my-list/MyListUi'
 import { cn } from '@/lib/utils'
+import { useTheme } from '@/utils/theme'
+import { hapticSelection } from '@/lib/telegramHaptics'
+import type { ThemePreference } from '@/store/themeStore'
+import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
+import { Button } from '@/components/ui/button'
 
 const toPersianNumber = (num: number | string): string => {
   const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
@@ -124,7 +129,7 @@ const ProfileSkeleton = () => (
 )
 
 const Profile = () => {
-  const { user, isReady, inTelegram } = useAppAuth()
+  const { user, isReady, inTelegram, login, register, logout } = useAppAuth()
   const { stats } = useUserAnimeList()
   const { data: subscriptionMe } = useSubscriptionMe(ENABLE_SUBSCRIPTION_DOWNLOAD_GATE)
   const {
@@ -135,6 +140,7 @@ const Profile = () => {
     updatingPreferences,
   } = useNotifications()
   const [avatarFailed, setAvatarFailed] = useState(false)
+  const { preference, setPreference, isDarkMode } = useTheme()
 
   const displayName = user?.displayName ?? 'کاربر'
 
@@ -145,9 +151,18 @@ const Profile = () => {
   const avgRatingLabel =
     stats.averageRating != null ? toPersianNumber(stats.averageRating.toFixed(1)) : '—'
   const showNotificationSettings = inTelegram && user != null
+  const showWebAuth = !inTelegram && !user
 
   if (!isReady) {
     return <ProfileSkeleton />
+  }
+
+  if (showWebAuth) {
+    return (
+      <div className="pb-24 px-4 pt-10">
+        <ProfileAuthPanel login={login} register={register} layout="page" />
+      </div>
+    )
   }
 
   return (
@@ -198,12 +213,28 @@ const Profile = () => {
 
           {username ? (
             <p className="mt-1 text-left text-sm text-muted-foreground">{username}</p>
+          ) : user?.email ? (
+            <p className="mt-1 text-left text-sm text-muted-foreground" dir="ltr">
+              {user.email}
+            </p>
           ) : null}
 
           {user?.isPremium ? (
             <span className="mt-2 inline-flex items-center rounded-full border border-primary-400/30 bg-primary-400/10 px-2.5 py-0.5 text-[11px] font-medium text-primary-400">
               Telegram Premium
             </span>
+          ) : null}
+
+          {!inTelegram && user?.source === 'web' ? (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="mt-3"
+              onClick={() => void logout()}
+            >
+              خروج از حساب
+            </Button>
           ) : null}
         </div>
       </div>
@@ -280,6 +311,7 @@ const Profile = () => {
                 checked={preferences?.notify_new_episode ?? true}
                 disabled={preferencesLoading || updatingPreferences}
                 onCheckedChange={(checked) => {
+                  hapticSelection()
                   void updatePreferences({ notify_new_episode: checked })
                 }}
               />
@@ -296,6 +328,7 @@ const Profile = () => {
                 checked={preferences?.notify_telegram_dm ?? true}
                 disabled={preferencesLoading || updatingPreferences}
                 onCheckedChange={(checked) => {
+                  hapticSelection()
                   void updatePreferences({ notify_telegram_dm: checked })
                 }}
               />
@@ -303,6 +336,58 @@ const Profile = () => {
           </MyListCompactCard>
         </div>
       ) : null}
+
+      <div className="mx-4 mt-6">
+        <SectionTitle>ظاهر</SectionTitle>
+        <MyListCompactCard className="overflow-hidden p-3 space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0 text-right">
+              <p className="text-sm font-medium text-foreground">تم</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {preference === 'auto'
+                  ? inTelegram
+                    ? 'همگام با تم تلگرام'
+                    : 'همگام با سیستم'
+                  : isDarkMode
+                    ? 'تم تیره'
+                    : 'تم روشن'}
+              </p>
+            </div>
+            {isDarkMode ? (
+              <Moon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+            ) : (
+              <Sun className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+            )}
+          </div>
+          <div className="grid grid-cols-3 gap-1.5">
+            {(
+              [
+                { id: 'auto', label: 'خودکار' },
+                { id: 'light', label: 'روشن' },
+                { id: 'dark', label: 'تیره' },
+              ] as const satisfies ReadonlyArray<{ id: ThemePreference; label: string }>
+            ).map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => {
+                  hapticSelection()
+                  setPreference(opt.id)
+                }}
+                className={cn(
+                  'rounded-md border px-2 py-2 text-[11px] font-medium transition-colors',
+                  preference === opt.id
+                    ? 'border-primary-400/40 bg-primary-400/15 text-primary-200'
+                    : 'border-border/50 bg-muted/30 text-muted-foreground hover:bg-muted/50'
+                )}
+                aria-pressed={preference === opt.id}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </MyListCompactCard>
+      </div>
     </div>
   )
 }

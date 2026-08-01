@@ -4,20 +4,18 @@ import AnimePrefetchLink from '../components/AnimePrefetchLink'
 import { BidiText } from '../components/BidiText'
 import FavoriteAnimeEditor from '../components/FavoriteAnimeEditor'
 import {
-  FavouriteIcon,
   Clock01Icon,
   Video01Icon,
   Building01Icon,
   Calendar01Icon,
   Calendar02Icon,
+  CheckmarkCircle02Icon,
   LeftToRightListNumberIcon,
   UserIcon,
   Share08Icon,
-  TelegramIcon,
-  CheckmarkCircle02Icon,
   Download04Icon,
 } from 'hugeicons-react'
-import { ExternalLink, Lock, Captions } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import { useUserAnimeList } from '../hooks/useUserAnimeList'
 import { useNotifications } from '../hooks/useNotifications'
 import { useTelegramApp } from '../hooks/useTelegramApp'
@@ -46,9 +44,6 @@ import {
   normalizeVideoFileType,
   normalizeVideoResolution,
   resolveHardsubLanguage,
-  videoQualityButtonLabel,
-  type VideoEncode,
-  type VideoResolution,
 } from '../utils/animeMediaTags'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -67,32 +62,51 @@ import {
   SHOW_HARD_AND_FREE_DOWNLOAD_TABS,
 } from '../config/monetizationFlags'
 import { trackAnimeBrowse, trackEpisodeDownload } from '../lib/myListTracking'
+import { hapticImpact, hapticNotification } from '../lib/telegramHaptics'
 import { recordAnimeView } from '../services/shioriCatalog'
 import { AddToShioriListButton } from '@/components/my-list/AddToShioriListButton'
+import {
+  formatSeriesMemberLabel,
+  genreLabel,
+  toJalaliDate,
+  toPersianNumber,
+  translateFormat,
+  translateSeason,
+  translateStatus,
+} from '@/components/anime-detail/animeDetailLabels'
+import {
+  DetailSkeleton,
+  EpisodesTabSkeleton,
+  HeroTitleSkeleton,
+  InfoTabSkeleton,
+  PulseBlock,
+  ScoreChipsSkeleton,
+  SeriesSwitcherSkeleton,
+  StatsRowSkeleton,
+  SynopsisSkeleton,
+  TranslatorsTabSkeleton,
+} from '@/components/anime-detail/AnimeDetailSkeletons'
+import {
+  FavoriteStatCard,
+  NextAiringCard,
+  ReminderStatCard,
+  ScoreChip,
+  posterStatusClass,
+} from '@/components/anime-detail/AnimeDetailStatCards'
+import {
+  EpisodeDownloadCard,
+  EpisodePackDownloadCard,
+  FreeEpisodeDownloadCard,
+  FreeTokenWalletCard,
+  MOCK_FREE_EPISODES,
+  type Episode,
+  type EpisodePack,
+  type SubtitlePack,
+} from '@/components/anime-detail/EpisodeDownloadCards'
 
 import malLogo from '../assets/images/mal-logo.png'
 import alLogo from '../assets/images/anilist-logo.svg'
-import shioriLogo from '../assets/images/shiori-logo.svg'
-
-interface Episode {
-  id: string | number
-  number: number
-  title: string
-  download_link?: string
-  subtitle_link?: string
-  video_file_type?: 'softsub' | 'hardsub' | 'free'
-}
-
-interface SubtitlePack {
-  id: string | number
-  title?: string
-  subtitle_link?: string
-}
-
-interface EpisodePack {
-  title?: string | null
-  download_link?: string | null
-}
+import shioriLogo from '../assets/images/shiori.svg'
 
 interface Anime {
   id: number | string
@@ -176,483 +190,6 @@ const LAUNCH_DOWNLOAD_TABS: { id: LaunchDownloadTab; label: string }[] = [
 
 const useLaunchDownloadTabs =
   !SHOW_HARD_AND_FREE_DOWNLOAD_TABS && !ENABLE_SUBSCRIPTION_DOWNLOAD_GATE
-
-const toPersianNumber = (num: number | string): string => {
-  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
-  return String(num).replace(/[0-9]/g, (w) => persianDigits[+w])
-}
-
-/** برچسب فصل از پنل ادمین (label_fa) — با اعداد فارسی */
-const formatSeriesMemberLabel = (member: {
-  sort_order: number
-  label_fa: string | null
-}) => {
-  const fromAdmin = String(member.label_fa ?? '').trim()
-  if (fromAdmin) return toPersianNumber(fromAdmin)
-  return `فصل ${toPersianNumber(member.sort_order)}`
-}
-
-const translateStatus = (status: string) => {
-  const statusMap: Record<string, string> = {
-    RELEASING: 'در حال پخش',
-    FINISHED: 'پایان یافته',
-    NOT_YET_RELEASED: 'منتشر نشده',
-    CANCELLED: 'لغو شده',
-    HIATUS: 'متوقف شده',
-  }
-  return statusMap[status] || status
-}
-
-const translateSeason = (season: string) => {
-  const seasonMap: Record<string, string> = {
-    WINTER: 'زمستان',
-    SPRING: 'بهار',
-    SUMMER: 'تابستان',
-    FALL: 'پاییز',
-  }
-  return seasonMap[String(season || '').toUpperCase()] || season
-}
-
-const translateFormat = (format?: string) => {
-  const key = String(format ?? '')
-    .trim()
-    .toUpperCase()
-  const map: Record<string, string> = {
-    TV: 'سریالی',
-    MOVIE: 'سینمایی',
-    SPECIAL: 'قسمت ویژه',
-    ONA: 'ONA',
-    'ONA (CHINESE)': 'دونگهوا',
-  }
-  return map[key] || (format ?? '—')
-}
-
-const genreLabel = (g: GenreItem) => g.name_fa || g.name_en || g.slug
-
-const toJalaliDate = (value?: string) => {
-  if (!value) return 'نامشخص'
-
-  const raw = String(value).trim()
-  const match = raw.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/)
-  if (!match) return toPersianNumber(raw)
-
-  const gy = Number(match[1])
-  const gm = Number(match[2])
-  const gd = Number(match[3])
-  if (!Number.isFinite(gy) || !Number.isFinite(gm) || !Number.isFinite(gd))
-    return toPersianNumber(raw)
-
-  if (gy < 1700) {
-    const pad2 = (n: number) => String(n).padStart(2, '0')
-    return toPersianNumber(`${gy}/${pad2(gm)}/${pad2(gd)}`)
-  }
-
-  const g2j = (y: number, m: number, d: number) => {
-    const g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334]
-    let jy = y <= 1600 ? 0 : 979
-    y -= y <= 1600 ? 621 : 1600
-    const gy2 = m > 2 ? y + 1 : y
-    let days =
-      365 * y +
-      Math.floor((gy2 + 3) / 4) -
-      Math.floor((gy2 + 99) / 100) +
-      Math.floor((gy2 + 399) / 400) -
-      80 +
-      d +
-      g_d_m[m - 1]
-    jy += 33 * Math.floor(days / 12053)
-    days %= 12053
-    jy += 4 * Math.floor(days / 1461)
-    days %= 1461
-    if (days > 365) {
-      jy += Math.floor((days - 1) / 365)
-      days = (days - 1) % 365
-    }
-    const jm = days < 186 ? 1 + Math.floor(days / 31) : 7 + Math.floor((days - 186) / 30)
-    const jd = 1 + (days < 186 ? days % 31 : (days - 186) % 30)
-    return { jy, jm, jd }
-  }
-
-  const { jy, jm, jd } = g2j(gy, gm, gd)
-  const pad2 = (n: number) => String(n).padStart(2, '0')
-  return toPersianNumber(`${jy}/${pad2(jm)}/${pad2(jd)}`)
-}
-
-const PulseBlock = ({ className }: { className?: string }) => (
-  <div className={cn('animate-pulse rounded-md bg-muted', className)} aria-hidden />
-)
-
-const DetailSkeleton = () => (
-  <div className="pb-24 animate-pulse">
-    <div className="relative">
-      <div className="absolute inset-x-0 top-0 h-52 bg-muted" />
-      <div className="relative z-10 pt-24 px-4 pb-2 flex flex-col items-center">
-        <div className="w-32 aspect-[2/3] rounded-2xl bg-muted border-4 border-background" />
-        <div className="h-6 w-56 bg-muted rounded mt-4" />
-        <div className="flex gap-2 mt-3">
-          <div className="h-6 w-16 bg-muted rounded-md" />
-          <div className="h-6 w-16 bg-muted rounded-md" />
-          <div className="h-6 w-16 bg-muted rounded-md" />
-        </div>
-      </div>
-    </div>
-    <div className="mx-4 mt-5 grid grid-cols-3 gap-2">
-      {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="h-16 rounded-xl bg-muted" />
-      ))}
-    </div>
-    <div className="mx-4 mt-4 h-24 rounded-xl bg-muted" />
-    <div className="mx-4 mt-5 h-10 rounded-xl bg-muted" />
-    <div className="mx-4 mt-4 space-y-3">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="h-14 rounded-xl bg-muted" />
-      ))}
-    </div>
-  </div>
-)
-
-const TELEGRAM_BLUE = '#229ED9'
-
-const StatsRowSkeleton = () => (
-  <div className="mx-4 mt-5 flex items-stretch gap-2">
-    <div className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-card/60 px-3">
-      <PulseBlock className="h-5 w-5 shrink-0 rounded" />
-      <PulseBlock className="h-3 w-28" />
-    </div>
-    <PulseBlock className="h-12 w-12 shrink-0 rounded-xl" />
-  </div>
-)
-
-const ScoreChipsSkeleton = () => (
-  <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
-    {Array.from({ length: 3 }).map((_, i) => (
-      <div
-        key={i}
-        className="flex items-center gap-1.5 rounded-xl border border-border bg-card/60 px-2 py-1.5"
-      >
-        <PulseBlock className="w-5 h-5 rounded shrink-0" />
-        <PulseBlock className="h-4 w-9" />
-      </div>
-    ))}
-  </div>
-)
-
-const SeriesSwitcherSkeleton = () => (
-  <div className="mx-4 mt-4">
-    <PulseBlock className="h-4 w-24 mb-3 mx-auto" />
-    <div className="flex gap-2 overflow-hidden px-1">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <PulseBlock key={i} className="h-[4.5rem] w-[7rem] shrink-0 rounded-xl" />
-      ))}
-    </div>
-  </div>
-)
-
-const InfoTabSkeleton = () => (
-  <div className="rounded-xl border border-border bg-card/60 divide-y divide-border overflow-hidden">
-    {Array.from({ length: 6 }).map((_, i) => (
-      <div key={i} className="flex items-center justify-between gap-3 px-4 py-3.5">
-        <PulseBlock className="h-4 w-24" />
-        <PulseBlock className="h-4 w-28" />
-      </div>
-    ))}
-  </div>
-)
-
-const EpisodesTabSkeleton = () => (
-  <div className="space-y-4">
-    <PulseBlock className="h-10 w-full rounded-xl" />
-    <div className="space-y-2">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <PulseBlock key={i} className="h-16 w-full rounded-xl" />
-      ))}
-    </div>
-  </div>
-)
-
-const SynopsisSkeleton = () => (
-  <div className="mx-4 mt-4 rounded-xl border border-border bg-card/60 p-4 space-y-3">
-    <PulseBlock className="h-4 w-24" />
-    <div className="space-y-2">
-      <PulseBlock className="h-3 w-full" />
-      <PulseBlock className="h-3 w-full" />
-      <PulseBlock className="h-3 w-11/12" />
-      <PulseBlock className="h-3 w-4/5" />
-    </div>
-  </div>
-)
-
-const HeroTitleSkeleton = () => (
-  <div className="relative w-full mt-3 px-10 space-y-2 flex flex-col items-center">
-    <PulseBlock className="h-6 w-56" />
-    <PulseBlock className="h-4 w-40" />
-  </div>
-)
-
-const TranslatorsTabSkeleton = () => (
-  <div className="space-y-2">
-    {Array.from({ length: 3 }).map((_, i) => (
-      <div
-        key={i}
-        className="flex items-center gap-3 rounded-xl border border-border bg-card/60 p-3"
-      >
-        <PulseBlock className="w-10 h-10 rounded-xl shrink-0" />
-        <div className="flex-1 space-y-2">
-          <PulseBlock className="h-4 w-32" />
-          <PulseBlock className="h-3 w-20" />
-        </div>
-      </div>
-    ))}
-  </div>
-)
-
-const ReminderStatCard = ({
-  active,
-  busy = false,
-  onClick,
-}: {
-  active: boolean
-  busy?: boolean
-  onClick: () => void
-}) => (
-  <button
-    type="button"
-    onClick={onClick}
-    disabled={busy}
-    className={cn(
-      'flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-center transition-colors disabled:opacity-60',
-      active
-        ? 'border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/15'
-        : 'border-border bg-card/60 hover:bg-muted/40'
-    )}
-    aria-label={active ? 'یادآوری پخش فعال است' : 'یادآوری پخش در تلگرام'}
-    aria-pressed={active}
-  >
-    {active ? (
-      <CheckmarkCircle02Icon className="h-5 w-5 shrink-0 text-emerald-400" />
-    ) : (
-      <TelegramIcon className="h-5 w-5 shrink-0" style={{ color: TELEGRAM_BLUE }} />
-    )}
-    <span
-      className={cn(
-        'text-[12px] font-medium leading-tight',
-        active ? 'text-emerald-300' : 'text-foreground'
-      )}
-    >
-      {active ? 'یادآوری پخش فعال شد' : 'یادآوری پخش در تلگرام'}
-    </span>
-  </button>
-)
-
-const formatNextAiringTehran = (airingAtUnix: number) => {
-  const d = new Date(airingAtUnix * 1000)
-  if (!Number.isFinite(d.getTime())) return null
-  const weekday = new Intl.DateTimeFormat('fa-IR', {
-    weekday: 'long',
-    timeZone: 'Asia/Tehran',
-  }).format(d)
-  const time = new Intl.DateTimeFormat('fa-IR', {
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: 'Asia/Tehran',
-  }).format(d)
-  return { weekday, time }
-}
-
-const splitCountdown = (remainingMs: number) => {
-  const totalSec = Math.max(0, Math.floor(remainingMs / 1000))
-  return {
-    days: Math.floor(totalSec / 86400),
-    hours: Math.floor((totalSec % 86400) / 3600),
-    minutes: Math.floor((totalSec % 3600) / 60),
-    seconds: totalSec % 60,
-  }
-}
-
-const CountdownUnit = ({ value, label }: { value: number; label: string }) => (
-  <div className="flex min-w-[2.5rem] flex-col items-center justify-center rounded-lg border border-primary-400/20 bg-primary-400/10 px-1.5 py-1.5">
-    <span className="text-[13px] font-bold tabular-nums leading-none text-primary-200">
-      {toPersianNumber(String(value).padStart(2, '0'))}
-    </span>
-    <span className="mt-1 text-[9px] font-medium leading-none text-muted-foreground">
-      {label}
-    </span>
-  </div>
-)
-
-const NextAiringCard = ({
-  episode,
-  airingAt,
-}: {
-  episode: number
-  airingAt: number
-}) => {
-  const [nowMs, setNowMs] = useState(() => Date.now())
-  const formatted = formatNextAiringTehran(airingAt)
-
-  useEffect(() => {
-    const targetMs = airingAt * 1000
-    if (!Number.isFinite(targetMs)) return
-    const tick = () => setNowMs(Date.now())
-    tick()
-    const id = window.setInterval(tick, 1000)
-    return () => window.clearInterval(id)
-  }, [airingAt])
-
-  if (!formatted) return null
-
-  const remainingMs = airingAt * 1000 - nowMs
-  const expired = remainingMs <= 0
-  const { days, hours, minutes, seconds } = splitCountdown(remainingMs)
-
-  return (
-    <div className="mx-4 mt-2 flex items-center gap-2.5 rounded-2xl border border-primary-400/20 bg-gradient-to-l from-primary-500/[0.10] to-card/60 px-3 py-2">
-      <Calendar01Icon className="h-5 w-5 shrink-0 text-primary-400" />
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-[13px] font-semibold text-foreground">
-          قسمت بعدی · {toPersianNumber(episode)}
-        </p>
-        <p className="truncate text-[11px] text-muted-foreground leading-relaxed">
-          {expired
-            ? 'زمان پخش رسیده یا در حال به‌روزرسانی است'
-            : `${formatted.weekday} · ساعت ${formatted.time}`}
-        </p>
-      </div>
-      {expired ? null : (
-        <div className="flex shrink-0 items-center gap-1" dir="ltr">
-          {days > 0 ? <CountdownUnit value={days} label="روز" /> : null}
-          <CountdownUnit value={hours} label="ساعت" />
-          <CountdownUnit value={minutes} label="دقیقه" />
-          <CountdownUnit value={seconds} label="ثانیه" />
-        </div>
-      )}
-    </div>
-  )
-}
-
-const FavoriteStatCard = ({
-  active,
-  onClick,
-}: {
-  active: boolean
-  onClick: () => void
-}) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={cn(
-      'relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border transition-colors',
-      active
-        ? 'border-red-500/35 bg-red-500/10 hover:bg-red-500/15'
-        : 'border-border bg-card/60 hover:bg-muted/40'
-    )}
-    aria-label={active ? 'ویرایش پیشرفت و امتیاز' : 'افزودن به علاقه‌مندی‌ها'}
-  >
-    <FavouriteIcon
-      className={cn(
-        'h-5 w-5',
-        active ? 'fill-red-500 text-red-500' : 'text-muted-foreground'
-      )}
-    />
-  </button>
-)
-
-const ScoreChip = ({
-  value,
-  logo,
-  logoAlt,
-  fallbackLabel,
-  loading = false,
-  href,
-  onOpenLink,
-  logoClassName,
-  logoWrapClassName,
-}: {
-  value: string
-  logo?: string
-  logoAlt?: string
-  fallbackLabel?: string
-  loading?: boolean
-  href?: string
-  onOpenLink?: (url: string) => void
-  logoClassName?: string
-  logoWrapClassName?: string
-}) => {
-  const logoEl = logo ? (
-    logoWrapClassName ? (
-      <span
-        className={cn(
-          'flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded',
-          logoWrapClassName
-        )}
-      >
-        <img
-          src={logo}
-          className={cn('h-3.5 w-3.5 object-contain', logoClassName)}
-          alt={logoAlt ?? ''}
-        />
-      </span>
-    ) : (
-      <img
-        src={logo}
-        className={cn('h-5 w-5 shrink-0 rounded', logoClassName)}
-        alt={logoAlt ?? ''}
-      />
-    )
-  ) : (
-    <span className="text-[10px] font-bold text-yellow-500 leading-none shrink-0">
-      {fallbackLabel ?? '—'}
-    </span>
-  )
-
-  const inner = (
-    <>
-      {logoEl}
-      {loading ? (
-        <span className="h-4 w-9 rounded-md bg-muted animate-pulse" aria-hidden />
-      ) : (
-        <span className="text-sm font-semibold text-foreground tabular-nums">{value}</span>
-      )}
-    </>
-  )
-
-  const className = cn(
-    'flex items-center gap-1.5 rounded-xl border border-border bg-card/60 px-2 py-1.5 transition-colors',
-    href && !loading && 'hover:bg-muted/40 active:scale-[0.98] cursor-pointer'
-  )
-
-  if (href && onOpenLink && !loading) {
-    return (
-      <button
-        type="button"
-        className={className}
-        aria-label={`${logoAlt ?? 'امتیاز'} در سایت مرجع`}
-        onClick={() => onOpenLink(href)}
-      >
-        {inner}
-      </button>
-    )
-  }
-
-  return <div className={className}>{inner}</div>
-}
-
-const posterStatusClass = (status: string) => {
-  switch (status) {
-    case 'RELEASING':
-      return 'bg-green-500/90 text-white'
-    case 'FINISHED':
-      return 'bg-slate-600/90 text-white'
-    case 'NOT_YET_RELEASED':
-      return 'bg-amber-500/90 text-white'
-    case 'HIATUS':
-      return 'bg-orange-500/90 text-white'
-    case 'CANCELLED':
-      return 'bg-red-600/90 text-white'
-    default:
-      return 'bg-muted/90 text-foreground border border-border'
-  }
-}
 
 const SegmentedTabs = <T extends string>({
   tabs,
@@ -886,373 +423,6 @@ const SimilarPosterCard = ({
     </div>
   </AnimePrefetchLink>
 )
-
-const formatEpisodeLabel = (num: number | string): string => {
-  const n = typeof num === 'number' ? num : Number(num)
-  if (!Number.isFinite(n)) return toPersianNumber(num)
-  const raw = Number.isInteger(n) ? String(n).padStart(2, '0') : String(n)
-  return toPersianNumber(raw)
-}
-
-const EpisodeQualityBadge = ({
-  resolution,
-  encode,
-}: {
-  resolution: VideoResolution
-  encode: VideoEncode
-}) => {
-  const label = videoQualityButtonLabel(resolution, encode)
-  return (
-    <span
-      className="inline-flex max-w-full shrink items-center justify-center truncate rounded-md border border-primary-400/25 bg-primary-400/10 px-2 py-1 text-[11px] font-semibold font-mono tabular-nums tracking-wide text-primary-300 leading-none"
-      dir="ltr"
-      title={label}
-    >
-      {label}
-    </span>
-  )
-}
-
-const episodeOneLineShellClass =
-  'group relative flex items-center gap-3 overflow-hidden rounded-xl border border-border/60 bg-gradient-to-l from-primary-500/[0.09] via-card/75 to-card/55 px-3 py-2.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] transition-all duration-200 hover:border-primary-400/30 hover:from-primary-500/[0.14] cursor-pointer active:scale-[0.99]'
-
-const episodeActionBtnClass =
-  'relative z-10 inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-lg border px-2.5 text-[11px] font-semibold transition-colors active:scale-[0.97]'
-
-const EpisodeDownloadCard = ({
-  episode,
-  showSubtitleButton,
-  videoResolution,
-  videoEncode,
-  subscriptionLocked = false,
-  onDownloadAvailable,
-  onSubtitle,
-  onLockedQuality,
-}: {
-  episode: Episode
-  showSubtitleButton: boolean
-  videoResolution: VideoResolution
-  videoEncode: VideoEncode
-  subscriptionLocked?: boolean
-  onDownloadAvailable: () => void
-  onSubtitle: () => void
-  onLockedQuality: (quality: string) => void
-}) => {
-  const qualityLabel = videoQualityButtonLabel(videoResolution, videoEncode)
-
-  const handleCardClick = () => {
-    if (subscriptionLocked) {
-      onLockedQuality('اشتراک')
-      return
-    }
-    onDownloadAvailable()
-  }
-
-  return (
-    <div
-      className={episodeOneLineShellClass}
-      role="button"
-      tabIndex={0}
-      aria-label={
-        subscriptionLocked
-          ? `دانلود قسمت ${episode.number} نیازمند اشتراک`
-          : `دانلود قسمت ${episode.number} با کیفیت ${qualityLabel}`
-      }
-      onClick={handleCardClick}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          handleCardClick()
-        }
-      }}
-    >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-primary-400/[0.12] to-transparent"
-      />
-
-      <div className="relative flex min-w-0 flex-1 items-center gap-2">
-        <p className="min-w-0 truncate text-sm font-bold text-foreground">
-          قسمت {formatEpisodeLabel(episode.number)}
-        </p>
-        <EpisodeQualityBadge resolution={videoResolution} encode={videoEncode} />
-      </div>
-
-      <div className="relative flex shrink-0 items-center gap-1.5">
-        {showSubtitleButton ? (
-          <button
-            type="button"
-            aria-label={`دانلود زیرنویس قسمت ${episode.number}`}
-            className={cn(
-              episodeActionBtnClass,
-              'border-border/70 bg-background/40 text-muted-foreground hover:border-border hover:bg-muted/40 hover:text-foreground'
-            )}
-            onClick={(e) => {
-              e.stopPropagation()
-              onSubtitle()
-            }}
-          >
-            <Captions className="h-3.5 w-3.5" aria-hidden />
-            زیرنویس
-          </button>
-        ) : null}
-        <button
-          type="button"
-          aria-label={
-            subscriptionLocked
-              ? `دانلود قسمت ${episode.number} نیازمند اشتراک`
-              : `دانلود قسمت ${episode.number}`
-          }
-          className={cn(
-            episodeActionBtnClass,
-            subscriptionLocked
-              ? 'border-border/60 bg-muted/25 text-muted-foreground'
-              : 'border-primary-400/35 bg-primary-400/10 text-primary-300 hover:bg-primary-400/15'
-          )}
-          onClick={(e) => {
-            e.stopPropagation()
-            handleCardClick()
-          }}
-        >
-          {subscriptionLocked ? (
-            <Lock className="h-3.5 w-3.5" aria-hidden />
-          ) : (
-            <Download04Icon className="h-3.5 w-3.5" aria-hidden />
-          )}
-          دانلود
-        </button>
-      </div>
-    </div>
-  )
-}
-
-const EpisodePackDownloadCard = ({
-  pack,
-  videoResolution,
-  videoEncode,
-  onDownload,
-  locked = false,
-}: {
-  pack: EpisodePack
-  videoResolution: VideoResolution
-  videoEncode: VideoEncode
-  onDownload: () => void
-  locked?: boolean
-}) => {
-  const qualityLabel = videoQualityButtonLabel(videoResolution, videoEncode)
-  const title = pack.title?.trim() || 'دانلود تمام قسمت‌ها'
-
-  return (
-    <div
-      className="episode-pack-card-wrap cursor-pointer active:scale-[0.99] transition-transform"
-      role="button"
-      tabIndex={0}
-      aria-label={
-        locked
-          ? `${title} نیازمند اشتراک`
-          : `دانلود ${title} با کیفیت ${qualityLabel}`
-      }
-      onClick={onDownload}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          onDownload()
-        }
-      }}
-    >
-      <div className="episode-pack-card-inner group relative flex items-center gap-3 overflow-hidden bg-card px-3 py-2.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-gradient-to-l from-primary-500/[0.09] to-transparent"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-primary-400/[0.12] to-transparent"
-        />
-
-        <div className="relative flex min-w-0 flex-1 items-center gap-2">
-          <p className="min-w-0 truncate text-sm font-bold text-foreground">
-            {title}
-          </p>
-          <EpisodeQualityBadge resolution={videoResolution} encode={videoEncode} />
-        </div>
-
-        <div className="relative flex shrink-0 items-center gap-1.5">
-          {locked ? (
-            <span
-              className={cn(
-                episodeActionBtnClass,
-                'border-border/60 bg-muted/25 text-muted-foreground'
-              )}
-            >
-              <Lock className="h-3.5 w-3.5" aria-hidden />
-              اشتراک
-            </span>
-          ) : (
-            <span
-              className={cn(
-                episodeActionBtnClass,
-                'border-primary-400/35 bg-primary-400/10 text-primary-300'
-              )}
-            >
-              <Download04Icon className="h-3.5 w-3.5" aria-hidden />
-              دانلود
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-const FREE_QUALITY_LABEL = '1080p x265 10bit'
-
-const MOCK_FREE_EPISODES: Episode[] = [
-  {
-    id: 'mock-free-1',
-    number: 1,
-    title: 'نمونه قسمت ۱',
-    download_link: 'https://t.me/ShioriUploadBot?start=get_free_demo',
-    video_file_type: 'free',
-  },
-  {
-    id: 'mock-free-2',
-    number: 2,
-    title: 'نمونه قسمت ۲',
-    download_link: 'https://t.me/ShioriUploadBot?start=get_free_demo',
-    video_file_type: 'free',
-  },
-  {
-    id: 'mock-free-3',
-    number: 3,
-    title: 'نمونه قسمت ۳',
-    download_link: 'https://t.me/ShioriUploadBot?start=get_free_demo',
-    video_file_type: 'free',
-  },
-]
-
-const FreeTokenWalletCard = ({
-  balance,
-  pending,
-  exhausted,
-  isMock,
-}: {
-  balance: number
-  pending: boolean
-  exhausted: boolean
-  isMock?: boolean
-}) => (
-  <div
-    className={cn(
-      'overflow-hidden rounded-2xl border p-4',
-      exhausted
-        ? 'border-amber-500/35 bg-gradient-to-br from-amber-500/15 to-card/80'
-        : 'border-border bg-gradient-to-br from-primary-400/10 via-card/80 to-card/60'
-    )}
-  >
-    <div className="flex items-start justify-between gap-3">
-      <div className="min-w-0 space-y-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="text-sm font-semibold text-foreground">کیف توکن رایگان</p>
-          {isMock ? (
-            <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-              نمونه
-            </span>
-          ) : null}
-        </div>
-        <p className="text-[11px] leading-relaxed text-muted-foreground">
-          هر دانلود رایگان ۱ توکن · کیفیت ثابت {FREE_QUALITY_LABEL}
-        </p>
-      </div>
-      <div className="shrink-0 rounded-xl border border-border/70 bg-background/50 px-3 py-2 text-center">
-        <p className="text-[10px] text-muted-foreground">موجودی</p>
-        <p className="text-xl font-bold tabular-nums leading-tight text-foreground">
-          {pending ? '…' : toPersianNumber(balance)}
-        </p>
-      </div>
-    </div>
-    {exhausted ? (
-      <div className="mt-3 space-y-2 border-t border-border/50 pt-3">
-        <p className="text-xs text-muted-foreground leading-relaxed">
-          توکن‌ها تمام شده. با اشتراک ماهانه به سافت‌ساب و هاردساب بدون محدودیت دسترسی دارید.
-        </p>
-        <Button asChild size="sm" className="w-full gap-1">
-          <Link to="/subscribe">خرید اشتراک ماهانه</Link>
-        </Button>
-      </div>
-    ) : (
-      <div className="mt-3 flex items-center justify-between gap-2 border-t border-border/50 pt-3">
-        <p className="text-[11px] text-muted-foreground">دسترسی نامحدود سافت/هارد</p>
-        <Button asChild size="sm" variant="secondary">
-          <Link to="/subscribe">اشتراک</Link>
-        </Button>
-      </div>
-    )}
-  </div>
-)
-
-const FreeEpisodeDownloadCard = ({
-  episode,
-  claiming,
-  disabled,
-  onClaim,
-  videoResolution = '1080p',
-  videoEncode = 'x265_10bit',
-}: {
-  episode: Episode
-  claiming: boolean
-  disabled: boolean
-  onClaim: () => void
-  videoResolution?: VideoResolution
-  videoEncode?: VideoEncode
-}) => {
-  const qualityLabel = videoQualityButtonLabel(videoResolution, videoEncode)
-  const isDisabled = disabled || claiming
-
-  return (
-    <div
-      className={cn(
-        episodeOneLineShellClass,
-        isDisabled && 'pointer-events-none opacity-60'
-      )}
-      role="button"
-      tabIndex={isDisabled ? -1 : 0}
-      aria-disabled={isDisabled}
-      aria-label={`دانلود رایگان قسمت ${episode.number} با کیفیت ${qualityLabel}`}
-      onClick={() => { if (!isDisabled) onClaim() }}
-      onKeyDown={(e) => {
-        if (!isDisabled && (e.key === 'Enter' || e.key === ' ')) {
-          e.preventDefault()
-          onClaim()
-        }
-      }}
-    >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-primary-400/[0.12] to-transparent"
-      />
-
-      <div className="relative flex min-w-0 flex-1 items-center gap-2">
-        <p className="min-w-0 truncate text-sm font-bold text-foreground">
-          قسمت {formatEpisodeLabel(episode.number)}
-        </p>
-        <EpisodeQualityBadge resolution={videoResolution} encode={videoEncode} />
-      </div>
-
-      <div className="relative flex shrink-0 items-center gap-1.5">
-        <span
-          className={cn(
-            episodeActionBtnClass,
-            'border-primary-400/35 bg-primary-400/10 text-primary-300'
-          )}
-        >
-          <Download04Icon className="h-3.5 w-3.5" aria-hidden />
-          دانلود
-        </span>
-      </div>
-    </div>
-  )
-}
 
 const AnimeDetail = () => {
   const { id } = useParams<{ id: string }>()
@@ -1515,11 +685,14 @@ const AnimeDetail = () => {
       return
     }
     try {
+      hapticImpact('medium')
       // Open first — Telegram showAlert can dismiss the sheet if shown before it.
       setProgressEditorOpen(true)
       await toggleFavorite(anime.id)
+      hapticNotification('success')
     } catch (e) {
       setProgressEditorOpen(false)
+      hapticNotification('error')
       showAlert(formatUserListSaveError(e))
     }
   }
@@ -1528,6 +701,7 @@ const AnimeDetail = () => {
     if (!anime || reminderBusy) return
     setReminderBusy(true)
     try {
+      hapticImpact('light')
       const nowOn = toggleAiringReminder(anime.id)
       if (nowOn) {
         const prefsNeedUpdate =
@@ -1538,11 +712,15 @@ const AnimeDetail = () => {
             notify_telegram_dm: true,
           })
         }
-        showAlert('یادآوری پخش در تلگرام فعال شد')
+        hapticNotification('success')
+        showAlert(
+          'یادآوری قسمت جدید فعال شد. اعلان‌ها از طریق اینباکس مینی‌اپ و (در صورت فعال بودن) پیام تلگرام ارسال می‌شوند — تنظیمات را از پروفایل می‌توانید تغییر دهید.'
+        )
       } else {
-        showAlert('یادآوری پخش غیرفعال شد')
+        showAlert('یادآوری قسمت جدید برای این انیمه غیرفعال شد.')
       }
     } catch (e) {
+      hapticNotification('error')
       showAlert(formatUserListSaveError(e))
     } finally {
       setReminderBusy(false)

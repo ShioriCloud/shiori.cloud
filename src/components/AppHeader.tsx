@@ -2,11 +2,15 @@ import { Link } from 'react-router-dom'
 import logo from '@/assets/images/shiori-logo.svg'
 import { cn } from '@/lib/utils'
 
-/** Shared chrome height — keep Layout `pt-*` / --app-header-offset in sync. */
-export const APP_HEADER_ROW_CLASS = 'flex items-center justify-center h-9'
-/** Vertical padding under Telegram content safe area (fullscreen Close / menu). */
+/**
+ * Logo sits in the Telegram fullscreen chrome gap (between Close and menu).
+ * pt = notch/safe only; row height = content safe area (chrome strip).
+ */
+export const APP_HEADER_ROW_CLASS =
+  'flex items-center justify-center min-h-9 h-[max(2.25rem,var(--app-tg-content-top,2.25rem))]'
+/** Notch padding + chrome row; tabs/content start below this block. */
 export const APP_HEADER_PAD_CLASS =
-  'pt-[calc(var(--app-tg-top-inset)+0.625rem)] pb-2.5'
+  'pt-[var(--app-tg-safe-top,0px)] pb-2.5'
 export const APP_HEADER_LOGO_CLASS =
   'h-5 w-auto max-w-[7.5rem] object-contain'
 

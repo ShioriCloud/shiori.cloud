@@ -3,6 +3,7 @@ export const queryKeys = {
   homeFeatured: (tab: string) => ['home', 'featured', tab] as const,
   homeLatest: (year: number, season: string) => ['home', 'latest', year, season] as const,
   homePopular: ['home', 'popular'] as const,
+  homeRecent: ['home', 'recent'] as const,
   homeDonghua: ['home', 'donghua'] as const,
   homeMovies: ['home', 'movies'] as const,
   homeCustomBlocks: ['home', 'custom-blocks'] as const,

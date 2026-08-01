@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom'
 import { AlarmClockIcon } from 'hugeicons-react'
 import { BidiText } from '../components/BidiText'
+import { RequireAppAuth } from '../components/RequireAppAuth'
 import { useNotifications } from '../hooks/useNotifications'
 import { formatNotificationTime } from '../utils/notificationTime'
 
-const Notifications = () => {
+const NotificationsPage = () => {
   const { notifications, unreadCount, isLoading, markRead, markAllRead } = useNotifications()
 
   return (
@@ -107,4 +108,10 @@ const Notifications = () => {
   )
 }
 
-export default Notifications
+export default function Notifications() {
+  return (
+    <RequireAppAuth>
+      <NotificationsPage />
+    </RequireAppAuth>
+  )
+}

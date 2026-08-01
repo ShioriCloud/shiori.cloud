@@ -1,5 +1,6 @@
-import { FormEvent, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { RequireAppAuth } from '@/components/RequireAppAuth'
+import { FormEvent, useEffect, useRef, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { CustomerServiceIcon, Add01Icon } from 'hugeicons-react'
 import { MyListCompactCard } from '@/components/my-list/MyListUi'
 import { Button } from '@/components/ui/button'
@@ -13,6 +14,9 @@ import {
 } from '@/types/supportTickets'
 import { cn } from '@/lib/utils'
 
+const isSupportCategory = (value: string | null): value is SupportTicketCategory =>
+  Boolean(value && (SUPPORT_TICKET_CATEGORIES as string[]).includes(value))
+
 const formatTime = (iso: string) => {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return '—'
@@ -25,8 +29,9 @@ const statusTone = (status: string) => {
   return 'border-primary-400/35 bg-primary-400/15 text-primary-200'
 }
 
-const Support = () => {
+const SupportPage = () => {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { inTelegram, user } = useAppAuth()
   const { tickets, isLoading, isError, refetch } = useSupportTickets()
   const createMutation = useCreateSupportTicket()
@@ -36,8 +41,40 @@ const Support = () => {
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
+  const composePrefillDone = useRef(false)
+  const [pendingComposeOpen, setPendingComposeOpen] = useState(false)
 
   const canUse = inTelegram && Boolean(user?.id)
+
+  useEffect(() => {
+    if (composePrefillDone.current) return
+    if (searchParams.get('compose') !== '1') return
+    composePrefillDone.current = true
+
+    const nextCategory = searchParams.get('category')
+    if (isSupportCategory(nextCategory)) setCategory(nextCategory)
+
+    const nextSubject = searchParams.get('subject')?.trim()
+    if (nextSubject) setSubject(nextSubject)
+
+    const nextBody = searchParams.get('body')?.trim()
+    if (nextBody) setBody(nextBody)
+
+    setPendingComposeOpen(true)
+
+    const cleaned = new URLSearchParams(searchParams)
+    cleaned.delete('compose')
+    cleaned.delete('category')
+    cleaned.delete('subject')
+    cleaned.delete('body')
+    setSearchParams(cleaned, { replace: true })
+  }, [searchParams, setSearchParams])
+
+  useEffect(() => {
+    if (!canUse || !pendingComposeOpen) return
+    setComposeOpen(true)
+    setPendingComposeOpen(false)
+  }, [canUse, pendingComposeOpen])
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -245,4 +282,10 @@ const Support = () => {
   )
 }
 
-export default Support
+export default function Support() {
+  return (
+    <RequireAppAuth>
+      <SupportPage />
+    </RequireAppAuth>
+  )
+}

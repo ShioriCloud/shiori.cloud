@@ -1,26 +1,28 @@
 # Shiori
 
-Telegram Mini App for browsing and managing an anime catalog (Persian UI, RTL). Also works as a **web profile** (email login) outside Telegram.
+Telegram Mini App for browsing and managing an anime catalog (Persian UI, RTL). Outside Telegram, the **Profile** page supports email login/register (web session) for browsing with a linked account.
 
 ## Features
 
-- Catalog: home, search, anime detail, studios, translators
-- Weekly schedule (AniList API, mapped to local catalog)
-- User list (favorites + watch progress)
-- Notifications inbox + Telegram DM preferences
-- Link web account → Telegram (merge lists)
+- Catalog: home (featured, recent, seasonal, popular), explore, anime detail, studios, translators
+- Weekly schedule (AniList-backed, mapped to local catalog) with translation-request CTA
+- User list (favorites + watch progress); custom lists / history / downloads are device-local
+- Notifications inbox + Telegram DM preferences (Telegram mini-app)
+- Support tickets (Telegram mini-app)
+- Link web account → Telegram via `start_param` / `linkToken` (`useTelegramLinkComplete`)
+- Theme: auto (follow Telegram / system) or manual light/dark
 
 ## Tech stack
 
 | Layer | Stack |
 |-------|--------|
 | UI | React 18, TypeScript, Vite, Tailwind CSS |
-| Platform | `@twa-dev/sdk` (Telegram Web App) |
+| Platform | `@twa-dev/sdk` (Telegram Web App, Bot API 8+) |
 | State | TanStack Query + Zustand |
 | Backend | **shiori-api** (NestJS + Postgres) |
 | Schedule | AniList GraphQL (`src/utils/api.ts`) |
 
-Admin panel: **`shiori-admin`** (separate repo).
+Admin panel: **`dash.shiori.cloud`** (separate repo).
 
 ## Getting started
 
@@ -44,6 +46,9 @@ npm run preview
 |----------|----------|---------|
 | `VITE_SHIORI_API_URL` | **Yes** | REST API base (no trailing slash) |
 | `VITE_TELEGRAM_BOT_USERNAME` | No | Bot username for deep-links / link-telegram |
+| `VITE_DARAMET_DONATE_URL` | No | External donate URL (monetization relaunch) |
+
+Monetization UI (subscription / token wallet / softsub·hardsub tabs) is gated by flags in `src/config/monetizationFlags.ts` (off for launch).
 
 ## Architecture
 
@@ -51,7 +56,7 @@ npm run preview
 src/services/
 ├── shioriCatalog.ts      # catalog via API
 ├── shioriUserList.ts     # favorites / progress via API
-└── shioriAppAuth.ts      # Telegram initData auth
+└── shioriAppAuth.ts      # email session + Telegram link
 ```
 
 ## Deploy
@@ -65,9 +70,9 @@ docker run -d -p 8080:80 ghcr.io/<owner>/shiori:latest
 
 ## Related
 
-- `shiori-api` — backend + cron
-- `shiori-admin` — staff panel
-- SQL migrations in `sql/` and `api.shiori.cloud/scripts/sql/`
+- `api.shiori.cloud` — backend + cron
+- `dash.shiori.cloud` — staff panel
+- SQL migrations in `api.shiori.cloud/scripts/sql/`
 
 ## License
 

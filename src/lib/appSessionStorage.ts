@@ -31,6 +31,7 @@ export const readStoredAppSession = (): AppSession | null => {
       displayName: String(parsed.displayName ?? '').trim() || 'کاربر',
       email: parsed.email != null ? String(parsed.email) : null,
       expiresAt: parsed.expiresAt,
+      canLinkTelegram: parsed.canLinkTelegram,
     }
   } catch {
     return null
