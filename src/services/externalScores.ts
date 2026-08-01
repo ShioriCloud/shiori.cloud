@@ -80,6 +80,69 @@ export const fetchExternalScores = async (ids: ExternalScoreIds): Promise<Extern
   }
 }
 
+export type AnilistNextAiring = {
+  episode: number
+  airing_at: number
+}
+
+/**
+ * Client-side AniList next episode (when API cannot reach graphql.anilist.co).
+ * Returns null if finished / no schedule / network error.
+ */
+export const fetchAnilistNextAiring = async (
+  anilistId: number
+): Promise<AnilistNextAiring | null> => {
+  const id = normalizeExternalId(anilistId)
+  if (!id) return null
+
+  const controller = new AbortController()
+  const timeout = window.setTimeout(() => controller.abort(), 10_000)
+
+  try {
+    const res = await fetch('https://graphql.anilist.co', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        query: `
+          query ($id: Int) {
+            Media(id: $id, type: ANIME) {
+              nextAiringEpisode { airingAt episode }
+            }
+          }
+        `,
+        variables: { id },
+      }),
+      signal: controller.signal,
+    })
+
+    if (!res.ok) return null
+
+    const json = (await res.json()) as {
+      errors?: Array<{ message?: string }>
+      data?: {
+        Media?: {
+          nextAiringEpisode?: { airingAt?: number; episode?: number } | null
+        } | null
+      }
+    }
+    if (json?.errors?.length) return null
+
+    const ep = json?.data?.Media?.nextAiringEpisode
+    if (!ep) return null
+
+    const airingAt = Number(ep.airingAt)
+    const episode = Number(ep.episode)
+    if (!Number.isFinite(airingAt) || airingAt <= 0) return null
+    if (!Number.isFinite(episode)) return null
+
+    return { episode, airing_at: airingAt }
+  } catch {
+    return null
+  } finally {
+    window.clearTimeout(timeout)
+  }
+}
+
 /** تبدیل average_score دیتابیس به درصد AniList (مثلاً 8.4 → 84٪ یا 84 → 84٪) */
 export const formatAnilistPercent = (
   score: number,

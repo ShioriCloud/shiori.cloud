@@ -22,7 +22,7 @@ import { getAnimeCardsByIds,
   getTranslatorLinksByAnimeId,
   listGenres,
 } from '../../services/catalogSource'
-import { fetchExternalScores } from '../../services/externalScores'
+import { fetchExternalScores, fetchAnilistNextAiring } from '../../services/externalScores'
 import { getAnimeFavoriteCount, getAnimeFavoriteCounts } from '../../services/userDataSource'
 import { queryClient } from '../../lib/queryClient'
 import { queryKeys } from './keys'
@@ -259,6 +259,19 @@ export const useExternalScoresQuery = (
         Boolean(ids.mal_id && ids.mal_id > 0)),
     staleTime: 60 * 60 * 1000,
     gcTime: 2 * 60 * 60 * 1000,
+  })
+
+/** Client AniList fallback when API next_airing is null (server blocked from AniList). */
+export const useAnilistNextAiringQuery = (
+  anilistId: number | null | undefined,
+  enabled = true
+) =>
+  useQuery({
+    queryKey: queryKeys.anilistNextAiring(anilistId ?? ''),
+    queryFn: () => fetchAnilistNextAiring(anilistId!),
+    enabled: enabled && Boolean(anilistId && anilistId > 0),
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
   })
 
 /** فیلتر section روی لیست cache‌شده (بدون درخواست جدید) */

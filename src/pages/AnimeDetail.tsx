@@ -21,6 +21,7 @@ import { useNotifications } from '../hooks/useNotifications'
 import { useTelegramApp } from '../hooks/useTelegramApp'
 import { useAiringReminderStore } from '../store/airingReminderStore'
 import {
+  useAnilistNextAiringQuery,
   useAnimeDetailQuery,
   useExternalScoresQuery,
   useSimilarAnimeQuery,
@@ -494,6 +495,23 @@ const AnimeDetail = () => {
     data: liveScores,
     isFetching: liveScoresFetching,
   } = useExternalScoresQuery(externalIds, Boolean(anime) && needsLiveScores)
+
+  const airingStatusKey = String(anime?.airing_status ?? anime?.status ?? 'RELEASING')
+    .trim()
+    .toUpperCase()
+  const needsClientNextAiring =
+    Boolean(anime) &&
+    !isPlaceholderData &&
+    !anime?.next_airing &&
+    Boolean(anime?.anilist_id && anime.anilist_id > 0) &&
+    airingStatusKey === 'RELEASING'
+
+  const { data: clientNextAiring } = useAnilistNextAiringQuery(
+    anime?.anilist_id,
+    needsClientNextAiring
+  )
+
+  const nextAiring = anime?.next_airing ?? clientNextAiring ?? null
 
   const [activeTab, setActiveTab] = useState<TabType>(() =>
     parseAnimeDetailTab(searchParams.get('tab'))
@@ -992,10 +1010,10 @@ const AnimeDetail = () => {
         </div>
       </div>
 
-      {!detailPending && anime.next_airing ? (
+      {!detailPending && nextAiring ? (
         <NextAiringCard
-          episode={anime.next_airing.episode}
-          airingAt={anime.next_airing.airing_at}
+          episode={nextAiring.episode}
+          airingAt={nextAiring.airing_at}
         />
       ) : null}
 

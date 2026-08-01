@@ -16,6 +16,8 @@ export const queryKeys = {
   translatorLinks: (animeId: string | number) => ['anime', 'translators', String(animeId)] as const,
   externalScores: (ids: { anilist_id?: number | null; mal_id?: number | null }) =>
     ['anime', 'external-scores', ids.anilist_id ?? '', ids.mal_id ?? ''] as const,
+  anilistNextAiring: (anilistId: number | string) =>
+    ['anime', 'anilist-next-airing', String(anilistId)] as const,
   userAnimeList: (telegramUserId: number) => ['user', 'anime-list', telegramUserId] as const,
   notifications: (telegramUserId: number) => ['notifications', telegramUserId] as const,
   notificationPreferences: (telegramUserId: number) =>
