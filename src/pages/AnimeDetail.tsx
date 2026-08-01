@@ -459,6 +459,27 @@ const formatNextAiringTehran = (airingAtUnix: number) => {
   return { weekday, time }
 }
 
+const splitCountdown = (remainingMs: number) => {
+  const totalSec = Math.max(0, Math.floor(remainingMs / 1000))
+  return {
+    days: Math.floor(totalSec / 86400),
+    hours: Math.floor((totalSec % 86400) / 3600),
+    minutes: Math.floor((totalSec % 3600) / 60),
+    seconds: totalSec % 60,
+  }
+}
+
+const CountdownUnit = ({ value, label }: { value: number; label: string }) => (
+  <div className="flex min-w-[2.5rem] flex-col items-center justify-center rounded-lg border border-primary-400/20 bg-primary-400/10 px-1.5 py-1.5">
+    <span className="text-[13px] font-bold tabular-nums leading-none text-primary-200">
+      {toPersianNumber(String(value).padStart(2, '0'))}
+    </span>
+    <span className="mt-1 text-[9px] font-medium leading-none text-muted-foreground">
+      {label}
+    </span>
+  </div>
+)
+
 const NextAiringCard = ({
   episode,
   airingAt,
@@ -466,20 +487,45 @@ const NextAiringCard = ({
   episode: number
   airingAt: number
 }) => {
+  const [nowMs, setNowMs] = useState(() => Date.now())
   const formatted = formatNextAiringTehran(airingAt)
+
+  useEffect(() => {
+    const targetMs = airingAt * 1000
+    if (!Number.isFinite(targetMs)) return
+    const tick = () => setNowMs(Date.now())
+    tick()
+    const id = window.setInterval(tick, 1000)
+    return () => window.clearInterval(id)
+  }, [airingAt])
+
   if (!formatted) return null
 
+  const remainingMs = airingAt * 1000 - nowMs
+  const expired = remainingMs <= 0
+  const { days, hours, minutes, seconds } = splitCountdown(remainingMs)
+
   return (
-    <div className="mx-4 mt-2 flex items-center gap-3 rounded-2xl border border-primary-400/20 bg-gradient-to-l from-primary-500/[0.10] to-card/60 px-3.5 py-2.5">
+    <div className="mx-4 mt-2 flex items-center gap-2.5 rounded-2xl border border-primary-400/20 bg-gradient-to-l from-primary-500/[0.10] to-card/60 px-3 py-2">
       <Calendar01Icon className="h-5 w-5 shrink-0 text-primary-400" />
       <div className="min-w-0 flex-1">
-        <p className="text-[13px] font-semibold text-foreground">
+        <p className="truncate text-[13px] font-semibold text-foreground">
           قسمت بعدی · {toPersianNumber(episode)}
         </p>
-        <p className="text-[11px] text-muted-foreground leading-relaxed">
-          {formatted.weekday} · ساعت {formatted.time} (تهران)
+        <p className="truncate text-[11px] text-muted-foreground leading-relaxed">
+          {expired
+            ? 'زمان پخش رسیده یا در حال به‌روزرسانی است'
+            : `${formatted.weekday} · ساعت ${formatted.time}`}
         </p>
       </div>
+      {expired ? null : (
+        <div className="flex shrink-0 items-center gap-1" dir="ltr">
+          {days > 0 ? <CountdownUnit value={days} label="روز" /> : null}
+          <CountdownUnit value={hours} label="ساعت" />
+          <CountdownUnit value={minutes} label="دقیقه" />
+          <CountdownUnit value={seconds} label="ثانیه" />
+        </div>
+      )}
     </div>
   )
 }
@@ -1739,8 +1785,20 @@ const AnimeDetail = () => {
             </div>
           )}
           {!detailPending && hardsubLanguage ? (
-            <div className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-emerald-500/20 bg-gradient-to-l from-emerald-500/[0.08] to-card/60 px-3.5 py-2.5">
-              <CheckmarkCircle02Icon className="h-5 w-5 shrink-0 text-emerald-400" />
+            <div
+              className={cn(
+                'mt-3 flex w-full items-center gap-3 rounded-2xl border px-3.5 py-2.5',
+                hardsubLanguage === 'en'
+                  ? 'border-amber-500/25 bg-gradient-to-l from-amber-500/[0.12] to-card/60'
+                  : 'border-emerald-500/20 bg-gradient-to-l from-emerald-500/[0.08] to-card/60'
+              )}
+            >
+              <CheckmarkCircle02Icon
+                className={cn(
+                  'h-5 w-5 shrink-0',
+                  hardsubLanguage === 'en' ? 'text-amber-400' : 'text-emerald-400'
+                )}
+              />
               <div className="min-w-0 flex-1">
                 <p className="text-[13px] font-semibold text-foreground">
                   {hardsubLanguage === 'en' ? 'زیرنویس انگلیسی' : 'زیرنویس چسبیده فارسی'}
