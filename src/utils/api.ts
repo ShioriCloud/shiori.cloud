@@ -533,17 +533,25 @@ const fetchScheduleFromAniListClient = async (): Promise<catalog.SchedulePayload
     }
   `
 
-  const res = await fetch('https://graphql.anilist.co', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify({
-      query,
-      variables: { page: 1, perPage: 50, season: currentSeason, seasonYear: currentYear },
-    }),
-  })
+  const controller = new AbortController()
+  const timeout = window.setTimeout(() => controller.abort(), 10_000)
+  let res: Response
+  try {
+    res = await fetch('https://graphql.anilist.co', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        query,
+        variables: { page: 1, perPage: 50, season: currentSeason, seasonYear: currentYear },
+      }),
+      signal: controller.signal,
+    })
+  } finally {
+    window.clearTimeout(timeout)
+  }
 
   if (!res.ok) {
     const text = await res.text().catch(() => '')
@@ -617,7 +625,13 @@ const loadSchedulePayload = async (): Promise<catalog.SchedulePayload> => {
     // API unavailable or returned degraded payload — fall back to client AniList
   }
 
-  return fetchScheduleFromAniListClient()
+  try {
+    return await fetchScheduleFromAniListClient()
+  } catch {
+    const stale = peekScheduleCache()
+    if (stale?.data) return stale.data
+    return buildEmptySchedulePayload()
+  }
 }
 
 const SCHEDULE_CACHE_KEY = 'shiori_schedule_v3'

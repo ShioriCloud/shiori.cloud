@@ -249,8 +249,24 @@ export const useInfiniteAnimeSearchQuery = (
   filters: AnimeSearchBaseFilters,
   pageSize = DEFAULT_SEARCH_PAGE_SIZE,
   enabled = true
-) =>
-  useInfiniteQuery({
+) => {
+  const season = filters.season ? String(filters.season).toUpperCase() : ''
+  const year = typeof filters.year === 'number' ? filters.year : null
+  const canSeedFromHome =
+    Boolean(season) &&
+    year != null &&
+    (!filters.query || !String(filters.query).trim()) &&
+    !(filters.genreSlugs && filters.genreSlugs.length > 0) &&
+    !filters.format &&
+    !filters.airingStatus &&
+    (filters.sortBy == null || filters.sortBy === 'created_at')
+
+  const homeSeed =
+    canSeedFromHome && year != null
+      ? peekHomeCardCache(homeLatestCacheKey(year, season))
+      : null
+
+  return useInfiniteQuery({
     queryKey: [...buildAnimeSearchQueryKey(filters), 'infinite', pageSize] as const,
     queryFn: ({ pageParam }) =>
       fetchAnimeSearch({
@@ -265,8 +281,21 @@ export const useInfiniteAnimeSearchQuery = (
     },
     enabled,
     staleTime: HOME_RAIL_STALE_MS,
+    initialData: homeSeed?.data?.length
+      ? {
+          pages: [
+            {
+              items: homeSeed.data.slice(0, pageSize),
+              total: homeSeed.data.length,
+              hasMore: homeSeed.data.length >= pageSize,
+            },
+          ],
+          pageParams: [0],
+        }
+      : undefined,
+    initialDataUpdatedAt: homeSeed?.ts,
   })
-
+}
 export const useFavoriteAnimeDetailsQueries = (ids: (string | number)[]) =>
   useQueries({
     queries: ids.map((id) => ({

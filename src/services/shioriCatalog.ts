@@ -235,8 +235,9 @@ export const getSimilarAnimeCards = async (
 
 export const getAnimeCardById = async (animeId: string | number): Promise<AnimeCard | null> => {
   try {
-    const row = await shioriFetch<ApiDetail>(`/anime-catalog/${encodeURIComponent(String(animeId))}`)
-    return toCard(row)
+    // Prefer lightweight by-ids — full getById is too heavy for card resolve.
+    const rows = await getAnimeCardsByIds([animeId])
+    return rows[0] ?? null
   } catch {
     return null
   }

@@ -438,24 +438,27 @@ const AnimeDetail = () => {
     isError,
     refetch,
     isPlaceholderData,
+    isFetching: detailFetching,
   } = useAnimeDetailQuery(id)
 
   const anime = (animeData ?? null) as Anime | null
+  const isPartialDetail =
+    Boolean(animeData) && (isAnimeDetailShell(animeData) || isPlaceholderData)
 
   useEffect(() => {
-    if (!anime || !id || isPlaceholderData) return
+    if (!anime || !id || isPartialDetail) return
     const canonical = animePublicSegment(anime)
     if (decodeURIComponent(id) === canonical) return
     navigate(`${animeDetailPath(anime)}${window.location.search}`, { replace: true })
-  }, [anime, id, isPlaceholderData, navigate])
+  }, [anime, id, isPartialDetail, navigate])
 
   useEffect(() => {
-    if (!anime?.id || isPlaceholderData) return
+    if (!anime?.id || isPartialDetail) return
     trackAnimeBrowse(anime.id)
-  }, [anime?.id, isPlaceholderData])
+  }, [anime?.id, isPartialDetail])
 
   useEffect(() => {
-    if (!anime?.id || isPlaceholderData) return
+    if (!anime?.id || isPartialDetail) return
     const key = `shiori:anime-view:${String(anime.id)}`
     try {
       if (sessionStorage.getItem(key)) return
@@ -466,7 +469,7 @@ const AnimeDetail = () => {
     void recordAnimeView(anime.id).catch(() => {
       // Non-blocking; popularity still works without a perfect count
     })
-  }, [anime?.id, isPlaceholderData])
+  }, [anime?.id, isPartialDetail])
 
   const airingStatusKey = String(anime?.airing_status ?? anime?.status ?? 'RELEASING')
     .trim()
@@ -477,8 +480,7 @@ const AnimeDetail = () => {
   // Non-blocking: fill countdown in background; never gate the detail skeleton.
   const needsClientNextAiring =
     Boolean(anime) &&
-    !isPlaceholderData &&
-    !isAnimeDetailShell(animeData) &&
+    !isPartialDetail &&
     !anime?.next_airing &&
     Boolean(anime?.anilist_id && anime.anilist_id > 0) &&
     canHaveNextAiring
@@ -552,14 +554,11 @@ const AnimeDetail = () => {
     [similarCards]
   )
 
+  // Paint immediately from Home card shell / disk cache; hydrate episodes after.
   const catalogReady =
-    Boolean(anime) &&
-    !isPlaceholderData &&
-    !isAnimeDetailShell(animeData) &&
-    Boolean(id) &&
-    animeCardMatchesRouteParam(anime!, String(id))
-  // Paint as soon as catalog DB payload is ready — scores come from cached columns.
+    Boolean(anime) && Boolean(id) && animeCardMatchesRouteParam(anime!, String(id))
   const detailReady = catalogReady
+  const detailHydrated = catalogReady && !isPartialDetail
   const error = isError ? 'خطا در بارگذاری اطلاعات انیمه' : null
 
   const handleMainTabChange = (tab: TabType) => {
@@ -1167,7 +1166,16 @@ const AnimeDetail = () => {
         )}
 
         {activeTab === 'episodes' &&
-          (allEpisodesCount === 0 && !episodePackAvailable && !hasSubtitlePacks ? (
+          (isPartialDetail || (detailFetching && !detailHydrated) ? (
+            <div className="space-y-2 py-2" aria-busy="true" aria-label="در حال بارگذاری قسمت‌ها">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-12 animate-pulse rounded-2xl bg-muted/60"
+                />
+              ))}
+            </div>
+          ) : allEpisodesCount === 0 && !episodePackAvailable && !hasSubtitlePacks ? (
             <EmptyBlock
               message={
                 statusKey === 'RELEASING'

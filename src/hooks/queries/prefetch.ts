@@ -94,10 +94,15 @@ export const prefetchHomeCatalog = () => {
   })
 }
 
-/** Warm schedule + home after app shell is ready. */
+/** پیش‌بارگذاری سبک بعد از آماده شدن شل — بدون طوفان ریل‌های Home. */
 export const prefetchLaunchCatalog = () => {
   prefetchSchedule()
-  prefetchHomeCatalog()
+  // Genres only; Home rails already hydrate from disk via useQuery initialData.
+  void queryClient.prefetchQuery({
+    queryKey: queryKeys.genres,
+    queryFn: fetchGenresWithPersist,
+    staleTime: 60 * 60_000,
+  })
 }
 
 /** پیش‌بارگذاری آثار مشابه (هنگام فعال شدن تب) */

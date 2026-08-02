@@ -53,20 +53,41 @@ export async function shioriFetch<T>(path: string, init?: RequestInit): Promise<
   }
 
   const url = `${shioriApiBaseUrl}/api/v1${path.startsWith('/') ? path : `/${path}`}`
-  const res = await fetch(url, {
-    ...init,
-    headers: buildHeaders(init?.headers),
-  })
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    throw new Error(`API ${res.status}: ${text || res.statusText}`)
+  const timeoutMs = 20_000
+  const controller = new AbortController()
+  const externalSignal = init?.signal
+  const onAbort = () => controller.abort()
+  if (externalSignal) {
+    if (externalSignal.aborted) controller.abort()
+    else externalSignal.addEventListener('abort', onAbort, { once: true })
   }
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
 
-  const text = await res.text()
-  if (!text.trim()) {
-    return undefined as T
+  try {
+    const res = await fetch(url, {
+      ...init,
+      signal: controller.signal,
+      headers: buildHeaders(init?.headers),
+    })
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => '')
+      throw new Error(`API ${res.status}: ${text || res.statusText}`)
+    }
+
+    const text = await res.text()
+    if (!text.trim()) {
+      return undefined as T
+    }
+
+    return JSON.parse(text) as T
+  } catch (err) {
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new Error(`API timeout after ${timeoutMs}ms: ${path}`)
+    }
+    throw err
+  } finally {
+    clearTimeout(timer)
+    if (externalSignal) externalSignal.removeEventListener('abort', onAbort)
   }
-
-  return JSON.parse(text) as T
 }
