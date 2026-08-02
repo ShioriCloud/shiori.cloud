@@ -75,7 +75,7 @@ export function videoQualityButtonLabel(
   return `${resolution} ${videoEncodeLabel(encode)}`
 }
 
-/** Label for quality note, e.g. «حدود ۳۵۰ مگابایت». */
+/** Compact size for quality note, e.g. «~450MB». */
 export function formatAverageEpisodeSizeLabel(
   bytes: number | null | undefined
 ): string | null {
@@ -83,8 +83,12 @@ export function formatAverageEpisodeSizeLabel(
   const n = Number(bytes)
   if (!Number.isFinite(n) || n <= 0) return null
   const mb = Math.max(1, Math.round(n / (1024 * 1024)))
-  const fa = mb.toLocaleString('fa-IR')
-  return `حدود ${fa} مگابایت`
+  if (mb >= 1024) {
+    const gb = mb / 1024
+    const rounded = gb >= 10 ? Math.round(gb) : Math.round(gb * 10) / 10
+    return `~${rounded}GB`
+  }
+  return `~${mb}MB`
 }
 
 /**

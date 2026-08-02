@@ -2,18 +2,25 @@ import { buildTelegramStartParam, type AnimeDetailTab } from './telegramStartPar
 
 export type { AnimeDetailTab }
 
+export const getTelegramBotUsername = () =>
+  String(import.meta.env.VITE_TELEGRAM_BOT_USERNAME ?? 'ShioriUploadBot').trim() ||
+  'ShioriUploadBot'
+
+/** Public bot chat / profile link (no start payload). */
+export const buildTelegramBotLink = () => `https://t.me/${getTelegramBotUsername()}`
+
 export const buildMalUrl = (malId: number) => `https://myanimelist.net/anime/${malId}`
 
 export const buildAnilistUrl = (anilistId: number) => `https://anilist.co/anime/${anilistId}`
 
 export const buildAnimeMiniAppLink = (id: string | number, tab?: AnimeDetailTab) => {
-  const bot = String(import.meta.env.VITE_TELEGRAM_BOT_USERNAME ?? 'ShioriUploadBot').trim()
+  const bot = getTelegramBotUsername()
   return `https://t.me/${bot}?startapp=${encodeURIComponent(buildTelegramStartParam(id, tab))}`
 }
 
 /** لینک مستقیم دانلود فایل در بات (همان key جدول files) */
 export const buildTelegramFileDownloadLink = (fileKey: string) => {
-  const bot = String(import.meta.env.VITE_TELEGRAM_BOT_USERNAME ?? 'ShioriUploadBot').trim()
+  const bot = getTelegramBotUsername()
   const key = String(fileKey ?? '').trim()
   if (!bot || !key) return ''
   return `https://t.me/${bot}?start=get_${key}`
@@ -42,7 +49,7 @@ export const parseTelegramFileDownloadLink = (link: string): string | null => {
 
 /** لینک پک فایل در بات (slug جدول file_packs) */
 export const buildTelegramFilePackLink = (slug: string) => {
-  const bot = String(import.meta.env.VITE_TELEGRAM_BOT_USERNAME ?? 'ShioriUploadBot').trim()
+  const bot = getTelegramBotUsername()
   const packSlug = String(slug ?? '').trim()
   if (!bot || !packSlug) return ''
   return `https://t.me/${bot}?start=pack_${encodeURIComponent(packSlug)}`

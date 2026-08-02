@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { AlarmClockIcon, CustomerServiceIcon, FavouriteIcon, UserIcon } from 'hugeicons-react'
+import { AlarmClockIcon, CustomerServiceIcon, UserIcon } from 'hugeicons-react'
 import { ChevronLeft, Crown, Moon, Sun } from 'lucide-react'
 import { useAppAuth } from '../hooks/useAppAuth'
 import { useUserAnimeList } from '../hooks/useUserAnimeList'
@@ -16,6 +16,12 @@ import { hapticSelection } from '@/lib/telegramHaptics'
 import type { ThemePreference } from '@/store/themeStore'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
 import { Button } from '@/components/ui/button'
+import {
+  buildTelegramBotLink,
+  getTelegramBotUsername,
+} from '@/utils/externalLinks'
+
+const APP_VERSION = String(import.meta.env.VITE_APP_VERSION ?? '0.1.0').trim() || '0.1.0'
 
 const toPersianNumber = (num: number | string): string => {
   const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
@@ -270,16 +276,6 @@ const Profile = () => {
             />
           ) : null}
           <MenuItem
-            to="/my-list"
-            icon={<FavouriteIcon className="h-4 w-4" />}
-            label="علاقه‌مندی‌ها"
-            hint={
-              favoritesCount > 0
-                ? `${toPersianNumber(favoritesCount)} انیمه · ${toPersianNumber(stats.episodesWatched)} قسمت`
-                : 'لیست خالی است'
-            }
-          />
-          <MenuItem
             to="/notifications"
             icon={<AlarmClockIcon className="h-4 w-4" />}
             label="اعلان‌ها"
@@ -388,6 +384,27 @@ const Profile = () => {
           </div>
         </MyListCompactCard>
       </div>
+
+      <footer className="mx-4 mt-8 mb-2 space-y-2 text-center">
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          شیوری — آرشیو و دانلود انیمه با زیرنویس فارسی
+        </p>
+        <p className="text-[11px] text-muted-foreground/80">
+          نسخه {toPersianNumber(APP_VERSION)}
+          <span className="mx-1.5 text-border" aria-hidden>
+            ·
+          </span>
+          <a
+            href={buildTelegramBotLink()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary-400/90 underline-offset-2 hover:underline"
+            dir="ltr"
+          >
+            @{getTelegramBotUsername()}
+          </a>
+        </p>
+      </footer>
     </div>
   )
 }

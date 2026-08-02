@@ -339,26 +339,28 @@ export const EpisodeQualityNote = ({
 }: {
   resolution: VideoResolution
   encode: VideoEncode
-  /** e.g. «حدود ۳۵۰ مگابایت» — omit when catalog has no size data */
+  /** e.g. «~450MB» — omit when catalog has no size data */
   averageSizeLabel?: string | null
 }) => {
   const size = String(averageSizeLabel ?? '').trim()
 
   return (
-    <div className="flex items-center gap-2 px-0.5 text-xs text-muted-foreground">
+    <div className="flex items-center gap-1.5 px-0.5 text-[11px] leading-none text-muted-foreground">
       <span
         aria-hidden
-        className="h-3.5 w-0.5 shrink-0 rounded-full bg-primary-400"
+        className="h-3 w-0.5 shrink-0 rounded-full bg-primary-400"
       />
-      <div className="flex min-w-0 flex-1 items-center justify-between gap-3 leading-relaxed">
-        <p className="min-w-0 shrink">
-          کیفیت فایل:{' '}
+      <div className="flex min-w-0 flex-1 items-center justify-between gap-2 whitespace-nowrap">
+        <p className="min-w-0 truncate">
+          کیفیت:{' '}
           <span className="font-mono tabular-nums text-foreground/85" dir="ltr">
             {videoQualityButtonLabel(resolution, encode)}
           </span>
         </p>
         {size ? (
-          <p className="shrink-0 text-end">حجم میانگین هر قسمت: {size}</p>
+          <p className="shrink-0 font-mono tabular-nums text-foreground/75" dir="ltr">
+            {size}
+          </p>
         ) : null}
       </div>
     </div>

@@ -32,10 +32,26 @@ export const useTheme = () => {
   }, [preference])
 
   const applyTheme = useCallback(() => {
+    const root = document.documentElement
     if (isDarkMode) {
-      document.documentElement.classList.add('dark')
+      root.classList.add('dark')
     } else {
-      document.documentElement.classList.remove('dark')
+      root.classList.remove('dark')
+    }
+    root.style.colorScheme = isDarkMode ? 'dark' : 'light'
+
+    if (isTelegramMiniApp()) {
+      try {
+        const wa = WebApp as unknown as {
+          setBackgroundColor?: (color: string) => void
+          setHeaderColor?: (color: string) => void
+        }
+        const bg = isDarkMode ? '#252525' : '#ffffff'
+        wa.setBackgroundColor?.(bg)
+        wa.setHeaderColor?.(bg)
+      } catch {
+        // Unsupported client
+      }
     }
   }, [isDarkMode])
 

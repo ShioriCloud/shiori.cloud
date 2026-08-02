@@ -10,6 +10,7 @@ import {
 import { AppHeader, APP_HEADER_PAD_CLASS } from '@/components/AppHeader'
 import { useTelegramBackButton } from '@/hooks/useTelegramBackButton'
 import { useTelegramSafeArea } from '@/hooks/useTelegramSafeArea'
+import { useNotifications } from '@/hooks/useNotifications'
 import { hapticSelection } from '@/lib/telegramHaptics'
 import { cn } from '@/lib/utils'
 
@@ -17,9 +18,15 @@ interface LayoutProps {
   children: ReactNode
 }
 
+const toPersianNumber = (num: number): string => {
+  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
+  return String(num).replace(/[0-9]/g, (w) => persianDigits[+w])
+}
+
 const Layout = ({ children }: LayoutProps) => {
   const location = useLocation()
   const [isScrolled, setIsScrolled] = useState(false)
+  const { unreadCount } = useNotifications()
 
   useTelegramBackButton()
   useTelegramSafeArea()
@@ -131,12 +138,28 @@ const Layout = ({ children }: LayoutProps) => {
             <Link
               to="/profile"
               onClick={() => hapticSelection()}
-              className={`flex flex-col items-center space-y-1 ${
+              className={`relative flex flex-col items-center space-y-1 ${
                 isActive('/profile') ? 'text-primary-400' : 'text-gray-400'
               }`}
-              aria-label="پروفایل"
+              aria-label={
+                unreadCount > 0
+                  ? `پروفایل، ${toPersianNumber(unreadCount)} اعلان خوانده‌نشده`
+                  : 'پروفایل'
+              }
             >
-              <UserIcon className="w-6 h-6" />
+              <span className="relative inline-flex">
+                <UserIcon className="w-6 h-6" />
+                {unreadCount > 0 ? (
+                  <span
+                    className={cn(
+                      'absolute -end-2 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full',
+                      'bg-primary-400 px-1 text-[9px] font-bold leading-none text-primary-foreground tabular-nums'
+                    )}
+                  >
+                    {unreadCount > 9 ? '۹+' : toPersianNumber(unreadCount)}
+                  </span>
+                ) : null}
+              </span>
               <span className="text-xs">پروفایل</span>
             </Link>
           </div>

@@ -78,14 +78,6 @@ import {
 } from '@/components/anime-detail/animeDetailLabels'
 import {
   DetailSkeleton,
-  EpisodesTabSkeleton,
-  HeroTitleSkeleton,
-  InfoTabSkeleton,
-  PulseBlock,
-  ScoreChipsSkeleton,
-  SeriesSwitcherSkeleton,
-  StatsRowSkeleton,
-  SynopsisSkeleton,
   TranslatorsTabSkeleton,
 } from '@/components/anime-detail/AnimeDetailSkeletons'
 import {
@@ -443,7 +435,6 @@ const AnimeDetail = () => {
 
   const {
     data: animeData,
-    isLoading,
     isError,
     refetch,
     isPlaceholderData,
@@ -498,7 +489,8 @@ const AnimeDetail = () => {
   const {
     data: liveScores,
     isFetching: liveScoresFetching,
-  } = useExternalScoresQuery(externalIds, Boolean(anime) && needsLiveScores)
+    isLoading: liveScoresLoading,
+  } = useExternalScoresQuery(externalIds, Boolean(anime) && needsLiveScores && !isPlaceholderData)
 
   const airingStatusKey = String(anime?.airing_status ?? anime?.status ?? 'RELEASING')
     .trim()
@@ -509,11 +501,12 @@ const AnimeDetail = () => {
   const needsClientNextAiring =
     Boolean(anime) &&
     !isPlaceholderData &&
+    !isAnimeDetailShell(animeData) &&
     !anime?.next_airing &&
     Boolean(anime?.anilist_id && anime.anilist_id > 0) &&
     canHaveNextAiring
 
-  const { data: clientNextAiring } = useAnilistNextAiringQuery(
+  const { data: clientNextAiring, isLoading: clientNextAiringLoading } = useAnilistNextAiringQuery(
     anime?.anilist_id,
     needsClientNextAiring
   )
@@ -582,12 +575,16 @@ const AnimeDetail = () => {
     [similarCards]
   )
 
-  const loading = isLoading && !anime
-  const detailPending =
-    isPlaceholderData ||
-    (Boolean(anime) && Boolean(id) && !animeCardMatchesRouteParam(anime!, String(id)))
-  const isCardShell = isAnimeDetailShell(animeData)
-  const heroPending = detailPending && !isCardShell
+  const catalogReady =
+    Boolean(anime) &&
+    !isPlaceholderData &&
+    !isAnimeDetailShell(animeData) &&
+    Boolean(id) &&
+    animeCardMatchesRouteParam(anime!, String(id))
+  const detailReady =
+    catalogReady &&
+    !(needsLiveScores && liveScoresLoading) &&
+    !(needsClientNextAiring && clientNextAiringLoading)
   const error = isError ? 'خطا در بارگذاری اطلاعات انیمه' : null
 
   const handleMainTabChange = (tab: TabType) => {
@@ -856,7 +853,19 @@ const AnimeDetail = () => {
     [anime?.average_episode_size_bytes]
   )
 
-  if (loading) return <DetailSkeleton />
+  if (!detailReady) {
+    if (error && !catalogReady) {
+      return (
+        <div className="px-4 py-16 text-center space-y-3 pb-24">
+          <p className="text-red-500 text-sm">{error}</p>
+          <Button type="button" variant="secondary" onClick={() => refetch()}>
+            تلاش مجدد
+          </Button>
+        </div>
+      )
+    }
+    return <DetailSkeleton />
+  }
 
   if (error || !anime) {
     return (
@@ -894,9 +903,7 @@ const AnimeDetail = () => {
       {/* Hero — هم‌سبک TranslatorProfile */}
       <div className="relative">
         <div className="absolute inset-x-0 top-0 h-52 overflow-hidden">
-          {heroPending ? (
-            <PulseBlock className="w-full h-full rounded-none" />
-          ) : coverImage ? (
+          {coverImage ? (
             <img src={coverImage} alt="" className="w-full h-full object-cover opacity-45" />
           ) : (
             <div className="w-full h-full bg-muted" />
@@ -907,15 +914,9 @@ const AnimeDetail = () => {
         <div className="relative z-10 pt-24 px-4 pb-2 flex flex-col items-center">
           <div className="relative">
             <div className="w-32 aspect-[2/3] rounded-2xl overflow-hidden border-4 border-background bg-muted shadow-lg ring-2 ring-primary-400/25">
-              {heroPending ? (
-                <PulseBlock className="w-full h-full rounded-none" />
-              ) : (
-                <img src={anime.image} alt={anime.title} className="w-full h-full object-cover" />
-              )}
+              <img src={anime.image} alt={anime.title} className="w-full h-full object-cover" />
             </div>
-            {detailPending ? (
-              <PulseBlock className="absolute top-2 right-2 h-5 w-14 rounded-md" />
-            ) : statusKey ? (
+            {statusKey ? (
               <span
                 className={cn(
                   'absolute top-2 right-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-md backdrop-blur-sm',
@@ -927,81 +928,71 @@ const AnimeDetail = () => {
             ) : null}
           </div>
 
-          {heroPending ? (
-            <HeroTitleSkeleton />
-          ) : (
-            <div className="relative w-full mt-3 px-10">
-              <BidiText as="h1" className="text-lg font-bold text-foreground text-center line-clamp-3 leading-7">
-                {anime.title}
-              </BidiText>
-              {anime.title_romaji ? (
-                <BidiText
-                  as="p"
-                  className="text-muted-foreground text-center text-sm leading-5 line-clamp-2"
-                >
-                  {anime.title_romaji}
-                </BidiText>
-              ) : null}
-              <button
-                type="button"
-                onClick={handleShare}
-                className="absolute left-0 top-0 p-2 rounded-xl border border-border bg-card/60 text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
-                aria-label="اشتراک‌گذاری در تلگرام"
+          <div className="relative w-full mt-3 px-10">
+            <BidiText as="h1" className="text-lg font-bold text-foreground text-center line-clamp-3 leading-7">
+              {anime.title}
+            </BidiText>
+            {anime.title_romaji ? (
+              <BidiText
+                as="p"
+                className="text-muted-foreground text-center text-sm leading-5 line-clamp-2"
               >
-                <Share08Icon className="w-4 h-4" />
+                {anime.title_romaji}
+              </BidiText>
+            ) : null}
+            <button
+              type="button"
+              onClick={handleShare}
+              className="absolute left-0 top-0 p-2 rounded-xl border border-border bg-card/60 text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+              aria-label="اشتراک‌گذاری در تلگرام"
+            >
+              <Share08Icon className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-1.5 mt-2">
+            <span className="text-[10px] px-2 py-0.5 rounded-md bg-muted/80 border border-border text-muted-foreground">
+              {translateFormat(anime.format)}
+            </span>
+            {anime.genres.slice(0, 4).map((genre) => (
+              <button
+                key={genre.slug}
+                type="button"
+                className="text-[10px] px-2 py-0.5 rounded-md bg-primary-500/15 border border-primary-400/25 text-primary-300 hover:bg-primary-500/25 transition-colors"
+                onClick={() =>
+                  navigate(exploreAllHref({ genreSlugs: [genre.slug] }))
+                }
+              >
+                {genreLabel(genre)}
               </button>
-            </div>
-          )}
+            ))}
+          </div>
 
-          {!heroPending && (
-            <div className="flex flex-wrap justify-center gap-1.5 mt-2">
-              <span className="text-[10px] px-2 py-0.5 rounded-md bg-muted/80 border border-border text-muted-foreground">
-                {translateFormat(anime.format)}
-              </span>
-              {anime.genres.slice(0, 4).map((genre) => (
-                <button
-                  key={genre.slug}
-                  type="button"
-                  className="text-[10px] px-2 py-0.5 rounded-md bg-primary-500/15 border border-primary-400/25 text-primary-300 hover:bg-primary-500/25 transition-colors"
-                  onClick={() =>
-                    navigate(exploreAllHref({ genreSlugs: [genre.slug] }))
-                  }
-                >
-                  {genreLabel(genre)}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {detailPending ? (
-            <ScoreChipsSkeleton />
-          ) : (
-            <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
-              <ScoreChip
-                logo={shioriLogo}
-                logoAlt="شیوری"
-                value={shioriScoreLabel}
-                logoWrapClassName="bg-primary-500"
-              />
-              <ScoreChip
-                logo={malLogo}
-                logoAlt="MyAnimeList"
-                value={malScoreLabel}
-                loading={malChipLoading}
-                href={anime.mal_id ? buildMalUrl(anime.mal_id) : undefined}
-                onOpenLink={openLink}
-              />
-              <ScoreChip
-                logo={alLogo}
-                logoAlt="AniList"
-                value={anilistScoreLabel}
-                loading={anilistChipLoading}
-                href={anime.anilist_id ? buildAnilistUrl(anime.anilist_id) : undefined}
-                onOpenLink={openLink}
-              />
-            </div>
-          )}
-          {!detailPending && hardsubLanguage ? (
+          <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
+            <ScoreChip
+              logo={shioriLogo}
+              logoAlt="شیوری"
+              value={shioriScoreLabel}
+              logoWrapClassName="bg-primary-500"
+            />
+            <ScoreChip
+              logo={malLogo}
+              logoAlt="MyAnimeList"
+              value={malScoreLabel}
+              loading={malChipLoading}
+              href={anime.mal_id ? buildMalUrl(anime.mal_id) : undefined}
+              onOpenLink={openLink}
+            />
+            <ScoreChip
+              logo={alLogo}
+              logoAlt="AniList"
+              value={anilistScoreLabel}
+              loading={anilistChipLoading}
+              href={anime.anilist_id ? buildAnilistUrl(anime.anilist_id) : undefined}
+              onOpenLink={openLink}
+            />
+          </div>
+          {hardsubLanguage ? (
             <div
               className={cn(
                 'mt-3 flex w-full items-center gap-3 rounded-2xl border px-3.5 py-2.5',
@@ -1031,7 +1022,7 @@ const AnimeDetail = () => {
         </div>
       </div>
 
-      {!detailPending && nextAiring ? (
+      {nextAiring ? (
         <NextAiringCard
           episode={nextAiring.episode}
           airingAt={nextAiring.airing_at}
@@ -1039,33 +1030,25 @@ const AnimeDetail = () => {
       ) : null}
 
       {/* Quick stats */}
-      {detailPending ? (
-        <StatsRowSkeleton />
-      ) : (
-        <div className="mx-4 mt-2 flex items-stretch gap-2">
-          <ReminderStatCard
-            active={reminderActive}
-            busy={reminderBusy || updatingPreferences}
-            onClick={() => {
-              void handleAiringReminder()
-            }}
-          />
-          <FavoriteStatCard
-            active={favoriteActive}
-            onClick={handleFavorite}
-          />
-        </div>
-      )}
+      <div className="mx-4 mt-2 flex items-stretch gap-2">
+        <ReminderStatCard
+          active={reminderActive}
+          busy={reminderBusy || updatingPreferences}
+          onClick={() => {
+            void handleAiringReminder()
+          }}
+        />
+        <FavoriteStatCard
+          active={favoriteActive}
+          onClick={handleFavorite}
+        />
+      </div>
 
-      {!detailPending ? (
-        <div className="mx-4 mt-2">
-          <AddToShioriListButton animeId={anime.id} triggerClassName="w-full" />
-        </div>
-      ) : null}
+      <div className="mx-4 mt-2">
+        <AddToShioriListButton animeId={anime.id} triggerClassName="w-full" />
+      </div>
 
-      {detailPending ? (
-        <SeriesSwitcherSkeleton />
-      ) : (anime.series?.members?.length ?? 0) > 1 ? (
+      {(anime.series?.members?.length ?? 0) > 1 ? (
         <SeriesSeasonSwitcher
           series={anime.series!}
           currentAnimeId={anime.id}
@@ -1096,25 +1079,21 @@ const AnimeDetail = () => {
       />
 
       {/* Synopsis */}
-      {heroPending ? (
-        <SynopsisSkeleton />
-      ) : (
-        <div className="mx-4 mt-4 rounded-xl border border-border bg-card/60 p-4">
-          <h2 className="text-sm font-semibold text-foreground mb-2">خلاصه داستان</h2>
-          <p className="text-sm text-muted-foreground leading-6 whitespace-pre-wrap">
-            {truncatedDescription}
-          </p>
-          {shouldTruncate && (
-            <button
-              type="button"
-              onClick={() => setShowFullDescription(!showFullDescription)}
-              className="mt-2 text-primary-400 text-xs font-medium"
-            >
-              {showFullDescription ? 'نمایش کمتر' : 'نمایش بیشتر'}
-            </button>
-          )}
-        </div>
-      )}
+      <div className="mx-4 mt-4 rounded-xl border border-border bg-card/60 p-4">
+        <h2 className="text-sm font-semibold text-foreground mb-2">خلاصه داستان</h2>
+        <p className="text-sm text-muted-foreground leading-6 whitespace-pre-wrap">
+          {truncatedDescription}
+        </p>
+        {shouldTruncate && (
+          <button
+            type="button"
+            onClick={() => setShowFullDescription(!showFullDescription)}
+            className="mt-2 text-primary-400 text-xs font-medium"
+          >
+            {showFullDescription ? 'نمایش کمتر' : 'نمایش بیشتر'}
+          </button>
+        )}
+      </div>
 
       {/* Main tabs — sticky زیر هدر، استایل مثل Home */}
       <div className="sticky top-[var(--app-header-offset)] z-30 px-4 pt-5 pb-2 bg-background/90 backdrop-blur-md border-b border-border/50">
@@ -1123,10 +1102,7 @@ const AnimeDetail = () => {
 
       {/* Tab content */}
       <div className="px-4 pt-4">
-        {activeTab === 'info' &&
-          (detailPending ? (
-            <InfoTabSkeleton />
-          ) : (
+        {activeTab === 'info' && (
           <div className="rounded-xl border border-border bg-card/60 divide-y divide-border overflow-hidden">
             <InfoRow
               icon={<Video01Icon className="w-4 h-4 text-primary-400 shrink-0" />}
@@ -1226,12 +1202,10 @@ const AnimeDetail = () => {
               </InfoRow>
             )}
           </div>
-          ))}
+        )}
 
         {activeTab === 'episodes' &&
-          (detailPending ? (
-            <EpisodesTabSkeleton />
-          ) : allEpisodesCount === 0 && !episodePackAvailable && !hasSubtitlePacks ? (
+          (allEpisodesCount === 0 && !episodePackAvailable && !hasSubtitlePacks ? (
             <EmptyBlock
               message={
                 statusKey === 'RELEASING'
@@ -1660,7 +1634,7 @@ const AnimeDetail = () => {
         )}
 
         {activeTab === 'translators' &&
-          (detailPending || translatorLinksPending ? (
+          (translatorLinksPending ? (
             <TranslatorsTabSkeleton />
           ) : translatorLinks.length === 0 ? (
             <EmptyBlock message="مترجمی ثبت نشده" />
