@@ -96,7 +96,6 @@ import {
   MOCK_FREE_EPISODES,
   SubtitleDownloadCard,
   SubtitlePackDownloadCard,
-  formatEpisodeLabel,
   type Episode,
   type EpisodePack,
   type SubtitlePack,
