@@ -94,10 +94,9 @@ export const prefetchHomeCatalog = () => {
   })
 }
 
-/** پیش‌بارگذاری سبک بعد از آماده شدن شل — بدون طوفان ریل‌های Home. */
+/** پیش‌بارگذاری سبک بعد از آماده شدن شل — بدون طوفان ریل‌های Home یا schedule. */
 export const prefetchLaunchCatalog = () => {
-  prefetchSchedule()
-  // Genres only; Home rails already hydrate from disk via useQuery initialData.
+  // Genres only; Home rails hydrate from disk, schedule loads when that page opens.
   void queryClient.prefetchQuery({
     queryKey: queryKeys.genres,
     queryFn: fetchGenresWithPersist,

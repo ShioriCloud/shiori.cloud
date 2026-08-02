@@ -141,9 +141,8 @@ export const useHomeCustomBlocksQuery = () =>
   useQuery({
     queryKey: queryKeys.homeCustomBlocks,
     queryFn: getHomeCustomBlocks,
-    staleTime: 0,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
+    staleTime: HOME_RAIL_STALE_MS,
+    gcTime: HOME_RAIL_STALE_MS * 6,
   })
 
 export const useAnimeFavoriteCountsQuery = () =>
@@ -286,8 +285,9 @@ export const useInfiniteAnimeSearchQuery = (
           pages: [
             {
               items: homeSeed.data.slice(0, pageSize),
-              total: homeSeed.data.length,
-              hasMore: homeSeed.data.length >= pageSize,
+              // Home rail is a short sample — always allow pagination/refetch.
+              total: Math.max(homeSeed.data.length, pageSize + 1),
+              hasMore: true,
             },
           ],
           pageParams: [0],

@@ -27,6 +27,8 @@ import {
   useTranslatorLinksQuery,
 } from '../hooks/queries/useAnimeQueries'
 import { prefetchSimilarAnime } from '../hooks/queries/prefetch'
+import { queryKeys } from '../hooks/queries/keys'
+import { queryClient } from '../lib/queryClient'
 import { formatAnilistPercent } from '../services/externalScores'
 import { formatUserListSaveError } from '../services/userListErrors'
 import type { GenreItem } from '../types/catalog'
@@ -448,7 +450,11 @@ const AnimeDetail = () => {
   useEffect(() => {
     if (!anime || !id || isPartialDetail) return
     const canonical = animePublicSegment(anime)
-    if (decodeURIComponent(id) === canonical) return
+    const current = decodeURIComponent(String(id))
+    if (current === canonical) return
+    // Seed the slug/uuid alias in RQ so URL rewrite does not trigger a second getById.
+    queryClient.setQueryData(queryKeys.animeDetail(canonical), anime)
+    queryClient.setQueryData(queryKeys.animeDetail(String(anime.id)), anime)
     navigate(`${animeDetailPath(anime)}${window.location.search}`, { replace: true })
   }, [anime, id, isPartialDetail, navigate])
 
