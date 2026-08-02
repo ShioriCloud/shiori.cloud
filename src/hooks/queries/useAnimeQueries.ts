@@ -15,14 +15,30 @@ import {
   fetchSimilarAnime,
   peekScheduleCache,
   SCHEDULE_CACHE_TTL_MS,
+  type AnimeDetail,
   type AnimeSearchFilters,
   type HomeFeaturedTab,
   type UiAnimeCard,
 } from '../../utils/api'
-import { getAnimeCardsByIds,
+import {
+  DETAIL_STALE_MS,
+  fetchGenresWithPersist,
+  GENRES_CACHE_TTL_MS,
+  GENRES_STALE_MS,
+  homeFeaturedCacheKey,
+  homeFormatCacheKey,
+  homeLatestCacheKey,
+  homePopularCacheKey,
+  homeRecentCacheKey,
+  HOME_RAIL_STALE_MS,
+  peekAnimeDetailCache,
+  peekGenresCache,
+  peekHomeCardCache,
+} from '../../lib/catalogPersistCache'
+import {
+  getAnimeCardsByIds,
   getHomeCustomBlocks,
   getTranslatorLinksByAnimeId,
-  listGenres,
 } from '../../services/catalogSource'
 import { fetchExternalScores, fetchAnilistNextAiring } from '../../services/externalScores'
 import { getAnimeFavoriteCount, getAnimeFavoriteCounts } from '../../services/userDataSource'
@@ -49,47 +65,77 @@ export const useAnimeCardsQuery = () =>
     queryFn: fetchAllAnimeCards,
   })
 
-export const useHomeFeaturedQuery = (tab: HomeFeaturedTab) =>
-  useQuery({
+export const useHomeFeaturedQuery = (tab: HomeFeaturedTab) => {
+  const cached = peekHomeCardCache(homeFeaturedCacheKey(tab))
+  return useQuery({
     queryKey: queryKeys.homeFeatured(tab),
     queryFn: () => fetchHomeFeaturedCards(tab),
-    staleTime: 60_000,
+    staleTime: HOME_RAIL_STALE_MS,
+    gcTime: HOME_RAIL_STALE_MS * 6,
+    initialData: cached?.data,
+    initialDataUpdatedAt: cached?.ts,
   })
+}
 
-export const useHomeLatestQuery = (year: number, season: string) =>
-  useQuery({
+export const useHomeLatestQuery = (year: number, season: string) => {
+  const cached = peekHomeCardCache(homeLatestCacheKey(year, season))
+  return useQuery({
     queryKey: queryKeys.homeLatest(year, season),
     queryFn: () => fetchHomeLatestSeasonCards(year, season, 20),
-    staleTime: 60_000,
+    staleTime: HOME_RAIL_STALE_MS,
+    gcTime: HOME_RAIL_STALE_MS * 6,
+    initialData: cached?.data,
+    initialDataUpdatedAt: cached?.ts,
   })
+}
 
-export const useHomePopularQuery = () =>
-  useQuery({
+export const useHomePopularQuery = () => {
+  const cached = peekHomeCardCache(homePopularCacheKey(20))
+  return useQuery({
     queryKey: queryKeys.homePopular,
     queryFn: () => fetchPopularAnimeCards(20),
-    staleTime: 60_000,
+    staleTime: HOME_RAIL_STALE_MS,
+    gcTime: HOME_RAIL_STALE_MS * 6,
+    initialData: cached?.data,
+    initialDataUpdatedAt: cached?.ts,
   })
+}
 
-export const useHomeRecentQuery = () =>
-  useQuery({
+export const useHomeRecentQuery = () => {
+  const cached = peekHomeCardCache(homeRecentCacheKey(20))
+  return useQuery({
     queryKey: queryKeys.homeRecent,
     queryFn: () => fetchRecentAnimeCards(20),
-    staleTime: 60_000,
+    staleTime: HOME_RAIL_STALE_MS,
+    gcTime: HOME_RAIL_STALE_MS * 6,
+    initialData: cached?.data,
+    initialDataUpdatedAt: cached?.ts,
   })
+}
 
-export const useHomeDonghuaQuery = () =>
-  useQuery({
+export const useHomeDonghuaQuery = () => {
+  const cached = peekHomeCardCache(homeFormatCacheKey('DONGHUA', 20))
+  return useQuery({
     queryKey: queryKeys.homeDonghua,
     queryFn: () => fetchHomeFormatSectionCards('DONGHUA', 20),
-    staleTime: 60_000,
+    staleTime: HOME_RAIL_STALE_MS,
+    gcTime: HOME_RAIL_STALE_MS * 6,
+    initialData: cached?.data,
+    initialDataUpdatedAt: cached?.ts,
   })
+}
 
-export const useHomeMoviesQuery = () =>
-  useQuery({
+export const useHomeMoviesQuery = () => {
+  const cached = peekHomeCardCache(homeFormatCacheKey('MOVIE', 20))
+  return useQuery({
     queryKey: queryKeys.homeMovies,
     queryFn: () => fetchHomeFormatSectionCards('MOVIE', 20),
-    staleTime: 60_000,
+    staleTime: HOME_RAIL_STALE_MS,
+    gcTime: HOME_RAIL_STALE_MS * 6,
+    initialData: cached?.data,
+    initialDataUpdatedAt: cached?.ts,
   })
+}
 
 export const useHomeCustomBlocksQuery = () =>
   useQuery({
@@ -137,21 +183,28 @@ const findAnimeCardPlaceholder = (id: string | number): UiAnimeCard | undefined 
   return undefined
 }
 
-export const useAnimeDetailQuery = (id: string | number | undefined) =>
-  useQuery({
+export const useAnimeDetailQuery = (id: string | number | undefined) => {
+  const cached = id ? peekAnimeDetailCache<AnimeDetail>(id) : null
+  return useQuery({
     queryKey: queryKeys.animeDetail(id ?? ''),
     queryFn: () => fetchAnimeById(id!),
     enabled: Boolean(id),
+    staleTime: DETAIL_STALE_MS,
+    gcTime: DETAIL_STALE_MS * 12,
+    initialData: cached?.data,
+    initialDataUpdatedAt: cached?.ts,
     placeholderData: (previousData) => {
       if (previousData && id) {
         if (String(previousData.id) === String(id)) return previousData
         if (animeCardMatchesRouteParam(previousData, String(id))) return previousData
       }
+      if (cached?.data) return cached.data
       if (!id) return undefined
       const card = findAnimeCardPlaceholder(id)
       return card ? buildAnimeDetailPlaceholder(card) : undefined
     },
   })
+}
 
 export const useAnimeListQuery = () =>
   useQuery({
@@ -171,12 +224,17 @@ export const useScheduleQuery = () => {
   })
 }
 
-export const useGenresQuery = () =>
-  useQuery({
+export const useGenresQuery = () => {
+  const cached = peekGenresCache()
+  return useQuery({
     queryKey: queryKeys.genres,
-    queryFn: listGenres,
-    staleTime: 10 * 60_000,
+    queryFn: fetchGenresWithPersist,
+    staleTime: GENRES_STALE_MS,
+    gcTime: GENRES_CACHE_TTL_MS,
+    initialData: cached?.data,
+    initialDataUpdatedAt: cached?.ts,
   })
+}
 
 export const useAnimeSearchQuery = (filters: AnimeSearchFilters, enabled = true) =>
   useQuery({
@@ -206,7 +264,7 @@ export const useInfiniteAnimeSearchQuery = (
       return allPages.reduce((sum, page) => sum + page.items.length, 0)
     },
     enabled,
-    staleTime: 60_000,
+    staleTime: HOME_RAIL_STALE_MS,
   })
 
 export const useFavoriteAnimeDetailsQueries = (ids: (string | number)[]) =>

@@ -94,6 +94,8 @@ import {
   FreeEpisodeDownloadCard,
   FreeTokenWalletCard,
   MOCK_FREE_EPISODES,
+  SubtitleDownloadCard,
+  SubtitlePackDownloadCard,
   formatEpisodeLabel,
   type Episode,
   type EpisodePack,
@@ -1248,35 +1250,17 @@ const AnimeDetail = () => {
                           پک زیرنویس
                         </h3>
                         {subtitlePacksList.map((p) => (
-                          <div
+                          <SubtitlePackDownloadCard
                             key={String(p.id)}
-                            className="rounded-xl border border-border bg-card/60 p-3 flex items-center justify-between gap-3"
-                          >
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold text-foreground line-clamp-1">
-                                {p.title || 'پک زیرنویس'}
-                              </p>
-                              <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
-                                زیرنویس کامل
-                              </p>
-                            </div>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="secondary"
-                              className="shrink-0 gap-1"
-                              onClick={() => {
-                                if (!p.subtitle_link) {
-                                  showAlert('لینک پک زیرنویس موجود نیست')
-                                  return
-                                }
-                                window.open(String(p.subtitle_link), '_blank')
-                              }}
-                            >
-                              <Download04Icon className="w-4 h-4" />
-                              دانلود
-                            </Button>
-                          </div>
+                            pack={p}
+                            onDownload={() => {
+                              if (!p.subtitle_link) {
+                                showAlert('لینک پک زیرنویس موجود نیست')
+                                return
+                              }
+                              window.open(String(p.subtitle_link), '_blank')
+                            }}
+                          />
                         ))}
                       </div>
                     ) : null}
@@ -1289,32 +1273,17 @@ const AnimeDetail = () => {
                           </h3>
                         ) : null}
                         {episodeSubtitlesList.map((episode) => (
-                          <div
+                          <SubtitleDownloadCard
                             key={`sub-${String(episode.id)}`}
-                            className="rounded-xl border border-border bg-card/60 p-3 flex items-center justify-between gap-3"
-                          >
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold text-foreground line-clamp-1">
-                                زیرنویس قسمت {formatEpisodeLabel(episode.number)}
-                              </p>
-                            </div>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="secondary"
-                              className="shrink-0 gap-1"
-                              onClick={() => {
-                                if (!episode.subtitle_link) {
-                                  showAlert('زیرنویس برای این قسمت موجود نیست')
-                                  return
-                                }
-                                window.open(String(episode.subtitle_link), '_blank')
-                              }}
-                            >
-                              <Download04Icon className="w-4 h-4" />
-                              دانلود
-                            </Button>
-                          </div>
+                            episodeNumber={episode.number}
+                            onDownload={() => {
+                              if (!episode.subtitle_link) {
+                                showAlert('زیرنویس برای این قسمت موجود نیست')
+                                return
+                              }
+                              window.open(String(episode.subtitle_link), '_blank')
+                            }}
+                          />
                         ))}
                       </div>
                     ) : null}
@@ -1559,35 +1528,17 @@ const AnimeDetail = () => {
                 <div className="space-y-2 pt-1">
                   <h3 className="text-sm font-semibold text-foreground px-0.5">پک زیرنویس</h3>
                   {anime.subtitle_packs!.map((p) => (
-                    <div
+                    <SubtitlePackDownloadCard
                       key={String(p.id)}
-                      className="rounded-xl border border-border bg-card/60 p-3 flex items-center justify-between gap-3"
-                    >
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold text-foreground line-clamp-1">
-                          {p.title || 'پک زیرنویس'}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
-                          زیرنویس کامل
-                        </p>
-                      </div>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="secondary"
-                        className="shrink-0 gap-1"
-                        onClick={() => {
-                          if (!p.subtitle_link) {
-                            showAlert('لینک پک زیرنویس موجود نیست')
-                            return
-                          }
-                          window.open(String(p.subtitle_link), '_blank')
-                        }}
-                      >
-                        <Download04Icon className="w-4 h-4" />
-                        دانلود
-                      </Button>
-                    </div>
+                      pack={p}
+                      onDownload={() => {
+                        if (!p.subtitle_link) {
+                          showAlert('لینک پک زیرنویس موجود نیست')
+                          return
+                        }
+                        window.open(String(p.subtitle_link), '_blank')
+                      }}
+                    />
                   ))}
                 </div>
               ) : null}

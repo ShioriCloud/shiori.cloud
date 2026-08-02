@@ -122,6 +122,111 @@ export const EpisodeDownloadCard = ({
   )
 }
 
+/** Same shell/sizing as episode cards — used on the subtitles tab. */
+export const SubtitleDownloadCard = ({
+  episodeNumber,
+  onDownload,
+}: {
+  episodeNumber: number
+  onDownload: () => void
+}) => (
+  <div
+    className={episodeOneLineShellClass}
+    role="button"
+    tabIndex={0}
+    aria-label={`دانلود زیرنویس قسمت ${episodeNumber}`}
+    onClick={onDownload}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        onDownload()
+      }
+    }}
+  >
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-primary-400/[0.12] to-transparent"
+    />
+
+    <div className="relative flex min-w-0 flex-1 items-center gap-2">
+      <p className="min-w-0 truncate text-sm font-bold text-foreground">
+        زیرنویس قسمت {formatEpisodeLabel(episodeNumber)}
+      </p>
+    </div>
+
+    <div className="relative flex shrink-0 items-center gap-1.5">
+      <button
+        type="button"
+        aria-label={`دانلود زیرنویس قسمت ${episodeNumber}`}
+        className={cn(
+          episodeActionBtnClass,
+          'border-primary-400/35 bg-primary-400/10 text-primary-300 hover:bg-primary-400/15'
+        )}
+        onClick={(e) => {
+          e.stopPropagation()
+          onDownload()
+        }}
+      >
+        <Download04Icon className="h-3.5 w-3.5" aria-hidden />
+        دانلود
+      </button>
+    </div>
+  </div>
+)
+
+export const SubtitlePackDownloadCard = ({
+  pack,
+  onDownload,
+}: {
+  pack: SubtitlePack
+  onDownload: () => void
+}) => {
+  const title = pack.title?.trim() || 'پک زیرنویس'
+
+  return (
+    <div
+      className={episodeOneLineShellClass}
+      role="button"
+      tabIndex={0}
+      aria-label={`دانلود ${title}`}
+      onClick={onDownload}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onDownload()
+        }
+      }}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-primary-400/[0.12] to-transparent"
+      />
+
+      <div className="relative flex min-w-0 flex-1 items-center gap-2">
+        <p className="min-w-0 truncate text-sm font-bold text-foreground">{title}</p>
+      </div>
+
+      <div className="relative flex shrink-0 items-center gap-1.5">
+        <button
+          type="button"
+          aria-label={`دانلود ${title}`}
+          className={cn(
+            episodeActionBtnClass,
+            'border-primary-400/35 bg-primary-400/10 text-primary-300 hover:bg-primary-400/15'
+          )}
+          onClick={(e) => {
+            e.stopPropagation()
+            onDownload()
+          }}
+        >
+          <Download04Icon className="h-3.5 w-3.5" aria-hidden />
+          دانلود
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export const EpisodePackDownloadCard = ({
   pack,
   onDownload,
@@ -358,8 +463,11 @@ export const EpisodeQualityNote = ({
           </span>
         </p>
         {size ? (
-          <p className="shrink-0 font-mono tabular-nums text-foreground/75" dir="ltr">
-            {size}
+          <p className="shrink-0 text-end">
+            حجم هر قسمت:{' '}
+            <span className="font-mono tabular-nums text-foreground/75" dir="ltr">
+              {size}
+            </span>
           </p>
         ) : null}
       </div>
