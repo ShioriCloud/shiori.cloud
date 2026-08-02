@@ -23,7 +23,6 @@ import { useAiringReminderStore } from '../store/airingReminderStore'
 import {
   useAnilistNextAiringQuery,
   useAnimeDetailQuery,
-  useExternalScoresQuery,
   useSimilarAnimeQuery,
   useTranslatorLinksQuery,
 } from '../hooks/queries/useAnimeQueries'
@@ -469,36 +468,13 @@ const AnimeDetail = () => {
     })
   }, [anime?.id, isPlaceholderData])
 
-  const externalIds = useMemo(
-    () => ({
-      anilist_id: anime?.anilist_id,
-      mal_id: anime?.mal_id,
-    }),
-    [anime?.anilist_id, anime?.mal_id]
-  )
-
-  const needsLiveAnilist =
-    Boolean(anime?.anilist_id && anime.anilist_id > 0) &&
-    !(typeof anime?.averageScore === 'number' && Number.isFinite(anime.averageScore))
-
-  const needsLiveMal =
-    Boolean(anime?.mal_id && anime.mal_id > 0) &&
-    !(typeof anime?.malScore === 'number' && Number.isFinite(anime.malScore))
-
-  const needsLiveScores = needsLiveAnilist || needsLiveMal
-
-  const {
-    data: liveScores,
-    isFetching: liveScoresFetching,
-    isLoading: liveScoresLoading,
-  } = useExternalScoresQuery(externalIds, Boolean(anime) && needsLiveScores && !isPlaceholderData)
-
   const airingStatusKey = String(anime?.airing_status ?? anime?.status ?? 'RELEASING')
     .trim()
     .toUpperCase()
   // Upcoming titles (first episode scheduled) use NOT_YET_RELEASED but still have AniList countdown.
   const canHaveNextAiring =
     airingStatusKey === 'RELEASING' || airingStatusKey === 'NOT_YET_RELEASED'
+  // Non-blocking: fill countdown in background; never gate the detail skeleton.
   const needsClientNextAiring =
     Boolean(anime) &&
     !isPlaceholderData &&
@@ -507,7 +483,7 @@ const AnimeDetail = () => {
     Boolean(anime?.anilist_id && anime.anilist_id > 0) &&
     canHaveNextAiring
 
-  const { data: clientNextAiring, isLoading: clientNextAiringLoading } = useAnilistNextAiringQuery(
+  const { data: clientNextAiring } = useAnilistNextAiringQuery(
     anime?.anilist_id,
     needsClientNextAiring
   )
@@ -582,10 +558,8 @@ const AnimeDetail = () => {
     !isAnimeDetailShell(animeData) &&
     Boolean(id) &&
     animeCardMatchesRouteParam(anime!, String(id))
-  const detailReady =
-    catalogReady &&
-    !(needsLiveScores && liveScoresLoading) &&
-    !(needsClientNextAiring && clientNextAiringLoading)
+  // Paint as soon as catalog DB payload is ready — scores come from cached columns.
+  const detailReady = catalogReady
   const error = isError ? 'خطا در بارگذاری اطلاعات انیمه' : null
 
   const handleMainTabChange = (tab: TabType) => {
@@ -666,29 +640,18 @@ const AnimeDetail = () => {
       .trim()
       .toUpperCase() === 'MOVIE'
 
-  const anilistScoreLabel = (() => {
-    if (typeof anime?.averageScore === 'number' && Number.isFinite(anime.averageScore)) {
-      return formatAnilistPercent(anime.averageScore, toPersianNumber)
-    }
-    if (
-      typeof liveScores?.anilistScore === 'number' &&
-      Number.isFinite(liveScores.anilistScore) &&
-      liveScores.anilistScore > 0
-    ) {
-      return `${toPersianNumber(Math.round(liveScores.anilistScore))}٪`
-    }
-    return '—'
-  })()
+  const anilistScoreLabel =
+    typeof anime?.averageScore === 'number' && Number.isFinite(anime.averageScore)
+      ? formatAnilistPercent(anime.averageScore, toPersianNumber)
+      : '—'
 
   const resolvedMalScore =
-    liveScores?.malScore ?? (typeof anime?.malScore === 'number' ? anime.malScore : null)
+    typeof anime?.malScore === 'number' && Number.isFinite(anime.malScore)
+      ? anime.malScore
+      : null
 
   const malScoreLabel =
     resolvedMalScore !== null ? toPersianNumber(resolvedMalScore.toFixed(1)) : '—'
-
-  const malChipLoading = needsLiveMal && liveScoresFetching && resolvedMalScore === null
-  const anilistChipLoading =
-    needsLiveAnilist && liveScoresFetching && anilistScoreLabel === '—'
 
   const handleShare = () => {
     if (!anime) return
@@ -980,7 +943,6 @@ const AnimeDetail = () => {
               logo={malLogo}
               logoAlt="MyAnimeList"
               value={malScoreLabel}
-              loading={malChipLoading}
               href={anime.mal_id ? buildMalUrl(anime.mal_id) : undefined}
               onOpenLink={openLink}
             />
@@ -988,7 +950,6 @@ const AnimeDetail = () => {
               logo={alLogo}
               logoAlt="AniList"
               value={anilistScoreLabel}
-              loading={anilistChipLoading}
               href={anime.anilist_id ? buildAnilistUrl(anime.anilist_id) : undefined}
               onOpenLink={openLink}
             />
