@@ -59,16 +59,20 @@ const EMPTY_SCHEDULE: Record<PersianDay, Anime[]> = {
 }
 
 const getCurrentPersianDay = (): PersianDay => {
-  const dayMap: Record<number, PersianDay> = {
-    0: 'یکشنبه',
-    1: 'دوشنبه',
-    2: 'سه‌شنبه',
-    3: 'چهارشنبه',
-    4: 'پنج‌شنبه',
-    5: 'جمعه',
-    6: 'شنبه',
+  const dayMap: Record<string, PersianDay> = {
+    Sun: 'یکشنبه',
+    Mon: 'دوشنبه',
+    Tue: 'سه‌شنبه',
+    Wed: 'چهارشنبه',
+    Thu: 'پنج‌شنبه',
+    Fri: 'جمعه',
+    Sat: 'شنبه',
   }
-  return dayMap[new Date().getDay()]
+  const weekday = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Tehran',
+    weekday: 'short',
+  }).format(new Date())
+  return dayMap[weekday] ?? 'شنبه'
 }
 
 const translateSeason = (season: string): string => {

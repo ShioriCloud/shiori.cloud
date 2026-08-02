@@ -448,16 +448,20 @@ const getCurrentAiringSeason = (): 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' => {
 }
 
 const toPersianWeekday = (d: Date): string => {
-  const dayMap: Record<number, string> = {
-    0: 'یکشنبه',
-    1: 'دوشنبه',
-    2: 'سه‌شنبه',
-    3: 'چهارشنبه',
-    4: 'پنج‌شنبه',
-    5: 'جمعه',
-    6: 'شنبه',
+  const weekday = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Tehran',
+    weekday: 'short',
+  }).format(d)
+  const dayMap: Record<string, string> = {
+    Sun: 'یکشنبه',
+    Mon: 'دوشنبه',
+    Tue: 'سه‌شنبه',
+    Wed: 'چهارشنبه',
+    Thu: 'پنج‌شنبه',
+    Fri: 'جمعه',
+    Sat: 'شنبه',
   }
-  return dayMap[d.getDay()] ?? ''
+  return dayMap[weekday] ?? ''
 }
 
 const enrichScheduleWithLocalIds = async (
@@ -600,36 +604,80 @@ const loadSchedulePayload = async (): Promise<catalog.SchedulePayload> => {
   return fetchScheduleFromAniListClient()
 }
 
-export const fetchSchedule = async () => {
-  const cacheKey = 'shiori_schedule_v2'
-  const cacheTtlMs = 10 * 60 * 1000
+const SCHEDULE_CACHE_KEY = 'shiori_schedule_v3'
+/** Soft TTL for treating disk cache as fresh enough for initialData. */
+export const SCHEDULE_CACHE_TTL_MS = 6 * 60 * 60 * 1000
 
+type ScheduleCacheEntry = {
+  ts: number
+  data: catalog.SchedulePayload
+}
+
+const isUsableSchedulePayload = (data: unknown): data is catalog.SchedulePayload => {
+  if (!data || typeof data !== 'object') return false
+  const payload = data as catalog.SchedulePayload
+  if (!payload.schedule || typeof payload.schedule !== 'object') return false
+  if (payload.degraded) return false
+  return countScheduleItems(payload) > 0
+}
+
+/** Read persisted schedule cache (for initialData / stale-if-error). */
+export const peekScheduleCache = (opts?: {
+  /** When set, ignore entries older than this. Omit to allow any age. */
+  maxAgeMs?: number
+}): ScheduleCacheEntry | null => {
   try {
-    const raw = sessionStorage.getItem(cacheKey)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      if (
-        parsed &&
-        typeof parsed === 'object' &&
-        typeof parsed.ts === 'number' &&
-        Date.now() - parsed.ts < cacheTtlMs &&
-        parsed.data &&
-        typeof parsed.data === 'object'
-      ) {
-        return parsed.data as catalog.SchedulePayload
-      }
+    const raw = localStorage.getItem(SCHEDULE_CACHE_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as Partial<ScheduleCacheEntry>
+    if (
+      !parsed ||
+      typeof parsed.ts !== 'number' ||
+      !Number.isFinite(parsed.ts) ||
+      !isUsableSchedulePayload(parsed.data)
+    ) {
+      return null
     }
+    if (
+      typeof opts?.maxAgeMs === 'number' &&
+      Date.now() - parsed.ts > opts.maxAgeMs
+    ) {
+      return null
+    }
+    return { ts: parsed.ts, data: parsed.data }
   } catch {
-    // ignore
+    return null
   }
+}
 
-  const data = await loadSchedulePayload()
+const writeScheduleCache = (data: catalog.SchedulePayload): void => {
+  if (!isUsableSchedulePayload(data)) return
+  try {
+    const entry: ScheduleCacheEntry = { ts: Date.now(), data }
+    localStorage.setItem(SCHEDULE_CACHE_KEY, JSON.stringify(entry))
+  } catch {
+    // quota / private mode
+  }
+}
+
+/**
+ * Load weekly airing schedule.
+ * Always hits network when React Query invokes this (after staleTime).
+ * On failure, returns any persisted cache (even past TTL).
+ */
+export const fetchSchedule = async (): Promise<catalog.SchedulePayload> => {
+  const cached = peekScheduleCache()
 
   try {
-    sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data }))
-  } catch {
-    // ignore
+    const data = await loadSchedulePayload()
+    if (isUsableSchedulePayload(data)) {
+      writeScheduleCache(data)
+      return data
+    }
+    if (cached) return cached.data
+    return data
+  } catch (error) {
+    if (cached) return cached.data
+    throw error
   }
-
-  return data
 }

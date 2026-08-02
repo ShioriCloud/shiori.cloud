@@ -6,7 +6,11 @@ export const PulseBlock = ({ className }: { className?: string }) => (
 
 /** Full-page skeleton matching AnimeDetail layout (hero → stats → synopsis → tabs → info). */
 export const DetailSkeleton = () => (
-  <div className="pb-24 bg-background text-foreground" aria-busy="true" aria-label="در حال بارگذاری">
+  <div
+    className="max-w-full overflow-x-hidden bg-background pb-24 text-foreground"
+    aria-busy="true"
+    aria-label="در حال بارگذاری"
+  >
     <div className="relative">
       <div className="absolute inset-x-0 top-0 h-52 overflow-hidden">
         <PulseBlock className="h-full w-full rounded-none" />
@@ -21,12 +25,12 @@ export const DetailSkeleton = () => (
           <PulseBlock className="absolute right-2 top-2 h-5 w-14 rounded-md" />
         </div>
 
-        <div className="relative mt-3 flex w-full flex-col items-center space-y-2 px-10">
-          <PulseBlock className="h-6 w-56" />
-          <PulseBlock className="h-4 w-40" />
+        <div className="relative mt-3 flex w-full max-w-full flex-col items-center space-y-2 px-10">
+          <PulseBlock className="h-6 w-56 max-w-full" />
+          <PulseBlock className="h-4 w-40 max-w-full" />
         </div>
 
-        <div className="mt-2 flex flex-wrap justify-center gap-1.5">
+        <div className="mt-2 flex max-w-full flex-wrap justify-center gap-1.5">
           <PulseBlock className="h-5 w-14 rounded-md" />
           <PulseBlock className="h-5 w-16 rounded-md" />
           <PulseBlock className="h-5 w-16 rounded-md" />
@@ -35,15 +39,19 @@ export const DetailSkeleton = () => (
 
         <ScoreChipsSkeleton />
 
-        <PulseBlock className="mt-3 h-14 w-full rounded-2xl" />
+        <PulseBlock className="mt-3 h-14 w-full max-w-full rounded-2xl" />
       </div>
     </div>
 
-    <PulseBlock className="mx-4 mt-2 h-16 rounded-xl" />
+    <div className="mx-4 mt-2">
+      <PulseBlock className="h-16 w-full rounded-xl" />
+    </div>
 
     <StatsRowSkeleton />
 
-    <PulseBlock className="mx-4 mt-2 h-10 w-full rounded-xl" />
+    <div className="mx-4 mt-2">
+      <PulseBlock className="h-10 w-full rounded-xl" />
+    </div>
 
     <SeriesSwitcherSkeleton />
 
@@ -86,7 +94,7 @@ export const ScoreChipsSkeleton = () => (
 )
 
 export const SeriesSwitcherSkeleton = () => (
-  <div className="mx-4 mt-4">
+  <div className="mx-4 mt-4 max-w-full overflow-hidden">
     <PulseBlock className="mx-auto mb-3 h-4 w-24" />
     <div className="flex gap-2 overflow-hidden px-1">
       {Array.from({ length: 4 }).map((_, i) => (
