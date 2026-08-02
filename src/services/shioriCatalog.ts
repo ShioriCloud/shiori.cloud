@@ -50,6 +50,8 @@ type ApiDetail = ApiCard & {
   episode_pack_link?: string | null
   episode_pack_available?: boolean
   next_airing?: { episode: number; airing_at: number } | null
+  /** AVG(files.file_size) for episode download links that resolve in bot files */
+  average_episode_size_bytes?: number | null
   episodes?: Array<{
     id: string
     episode_number: number

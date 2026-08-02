@@ -41,6 +41,7 @@ import { isAnimeDetailShell } from '../utils/api'
 import { animeCardMatchesRouteParam, animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { exploreAllHref } from '@/lib/exploreParams'
 import {
+  formatAverageEpisodeSizeLabel,
   normalizeVideoEncode,
   normalizeVideoFileType,
   normalizeVideoResolution,
@@ -97,9 +98,11 @@ import {
 import {
   EpisodeDownloadCard,
   EpisodePackDownloadCard,
+  EpisodeQualityNote,
   FreeEpisodeDownloadCard,
   FreeTokenWalletCard,
   MOCK_FREE_EPISODES,
+  formatEpisodeLabel,
   type Episode,
   type EpisodePack,
   type SubtitlePack,
@@ -138,6 +141,7 @@ interface Anime {
   anilist_id?: number
   mal_id?: number
   next_airing?: { episode: number; airing_at: number } | null
+  average_episode_size_bytes?: number | null
   studios: string[]
   studio_links?: Array<{ slug: string; name: string }>
   producers: string[]
@@ -499,12 +503,15 @@ const AnimeDetail = () => {
   const airingStatusKey = String(anime?.airing_status ?? anime?.status ?? 'RELEASING')
     .trim()
     .toUpperCase()
+  // Upcoming titles (first episode scheduled) use NOT_YET_RELEASED but still have AniList countdown.
+  const canHaveNextAiring =
+    airingStatusKey === 'RELEASING' || airingStatusKey === 'NOT_YET_RELEASED'
   const needsClientNextAiring =
     Boolean(anime) &&
     !isPlaceholderData &&
     !anime?.next_airing &&
     Boolean(anime?.anilist_id && anime.anilist_id > 0) &&
-    airingStatusKey === 'RELEASING'
+    canHaveNextAiring
 
   const { data: clientNextAiring } = useAnilistNextAiringQuery(
     anime?.anilist_id,
@@ -641,6 +648,16 @@ const AnimeDetail = () => {
 
   const subtitlePacksList = Array.isArray(anime?.subtitle_packs) ? anime.subtitle_packs : []
   const hasSubtitlePacks = subtitlePacksList.length > 0
+
+  const episodeSubtitlesList = useMemo(() => {
+    const rows = Array.isArray(anime?.episodes) ? anime.episodes : []
+    return rows
+      .filter((ep) => Boolean(String(ep.subtitle_link ?? '').trim()))
+      .slice()
+      .sort((a, b) => Number(a.number) - Number(b.number))
+  }, [anime?.episodes])
+  const hasEpisodeSubtitles = episodeSubtitlesList.length > 0
+  const hasAnySubtitles = hasSubtitlePacks || hasEpisodeSubtitles
 
   const isDonghua =
     String(anime?.format ?? '')
@@ -833,6 +850,10 @@ const AnimeDetail = () => {
   const videoEncode = useMemo(
     () => normalizeVideoEncode(anime?.video_encode),
     [anime?.video_encode]
+  )
+  const averageEpisodeSizeLabel = useMemo(
+    () => formatAverageEpisodeSizeLabel(anime?.average_episode_size_bytes),
+    [anime?.average_episode_size_bytes]
   )
 
   if (loading) return <DetailSkeleton />
@@ -1245,42 +1266,87 @@ const AnimeDetail = () => {
               />
 
               {useLaunchDownloadTabs && launchDownloadTab === 'subtitles' ? (
-                hasSubtitlePacks ? (
-                  <div className="space-y-2">
-                    {subtitlePacksList.map((p) => (
-                      <div
-                        key={String(p.id)}
-                        className="rounded-xl border border-border bg-card/60 p-3 flex items-center justify-between gap-3"
-                      >
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-foreground line-clamp-1">
-                            {p.title || 'پک زیرنویس'}
-                          </p>
-                          <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
-                            زیرنویس کامل
-                          </p>
-                        </div>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="secondary"
-                          className="shrink-0 gap-1"
-                          onClick={() => {
-                            if (!p.subtitle_link) {
-                              showAlert('لینک پک زیرنویس موجود نیست')
-                              return
-                            }
-                            window.open(String(p.subtitle_link), '_blank')
-                          }}
-                        >
-                          <Download04Icon className="w-4 h-4" />
-                          دانلود
-                        </Button>
+                hasAnySubtitles ? (
+                  <div className="space-y-4">
+                    {hasSubtitlePacks ? (
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-semibold text-foreground px-0.5">
+                          پک زیرنویس
+                        </h3>
+                        {subtitlePacksList.map((p) => (
+                          <div
+                            key={String(p.id)}
+                            className="rounded-xl border border-border bg-card/60 p-3 flex items-center justify-between gap-3"
+                          >
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-foreground line-clamp-1">
+                                {p.title || 'پک زیرنویس'}
+                              </p>
+                              <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
+                                زیرنویس کامل
+                              </p>
+                            </div>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="secondary"
+                              className="shrink-0 gap-1"
+                              onClick={() => {
+                                if (!p.subtitle_link) {
+                                  showAlert('لینک پک زیرنویس موجود نیست')
+                                  return
+                                }
+                                window.open(String(p.subtitle_link), '_blank')
+                              }}
+                            >
+                              <Download04Icon className="w-4 h-4" />
+                              دانلود
+                            </Button>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    ) : null}
+
+                    {hasEpisodeSubtitles ? (
+                      <div className="space-y-2">
+                        {hasSubtitlePacks ? (
+                          <h3 className="text-sm font-semibold text-foreground px-0.5">
+                            زیرنویس قسمت‌ها
+                          </h3>
+                        ) : null}
+                        {episodeSubtitlesList.map((episode) => (
+                          <div
+                            key={`sub-${String(episode.id)}`}
+                            className="rounded-xl border border-border bg-card/60 p-3 flex items-center justify-between gap-3"
+                          >
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-foreground line-clamp-1">
+                                زیرنویس قسمت {formatEpisodeLabel(episode.number)}
+                              </p>
+                            </div>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="secondary"
+                              className="shrink-0 gap-1"
+                              onClick={() => {
+                                if (!episode.subtitle_link) {
+                                  showAlert('زیرنویس برای این قسمت موجود نیست')
+                                  return
+                                }
+                                window.open(String(episode.subtitle_link), '_blank')
+                              }}
+                            >
+                              <Download04Icon className="w-4 h-4" />
+                              دانلود
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
                 ) : (
-                  <EmptyBlock message="پک زیرنویس ثبت نشده" />
+                  <EmptyBlock message="زیرنویسی ثبت نشده" />
                 )
               ) : (
                 <>
@@ -1300,6 +1366,11 @@ const AnimeDetail = () => {
                   </Button>
                 </div>
               ) : null}
+              <EpisodeQualityNote
+                resolution={videoResolution}
+                encode={videoEncode}
+                averageSizeLabel={averageEpisodeSizeLabel}
+              />
               {episodePackAvailable &&
               anime.episode_pack &&
               (useLaunchDownloadTabs
@@ -1310,8 +1381,6 @@ const AnimeDetail = () => {
                 (ENABLE_SUBSCRIPTION_DOWNLOAD_GATE && hasActiveSubscription)) ? (
                 <EpisodePackDownloadCard
                   pack={anime.episode_pack}
-                  videoResolution={videoResolution}
-                  videoEncode={videoEncode}
                   locked={
                     ENABLE_SUBSCRIPTION_DOWNLOAD_GATE && !hasActiveSubscription
                   }
@@ -1390,8 +1459,6 @@ const AnimeDetail = () => {
                             key={episodeId}
                             episode={episode}
                             claiming={claiming}
-                            videoResolution={videoResolution}
-                            videoEncode={videoEncode}
                             disabled={
                               tokensExhausted || claimFreeDownloadMutation.isPending
                             }
@@ -1455,19 +1522,11 @@ const AnimeDetail = () => {
                     <EpisodeDownloadCard
                       key={episode.id}
                       episode={episode}
-                      videoResolution={videoResolution}
-                      videoEncode={videoEncode}
                       subscriptionLocked={
                         ENABLE_SUBSCRIPTION_DOWNLOAD_GATE &&
                         !useLaunchDownloadTabs &&
                         episodeKindTab !== 'free' &&
                         !hasActiveSubscription
-                      }
-                      showSubtitleButton={
-                        (!isFinished || isMovie) &&
-                        videoFileType === 'softsub' &&
-                        (useLaunchDownloadTabs || episodeKindTab === 'softsub') &&
-                        (!ENABLE_SUBSCRIPTION_DOWNLOAD_GATE || hasActiveSubscription)
                       }
                       onDownloadAvailable={() => {
                         if (
@@ -1505,13 +1564,6 @@ const AnimeDetail = () => {
                           `https://t.me/ShioriUploadBot?start=get_${episode.id}`
                         recordEpisodeDownload(episode)
                         window.open(String(link), '_blank')
-                      }}
-                      onSubtitle={() => {
-                        if (!episode.subtitle_link) {
-                          showAlert('زیرنویس برای این قسمت موجود نیست')
-                          return
-                        }
-                        window.open(String(episode.subtitle_link), '_blank')
                       }}
                       onLockedQuality={(quality) => {
                         if (

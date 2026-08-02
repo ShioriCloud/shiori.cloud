@@ -75,6 +75,18 @@ export function videoQualityButtonLabel(
   return `${resolution} ${videoEncodeLabel(encode)}`
 }
 
+/** Label for quality note, e.g. «حدود ۳۵۰ مگابایت». */
+export function formatAverageEpisodeSizeLabel(
+  bytes: number | null | undefined
+): string | null {
+  if (bytes == null) return null
+  const n = Number(bytes)
+  if (!Number.isFinite(n) || n <= 0) return null
+  const mb = Math.max(1, Math.round(n / (1024 * 1024)))
+  const fa = mb.toLocaleString('fa-IR')
+  return `حدود ${fa} مگابایت`
+}
+
 /**
  * Prefer the anime-level admin setting. Fall back to soft-sub presence for older rows.
  */

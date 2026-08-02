@@ -347,6 +347,12 @@ export const fetchAnimeById = async (
       }
       return { episode, airing_at: airingAt }
     })(),
+    average_episode_size_bytes: (() => {
+      const raw = detail.average_episode_size_bytes
+      if (raw == null) return null
+      const n = Number(raw)
+      return Number.isFinite(n) && n > 0 ? Math.round(n) : null
+    })(),
     studios: parts.studioNames,
     studio_links: studioLinks,
     producers: [],
@@ -400,6 +406,7 @@ export const buildAnimeDetailPlaceholder = (card: UiAnimeCard): AnimeDetailShell
   anilist_id: undefined,
   mal_id: undefined,
   next_airing: null,
+  average_episode_size_bytes: null,
   studios: [],
   studio_links: [],
   producers: [],

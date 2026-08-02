@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Download04Icon } from 'hugeicons-react'
-import { Captions, Lock } from 'lucide-react'
+import { Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import {
@@ -30,31 +30,11 @@ export interface EpisodePack {
   download_link?: string | null
 }
 
-
 export const formatEpisodeLabel = (num: number | string): string => {
   const n = typeof num === 'number' ? num : Number(num)
   if (!Number.isFinite(n)) return toPersianNumber(num)
   const raw = Number.isInteger(n) ? String(n).padStart(2, '0') : String(n)
   return toPersianNumber(raw)
-}
-
-export const EpisodeQualityBadge = ({
-  resolution,
-  encode,
-}: {
-  resolution: VideoResolution
-  encode: VideoEncode
-}) => {
-  const label = videoQualityButtonLabel(resolution, encode)
-  return (
-    <span
-      className="inline-flex max-w-full shrink items-center justify-center truncate rounded-md border border-primary-400/25 bg-primary-400/10 px-2 py-1 text-[11px] font-semibold font-mono tabular-nums tracking-wide text-primary-300 leading-none"
-      dir="ltr"
-      title={label}
-    >
-      {label}
-    </span>
-  )
 }
 
 export const episodeOneLineShellClass =
@@ -65,25 +45,15 @@ export const episodeActionBtnClass =
 
 export const EpisodeDownloadCard = ({
   episode,
-  showSubtitleButton,
-  videoResolution,
-  videoEncode,
   subscriptionLocked = false,
   onDownloadAvailable,
-  onSubtitle,
   onLockedQuality,
 }: {
   episode: Episode
-  showSubtitleButton: boolean
-  videoResolution: VideoResolution
-  videoEncode: VideoEncode
   subscriptionLocked?: boolean
   onDownloadAvailable: () => void
-  onSubtitle: () => void
   onLockedQuality: (quality: string) => void
 }) => {
-  const qualityLabel = videoQualityButtonLabel(videoResolution, videoEncode)
-
   const handleCardClick = () => {
     if (subscriptionLocked) {
       onLockedQuality('اشتراک')
@@ -100,7 +70,7 @@ export const EpisodeDownloadCard = ({
       aria-label={
         subscriptionLocked
           ? `دانلود قسمت ${episode.number} نیازمند اشتراک`
-          : `دانلود قسمت ${episode.number} با کیفیت ${qualityLabel}`
+          : `دانلود قسمت ${episode.number}`
       }
       onClick={handleCardClick}
       onKeyDown={(e) => {
@@ -119,27 +89,9 @@ export const EpisodeDownloadCard = ({
         <p className="min-w-0 truncate text-sm font-bold text-foreground">
           قسمت {formatEpisodeLabel(episode.number)}
         </p>
-        <EpisodeQualityBadge resolution={videoResolution} encode={videoEncode} />
       </div>
 
       <div className="relative flex shrink-0 items-center gap-1.5">
-        {showSubtitleButton ? (
-          <button
-            type="button"
-            aria-label={`دانلود زیرنویس قسمت ${episode.number}`}
-            className={cn(
-              episodeActionBtnClass,
-              'border-border/70 bg-background/40 text-muted-foreground hover:border-border hover:bg-muted/40 hover:text-foreground'
-            )}
-            onClick={(e) => {
-              e.stopPropagation()
-              onSubtitle()
-            }}
-          >
-            <Captions className="h-3.5 w-3.5" aria-hidden />
-            زیرنویس
-          </button>
-        ) : null}
         <button
           type="button"
           aria-label={
@@ -172,18 +124,13 @@ export const EpisodeDownloadCard = ({
 
 export const EpisodePackDownloadCard = ({
   pack,
-  videoResolution,
-  videoEncode,
   onDownload,
   locked = false,
 }: {
   pack: EpisodePack
-  videoResolution: VideoResolution
-  videoEncode: VideoEncode
   onDownload: () => void
   locked?: boolean
 }) => {
-  const qualityLabel = videoQualityButtonLabel(videoResolution, videoEncode)
   const title = pack.title?.trim() || 'دانلود تمام قسمت‌ها'
 
   return (
@@ -191,11 +138,7 @@ export const EpisodePackDownloadCard = ({
       className="episode-pack-card-wrap cursor-pointer active:scale-[0.99] transition-transform"
       role="button"
       tabIndex={0}
-      aria-label={
-        locked
-          ? `${title} نیازمند اشتراک`
-          : `دانلود ${title} با کیفیت ${qualityLabel}`
-      }
+      aria-label={locked ? `${title} نیازمند اشتراک` : `دانلود ${title}`}
       onClick={onDownload}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -215,10 +158,7 @@ export const EpisodePackDownloadCard = ({
         />
 
         <div className="relative flex min-w-0 flex-1 items-center gap-2">
-          <p className="min-w-0 truncate text-sm font-bold text-foreground">
-            {title}
-          </p>
-          <EpisodeQualityBadge resolution={videoResolution} encode={videoEncode} />
+          <p className="min-w-0 truncate text-sm font-bold text-foreground">{title}</p>
         </div>
 
         <div className="relative flex shrink-0 items-center gap-1.5">
@@ -249,7 +189,7 @@ export const EpisodePackDownloadCard = ({
   )
 }
 
-export const FREE_QUALITY_LABEL = '1080p x265 10bit'
+const FREE_QUALITY_LABEL = '1080p x265 10bit'
 
 export const MOCK_FREE_EPISODES: Episode[] = [
   {
@@ -340,30 +280,24 @@ export const FreeEpisodeDownloadCard = ({
   claiming,
   disabled,
   onClaim,
-  videoResolution = '1080p',
-  videoEncode = 'x265_10bit',
 }: {
   episode: Episode
   claiming: boolean
   disabled: boolean
   onClaim: () => void
-  videoResolution?: VideoResolution
-  videoEncode?: VideoEncode
 }) => {
-  const qualityLabel = videoQualityButtonLabel(videoResolution, videoEncode)
   const isDisabled = disabled || claiming
 
   return (
     <div
-      className={cn(
-        episodeOneLineShellClass,
-        isDisabled && 'pointer-events-none opacity-60'
-      )}
+      className={cn(episodeOneLineShellClass, isDisabled && 'pointer-events-none opacity-60')}
       role="button"
       tabIndex={isDisabled ? -1 : 0}
       aria-disabled={isDisabled}
-      aria-label={`دانلود رایگان قسمت ${episode.number} با کیفیت ${qualityLabel}`}
-      onClick={() => { if (!isDisabled) onClaim() }}
+      aria-label={`دانلود رایگان قسمت ${episode.number}`}
+      onClick={() => {
+        if (!isDisabled) onClaim()
+      }}
       onKeyDown={(e) => {
         if (!isDisabled && (e.key === 'Enter' || e.key === ' ')) {
           e.preventDefault()
@@ -380,7 +314,6 @@ export const FreeEpisodeDownloadCard = ({
         <p className="min-w-0 truncate text-sm font-bold text-foreground">
           قسمت {formatEpisodeLabel(episode.number)}
         </p>
-        <EpisodeQualityBadge resolution={videoResolution} encode={videoEncode} />
       </div>
 
       <div className="relative flex shrink-0 items-center gap-1.5">
@@ -398,3 +331,36 @@ export const FreeEpisodeDownloadCard = ({
   )
 }
 
+/** Shared quality line above episode / pack cards (not repeated on each card). */
+export const EpisodeQualityNote = ({
+  resolution,
+  encode,
+  averageSizeLabel,
+}: {
+  resolution: VideoResolution
+  encode: VideoEncode
+  /** e.g. «حدود ۳۵۰ مگابایت» — omit when catalog has no size data */
+  averageSizeLabel?: string | null
+}) => {
+  const size = String(averageSizeLabel ?? '').trim()
+
+  return (
+    <div className="flex items-center gap-2 px-0.5 text-xs text-muted-foreground">
+      <span
+        aria-hidden
+        className="h-3.5 w-0.5 shrink-0 rounded-full bg-primary-400"
+      />
+      <div className="flex min-w-0 flex-1 items-center justify-between gap-3 leading-relaxed">
+        <p className="min-w-0 shrink">
+          کیفیت فایل:{' '}
+          <span className="font-mono tabular-nums text-foreground/85" dir="ltr">
+            {videoQualityButtonLabel(resolution, encode)}
+          </span>
+        </p>
+        {size ? (
+          <p className="shrink-0 text-end">حجم میانگین هر قسمت: {size}</p>
+        ) : null}
+      </div>
+    </div>
+  )
+}
