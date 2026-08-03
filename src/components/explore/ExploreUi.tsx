@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
+import emptyExploreImage from '@/assets/images/frieren-03.webp'
 
 /** Shared sticky chrome for Explore list / season headers (keep heights in sync). */
 export const EXPLORE_STICKY_SHELL_CLASS =
@@ -53,13 +54,21 @@ export const ExploreSectionTitle = ({ children }: { children: ReactNode }) => (
 export const ExploreEmptyState = ({
   title,
   subtitle,
+  showImage = true,
 }: {
   title: string
   subtitle?: string
+  /** Frieren empty art — on for no-results, off for hard errors. */
+  showImage?: boolean
 }) => (
-  <div className="flex flex-col items-center justify-center text-center gap-2 py-20 px-6">
+  <div className="flex flex-col items-center justify-center text-center gap-2 py-16 px-6">
+    {showImage ? (
+      <img src={emptyExploreImage} alt="" className="mb-3 w-40 opacity-90" />
+    ) : null}
     <h2 className="text-base font-semibold text-foreground">{title}</h2>
-    {subtitle ? <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">{subtitle}</p> : null}
+    {subtitle ? (
+      <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">{subtitle}</p>
+    ) : null}
   </div>
 )
 
@@ -67,21 +76,32 @@ export const ExploreOptionButton = ({
   active,
   children,
   onClick,
+  className,
 }: {
   active?: boolean
   children: ReactNode
   onClick: () => void
+  className?: string
 }) => (
   <button
     type="button"
     onClick={onClick}
     className={cn(
-      'rounded-xl border px-3 py-2.5 text-sm transition-colors text-start',
+      'ui-elevated min-h-10 rounded-xl px-3 py-2.5 text-sm text-start transition-colors',
       active
-        ? 'border-primary-400/50 bg-primary-400/15 text-primary-400 font-semibold'
-        : 'ui-elevated text-foreground hover:bg-muted/50'
+        ? 'border-primary-400/45 bg-primary-400/15 font-semibold text-primary-700 dark:border-primary-400/25 dark:bg-primary-500/15 dark:text-primary-200'
+        : 'text-foreground hover:bg-muted/50',
+      className
     )}
   >
     {children}
   </button>
 )
+
+/** Primary CTA — Shiori purple (sheet footers, empty states, …). */
+export const SHIORI_PRIMARY_BUTTON_CLASS =
+  'ui-elevated-primary bg-primary-500 text-white hover:bg-primary-500/90'
+
+/** Secondary elevated control matching default chips / outline actions. */
+export const SHIORI_SECONDARY_BUTTON_CLASS =
+  'ui-elevated border-black/[0.08] bg-white text-foreground hover:bg-muted/50 dark:border-border dark:bg-card'

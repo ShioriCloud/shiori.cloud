@@ -20,7 +20,7 @@ type ExploreGenreGridProps = {
 
 export const ExploreGenreGrid = ({ genres, isLoading, isError }: ExploreGenreGridProps) => {
   if (isLoading) return <ExploreGenreSkeletonGrid />
-  if (isError) return <ExploreEmptyState title="خطا در دریافت ژانرها" />
+  if (isError) return <ExploreEmptyState title="خطا در دریافت ژانرها" showImage={false} />
   if (genres.length === 0) return <ExploreEmptyState title="ژانری ثبت نشده" />
 
   return (

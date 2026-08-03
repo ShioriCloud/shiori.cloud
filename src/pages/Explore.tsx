@@ -175,6 +175,13 @@ const Explore = () => {
   const filterCount = countExploreFilters(state)
   const listTitle = buildExploreAllListTitle(state, genresQuery.data ?? [])
 
+  const searchPending = state.tab === 'all' && searchInput.trim() !== state.query
+  const allListRefreshing =
+    state.tab === 'all' &&
+    (searchPending || (allQuery.isFetching && !allQuery.isFetchingNextPage))
+  const seasonalListRefreshing =
+    state.tab === 'seasonal' && seasonalQuery.isFetching && !seasonalQuery.isFetchingNextPage
+
   return (
     <div className="min-h-full pb-24">
       <AppHeader />
@@ -193,11 +200,13 @@ const Explore = () => {
               onSortClick={() => setSortOpen(true)}
               searchValue={searchInput}
               onSearchChange={setSearchInput}
+              busy={allListRefreshing}
             />
           </div>
           <ExploreInfiniteAnimeList
             items={allItems}
             isLoading={allQuery.isLoading}
+            isRefreshing={allListRefreshing}
             isError={allQuery.isError}
             hasNextPage={allQuery.hasNextPage}
             isFetchingNextPage={allQuery.isFetchingNextPage}
@@ -218,13 +227,14 @@ const Explore = () => {
               season={state.season}
               year={state.year}
               resultCount={seasonalQuery.data?.pages[0]?.total}
-              isLoadingCount={seasonalQuery.isLoading}
+              isLoadingCount={seasonalQuery.isLoading || seasonalListRefreshing}
               onOpenPicker={() => setSeasonOpen(true)}
             />
           </div>
           <ExploreInfiniteAnimeList
             items={seasonalItems}
             isLoading={seasonalQuery.isLoading}
+            isRefreshing={seasonalListRefreshing}
             isError={seasonalQuery.isError}
             hasNextPage={seasonalQuery.hasNextPage}
             isFetchingNextPage={seasonalQuery.isFetchingNextPage}

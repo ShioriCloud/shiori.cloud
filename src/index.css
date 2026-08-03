@@ -513,6 +513,19 @@
     display: none;
   }
 
+  .explore-fetch-bar {
+    animation: explore-fetch-slide 1.05s ease-in-out infinite;
+  }
+
+  @keyframes explore-fetch-slide {
+    0% {
+      transform: translateX(-120%);
+    }
+    100% {
+      transform: translateX(320%);
+    }
+  }
+
   .my-list-progress {
     @apply h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-muted;
   }

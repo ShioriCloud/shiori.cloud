@@ -4,6 +4,7 @@ import { Check, ChevronDown } from 'lucide-react'
 import type { GenreAdminItem } from '@/services/catalogSource'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ExploreOptionButton, SHIORI_PRIMARY_BUTTON_CLASS, SHIORI_SECONDARY_BUTTON_CLASS } from '@/components/explore/ExploreUi'
 import {
   Popover,
   PopoverContent,
@@ -69,32 +70,6 @@ const OptionGrid = ({
   </div>
 )
 
-const OptionButton = ({
-  active,
-  children,
-  onClick,
-  className,
-}: {
-  active?: boolean
-  children: ReactNode
-  onClick: () => void
-  className?: string
-}) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={cn(
-      'min-h-10 rounded-xl border px-3 py-2 text-sm font-medium transition-colors',
-      active
-        ? 'border-primary-400/50 bg-primary-600/20 text-primary-100'
-        : 'border-border/70 bg-card text-muted-foreground hover:bg-muted/50 hover:text-foreground',
-      className
-    )}
-  >
-    {children}
-  </button>
-)
-
 const GenreMultiSelect = ({
   genres,
   genresLoading,
@@ -151,11 +126,11 @@ const GenreMultiSelect = ({
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-[var(--radix-popover-trigger-width)] p-0"
+        className="ui-elevated w-[var(--radix-popover-trigger-width)] overflow-hidden p-0"
         align="start"
         sideOffset={4}
       >
-        <div className="border-b border-border/60 p-2">
+        <div className="border-b border-border/50 p-2">
           <div className="relative">
             <Search01Icon className="text-muted-foreground pointer-events-none absolute end-2.5 top-1/2 h-4 w-4 -translate-y-1/2" />
             <Input
@@ -180,19 +155,21 @@ const GenreMultiSelect = ({
                   type="button"
                   onClick={() => toggleSlug(genre.slug)}
                   className={cn(
-                    'flex w-full items-center justify-between rounded-md px-2.5 py-2 text-sm transition-colors',
-                    active ? 'bg-primary-600/15 text-primary-100' : 'hover:bg-muted/50'
+                    'flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-sm transition-colors',
+                    active
+                      ? 'bg-primary-400/15 font-medium text-primary-700 dark:text-primary-200'
+                      : 'text-foreground hover:bg-muted/50'
                   )}
                 >
                   <span>{genreLabel(genre)}</span>
-                  {active ? <Check className="h-4 w-4 shrink-0" /> : null}
+                  {active ? <Check className="h-4 w-4 shrink-0 text-primary-500" /> : null}
                 </button>
               )
             })
           )}
         </div>
         {selectedSlugs.length > 0 ? (
-          <div className="border-t border-border/60 p-2">
+          <div className="border-t border-border/50 p-2">
             <Button
               type="button"
               variant="ghost"
@@ -237,8 +214,11 @@ export const SearchFiltersSheet = ({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="flex max-h-[88vh] flex-col rounded-t-2xl p-0">
-        <SheetHeader className="shrink-0 border-b border-border/60 px-4 py-3">
+      <SheetContent
+        side="bottom"
+        className="flex max-h-[88vh] flex-col rounded-t-2xl border-t border-border bg-background p-0 shadow-[0_-8px_30px_oklch(0.4_0_0/0.12)] dark:shadow-[0_-8px_30px_oklch(0_0_0/0.45)]"
+      >
+        <SheetHeader className="shrink-0 border-b border-border/50 px-4 py-3">
           <SheetTitle className="text-base">{title}</SheetTitle>
         </SheetHeader>
 
@@ -248,13 +228,13 @@ export const SearchFiltersSheet = ({
               <SectionTitle>مرتب‌سازی</SectionTitle>
               <OptionGrid>
                 {SEARCH_SORT_OPTIONS.map((option) => (
-                  <OptionButton
+                  <ExploreOptionButton
                     key={option.key}
                     active={draft.sortBy === option.key}
                     onClick={() => setDraft({ sortBy: option.key })}
                   >
                     {option.label}
-                  </OptionButton>
+                  </ExploreOptionButton>
                 ))}
               </OptionGrid>
             </section>
@@ -263,7 +243,7 @@ export const SearchFiltersSheet = ({
           <section>
             <SectionTitle>فیلتر سریع</SectionTitle>
             <OptionGrid>
-              <OptionButton
+              <ExploreOptionButton
                 active={
                   draft.year === getCurrentSeasonYear() &&
                   draft.season === getCurrentSeasonKey()
@@ -271,24 +251,24 @@ export const SearchFiltersSheet = ({
                 onClick={applyCurrentSeason}
               >
                 فصل جاری
-              </OptionButton>
-              <OptionButton
+              </ExploreOptionButton>
+              <ExploreOptionButton
                 active={draft.format === 'MOVIE'}
                 onClick={() =>
                   setDraft({ format: draft.format === 'MOVIE' ? null : 'MOVIE' })
                 }
               >
                 سینمایی
-              </OptionButton>
-              <OptionButton
+              </ExploreOptionButton>
+              <ExploreOptionButton
                 active={draft.format === 'DONGHUA'}
                 onClick={() =>
                   setDraft({ format: draft.format === 'DONGHUA' ? null : 'DONGHUA' })
                 }
               >
                 دونگهوا
-              </OptionButton>
-              <OptionButton
+              </ExploreOptionButton>
+              <ExploreOptionButton
                 active={draft.airingStatus === 'RELEASING'}
                 onClick={() =>
                   setDraft({
@@ -298,7 +278,7 @@ export const SearchFiltersSheet = ({
                 }
               >
                 در حال پخش
-              </OptionButton>
+              </ExploreOptionButton>
             </OptionGrid>
           </section>
 
@@ -411,31 +391,31 @@ export const SearchFiltersSheet = ({
             <section>
               <SectionTitle>زبان زیرنویس</SectionTitle>
               <OptionGrid>
-                <OptionButton
+                <ExploreOptionButton
                   active={draft.hardsubLanguage == null}
                   onClick={() => setDraft({ hardsubLanguage: null })}
                 >
                   همه
-                </OptionButton>
+                </ExploreOptionButton>
                 {SEARCH_HARDSUB_LANGUAGES.map((option) => (
-                  <OptionButton
+                  <ExploreOptionButton
                     key={option.key}
                     active={draft.hardsubLanguage === option.key}
                     onClick={() => setDraft({ hardsubLanguage: option.key })}
                   >
                     {option.label}
-                  </OptionButton>
+                  </ExploreOptionButton>
                 ))}
               </OptionGrid>
             </section>
           ) : null}
         </div>
 
-        <SheetFooter className="shrink-0 flex-row gap-3 border-t border-border/60 px-4 py-4 sm:flex-row">
+        <SheetFooter className="shrink-0 flex-row gap-3 border-t border-border/50 px-4 py-4 sm:flex-row">
           <Button
             type="button"
             size="lg"
-            className="h-12 flex-1 text-base font-semibold bg-primary-500 text-white hover:bg-primary-500/90"
+            className={cn('h-12 flex-1 text-base font-semibold', SHIORI_PRIMARY_BUTTON_CLASS)}
             onClick={onApply}
           >
             اعمال فیلتر
@@ -444,7 +424,7 @@ export const SearchFiltersSheet = ({
             type="button"
             variant="outline"
             size="lg"
-            className="h-12 flex-1 text-base font-semibold"
+            className={cn('h-12 flex-1 text-base font-semibold', SHIORI_SECONDARY_BUTTON_CLASS)}
             onClick={onReset}
           >
             حذف فیلترها

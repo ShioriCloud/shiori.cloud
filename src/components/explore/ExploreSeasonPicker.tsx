@@ -10,6 +10,7 @@ import {
   EXPLORE_STICKY_SHELL_CLASS,
   ExploreOptionButton,
   ExploreSectionTitle,
+  SHIORI_PRIMARY_BUTTON_CLASS,
 } from './ExploreUi'
 import { Button } from '@/components/ui/button'
 import {
@@ -102,12 +103,12 @@ export const ExploreSeasonSheet = ({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="max-h-[75vh] rounded-t-2xl overflow-y-auto pb-[env(safe-area-inset-bottom,0px)]"
+        className="max-h-[75vh] overflow-y-auto rounded-t-2xl border-t border-border bg-background p-0 shadow-[0_-8px_30px_oklch(0.4_0_0/0.12)] dark:shadow-[0_-8px_30px_oklch(0_0_0/0.45)] pb-[env(safe-area-inset-bottom,0px)]"
       >
-        <SheetHeader>
-          <SheetTitle>انتخاب فصل</SheetTitle>
+        <SheetHeader className="border-b border-border/50 px-4 py-3">
+          <SheetTitle className="text-base">انتخاب فصل</SheetTitle>
         </SheetHeader>
-        <div className="px-4 py-4 space-y-5">
+        <div className="space-y-5 px-4 py-4">
           <div>
             <ExploreSectionTitle>سال</ExploreSectionTitle>
             <div className="grid grid-cols-3 gap-2">
@@ -137,8 +138,13 @@ export const ExploreSeasonSheet = ({
             </div>
           </div>
         </div>
-        <SheetFooter>
-          <Button type="button" className="w-full" onClick={onApply}>
+        <SheetFooter className="border-t border-border/50 px-4 py-4">
+          <Button
+            type="button"
+            size="lg"
+            className={cn('h-12 w-full text-base font-semibold', SHIORI_PRIMARY_BUTTON_CLASS)}
+            onClick={onApply}
+          >
             اعمال
           </Button>
         </SheetFooter>
