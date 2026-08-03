@@ -335,7 +335,7 @@ const Home = () => {
                     to={animeDetailPath(anime)}
                     className="block group h-52"
                   >
-                    <div className="relative h-full w-full rounded-2xl overflow-hidden border border-border">
+                    <div className="media-card-skeuo relative h-full w-full rounded-2xl overflow-hidden">
                       <img
                         src={anime.featuredImage || anime.image}
                         alt=""
