@@ -12,19 +12,22 @@ export const useInfiniteScrollSentinel = ({
   hasNextPage,
   isFetching,
   onLoadMore,
-  rootMargin = '320px',
+  /** Start fetch well before the user hits the bottom (Telegram WebView is slow). */
+  rootMargin = '1200px 0px',
 }: UseInfiniteScrollSentinelOptions) => {
   const sentinelRef = useRef<HTMLDivElement>(null)
+  const onLoadMoreRef = useRef(onLoadMore)
+  onLoadMoreRef.current = onLoadMore
 
   useEffect(() => {
     const el = sentinelRef.current
-    if (!el || !hasNextPage || !onLoadMore) return
+    if (!el || !hasNextPage || !onLoadMoreRef.current) return
 
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0]
         if (entry?.isIntersecting && !isFetching) {
-          onLoadMore()
+          onLoadMoreRef.current?.()
         }
       },
       { rootMargin, threshold: 0 }
@@ -32,7 +35,7 @@ export const useInfiniteScrollSentinel = ({
 
     observer.observe(el)
     return () => observer.disconnect()
-  }, [hasNextPage, isFetching, onLoadMore, rootMargin])
+  }, [hasNextPage, isFetching, rootMargin])
 
   return sentinelRef
 }
