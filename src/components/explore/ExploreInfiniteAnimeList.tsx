@@ -57,10 +57,8 @@ export const ExploreInfiniteAnimeList = ({
     warmedForLenRef.current = items.length
 
     const run = () => onLoadMore()
-    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      const id = window.requestIdleCallback(run, { timeout: 1200 })
-      return () => window.cancelIdleCallback(id)
-    }
+    // Prefer a short delay over requestIdleCallback — `in` narrowing makes
+    // `window` `never` in some TS DOM lib configs and breaks CI.
     const timer = window.setTimeout(run, 450)
     return () => window.clearTimeout(timer)
   }, [hasNextPage, isLoading, isFetchingNextPage, items.length, onLoadMore])
