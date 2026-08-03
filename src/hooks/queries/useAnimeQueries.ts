@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query'
 import { animeCardMatchesRouteParam } from '../../lib/animePaths'
 import {
   buildAnimeDetailPlaceholder,
@@ -41,6 +41,16 @@ import {
   peekHomeRailCache,
   writeHomeRailCache,
 } from '../../lib/homeRailCache'
+import {
+  EXPLORE_GENRES_STALE_MS,
+  EXPLORE_SEARCH_STALE_MS,
+  exploreSearchCacheKey,
+  isPersistableExploreSearch,
+  resolveExploreSearchInitial,
+  writeExploreGenres,
+  writeExploreSearchPage,
+  peekExploreGenres,
+} from '../../lib/exploreSearchCache'
 import type { HomeCustomBlock } from '../../types/home'
 import { queryClient } from '../../lib/queryClient'
 import { queryKeys } from './keys'
@@ -246,12 +256,21 @@ export const useScheduleQuery = () => {
   })
 }
 
-export const useGenresQuery = () =>
-  useQuery({
+export const useGenresQuery = () => {
+  const cached = peekExploreGenres()
+  return useQuery({
     queryKey: queryKeys.genres,
-    queryFn: listGenres,
-    staleTime: 10 * 60_000,
+    queryFn: async () => {
+      const data = await listGenres()
+      writeExploreGenres(data)
+      return data
+    },
+    staleTime: EXPLORE_GENRES_STALE_MS,
+    gcTime: EXPLORE_GENRES_STALE_MS * 6,
+    initialData: cached?.data,
+    initialDataUpdatedAt: cached?.ts,
   })
+}
 
 export const useAnimeSearchQuery = (filters: AnimeSearchFilters, enabled = true) =>
   useQuery({
@@ -266,24 +285,37 @@ export const useInfiniteAnimeSearchQuery = (
   filters: AnimeSearchBaseFilters,
   pageSize = DEFAULT_SEARCH_PAGE_SIZE,
   enabled = true
-) =>
-  useInfiniteQuery({
+) => {
+  const cacheKey = exploreSearchCacheKey(filters, pageSize)
+  const persistable = isPersistableExploreSearch(filters)
+  const initial = resolveExploreSearchInitial(filters, pageSize)
+
+  return useInfiniteQuery({
     queryKey: [...buildAnimeSearchQueryKey(filters), 'infinite', pageSize] as const,
-    queryFn: ({ pageParam }) =>
-      fetchAnimeSearch({
+    queryFn: async ({ pageParam }) => {
+      const page = await fetchAnimeSearch({
         ...filters,
         limit: pageSize,
         offset: pageParam,
-      }),
+      })
+      if (persistable && pageParam === 0) {
+        writeExploreSearchPage(cacheKey, page)
+      }
+      return page
+    },
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
       if (!lastPage.hasMore) return undefined
       return allPages.reduce((sum, page) => sum + page.items.length, 0)
     },
     enabled,
-    staleTime: 60_000,
+    staleTime: EXPLORE_SEARCH_STALE_MS,
+    gcTime: EXPLORE_SEARCH_STALE_MS * 6,
+    initialData: initial?.data,
+    initialDataUpdatedAt: initial?.updatedAt,
+    placeholderData: keepPreviousData,
   })
-
+}
 export const useFavoriteAnimeDetailsQueries = (ids: (string | number)[]) =>
   useQueries({
     queries: ids.map((id) => ({

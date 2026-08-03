@@ -79,15 +79,26 @@ export const DEFAULT_SEARCH_FILTERS: SearchUrlFilters = {
 }
 
 export const getCurrentSeasonKey = (): SearchSeasonKey => {
-  const month = new Date().getMonth()
-  if (month >= 0 && month < 3) return 'WINTER'
-  if (month >= 3 && month < 6) return 'SPRING'
-  if (month >= 6 && month < 9) return 'SUMMER'
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Tehran',
+    month: 'numeric',
+  }).formatToParts(new Date())
+  const month = Number(parts.find((p) => p.type === 'month')?.value)
+  const m = Number.isFinite(month) ? month : new Date().getMonth() + 1
+  if (m >= 1 && m <= 3) return 'WINTER'
+  if (m >= 4 && m <= 6) return 'SPRING'
+  if (m >= 7 && m <= 9) return 'SUMMER'
   return 'FALL'
 }
 
-export const getCurrentSeasonYear = () => new Date().getFullYear()
-
+export const getCurrentSeasonYear = (): number => {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Tehran',
+    year: 'numeric',
+  }).formatToParts(new Date())
+  const year = Number(parts.find((p) => p.type === 'year')?.value)
+  return Number.isFinite(year) ? year : new Date().getFullYear()
+}
 export const buildSearchYearOptions = (span = 12): number[] => {
   const current = getCurrentSeasonYear()
   return Array.from({ length: span }, (_, i) => current + 1 - i)

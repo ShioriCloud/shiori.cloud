@@ -154,12 +154,92 @@ export const buildExploreScrollKey = (state: ExploreState): string => {
   return 'explore:genres'
 }
 
+export type ExploreAllTabSnapshot = Pick<
+  ExploreState,
+  | 'query'
+  | 'format'
+  | 'hardsub'
+  | 'sortBy'
+  | 'genreSlugs'
+  | 'airingStatus'
+  | 'listSeason'
+  | 'listYear'
+>
+
+export const captureExploreAllTabSnapshot = (state: ExploreState): ExploreAllTabSnapshot => ({
+  query: state.query,
+  format: state.format,
+  hardsub: state.hardsub,
+  sortBy: state.tab === 'all' ? state.sortBy : 'popular',
+  genreSlugs: state.genreSlugs,
+  airingStatus: state.airingStatus,
+  listSeason: state.listSeason,
+  listYear: state.listYear,
+})
+
+/**
+ * Tab-scoped navigation: seasonal's forced `sort=created_at` / season-year
+ * must not leak into the all-tab query key on return.
+ */
+export const switchExploreTab = (
+  state: ExploreState,
+  nextTab: ExploreTab,
+  allSnapshot: ExploreAllTabSnapshot,
+  seasonalPicker?: { season: SearchSeasonKey; year: number }
+): ExploreState => {
+  if (nextTab === 'seasonal') {
+    const season =
+      state.tab === 'seasonal'
+        ? state.season
+        : (seasonalPicker?.season ?? getCurrentSeasonKey())
+    const year =
+      state.tab === 'seasonal' ? state.year : (seasonalPicker?.year ?? getCurrentSeasonYear())
+    return {
+      ...state,
+      tab: 'seasonal',
+      listSeason: null,
+      listYear: null,
+      season,
+      year,
+      // URL writes created_at for seasonal; all-tab sort lives in allSnapshot.
+      sortBy: 'created_at',
+    }
+  }
+
+  if (nextTab === 'genres') {
+    return {
+      ...DEFAULT_EXPLORE_STATE,
+      ...allSnapshot,
+      tab: 'genres',
+      season: getCurrentSeasonKey(),
+      year: getCurrentSeasonYear(),
+    }
+  }
+
+  return {
+    ...DEFAULT_EXPLORE_STATE,
+    ...allSnapshot,
+    tab: 'all',
+    season: getCurrentSeasonKey(),
+    year: getCurrentSeasonYear(),
+  }
+}
+
 export const buildExploreParams = (
   state: Partial<ExploreState> & { tab: ExploreTab }
 ): URLSearchParams => {
   const merged: ExploreState = { ...DEFAULT_EXPLORE_STATE, ...state }
   const params = new URLSearchParams()
   params.set('tab', merged.tab)
+
+  // Seasonal URL is exclusive: only tab + season + year (+ fixed sort).
+  // Avoid leaking all-tab q/format/sort into seasonal and back.
+  if (merged.tab === 'seasonal') {
+    params.set('season', merged.season)
+    params.set('year', String(merged.year))
+    params.set('sort', 'created_at')
+    return params
+  }
 
   const query = merged.query.trim()
   if (query) params.set('q', query)
@@ -168,18 +248,12 @@ export const buildExploreParams = (
   if (merged.airingStatus) params.set('status', merged.airingStatus)
   for (const slug of merged.genreSlugs) params.append('genre', slug)
 
-  if (merged.tab === 'seasonal') {
-    params.set('season', merged.season)
-    params.set('year', String(merged.year))
-    params.set('sort', 'created_at')
-  } else {
-    if (merged.listSeason) params.set('season', merged.listSeason)
-    if (merged.listYear != null) params.set('year', String(merged.listYear))
-    if (merged.tab === 'all') {
-      params.set('sort', merged.sortBy || 'popular')
-    } else if (merged.sortBy && merged.sortBy !== 'popular') {
-      params.set('sort', merged.sortBy)
-    }
+  if (merged.listSeason) params.set('season', merged.listSeason)
+  if (merged.listYear != null) params.set('year', String(merged.listYear))
+  if (merged.tab === 'all') {
+    params.set('sort', merged.sortBy || 'popular')
+  } else if (merged.sortBy && merged.sortBy !== 'popular') {
+    params.set('sort', merged.sortBy)
   }
 
   return params

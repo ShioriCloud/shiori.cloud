@@ -1,13 +1,16 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   applySearchUrlFiltersToExplore,
   buildExploreAllListTitle,
   buildExploreParams,
   buildExploreScrollKey,
+  captureExploreAllTabSnapshot,
   countExploreFilters,
   exploreStateToSearchUrlFilters,
   parseExploreParams,
+  switchExploreTab,
+  type ExploreAllTabSnapshot,
   type ExploreState,
   type ExploreTab,
 } from '@/lib/exploreParams'
@@ -56,9 +59,23 @@ const Explore = () => {
   const [draftSeason, setDraftSeason] = useState<SearchSeasonKey>(state.season)
   const [draftYear, setDraftYear] = useState(state.year)
 
+  /** Preserves all-tab filters/sort across seasonal/genres so query keys stay stable. */
+  const allTabSnapshotRef = useRef<ExploreAllTabSnapshot>(captureExploreAllTabSnapshot(state))
+  const seasonalPickerRef = useRef({ season: state.season, year: state.year })
+
   const replaceState = (next: ExploreState) => {
     setSearchParams(buildExploreParams(next), { replace: true })
   }
+
+  useEffect(() => {
+    if (state.tab !== 'all') return
+    allTabSnapshotRef.current = captureExploreAllTabSnapshot(state)
+  }, [state])
+
+  useEffect(() => {
+    if (state.tab !== 'seasonal') return
+    seasonalPickerRef.current = { season: state.season, year: state.year }
+  }, [state.tab, state.season, state.year])
 
   useEffect(() => {
     setSearchInput(state.query)
@@ -104,7 +121,16 @@ const Explore = () => {
   }, [seasonOpen, state.season, state.year])
 
   const setTab = (tab: ExploreTab) => {
-    replaceState({ ...state, tab })
+    if (tab === state.tab) return
+    if (state.tab === 'all') {
+      allTabSnapshotRef.current = captureExploreAllTabSnapshot(state)
+    }
+    if (state.tab === 'seasonal') {
+      seasonalPickerRef.current = { season: state.season, year: state.year }
+    }
+    replaceState(
+      switchExploreTab(state, tab, allTabSnapshotRef.current, seasonalPickerRef.current)
+    )
   }
 
   const allFilters = useMemo(
