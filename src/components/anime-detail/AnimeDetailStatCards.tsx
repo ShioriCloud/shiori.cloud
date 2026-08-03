@@ -129,6 +129,29 @@ export const NextAiringCard = ({
   )
 }
 
+/** Reserves countdown card height while AniList next_airing is fetching. */
+export const NextAiringCardSkeleton = () => (
+  <div
+    className="mx-4 mt-2 flex items-center gap-2.5 rounded-2xl border border-primary-400/15 bg-gradient-to-l from-primary-500/[0.06] to-card/60 px-3 py-2"
+    aria-busy="true"
+    aria-label="در حال بارگذاری زمان پخش قسمت بعد"
+  >
+    <div className="h-5 w-5 shrink-0 animate-pulse rounded-md bg-muted" />
+    <div className="min-w-0 flex-1 space-y-1.5">
+      <div className="h-3.5 w-28 max-w-full animate-pulse rounded bg-muted" />
+      <div className="h-3 w-40 max-w-full animate-pulse rounded bg-muted" />
+    </div>
+    <div className="flex shrink-0 items-center gap-1" dir="ltr">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div
+          key={i}
+          className="h-10 w-10 animate-pulse rounded-lg border border-border/40 bg-muted/60"
+        />
+      ))}
+    </div>
+  </div>
+)
+
 export const FavoriteStatCard = ({
   active,
   onClick,

@@ -84,6 +84,7 @@ import {
 import {
   FavoriteStatCard,
   NextAiringCard,
+  NextAiringCardSkeleton,
   ReminderStatCard,
   ScoreChip,
   posterStatusClass,
@@ -440,15 +441,12 @@ const AnimeDetail = () => {
     isError,
     refetch,
     isPlaceholderData,
-    isFetching: detailFetching,
   } = useAnimeDetailQuery(id)
 
   const anime = (animeData ?? null) as Anime | null
-  const isPartialDetail =
-    Boolean(animeData) && (isAnimeDetailShell(animeData) || isPlaceholderData)
 
   useEffect(() => {
-    if (!anime || !id || isPartialDetail) return
+    if (!anime || !id || isPlaceholderData) return
     const canonical = animePublicSegment(anime)
     const current = decodeURIComponent(String(id))
     if (current === canonical) return
@@ -456,15 +454,15 @@ const AnimeDetail = () => {
     queryClient.setQueryData(queryKeys.animeDetail(canonical), anime)
     queryClient.setQueryData(queryKeys.animeDetail(String(anime.id)), anime)
     navigate(`${animeDetailPath(anime)}${window.location.search}`, { replace: true })
-  }, [anime, id, isPartialDetail, navigate])
+  }, [anime, id, isPlaceholderData, navigate])
 
   useEffect(() => {
-    if (!anime?.id || isPartialDetail) return
+    if (!anime?.id || isPlaceholderData) return
     trackAnimeBrowse(anime.id)
-  }, [anime?.id, isPartialDetail])
+  }, [anime?.id, isPlaceholderData])
 
   useEffect(() => {
-    if (!anime?.id || isPartialDetail) return
+    if (!anime?.id || isPlaceholderData) return
     const key = `shiori:anime-view:${String(anime.id)}`
     try {
       if (sessionStorage.getItem(key)) return
@@ -475,7 +473,7 @@ const AnimeDetail = () => {
     void recordAnimeView(anime.id).catch(() => {
       // Non-blocking; popularity still works without a perfect count
     })
-  }, [anime?.id, isPartialDetail])
+  }, [anime?.id, isPlaceholderData])
 
   const airingStatusKey = String(anime?.airing_status ?? anime?.status ?? 'RELEASING')
     .trim()
@@ -486,17 +484,18 @@ const AnimeDetail = () => {
   // Non-blocking: fill countdown in background; never gate the detail skeleton.
   const needsClientNextAiring =
     Boolean(anime) &&
-    !isPartialDetail &&
+    !isPlaceholderData &&
+    !isAnimeDetailShell(animeData) &&
     !anime?.next_airing &&
     Boolean(anime?.anilist_id && anime.anilist_id > 0) &&
     canHaveNextAiring
 
-  const { data: clientNextAiring } = useAnilistNextAiringQuery(
-    anime?.anilist_id,
-    needsClientNextAiring
-  )
+  const { data: clientNextAiring, isPending: clientNextAiringPending } =
+    useAnilistNextAiringQuery(anime?.anilist_id, needsClientNextAiring)
 
   const nextAiring = anime?.next_airing ?? clientNextAiring ?? null
+  const showNextAiringSkeleton =
+    !nextAiring && needsClientNextAiring && clientNextAiringPending
 
   const [activeTab, setActiveTab] = useState<TabType>(() =>
     parseAnimeDetailTab(searchParams.get('tab'))
@@ -560,11 +559,15 @@ const AnimeDetail = () => {
     [similarCards]
   )
 
-  // Paint immediately from Home card shell / disk cache; hydrate episodes after.
+  // Wait for full catalog payload (shell/placeholder does not count as ready).
+  // Scores come from DB columns only — no live AniList/MAL gate.
   const catalogReady =
-    Boolean(anime) && Boolean(id) && animeCardMatchesRouteParam(anime!, String(id))
+    Boolean(anime) &&
+    !isPlaceholderData &&
+    !isAnimeDetailShell(animeData) &&
+    Boolean(id) &&
+    animeCardMatchesRouteParam(anime!, String(id))
   const detailReady = catalogReady
-  const detailHydrated = catalogReady && !isPartialDetail
   const error = isError ? 'خطا در بارگذاری اطلاعات انیمه' : null
 
   const handleMainTabChange = (tab: TabType) => {
@@ -994,6 +997,8 @@ const AnimeDetail = () => {
           episode={nextAiring.episode}
           airingAt={nextAiring.airing_at}
         />
+      ) : showNextAiringSkeleton ? (
+        <NextAiringCardSkeleton />
       ) : null}
 
       {/* Quick stats */}
@@ -1172,16 +1177,7 @@ const AnimeDetail = () => {
         )}
 
         {activeTab === 'episodes' &&
-          (isPartialDetail || (detailFetching && !detailHydrated) ? (
-            <div className="space-y-2 py-2" aria-busy="true" aria-label="در حال بارگذاری قسمت‌ها">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="h-12 animate-pulse rounded-2xl bg-muted/60"
-                />
-              ))}
-            </div>
-          ) : allEpisodesCount === 0 && !episodePackAvailable && !hasSubtitlePacks ? (
+          (allEpisodesCount === 0 && !episodePackAvailable && !hasSubtitlePacks ? (
             <EmptyBlock
               message={
                 statusKey === 'RELEASING'

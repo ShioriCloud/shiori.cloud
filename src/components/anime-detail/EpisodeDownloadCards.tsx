@@ -33,12 +33,13 @@ export interface EpisodePack {
 export const formatEpisodeLabel = (num: number | string): string => {
   const n = typeof num === 'number' ? num : Number(num)
   if (!Number.isFinite(n)) return toPersianNumber(num)
-  const raw = Number.isInteger(n) ? String(n).padStart(2, '0') : String(n)
+  const raw = Number.isInteger(n) ? String(n) : String(n)
   return toPersianNumber(raw)
 }
 
+/** Simple row for per-episode / per-subtitle downloads (packs keep the fancy shell). */
 export const episodeOneLineShellClass =
-  'group relative flex items-center gap-3 overflow-hidden rounded-xl border border-border/60 bg-gradient-to-l from-primary-500/[0.09] via-card/75 to-card/55 px-3 py-2.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] transition-all duration-200 hover:border-primary-400/30 hover:from-primary-500/[0.14] cursor-pointer active:scale-[0.99]'
+  'group relative flex items-center gap-3 overflow-hidden rounded-xl border border-border bg-card px-3 py-2.5 transition-colors hover:bg-muted/40 cursor-pointer active:scale-[0.99]'
 
 export const episodeActionBtnClass =
   'relative z-10 inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-lg border px-2.5 text-[11px] font-semibold transition-colors active:scale-[0.97]'
@@ -80,11 +81,6 @@ export const EpisodeDownloadCard = ({
         }
       }}
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-primary-400/[0.12] to-transparent"
-      />
-
       <div className="relative flex min-w-0 flex-1 items-center gap-2">
         <p className="min-w-0 truncate text-sm font-bold text-foreground">
           قسمت {formatEpisodeLabel(episode.number)}
@@ -143,11 +139,6 @@ export const SubtitleDownloadCard = ({
       }
     }}
   >
-    <div
-      aria-hidden
-      className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-primary-400/[0.12] to-transparent"
-    />
-
     <div className="relative flex min-w-0 flex-1 items-center gap-2">
       <p className="min-w-0 truncate text-sm font-bold text-foreground">
         زیرنویس قسمت {formatEpisodeLabel(episodeNumber)}
@@ -185,7 +176,7 @@ export const SubtitlePackDownloadCard = ({
 
   return (
     <div
-      className={episodeOneLineShellClass}
+      className="episode-pack-card-wrap cursor-pointer active:scale-[0.99] transition-transform"
       role="button"
       tabIndex={0}
       aria-label={`دانلود ${title}`}
@@ -197,31 +188,31 @@ export const SubtitlePackDownloadCard = ({
         }
       }}
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-primary-400/[0.12] to-transparent"
-      />
+      <div className="episode-pack-card-inner group relative flex items-center gap-3 overflow-hidden bg-card px-3 py-2.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-gradient-to-l from-primary-500/[0.09] to-transparent"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-primary-400/[0.12] to-transparent"
+        />
 
-      <div className="relative flex min-w-0 flex-1 items-center gap-2">
-        <p className="min-w-0 truncate text-sm font-bold text-foreground">{title}</p>
-      </div>
+        <div className="relative flex min-w-0 flex-1 items-center gap-2">
+          <p className="min-w-0 truncate text-sm font-bold text-foreground">{title}</p>
+        </div>
 
-      <div className="relative flex shrink-0 items-center gap-1.5">
-        <button
-          type="button"
-          aria-label={`دانلود ${title}`}
-          className={cn(
-            episodeActionBtnClass,
-            'border-primary-400/35 bg-primary-400/10 text-primary-300 hover:bg-primary-400/15'
-          )}
-          onClick={(e) => {
-            e.stopPropagation()
-            onDownload()
-          }}
-        >
-          <Download04Icon className="h-3.5 w-3.5" aria-hidden />
-          دانلود
-        </button>
+        <div className="relative flex shrink-0 items-center gap-1.5">
+          <span
+            className={cn(
+              episodeActionBtnClass,
+              'border-primary-400/35 bg-primary-400/10 text-primary-300'
+            )}
+          >
+            <Download04Icon className="h-3.5 w-3.5" aria-hidden />
+            دانلود
+          </span>
+        </div>
       </div>
     </div>
   )
@@ -410,11 +401,6 @@ export const FreeEpisodeDownloadCard = ({
         }
       }}
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-primary-400/[0.12] to-transparent"
-      />
-
       <div className="relative flex min-w-0 flex-1 items-center gap-2">
         <p className="min-w-0 truncate text-sm font-bold text-foreground">
           قسمت {formatEpisodeLabel(episode.number)}
