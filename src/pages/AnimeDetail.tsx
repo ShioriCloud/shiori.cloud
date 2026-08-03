@@ -1004,9 +1004,9 @@ const AnimeDetail = () => {
         <NextAiringCardSkeleton />
       ) : null}
 
-      {/* Quick stats — reminder only when a next air date exists (or is loading). */}
+      {/* Reminder for airing / upcoming; finished (etc.) get a full-width favorite. */}
       <div className="mx-4 mt-2 flex items-stretch gap-2">
-        {nextAiring || showNextAiringSkeleton ? (
+        {canHaveNextAiring ? (
           <ReminderStatCard
             active={reminderActive}
             busy={reminderBusy || reminderToggling || updatingPreferences}
@@ -1017,7 +1017,7 @@ const AnimeDetail = () => {
         ) : null}
         <FavoriteStatCard
           active={favoriteActive}
-          expanded={!nextAiring && !showNextAiringSkeleton}
+          expanded={!canHaveNextAiring}
           onClick={handleFavorite}
         />
       </div>
