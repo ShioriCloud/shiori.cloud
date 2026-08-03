@@ -18,8 +18,8 @@ import {
 import { ExternalLink } from 'lucide-react'
 import { useUserAnimeList } from '../hooks/useUserAnimeList'
 import { useNotifications } from '../hooks/useNotifications'
+import { useAiringReminders } from '../hooks/useAiringReminders'
 import { useTelegramApp } from '../hooks/useTelegramApp'
-import { useAiringReminderStore } from '../store/airingReminderStore'
 import {
   useAnilistNextAiringQuery,
   useAnimeDetailQuery,
@@ -431,10 +431,13 @@ const AnimeDetail = () => {
   const { toggleFavorite, isFavorite, getProgress, saveProgress, isSaving: isSavingProgress } =
     useUserAnimeList({ syncRemoteList: false })
   const { preferences, updatePreferences, updatingPreferences } = useNotifications()
+  const {
+    isReminderOn,
+    toggleReminder: toggleAiringReminder,
+    isToggling: reminderToggling,
+  } = useAiringReminders()
   const { showAlert, openLink, shareUrl } = useTelegramApp()
   const [reminderBusy, setReminderBusy] = useState(false)
-  const reminderAnimeIds = useAiringReminderStore((s) => s.reminderAnimeIds)
-  const toggleAiringReminder = useAiringReminderStore((s) => s.toggleReminder)
 
   const {
     data: animeData,
@@ -702,11 +705,11 @@ const AnimeDetail = () => {
   }
 
   const handleAiringReminder = async () => {
-    if (!anime || reminderBusy) return
+    if (!anime || reminderBusy || reminderToggling) return
     setReminderBusy(true)
     try {
       hapticImpact('light')
-      const nowOn = toggleAiringReminder(anime.id)
+      const nowOn = await toggleAiringReminder(anime.id)
       if (nowOn) {
         const prefsNeedUpdate =
           preferences?.notify_new_episode === false || preferences?.notify_telegram_dm === false
@@ -857,7 +860,7 @@ const AnimeDetail = () => {
     shouldTruncate && !showFullDescription ? `${description.substring(0, 180)}…` : description
 
   const favoriteActive = isFavorite(anime.id)
-  const reminderActive = reminderAnimeIds.some((id) => String(id) === String(anime.id))
+  const reminderActive = isReminderOn(anime.id)
 
   const recordEpisodeDownload = (episode: Episode) => {
     trackEpisodeDownload({
@@ -1001,17 +1004,20 @@ const AnimeDetail = () => {
         <NextAiringCardSkeleton />
       ) : null}
 
-      {/* Quick stats */}
+      {/* Quick stats — reminder only when a next air date exists (or is loading). */}
       <div className="mx-4 mt-2 flex items-stretch gap-2">
-        <ReminderStatCard
-          active={reminderActive}
-          busy={reminderBusy || updatingPreferences}
-          onClick={() => {
-            void handleAiringReminder()
-          }}
-        />
+        {nextAiring || showNextAiringSkeleton ? (
+          <ReminderStatCard
+            active={reminderActive}
+            busy={reminderBusy || reminderToggling || updatingPreferences}
+            onClick={() => {
+              void handleAiringReminder()
+            }}
+          />
+        ) : null}
         <FavoriteStatCard
           active={favoriteActive}
+          expanded={!nextAiring && !showNextAiringSkeleton}
           onClick={handleFavorite}
         />
       </div>

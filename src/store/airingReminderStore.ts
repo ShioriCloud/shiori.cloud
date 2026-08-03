@@ -2,15 +2,15 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 /**
- * Local (this device) list of anime the user marked for new-episode reminders.
- * Delivery still depends on Profile notification prefs (inbox / Telegram DM).
+ * @deprecated Legacy local-only store. Migrated once to server via
+ * `useAiringReminders` (`POST .../airing-reminders/sync`), then cleared.
+ * Kept only so old localStorage keys can still be read during migrate.
  */
 type AiringReminderState = {
   reminderAnimeIds: string[]
   isReminderOn: (animeId: number | string) => boolean
   enableReminder: (animeId: number | string) => void
   disableReminder: (animeId: number | string) => void
-  /** Returns `true` when reminder is on after the toggle. */
   toggleReminder: (animeId: number | string) => boolean
 }
 

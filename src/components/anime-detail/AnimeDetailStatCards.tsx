@@ -155,15 +155,21 @@ export const NextAiringCardSkeleton = () => (
 export const FavoriteStatCard = ({
   active,
   onClick,
+  expanded = false,
 }: {
   active: boolean
   onClick: () => void
+  /** When true, fills the row with icon + label (no reminder beside it). */
+  expanded?: boolean
 }) => (
   <button
     type="button"
     onClick={onClick}
     className={cn(
-      'relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border transition-colors',
+      'relative flex items-center justify-center rounded-xl border transition-colors',
+      expanded
+        ? 'min-h-12 flex-1 gap-2 px-3 py-2.5 text-center'
+        : 'h-12 w-12 shrink-0',
       active
         ? 'border-red-500/35 bg-red-500/10 hover:bg-red-500/15'
         : 'border-border bg-card/60 hover:bg-muted/40'
@@ -172,10 +178,20 @@ export const FavoriteStatCard = ({
   >
     <FavouriteIcon
       className={cn(
-        'h-5 w-5',
+        'h-5 w-5 shrink-0',
         active ? 'fill-red-500 text-red-500' : 'text-muted-foreground'
       )}
     />
+    {expanded ? (
+      <span
+        className={cn(
+          'text-[12px] font-medium leading-tight',
+          active ? 'text-red-300' : 'text-foreground'
+        )}
+      >
+        {active ? 'در علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها'}
+      </span>
+    ) : null}
   </button>
 )
 

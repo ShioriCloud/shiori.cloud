@@ -44,6 +44,14 @@ export const episodeOneLineShellClass =
 export const episodeActionBtnClass =
   'relative z-10 inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-lg border px-2.5 text-[11px] font-semibold transition-colors active:scale-[0.97]'
 
+/** Neutral/white download chip for regular episode & subtitle rows. */
+export const episodeActionBtnNeutralClass =
+  'border-white/25 bg-white/10 text-white hover:bg-white/15'
+
+/** Purple download chip — packs only. */
+export const episodeActionBtnPackClass =
+  'border-primary-400/35 bg-primary-400/10 text-primary-300 hover:bg-primary-400/15'
+
 export const EpisodeDownloadCard = ({
   episode,
   subscriptionLocked = false,
@@ -99,7 +107,7 @@ export const EpisodeDownloadCard = ({
             episodeActionBtnClass,
             subscriptionLocked
               ? 'border-border/60 bg-muted/25 text-muted-foreground'
-              : 'border-primary-400/35 bg-primary-400/10 text-primary-300 hover:bg-primary-400/15'
+              : episodeActionBtnNeutralClass
           )}
           onClick={(e) => {
             e.stopPropagation()
@@ -149,10 +157,7 @@ export const SubtitleDownloadCard = ({
       <button
         type="button"
         aria-label={`دانلود زیرنویس قسمت ${episodeNumber}`}
-        className={cn(
-          episodeActionBtnClass,
-          'border-primary-400/35 bg-primary-400/10 text-primary-300 hover:bg-primary-400/15'
-        )}
+        className={cn(episodeActionBtnClass, episodeActionBtnNeutralClass)}
         onClick={(e) => {
           e.stopPropagation()
           onDownload()
@@ -203,12 +208,7 @@ export const SubtitlePackDownloadCard = ({
         </div>
 
         <div className="relative flex shrink-0 items-center gap-1.5">
-          <span
-            className={cn(
-              episodeActionBtnClass,
-              'border-primary-400/35 bg-primary-400/10 text-primary-300'
-            )}
-          >
+          <span className={cn(episodeActionBtnClass, episodeActionBtnPackClass)}>
             <Download04Icon className="h-3.5 w-3.5" aria-hidden />
             دانلود
           </span>
@@ -269,12 +269,7 @@ export const EpisodePackDownloadCard = ({
               اشتراک
             </span>
           ) : (
-            <span
-              className={cn(
-                episodeActionBtnClass,
-                'border-primary-400/35 bg-primary-400/10 text-primary-300'
-              )}
-            >
+            <span className={cn(episodeActionBtnClass, episodeActionBtnPackClass)}>
               <Download04Icon className="h-3.5 w-3.5" aria-hidden />
               دانلود
             </span>
@@ -408,12 +403,7 @@ export const FreeEpisodeDownloadCard = ({
       </div>
 
       <div className="relative flex shrink-0 items-center gap-1.5">
-        <span
-          className={cn(
-            episodeActionBtnClass,
-            'border-primary-400/35 bg-primary-400/10 text-primary-300'
-          )}
-        >
+        <span className={cn(episodeActionBtnClass, episodeActionBtnNeutralClass)}>
           <Download04Icon className="h-3.5 w-3.5" aria-hidden />
           دانلود
         </span>

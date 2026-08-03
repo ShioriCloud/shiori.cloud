@@ -11,6 +11,7 @@ import { AppHeader, APP_HEADER_PAD_CLASS } from '@/components/AppHeader'
 import { useTelegramBackButton } from '@/hooks/useTelegramBackButton'
 import { useTelegramSafeArea } from '@/hooks/useTelegramSafeArea'
 import { useNotifications } from '@/hooks/useNotifications'
+import { useAiringReminders } from '@/hooks/useAiringReminders'
 import { hapticSelection } from '@/lib/telegramHaptics'
 import { cn } from '@/lib/utils'
 
@@ -27,6 +28,7 @@ const Layout = ({ children }: LayoutProps) => {
   const location = useLocation()
   const [isScrolled, setIsScrolled] = useState(false)
   const { unreadCount } = useNotifications()
+  useAiringReminders()
 
   useTelegramBackButton()
   useTelegramSafeArea()

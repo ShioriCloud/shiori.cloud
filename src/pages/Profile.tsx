@@ -143,7 +143,8 @@ const Profile = () => {
     preferences,
     preferencesLoading,
     updatePreferences,
-    updatingPreferences,
+    updatingNotifyNewEpisode,
+    updatingNotifyTelegramDm,
   } = useNotifications()
   const [avatarFailed, setAvatarFailed] = useState(false)
   const { preference, setPreference, isDarkMode } = useTheme()
@@ -298,14 +299,16 @@ const Profile = () => {
             <div className="flex items-center justify-between gap-3 px-3 py-3">
               <div className="min-w-0 text-right">
                 <Label htmlFor="notify-new-episode" className="text-sm font-medium text-foreground">
-                  قسمت جدید انیمه‌های لیست
+                  اعلان قسمت جدید
                 </Label>
-                <p className="mt-0.5 text-xs text-muted-foreground">inbox داخل مینی‌اپ</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  اینباکس مینی‌اپ برای انیمه‌هایی که یادآوری کرده‌ای
+                </p>
               </div>
               <Switch
                 id="notify-new-episode"
                 checked={preferences?.notify_new_episode ?? true}
-                disabled={preferencesLoading || updatingPreferences}
+                disabled={preferencesLoading || updatingNotifyNewEpisode}
                 onCheckedChange={(checked) => {
                   hapticSelection()
                   void updatePreferences({ notify_new_episode: checked })
@@ -322,7 +325,7 @@ const Profile = () => {
               <Switch
                 id="notify-telegram-dm"
                 checked={preferences?.notify_telegram_dm ?? true}
-                disabled={preferencesLoading || updatingPreferences}
+                disabled={preferencesLoading || updatingNotifyTelegramDm}
                 onCheckedChange={(checked) => {
                   hapticSelection()
                   void updatePreferences({ notify_telegram_dm: checked })

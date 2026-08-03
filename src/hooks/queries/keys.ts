@@ -20,6 +20,8 @@ export const queryKeys = {
   notifications: (telegramUserId: number) => ['notifications', telegramUserId] as const,
   notificationPreferences: (telegramUserId: number) =>
     ['notification-preferences', telegramUserId] as const,
+  airingReminders: (telegramUserId: number) =>
+    ['airing-reminders', telegramUserId] as const,
   animeFavoriteCounts: ['anime', 'favorite-counts'] as const,
   genres: ['anime', 'genres'] as const,
   animeFavoriteCount: (animeId: string | number) =>
