@@ -300,23 +300,32 @@
   }
 
   /**
-   * Raised media frame (skeuomorphic edge) — start with Home featured slides.
-   * Light: soft rim + dual inset highlight/shade. Dark: keep subtle depth only.
+   * Two-layer media frame (like Profile avatar: thick bg border + outer ring).
+   * Outer gray hairline + inner background gutter; face clips the image.
    */
   .media-card-skeuo {
-    border: 1px solid oklch(var(--skeuo-edge) / 0.95);
+    --media-skeuo-inset: 3px;
+    border: 1px solid oklch(var(--skeuo-edge) / 0.9);
+    background: oklch(var(--background));
+    padding: var(--media-skeuo-inset);
     box-shadow:
-      inset 0 1px 0 oklch(var(--skeuo-highlight) / 0.78),
-      inset 0 -1px 0 oklch(var(--skeuo-shade) / 0.14),
-      0 1px 1px oklch(var(--skeuo-shade) / 0.08),
-      0 8px 20px oklch(var(--skeuo-shade) / 0.12);
+      0 1px 1px oklch(var(--skeuo-shade) / 0.07),
+      0 6px 16px oklch(var(--skeuo-shade) / 0.1);
+  }
+
+  .media-card-skeuo > .media-card-skeuo-face {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    /* rounded-2xl (1rem) minus outer border + padding */
+    border-radius: calc(1rem - var(--media-skeuo-inset) - 1px);
   }
 
   .dark .media-card-skeuo {
     border-color: oklch(var(--border));
+    background: oklch(var(--background));
     box-shadow:
-      inset 0 1px 0 oklch(var(--skeuo-highlight) / 0.1),
-      inset 0 -1px 0 oklch(0 0 0 / 0.45),
       0 1px 2px oklch(0 0 0 / 0.35),
       0 10px 22px oklch(0 0 0 / 0.28);
   }

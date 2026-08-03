@@ -335,34 +335,36 @@ const Home = () => {
                     to={animeDetailPath(anime)}
                     className="block group h-52"
                   >
-                    <div className="media-card-skeuo relative h-full w-full rounded-2xl overflow-hidden">
-                      <img
-                        src={anime.featuredImage || anime.image}
-                        alt=""
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        loading="lazy"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-                      <AnimeViewCountBadge count={anime.viewCount} />
-                      <div className="absolute inset-x-0 bottom-0 p-4">
-                        <BidiText
-                          as="h3"
-                          className="text-base font-bold text-white text-left line-clamp-2 leading-6"
-                        >
-                          {anime.title}
-                        </BidiText>
-                        {(anime.genres || []).length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1 justify-end">
-                            {(anime.genres || []).slice(0, 3).map((g) => (
-                              <span
-                                key={g.slug}
-                                className="text-[10px] px-2 py-0.5 rounded-md bg-white/15 text-white/90 backdrop-blur-sm border border-white/10"
-                              >
-                                {genreLabel(g)}
-                              </span>
-                            ))}
-                          </div>
-                        )}
+                    <div className="media-card-skeuo relative h-full w-full rounded-2xl">
+                      <div className="media-card-skeuo-face">
+                        <img
+                          src={anime.featuredImage || anime.image}
+                          alt=""
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+                        <AnimeViewCountBadge count={anime.viewCount} />
+                        <div className="absolute inset-x-0 bottom-0 p-4">
+                          <BidiText
+                            as="h3"
+                            className="text-base font-bold text-white text-left line-clamp-2 leading-6"
+                          >
+                            {anime.title}
+                          </BidiText>
+                          {(anime.genres || []).length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1 justify-end">
+                              {(anime.genres || []).slice(0, 3).map((g) => (
+                                <span
+                                  key={g.slug}
+                                  className="text-[10px] px-2 py-0.5 rounded-md bg-white/15 text-white/90 backdrop-blur-sm border border-white/10"
+                                >
+                                  {genreLabel(g)}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </AnimePrefetchLink>
