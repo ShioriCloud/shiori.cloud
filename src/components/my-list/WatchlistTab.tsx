@@ -40,7 +40,7 @@ export type WatchlistItem = {
 const statusTone = (status: WatchStatus) => {
   if (status === 'completed') return 'success' as const
   if (status === 'watching') return 'primary' as const
-  return 'muted' as const
+  return 'warning' as const
 }
 
 const WatchlistCard = ({

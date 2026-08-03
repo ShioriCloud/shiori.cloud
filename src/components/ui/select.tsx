@@ -16,7 +16,7 @@ const SelectTrigger = React.forwardRef<
     ref={ref}
     dir="rtl"
     className={cn(
-      'grid h-10 w-full grid-cols-[1fr_auto] items-center gap-2 rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&_[data-radix-select-value]]:truncate [&_[data-radix-select-value]]:text-start',
+      'ui-elevated grid h-10 w-full grid-cols-[1fr_auto] items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&_[data-radix-select-value]]:truncate [&_[data-radix-select-value]]:text-start',
       className
     )}
     {...props}

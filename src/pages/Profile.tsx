@@ -377,10 +377,10 @@ const Profile = () => {
                   setPreference(opt.id)
                 }}
                 className={cn(
-                  'rounded-md border px-2 py-2 text-[11px] font-medium transition-colors',
+                  'ui-elevated rounded-md px-2 py-2 text-[11px] font-medium transition-colors',
                   preference === opt.id
-                    ? 'border-primary-400/40 bg-primary-400/15 text-primary-200'
-                    : 'border-border/50 bg-muted/30 text-muted-foreground hover:bg-muted/50'
+                    ? 'border-primary-400/45 bg-primary-400/15 font-semibold text-primary-700 dark:text-primary-200'
+                    : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
                 )}
                 aria-pressed={preference === opt.id}
               >

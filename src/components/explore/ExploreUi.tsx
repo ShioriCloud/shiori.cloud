@@ -7,7 +7,7 @@ export const EXPLORE_STICKY_SHELL_CLASS =
 
 /** Chip style shared by filter/sort buttons and season result count. */
 export const EXPLORE_CHIP_CLASS =
-  'inline-flex h-8 items-center gap-1.5 rounded-lg border border-black/[0.08] bg-muted/40 px-2.5 text-xs font-medium text-foreground transition-colors dark:border-border'
+  'ui-elevated inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/50'
 
 type ExploreTabBarProps<T extends string> = {
   tabs: { id: T; label: string }[]
@@ -79,7 +79,7 @@ export const ExploreOptionButton = ({
       'rounded-xl border px-3 py-2.5 text-sm transition-colors text-start',
       active
         ? 'border-primary-400/50 bg-primary-400/15 text-primary-400 font-semibold'
-        : 'border-black/[0.08] bg-muted/30 text-foreground hover:bg-muted/50 dark:border-border'
+        : 'ui-elevated text-foreground hover:bg-muted/50'
     )}
   >
     {children}

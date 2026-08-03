@@ -35,7 +35,7 @@ export const ExploreListToolbar = ({
         <button
           type="button"
           onClick={onFilterClick}
-          className={cn(EXPLORE_CHIP_CLASS, 'hover:bg-muted/70')}
+          className={cn(EXPLORE_CHIP_CLASS)}
           aria-label="فیلتر"
         >
           <Filter className="h-3.5 w-3.5" />
@@ -49,7 +49,7 @@ export const ExploreListToolbar = ({
         <button
           type="button"
           onClick={onSortClick}
-          className={cn(EXPLORE_CHIP_CLASS, 'hover:bg-muted/70')}
+          className={cn(EXPLORE_CHIP_CLASS)}
           aria-label="مرتب‌سازی"
         >
           <ArrowUpDown className="h-3.5 w-3.5" />
@@ -58,7 +58,7 @@ export const ExploreListToolbar = ({
       </div>
     </div>
 
-    <div className="relative mt-2.5 flex h-10 min-w-0 items-center rounded-xl border border-black/[0.08] bg-card px-2.5 ps-10 dark:border-border">
+    <div className="ui-elevated relative mt-2.5 flex h-10 min-w-0 items-center rounded-xl px-2.5 ps-10">
       <SearchIcon className="text-muted-foreground absolute start-3 h-4 w-4" />
       <input
         type="search"

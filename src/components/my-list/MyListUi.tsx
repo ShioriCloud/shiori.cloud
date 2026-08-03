@@ -44,8 +44,7 @@ export const MyListClearChip = ({
     onClick={onClick}
     className={cn(
       EXPLORE_CHIP_CLASS,
-      'shrink-0 border-border/50 bg-muted/35 text-muted-foreground',
-      'hover:bg-muted/50 hover:text-foreground'
+      'shrink-0 text-muted-foreground hover:text-foreground'
     )}
   >
     {children}
@@ -65,9 +64,8 @@ export const MyListDeleteChip = ({
     aria-label={ariaLabel}
     onClick={onClick}
     className={cn(
-      'inline-flex h-7 shrink-0 items-center justify-center gap-1 rounded-md border px-2',
-      'border-border/50 bg-muted/35 text-[11px] font-medium text-muted-foreground',
-      'transition-colors hover:bg-muted/50 hover:text-foreground'
+      'ui-elevated inline-flex h-7 shrink-0 items-center justify-center gap-1 rounded-md px-2',
+      'text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground'
     )}
   >
     <Delete02Icon className="h-3.5 w-3.5" />
@@ -193,27 +191,26 @@ export const MyListBadge = ({
   tone?: 'default' | 'primary' | 'muted' | 'success' | 'warning' | 'time'
   className?: string
 }) => {
-  /* Light: solid chips for contrast on white cards. Dark: soft glass tones. */
+  /* Light: solid chips. Dark: solid muted tones (glass was unreadable). */
   const tones = {
     default:
-      'border-transparent bg-zinc-900 text-white dark:border-white/15 dark:bg-white/12 dark:text-white/90',
+      'border-transparent bg-zinc-900 text-white dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50',
     primary:
-      'border-transparent bg-primary-500 text-white dark:border-primary-400/35 dark:bg-primary-400/20 dark:text-primary-100',
+      'border-transparent bg-primary-500 text-white dark:border-primary-400/40 dark:bg-primary-500/90 dark:text-white',
     muted:
-      'border-transparent bg-zinc-200 text-zinc-800 dark:border-white/15 dark:bg-white/12 dark:text-white/85',
+      'border-transparent bg-zinc-200 text-zinc-800 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-100',
     success:
-      'border-transparent bg-emerald-600 text-white dark:border-emerald-400/30 dark:bg-emerald-400/20 dark:text-emerald-200',
+      'border-transparent bg-emerald-600 text-white dark:border-emerald-500/40 dark:bg-emerald-600 dark:text-white',
     warning:
-      'border-transparent bg-amber-500 text-zinc-950 dark:border-amber-400/30 dark:bg-amber-400/20 dark:text-amber-200',
+      'border-transparent bg-amber-500 text-zinc-950 dark:border-amber-400/40 dark:bg-amber-500 dark:text-zinc-950',
     time:
-      'border-transparent bg-violet-600 text-white dark:border-primary-400/35 dark:bg-primary-400/20 dark:text-primary-100',
+      'border-transparent bg-violet-600 text-white dark:border-violet-400/40 dark:bg-violet-600 dark:text-white',
   }
   return (
     <span
       className={cn(
         'inline-flex shrink-0 items-center rounded-md border px-1.5 py-1',
         'text-[10px] leading-none font-medium whitespace-nowrap',
-        'dark:backdrop-blur-md dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]',
         tones[tone],
         className
       )}

@@ -142,7 +142,7 @@ const GenreMultiSelect = ({
         <button
           type="button"
           dir="rtl"
-          className="grid h-10 w-full grid-cols-[1fr_auto] items-center gap-2 rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground"
+          className="ui-elevated grid h-10 w-full grid-cols-[1fr_auto] items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground"
         >
           <span className={cn('min-w-0 truncate text-start', !selectedSlugs.length && 'text-muted-foreground')}>
             {summary}
