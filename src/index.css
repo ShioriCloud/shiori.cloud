@@ -300,19 +300,13 @@
   .home-featured-wrap {
     --swiper-theme-color: #a78bfa;
     --swiper-pagination-color: #a78bfa;
-    /* Let card drop-shadows escape Swiper’s default overflow:hidden */
-    overflow: visible;
   }
 
+  /* Keep Swiper clipping — overflow:visible + negative margins broke Home in Telegram WebView */
   .home-featured-wrap .home-featured-swiper.swiper {
-    overflow: visible;
-    /* Shadow bleed room; negative margin keeps layout footprint stable */
-    padding: 10px 8px 20px;
-    margin: -10px -8px -20px;
-  }
-
-  .home-featured-wrap .home-featured-swiper .swiper-slide {
-    overflow: visible;
+    overflow: hidden;
+    /* Slight inset so soft shadows aren’t fully flush-clipped */
+    padding-block: 6px 14px;
   }
 
   /**
@@ -463,19 +457,8 @@
 
   .home-section-swiper {
     width: 100%;
-    overflow: visible;
-    /* Room for poster drop-shadows without shifting section layout */
-    padding-block: 8px 16px;
-    margin-block: -8px -16px;
-  }
-
-  .home-section-swiper.swiper {
-    overflow: visible;
-  }
-
-  .home-section-swiper .swiper-slide,
-  .home-section-swiper .home-section-slide {
-    overflow: visible;
+    overflow: hidden;
+    padding-block: 6px 12px;
   }
 
   .home-section-swiper .swiper-slide {

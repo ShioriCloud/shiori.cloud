@@ -265,7 +265,7 @@ const Home = () => {
     : null
 
   return (
-    <div className="pb-24">
+    <div className="pb-24 overflow-x-hidden">
       <AppHeader />
 
       <div className="px-4">
