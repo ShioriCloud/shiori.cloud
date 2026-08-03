@@ -15,33 +15,33 @@ import {
   fetchSimilarAnime,
   peekScheduleCache,
   SCHEDULE_CACHE_TTL_MS,
-  type AnimeDetail,
   type AnimeSearchFilters,
   type HomeFeaturedTab,
   type UiAnimeCard,
 } from '../../utils/api'
 import {
-  DETAIL_STALE_MS,
-  fetchGenresWithPersist,
-  GENRES_CACHE_TTL_MS,
-  GENRES_STALE_MS,
+  getAnimeCardsByIds,
+  getHomeCustomBlocks,
+  getTranslatorLinksByAnimeId,
+  listGenres,
+} from '../../services/catalogSource'
+import { fetchAnilistNextAiring } from '../../services/externalScores'
+import { getAnimeFavoriteCount, getAnimeFavoriteCounts } from '../../services/userDataSource'
+import {
+  fetchHomeCardRail,
+  homeCustomBlocksCacheKey,
   homeFeaturedCacheKey,
   homeFormatCacheKey,
   homeLatestCacheKey,
   homePopularCacheKey,
   homeRecentCacheKey,
+  HOME_RAIL_CACHE_TTL_MS,
   HOME_RAIL_STALE_MS,
-  peekAnimeDetailCache,
-  peekGenresCache,
-  peekHomeCardCache,
-} from '../../lib/catalogPersistCache'
-import {
-  getAnimeCardsByIds,
-  getHomeCustomBlocks,
-  getTranslatorLinksByAnimeId,
-} from '../../services/catalogSource'
-import { fetchAnilistNextAiring } from '../../services/externalScores'
-import { getAnimeFavoriteCount, getAnimeFavoriteCounts } from '../../services/userDataSource'
+  peekHomeCardRail,
+  peekHomeRailCache,
+  writeHomeRailCache,
+} from '../../lib/homeRailCache'
+import type { HomeCustomBlock } from '../../types/home'
 import { queryClient } from '../../lib/queryClient'
 import { queryKeys } from './keys'
 
@@ -65,11 +65,13 @@ export const useAnimeCardsQuery = () =>
     queryFn: fetchAllAnimeCards,
   })
 
-export const useHomeFeaturedQuery = (tab: HomeFeaturedTab) => {
-  const cached = peekHomeCardCache(homeFeaturedCacheKey(tab))
+export const useHomeFeaturedQuery = (tab: HomeFeaturedTab, enabled = true) => {
+  const key = homeFeaturedCacheKey(tab)
+  const cached = peekHomeCardRail(key)
   return useQuery({
     queryKey: queryKeys.homeFeatured(tab),
-    queryFn: () => fetchHomeFeaturedCards(tab),
+    queryFn: () => fetchHomeCardRail(key, () => fetchHomeFeaturedCards(tab)),
+    enabled,
     staleTime: HOME_RAIL_STALE_MS,
     gcTime: HOME_RAIL_STALE_MS * 6,
     initialData: cached?.data,
@@ -77,11 +79,14 @@ export const useHomeFeaturedQuery = (tab: HomeFeaturedTab) => {
   })
 }
 
-export const useHomeLatestQuery = (year: number, season: string) => {
-  const cached = peekHomeCardCache(homeLatestCacheKey(year, season))
+export const useHomeLatestQuery = (year: number, season: string, enabled = true) => {
+  const key = homeLatestCacheKey(year, season)
+  const cached = peekHomeCardRail(key)
   return useQuery({
     queryKey: queryKeys.homeLatest(year, season),
-    queryFn: () => fetchHomeLatestSeasonCards(year, season, 20),
+    queryFn: () =>
+      fetchHomeCardRail(key, () => fetchHomeLatestSeasonCards(year, season, 20)),
+    enabled,
     staleTime: HOME_RAIL_STALE_MS,
     gcTime: HOME_RAIL_STALE_MS * 6,
     initialData: cached?.data,
@@ -89,11 +94,13 @@ export const useHomeLatestQuery = (year: number, season: string) => {
   })
 }
 
-export const useHomePopularQuery = () => {
-  const cached = peekHomeCardCache(homePopularCacheKey(20))
+export const useHomePopularQuery = (enabled = true) => {
+  const key = homePopularCacheKey(20)
+  const cached = peekHomeCardRail(key)
   return useQuery({
     queryKey: queryKeys.homePopular,
-    queryFn: () => fetchPopularAnimeCards(20),
+    queryFn: () => fetchHomeCardRail(key, () => fetchPopularAnimeCards(20)),
+    enabled,
     staleTime: HOME_RAIL_STALE_MS,
     gcTime: HOME_RAIL_STALE_MS * 6,
     initialData: cached?.data,
@@ -101,11 +108,13 @@ export const useHomePopularQuery = () => {
   })
 }
 
-export const useHomeRecentQuery = () => {
-  const cached = peekHomeCardCache(homeRecentCacheKey(20))
+export const useHomeRecentQuery = (enabled = true) => {
+  const key = homeRecentCacheKey(20)
+  const cached = peekHomeCardRail(key)
   return useQuery({
     queryKey: queryKeys.homeRecent,
-    queryFn: () => fetchRecentAnimeCards(20),
+    queryFn: () => fetchHomeCardRail(key, () => fetchRecentAnimeCards(20)),
+    enabled,
     staleTime: HOME_RAIL_STALE_MS,
     gcTime: HOME_RAIL_STALE_MS * 6,
     initialData: cached?.data,
@@ -113,11 +122,14 @@ export const useHomeRecentQuery = () => {
   })
 }
 
-export const useHomeDonghuaQuery = () => {
-  const cached = peekHomeCardCache(homeFormatCacheKey('DONGHUA', 20))
+export const useHomeDonghuaQuery = (enabled = true) => {
+  const key = homeFormatCacheKey('DONGHUA', 20)
+  const cached = peekHomeCardRail(key)
   return useQuery({
     queryKey: queryKeys.homeDonghua,
-    queryFn: () => fetchHomeFormatSectionCards('DONGHUA', 20),
+    queryFn: () =>
+      fetchHomeCardRail(key, () => fetchHomeFormatSectionCards('DONGHUA', 20)),
+    enabled,
     staleTime: HOME_RAIL_STALE_MS,
     gcTime: HOME_RAIL_STALE_MS * 6,
     initialData: cached?.data,
@@ -125,11 +137,14 @@ export const useHomeDonghuaQuery = () => {
   })
 }
 
-export const useHomeMoviesQuery = () => {
-  const cached = peekHomeCardCache(homeFormatCacheKey('MOVIE', 20))
+export const useHomeMoviesQuery = (enabled = true) => {
+  const key = homeFormatCacheKey('MOVIE', 20)
+  const cached = peekHomeCardRail(key)
   return useQuery({
     queryKey: queryKeys.homeMovies,
-    queryFn: () => fetchHomeFormatSectionCards('MOVIE', 20),
+    queryFn: () =>
+      fetchHomeCardRail(key, () => fetchHomeFormatSectionCards('MOVIE', 20)),
+    enabled,
     staleTime: HOME_RAIL_STALE_MS,
     gcTime: HOME_RAIL_STALE_MS * 6,
     initialData: cached?.data,
@@ -137,13 +152,28 @@ export const useHomeMoviesQuery = () => {
   })
 }
 
-export const useHomeCustomBlocksQuery = () =>
-  useQuery({
+const isUsableCustomBlocks = (rows: HomeCustomBlock[]): boolean => Array.isArray(rows)
+
+export const useHomeCustomBlocksQuery = (enabled = true) => {
+  const key = homeCustomBlocksCacheKey()
+  const cached = peekHomeRailCache<HomeCustomBlock[]>(key, {
+    maxAgeMs: HOME_RAIL_CACHE_TTL_MS,
+    isUsable: isUsableCustomBlocks,
+  })
+  return useQuery({
     queryKey: queryKeys.homeCustomBlocks,
-    queryFn: getHomeCustomBlocks,
+    queryFn: async () => {
+      const data = await getHomeCustomBlocks()
+      writeHomeRailCache(key, data, isUsableCustomBlocks)
+      return data
+    },
+    enabled,
     staleTime: HOME_RAIL_STALE_MS,
     gcTime: HOME_RAIL_STALE_MS * 6,
+    initialData: cached?.data,
+    initialDataUpdatedAt: cached?.ts,
   })
+}
 
 export const useAnimeFavoriteCountsQuery = () =>
   useQuery({
@@ -182,28 +212,21 @@ const findAnimeCardPlaceholder = (id: string | number): UiAnimeCard | undefined 
   return undefined
 }
 
-export const useAnimeDetailQuery = (id: string | number | undefined) => {
-  const cached = id ? peekAnimeDetailCache<AnimeDetail>(id) : null
-  return useQuery({
+export const useAnimeDetailQuery = (id: string | number | undefined) =>
+  useQuery({
     queryKey: queryKeys.animeDetail(id ?? ''),
     queryFn: () => fetchAnimeById(id!),
     enabled: Boolean(id),
-    staleTime: DETAIL_STALE_MS,
-    gcTime: DETAIL_STALE_MS * 12,
-    initialData: cached?.data,
-    initialDataUpdatedAt: cached?.ts,
     placeholderData: (previousData) => {
       if (previousData && id) {
         if (String(previousData.id) === String(id)) return previousData
         if (animeCardMatchesRouteParam(previousData, String(id))) return previousData
       }
-      if (cached?.data) return cached.data
       if (!id) return undefined
       const card = findAnimeCardPlaceholder(id)
       return card ? buildAnimeDetailPlaceholder(card) : undefined
     },
   })
-}
 
 export const useAnimeListQuery = () =>
   useQuery({
@@ -223,17 +246,12 @@ export const useScheduleQuery = () => {
   })
 }
 
-export const useGenresQuery = () => {
-  const cached = peekGenresCache()
-  return useQuery({
+export const useGenresQuery = () =>
+  useQuery({
     queryKey: queryKeys.genres,
-    queryFn: fetchGenresWithPersist,
-    staleTime: GENRES_STALE_MS,
-    gcTime: GENRES_CACHE_TTL_MS,
-    initialData: cached?.data,
-    initialDataUpdatedAt: cached?.ts,
+    queryFn: listGenres,
+    staleTime: 10 * 60_000,
   })
-}
 
 export const useAnimeSearchQuery = (filters: AnimeSearchFilters, enabled = true) =>
   useQuery({
@@ -248,24 +266,8 @@ export const useInfiniteAnimeSearchQuery = (
   filters: AnimeSearchBaseFilters,
   pageSize = DEFAULT_SEARCH_PAGE_SIZE,
   enabled = true
-) => {
-  const season = filters.season ? String(filters.season).toUpperCase() : ''
-  const year = typeof filters.year === 'number' ? filters.year : null
-  const canSeedFromHome =
-    Boolean(season) &&
-    year != null &&
-    (!filters.query || !String(filters.query).trim()) &&
-    !(filters.genreSlugs && filters.genreSlugs.length > 0) &&
-    !filters.format &&
-    !filters.airingStatus &&
-    (filters.sortBy == null || filters.sortBy === 'created_at')
-
-  const homeSeed =
-    canSeedFromHome && year != null
-      ? peekHomeCardCache(homeLatestCacheKey(year, season))
-      : null
-
-  return useInfiniteQuery({
+) =>
+  useInfiniteQuery({
     queryKey: [...buildAnimeSearchQueryKey(filters), 'infinite', pageSize] as const,
     queryFn: ({ pageParam }) =>
       fetchAnimeSearch({
@@ -279,23 +281,9 @@ export const useInfiniteAnimeSearchQuery = (
       return allPages.reduce((sum, page) => sum + page.items.length, 0)
     },
     enabled,
-    staleTime: HOME_RAIL_STALE_MS,
-    initialData: homeSeed?.data?.length
-      ? {
-          pages: [
-            {
-              items: homeSeed.data.slice(0, pageSize),
-              // Home rail is a short sample — always allow pagination/refetch.
-              total: Math.max(homeSeed.data.length, pageSize + 1),
-              hasMore: true,
-            },
-          ],
-          pageParams: [0],
-        }
-      : undefined,
-    initialDataUpdatedAt: homeSeed?.ts,
+    staleTime: 60_000,
   })
-}
+
 export const useFavoriteAnimeDetailsQueries = (ids: (string | number)[]) =>
   useQueries({
     queries: ids.map((id) => ({

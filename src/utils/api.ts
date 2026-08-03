@@ -4,15 +4,6 @@ import * as shiori from '../services/shioriCatalog'
 import { deriveAnimeSlug } from '../lib/animePaths'
 import { resolveCatalogAnimeRecordId } from '../lib/resolveCatalogAnimeId'
 import { fetchAllAnimeRowsCached, invalidateAllAnimeRowsCache } from '../lib/animeCatalogCache'
-import {
-  fetchAnimeDetailWithPersist,
-  fetchCardsWithPersist,
-  homeFeaturedCacheKey,
-  homeFormatCacheKey,
-  homeLatestCacheKey,
-  homePopularCacheKey,
-  homeRecentCacheKey,
-} from '../lib/catalogPersistCache'
 
 // Lightweight card shape used across Home/Search UIs
 export type UiAnimeCard = {
@@ -131,77 +122,72 @@ export const fetchFeaturedAnimeCards = async (limit = 10): Promise<UiAnimeCard[]
   return rows.map(toCacheAnime)
 }
 
-export const fetchPopularAnimeCards = async (limit = 20): Promise<UiAnimeCard[]> =>
-  fetchCardsWithPersist(homePopularCacheKey(limit), async () => {
-    const rows = await catalog.getPopularAnime(limit)
-    return rows.map(toCacheAnime)
-  })
+export const fetchPopularAnimeCards = async (limit = 20): Promise<UiAnimeCard[]> => {
+  const rows = await catalog.getPopularAnime(limit)
+  return rows.map(toCacheAnime)
+}
 
-export const fetchRecentAnimeCards = async (limit = 20): Promise<UiAnimeCard[]> =>
-  fetchCardsWithPersist(homeRecentCacheKey(limit), async () => {
-    const rows = await catalog.getRecentAnime(limit)
-    return rows.map(toCacheAnime)
-  })
+export const fetchRecentAnimeCards = async (limit = 20): Promise<UiAnimeCard[]> => {
+  const rows = await catalog.getRecentAnime(limit)
+  return rows.map(toCacheAnime)
+}
 
 export type HomeFeaturedTab = 'anime' | 'movie' | 'donghua'
 
-export const fetchHomeFeaturedCards = async (tab: HomeFeaturedTab): Promise<UiAnimeCard[]> =>
-  fetchCardsWithPersist(homeFeaturedCacheKey(tab), async () => {
-    if (tab === 'movie') {
-      const result = await catalog.searchAnimeCards({
-        format: 'MOVIE',
-        limit: 12,
-        sortBy: 'score',
-      })
-      const featured = result.items.filter((item) => item.isFeatured)
-      return (featured.length > 0 ? featured : result.items).slice(0, 8).map(toCacheAnime)
-    }
-
-    if (tab === 'donghua') {
-      const result = await catalog.searchAnimeCards({
-        format: 'DONGHUA',
-        limit: 12,
-        sortBy: 'score',
-      })
-      const featured = result.items.filter((item) => item.isFeatured)
-      return (featured.length > 0 ? featured : result.items).slice(0, 8).map(toCacheAnime)
-    }
-
-    const rows = await catalog.getFeaturedAnime(12)
-    const filtered = rows.filter((item) => {
-      const format = normalizeAnimeFormat(item.format)
-      return format !== 'MOVIE' && format !== 'ONA (CHINESE)'
+export const fetchHomeFeaturedCards = async (tab: HomeFeaturedTab): Promise<UiAnimeCard[]> => {
+  if (tab === 'movie') {
+    const result = await catalog.searchAnimeCards({
+      format: 'MOVIE',
+      limit: 12,
+      sortBy: 'score',
     })
-    return filtered.slice(0, 8).map(toCacheAnime)
+    const featured = result.items.filter((item) => item.isFeatured)
+    return (featured.length > 0 ? featured : result.items).slice(0, 8).map(toCacheAnime)
+  }
+
+  if (tab === 'donghua') {
+    const result = await catalog.searchAnimeCards({
+      format: 'DONGHUA',
+      limit: 12,
+      sortBy: 'score',
+    })
+    const featured = result.items.filter((item) => item.isFeatured)
+    return (featured.length > 0 ? featured : result.items).slice(0, 8).map(toCacheAnime)
+  }
+
+  const rows = await catalog.getFeaturedAnime(12)
+  const filtered = rows.filter((item) => {
+    const format = normalizeAnimeFormat(item.format)
+    return format !== 'MOVIE' && format !== 'ONA (CHINESE)'
   })
+  return filtered.slice(0, 8).map(toCacheAnime)
+}
 
 export const fetchHomeLatestSeasonCards = async (
   year: number,
   season: string,
   limit = 20
-): Promise<UiAnimeCard[]> =>
-  fetchCardsWithPersist(homeLatestCacheKey(year, season), async () => {
-    const result = await catalog.searchAnimeCards({
-      year,
-      season: season.toUpperCase(),
-      limit,
-      sortBy: 'created_at',
-    })
-    return result.items.map(toCacheAnime)
+): Promise<UiAnimeCard[]> => {
+  const result = await catalog.searchAnimeCards({
+    year,
+    season: season.toUpperCase(),
+    limit,
+    sortBy: 'created_at',
   })
+  return result.items.map(toCacheAnime)
+}
 
 export const fetchHomeFormatSectionCards = async (
   format: 'DONGHUA' | 'MOVIE',
   limit = 20
-): Promise<UiAnimeCard[]> =>
-  fetchCardsWithPersist(homeFormatCacheKey(format, limit), async () => {
-    const result = await catalog.searchAnimeCards({
-      format,
-      limit,
-      sortBy: 'created_at',
-    })
-    return result.items.map(toCacheAnime)
+): Promise<UiAnimeCard[]> => {
+  const result = await catalog.searchAnimeCards({
+    format,
+    limit,
+    sortBy: 'created_at',
   })
+  return result.items.map(toCacheAnime)
+}
 
 export const filterAnimeCardsBySection = (
   mapped: UiAnimeCard[],
@@ -277,107 +263,105 @@ export const fetchAnimeById = async (
   const includeSeries = options?.includeSeries !== false
   const raw = String(idOrSlug ?? '').trim()
 
-  return fetchAnimeDetailWithPersist(raw, async () => {
-    let detail: Awaited<ReturnType<typeof shiori.getAnimeDetailById>>
-    try {
-      detail = await shiori.getAnimeDetailById(raw)
-    } catch {
-      const resolvedId = await resolveCatalogAnimeRecordId(raw)
-      detail = await shiori.getAnimeDetailById(resolvedId)
-    }
+  let detail: Awaited<ReturnType<typeof shiori.getAnimeDetailById>>
+  try {
+    detail = await shiori.getAnimeDetailById(raw)
+  } catch {
+    const resolvedId = await resolveCatalogAnimeRecordId(raw)
+    detail = await shiori.getAnimeDetailById(resolvedId)
+  }
 
-    const parts = shiori.mapShioriDetailParts(detail)
+  const parts = shiori.mapShioriDetailParts(detail)
 
-    const subtitleMap = new Map<number, string>()
-    for (const s of detail.subtitles ?? []) {
-      const ep = typeof s.episode_number === 'number' ? s.episode_number : 0
-      const link = s.subtitle_link
-      if (typeof link === 'string' && link.trim()) subtitleMap.set(ep, link.trim())
-    }
+  const subtitleMap = new Map<number, string>()
+  for (const s of detail.subtitles ?? []) {
+    const ep = typeof s.episode_number === 'number' ? s.episode_number : 0
+    const link = s.subtitle_link
+    if (typeof link === 'string' && link.trim()) subtitleMap.set(ep, link.trim())
+  }
 
-    const mergedEpisodes = parts.episodes.map((e) => {
-      const subtitle_link = subtitleMap.get(e.number)
-      return {
-        ...e,
-        subtitle_link: subtitle_link ?? undefined,
-      }
-    })
-
-    const studioLinks: UiStudioLink[] = parts.studioLinks.map((s) => ({
-      slug: s.slug,
-      name: s.name,
-    }))
-
+  const mergedEpisodes = parts.episodes.map((e) => {
+    const subtitle_link = subtitleMap.get(e.number)
     return {
-      id: detail.id,
-      slug: deriveAnimeSlug({ slug: detail.slug, title: detail.title }),
-      title: detail.title,
-      title_romaji: detail.title_romaji ?? null,
-      image: detail.image,
-      featured_image: detail.featuredImage ?? detail.image,
-      format: detail.format ?? undefined,
-      description: detail.description,
-      status: detail.status,
-      airing_status: detail.airing_status ?? undefined,
-      genres: detail.genres,
-      episodes: mergedEpisodes,
-      subtitles: (detail.subtitles ?? []).map((s) => ({
-        subtitle_link: s.subtitle_link ?? undefined,
-      })),
-      subtitle_packs: parts.subtitlePacks,
-      episode_pack: parts.episodePack,
-      episodes_count: typeof detail.episodes_count === 'number' ? detail.episodes_count : 0,
-      hardsub_language: detail.hardsub_language === 'en' ? 'en' : 'fa',
-      video_file_type: detail.video_file_type === 'hardsub' ? 'hardsub' : 'softsub',
-      video_resolution:
-        detail.video_resolution === '480p' || detail.video_resolution === '720p'
-          ? detail.video_resolution
-          : '1080p',
-      video_encode:
-        detail.video_encode === 'x264' ||
-        detail.video_encode === 'x265' ||
-        detail.video_encode === 'bluray'
-          ? detail.video_encode
-          : 'x265_10bit',
-      averageScore: detail.averageScore,
-      malScore: detail.malScore,
-      shioriScore: (() => {
-        const scoreRaw = detail.shioriScore as number | string | null | undefined
-        if (typeof scoreRaw === 'number' && Number.isFinite(scoreRaw)) return scoreRaw
-        if (scoreRaw == null || scoreRaw === '') return undefined
-        const n = Number(scoreRaw)
-        return Number.isFinite(n) ? n : undefined
-      })(),
-      favoriteCount: detail.favoriteCount,
-      viewCount: typeof detail.viewCount === 'number' ? detail.viewCount : undefined,
-      anilist_id: detail.anilist_id,
-      mal_id: detail.mal_id,
-      next_airing: (() => {
-        const airingRaw = detail.next_airing
-        if (!airingRaw) return null
-        const episode = Number(airingRaw.episode)
-        const airingAt = Number(airingRaw.airing_at)
-        if (!Number.isFinite(episode) || !Number.isFinite(airingAt) || airingAt <= 0) {
-          return null
-        }
-        return { episode, airing_at: airingAt }
-      })(),
-      average_episode_size_bytes: (() => {
-        const sizeRaw = detail.average_episode_size_bytes
-        if (sizeRaw == null) return null
-        const n = Number(sizeRaw)
-        return Number.isFinite(n) && n > 0 ? Math.round(n) : null
-      })(),
-      studios: parts.studioNames,
-      studio_links: studioLinks,
-      producers: [],
-      season: detail.season ?? '',
-      year: typeof detail.year === 'number' ? detail.year : undefined,
-      startDate: detail.startDate ?? '',
-      endDate: detail.endDate ?? '',
-      series: includeSeries ? parts.series : null,
+      ...e,
+      subtitle_link: subtitle_link ?? undefined,
     }
   })
+
+  const studioLinks: UiStudioLink[] = parts.studioLinks.map((s) => ({
+    slug: s.slug,
+    name: s.name,
+  }))
+
+  return {
+    id: detail.id,
+    slug: deriveAnimeSlug({ slug: detail.slug, title: detail.title }),
+    title: detail.title,
+    title_romaji: detail.title_romaji ?? null,
+    image: detail.image,
+    featured_image: detail.featuredImage ?? detail.image,
+    format: detail.format ?? undefined,
+    description: detail.description,
+    status: detail.status,
+    airing_status: detail.airing_status ?? undefined,
+    genres: detail.genres,
+    episodes: mergedEpisodes,
+    subtitles: (detail.subtitles ?? []).map((s) => ({
+      subtitle_link: s.subtitle_link ?? undefined,
+    })),
+    subtitle_packs: parts.subtitlePacks,
+    episode_pack: parts.episodePack,
+    episodes_count: typeof detail.episodes_count === 'number' ? detail.episodes_count : 0,
+    hardsub_language: detail.hardsub_language === 'en' ? 'en' : 'fa',
+    video_file_type: detail.video_file_type === 'hardsub' ? 'hardsub' : 'softsub',
+    video_resolution:
+      detail.video_resolution === '480p' || detail.video_resolution === '720p'
+        ? detail.video_resolution
+        : '1080p',
+    video_encode:
+      detail.video_encode === 'x264' ||
+      detail.video_encode === 'x265' ||
+      detail.video_encode === 'bluray'
+        ? detail.video_encode
+        : 'x265_10bit',
+    averageScore: detail.averageScore,
+    malScore: detail.malScore,
+    shioriScore: (() => {
+      const scoreRaw = detail.shioriScore as number | string | null | undefined
+      if (typeof scoreRaw === 'number' && Number.isFinite(scoreRaw)) return scoreRaw
+      if (scoreRaw == null || scoreRaw === '') return undefined
+      const n = Number(scoreRaw)
+      return Number.isFinite(n) ? n : undefined
+    })(),
+    favoriteCount: detail.favoriteCount,
+    viewCount: typeof detail.viewCount === 'number' ? detail.viewCount : undefined,
+    anilist_id: detail.anilist_id,
+    mal_id: detail.mal_id,
+    next_airing: (() => {
+      const airingRaw = detail.next_airing
+      if (!airingRaw) return null
+      const episode = Number(airingRaw.episode)
+      const airingAt = Number(airingRaw.airing_at)
+      if (!Number.isFinite(episode) || !Number.isFinite(airingAt) || airingAt <= 0) {
+        return null
+      }
+      return { episode, airing_at: airingAt }
+    })(),
+    average_episode_size_bytes: (() => {
+      const sizeRaw = detail.average_episode_size_bytes
+      if (sizeRaw == null) return null
+      const n = Number(sizeRaw)
+      return Number.isFinite(n) && n > 0 ? Math.round(n) : null
+    })(),
+    studios: parts.studioNames,
+    studio_links: studioLinks,
+    producers: [],
+    season: detail.season ?? '',
+    year: typeof detail.year === 'number' ? detail.year : undefined,
+    startDate: detail.startDate ?? '',
+    endDate: detail.endDate ?? '',
+    series: includeSeries ? parts.series : null,
+  }
 }
 
 export type AnimeDetail = Awaited<ReturnType<typeof fetchAnimeById>>

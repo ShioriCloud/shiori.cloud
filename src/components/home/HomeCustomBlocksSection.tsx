@@ -19,11 +19,12 @@ const CustomBlocksSkeleton = () => (
   </div>
 )
 
-export const HomeCustomBlocksSection = memo(() => {
-  const query = useHomeCustomBlocksQuery()
+export const HomeCustomBlocksSection = memo(({ enabled = true }: { enabled?: boolean }) => {
+  const query = useHomeCustomBlocksQuery(enabled)
   const blocks = query.data ?? []
 
-  if (query.isLoading && blocks.length === 0) {
+  const deferred = enabled === false && blocks.length === 0
+  if ((query.isLoading || deferred) && blocks.length === 0) {
     return <CustomBlocksSkeleton />
   }
 

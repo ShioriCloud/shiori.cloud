@@ -9,7 +9,7 @@ import { isTelegramMiniApp } from './lib/platform'
 import { useTelegramStartNavigation } from './hooks/useTelegramStartNavigation'
 import { useTelegramUserSync } from './hooks/useTelegramUserSync'
 import { useTelegramLinkComplete } from './hooks/useTelegramLinkComplete'
-import { prefetchLaunchCatalog } from './hooks/queries/prefetch'
+import { prefetchSchedule } from './hooks/queries/prefetch'
 
 const Home = lazy(() => import('./pages/Home'))
 const AnimeDetail = lazy(() => import('./pages/AnimeDetail'))
@@ -62,14 +62,14 @@ function App() {
     }
     applyTheme()
 
-    // Warm home + schedule caches after shell is ready (idle-ish).
+    // Warm schedule cache after shell is ready (idle-ish: next tick).
     const idle =
       typeof window !== 'undefined' && 'requestIdleCallback' in window
-        ? window.requestIdleCallback(() => prefetchLaunchCatalog(), { timeout: 2500 })
+        ? window.requestIdleCallback(() => prefetchSchedule(), { timeout: 2500 })
         : null
     const timer =
       idle == null
-        ? window.setTimeout(() => prefetchLaunchCatalog(), 1200)
+        ? window.setTimeout(() => prefetchSchedule(), 1200)
         : null
     return () => {
       if (idle != null && 'cancelIdleCallback' in window) {

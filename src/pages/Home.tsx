@@ -61,12 +61,24 @@ const translateSeason = (season: string): string => {
   }
 }
 
-const getFallbackSeason = (): 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL' => {
-  const month = new Date().getMonth()
-  if (month >= 0 && month < 3) return 'WINTER'
-  if (month >= 3 && month < 6) return 'SPRING'
-  if (month >= 6 && month < 9) return 'SUMMER'
-  return 'FALL'
+/** Season + year in Asia/Tehran (matches Schedule / API). */
+const getTehranSeasonYear = (): {
+  season: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL'
+  year: number
+} => {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Tehran',
+    year: 'numeric',
+    month: 'numeric',
+  }).formatToParts(new Date())
+  const year = Number(parts.find((p) => p.type === 'year')?.value)
+  const month = Number(parts.find((p) => p.type === 'month')?.value)
+  const y = Number.isFinite(year) ? year : new Date().getFullYear()
+  const m = Number.isFinite(month) ? month : new Date().getMonth() + 1
+  if (m >= 1 && m <= 3) return { season: 'WINTER', year: y }
+  if (m >= 4 && m <= 6) return { season: 'SPRING', year: y }
+  if (m >= 7 && m <= 9) return { season: 'SUMMER', year: y }
+  return { season: 'FALL', year: y }
 }
 
 const genreLabel = (g: GenreItem) => g.name_fa || g.name_en || g.slug
@@ -132,18 +144,25 @@ const SectionSkeleton = () => (
 const Home = () => {
   const [selectedType, setSelectedType] = useState<ContentType>('anime')
 
-  const fallbackSeason = getFallbackSeason()
-  const currentYearNumber = new Date().getFullYear()
-  const currentSeasonKey = fallbackSeason
-  const currentSeasonFa = translateSeason(fallbackSeason)
+  const { season: currentSeasonKey, year: currentYearNumber } = useMemo(
+    () => getTehranSeasonYear(),
+    []
+  )
+  const currentSeasonFa = translateSeason(currentSeasonKey)
   const seasonLabel = `فصل ${currentSeasonFa} ${toPersianNumber(currentYearNumber)}`
 
-  const featuredQuery = useHomeFeaturedQuery(selectedType)
-  const recentQuery = useHomeRecentQuery()
-  const latestQuery = useHomeLatestQuery(currentYearNumber, currentSeasonKey)
-  const popularQuery = useHomePopularQuery()
-  const donghuaQuery = useHomeDonghuaQuery()
-  const moviesQuery = useHomeMoviesQuery()
+  // P0: above-the-fold — always enabled
+  const featuredQuery = useHomeFeaturedQuery(selectedType, true)
+  const recentQuery = useHomeRecentQuery(true)
+  const latestQuery = useHomeLatestQuery(currentYearNumber, currentSeasonKey, true)
+
+  const p0Ready =
+    !featuredQuery.isLoading && !recentQuery.isLoading && !latestQuery.isLoading
+
+  // P1/P2: wait until P0 painted (cache hit → immediate; cold → after fetch)
+  const popularQuery = useHomePopularQuery(p0Ready)
+  const donghuaQuery = useHomeDonghuaQuery(p0Ready)
+  const moviesQuery = useHomeMoviesQuery(p0Ready)
 
   const sectionQueries: Record<SectionId, typeof latestQuery> = {
     recent: recentQuery,
@@ -179,7 +198,8 @@ const Home = () => {
     const query = sectionQueries[id]
     const list = query.data ?? []
     const meta = sectionMeta[id]
-    const loading = query.isLoading && list.length === 0
+    const deferred = !query.isFetched && query.fetchStatus === 'idle' && list.length === 0
+    const loading = (query.isLoading || deferred) && list.length === 0
     const loadError = query.isError
       ? query.error instanceof Error
         ? query.error.message
@@ -364,7 +384,7 @@ const Home = () => {
         {renderSection('popular')}
         {renderSection('donghua')}
         {renderSection('movies')}
-        <HomeCustomBlocksSection />
+        <HomeCustomBlocksSection enabled={p0Ready} />
       </div>
     </div>
   )
