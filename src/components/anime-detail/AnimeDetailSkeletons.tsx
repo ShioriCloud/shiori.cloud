@@ -19,8 +19,10 @@ export const DetailSkeleton = () => (
 
       <div className="relative z-10 flex flex-col items-center px-4 pb-2 pt-24">
         <div className="relative">
-          <div className="aspect-[2/3] w-32 overflow-hidden rounded-2xl border-4 border-background bg-muted shadow-lg ring-2 ring-primary-400/25">
-            <PulseBlock className="h-full w-full rounded-none" />
+          <div className="media-card-skeuo w-32 rounded-2xl">
+            <div className="media-card-skeuo-face aspect-[2/3] bg-muted">
+              <PulseBlock className="h-full w-full rounded-none" />
+            </div>
           </div>
           <PulseBlock className="absolute right-2 top-2 h-5 w-14 rounded-md" />
         </div>
@@ -71,7 +73,7 @@ export const TELEGRAM_BLUE = '#229ED9'
 
 export const StatsRowSkeleton = () => (
   <div className="mx-4 mt-2 flex items-stretch gap-2">
-    <div className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-card/60 px-3">
+    <div className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl surface-skeuo px-3">
       <PulseBlock className="h-5 w-5 shrink-0 rounded" />
       <PulseBlock className="h-3 w-28" />
     </div>
@@ -84,7 +86,7 @@ export const ScoreChipsSkeleton = () => (
     {Array.from({ length: 3 }).map((_, i) => (
       <div
         key={i}
-        className="flex items-center gap-1.5 rounded-xl border border-border bg-card/60 px-2 py-1.5"
+        className="flex items-center gap-1.5 rounded-xl surface-skeuo px-2 py-1.5"
       >
         <PulseBlock className="h-5 w-5 shrink-0 rounded" />
         <PulseBlock className="h-4 w-9" />
@@ -105,7 +107,7 @@ export const SeriesSwitcherSkeleton = () => (
 )
 
 export const InfoTabSkeleton = () => (
-  <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card/60">
+  <div className="divide-y divide-border overflow-hidden rounded-xl surface-skeuo">
     {Array.from({ length: 6 }).map((_, i) => (
       <div key={i} className="flex items-center justify-between gap-3 px-4 py-3.5">
         <PulseBlock className="h-4 w-24" />
@@ -133,7 +135,7 @@ export const EpisodesTabSkeleton = () => (
 )
 
 export const SynopsisSkeleton = () => (
-  <div className="mx-4 mt-4 space-y-3 rounded-xl border border-border bg-card/60 p-4">
+  <div className="mx-4 mt-4 space-y-3 rounded-xl surface-skeuo p-4">
     <PulseBlock className="h-4 w-24" />
     <div className="space-y-2">
       <PulseBlock className="h-3 w-full" />
@@ -156,7 +158,7 @@ export const TranslatorsTabSkeleton = () => (
     {Array.from({ length: 3 }).map((_, i) => (
       <div
         key={i}
-        className="flex items-center gap-3 rounded-xl border border-border bg-card/60 p-3"
+        className="flex items-center gap-3 rounded-xl surface-skeuo p-3"
       >
         <PulseBlock className="h-10 w-10 shrink-0 rounded-xl" />
         <div className="flex-1 space-y-2">

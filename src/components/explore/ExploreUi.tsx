@@ -7,7 +7,7 @@ export const EXPLORE_STICKY_SHELL_CLASS =
 
 /** Chip style shared by filter/sort buttons and season result count. */
 export const EXPLORE_CHIP_CLASS =
-  'inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-muted/40 px-2.5 text-xs font-medium text-foreground transition-colors'
+  'inline-flex h-8 items-center gap-1.5 rounded-lg border border-black/[0.08] bg-muted/40 px-2.5 text-xs font-medium text-foreground transition-colors dark:border-border'
 
 type ExploreTabBarProps<T extends string> = {
   tabs: { id: T; label: string }[]
@@ -22,7 +22,7 @@ export const ExploreTabBar = <T extends string>({
   onChange,
   className,
 }: ExploreTabBarProps<T>) => (
-  <div className={cn('relative flex rounded-xl border border-border bg-muted/20', className)}>
+  <div className={cn('home-type-tabs relative flex rounded-xl p-1', className)}>
     {tabs.map((tab) => {
       const isActive = active === tab.id
       return (
@@ -31,17 +31,14 @@ export const ExploreTabBar = <T extends string>({
           type="button"
           onClick={() => onChange(tab.id)}
           className={cn(
-            'relative flex-1 py-2.5 rounded-xl text-sm transition-all duration-200',
-            isActive ? 'text-primary-400 font-semibold' : 'text-muted-foreground hover:text-foreground'
+            'relative flex-1 py-2.5 rounded-[10px] text-sm transition-all duration-200',
+            isActive ? 'text-foreground font-semibold' : 'text-muted-foreground hover:text-foreground'
           )}
           aria-pressed={isActive}
         >
-          {isActive && (
-            <span
-              aria-hidden
-              className="absolute inset-0 rounded-xl bg-primary-400/15 border border-primary-400/35 shadow-sm shadow-primary-400/10"
-            />
-          )}
+          {isActive ? (
+            <span aria-hidden className="home-type-tabs-thumb absolute inset-0 rounded-[10px]" />
+          ) : null}
           <span className="relative z-10">{tab.label}</span>
         </button>
       )
@@ -82,7 +79,7 @@ export const ExploreOptionButton = ({
       'rounded-xl border px-3 py-2.5 text-sm transition-colors text-start',
       active
         ? 'border-primary-400/50 bg-primary-400/15 text-primary-400 font-semibold'
-        : 'border-border bg-muted/30 text-foreground hover:bg-muted/50'
+        : 'border-black/[0.08] bg-muted/30 text-foreground hover:bg-muted/50 dark:border-border'
     )}
   >
     {children}

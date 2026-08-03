@@ -22,7 +22,7 @@ export const ReminderStatCard = ({
       'flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-center transition-colors disabled:opacity-60',
       active
         ? 'border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/15'
-        : 'border-border bg-card/60 hover:bg-muted/40'
+        : 'surface-skeuo hover:brightness-[0.98] dark:hover:brightness-110'
     )}
     aria-label={active ? 'یادآوری قسمت جدید فعال است' : 'فعال‌سازی یادآوری قسمت جدید'}
     aria-pressed={active}
@@ -35,7 +35,7 @@ export const ReminderStatCard = ({
     <span
       className={cn(
         'text-[12px] font-medium leading-tight',
-        active ? 'text-emerald-300' : 'text-foreground'
+        active ? 'text-emerald-700 dark:text-emerald-300' : 'text-foreground'
       )}
     >
       {active ? 'یادآوری فعال است' : 'یادآوری قسمت جدید'}
@@ -69,8 +69,8 @@ export const splitCountdown = (remainingMs: number) => {
 }
 
 export const CountdownUnit = ({ value, label }: { value: number; label: string }) => (
-  <div className="flex min-w-[2.5rem] flex-col items-center justify-center rounded-lg border border-primary-400/20 bg-primary-400/10 px-1.5 py-1.5">
-    <span className="text-[13px] font-bold tabular-nums leading-none text-primary-200">
+  <div className="flex min-w-[2.5rem] flex-col items-center justify-center rounded-lg bg-zinc-900 px-1.5 py-1.5 dark:border dark:border-primary-400/20 dark:bg-primary-400/10">
+    <span className="text-[13px] font-bold tabular-nums leading-none text-white dark:text-primary-200">
       {toPersianNumber(String(value).padStart(2, '0'))}
     </span>
     <span className="mt-1 text-[9px] font-medium leading-none text-muted-foreground">
@@ -105,7 +105,7 @@ export const NextAiringCard = ({
   const { days, hours, minutes, seconds } = splitCountdown(remainingMs)
 
   return (
-    <div className="mx-4 mt-2 flex items-center gap-2.5 rounded-2xl border border-primary-400/20 bg-gradient-to-l from-primary-500/[0.10] to-card/60 px-3 py-2">
+    <div className="mx-4 mt-2 flex items-center gap-2.5 rounded-2xl surface-skeuo px-3 py-2">
       <Calendar01Icon className="h-5 w-5 shrink-0 text-primary-400" />
       <div className="min-w-0 flex-1">
         <p className="truncate text-[13px] font-semibold text-foreground">
@@ -132,7 +132,7 @@ export const NextAiringCard = ({
 /** Reserves countdown card height while AniList next_airing is fetching. */
 export const NextAiringCardSkeleton = () => (
   <div
-    className="mx-4 mt-2 flex items-center gap-2.5 rounded-2xl border border-primary-400/15 bg-gradient-to-l from-primary-500/[0.06] to-card/60 px-3 py-2"
+    className="mx-4 mt-2 flex items-center gap-2.5 rounded-2xl surface-skeuo px-3 py-2"
     aria-busy="true"
     aria-label="در حال بارگذاری زمان پخش قسمت بعد"
   >
@@ -172,7 +172,7 @@ export const FavoriteStatCard = ({
         : 'h-12 w-12 shrink-0',
       active
         ? 'border-red-500/35 bg-red-500/10 hover:bg-red-500/15'
-        : 'border-border bg-card/60 hover:bg-muted/40'
+        : 'surface-skeuo hover:brightness-[0.98] dark:hover:brightness-110'
     )}
     aria-label={active ? 'ویرایش پیشرفت و امتیاز' : 'افزودن به علاقه‌مندی‌ها'}
   >
@@ -186,7 +186,7 @@ export const FavoriteStatCard = ({
       <span
         className={cn(
           'text-[12px] font-medium leading-tight',
-          active ? 'text-red-300' : 'text-foreground'
+          active ? 'text-red-600 dark:text-red-300' : 'text-foreground'
         )}
       >
         {active ? 'در علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها'}
@@ -255,7 +255,7 @@ export const ScoreChip = ({
   )
 
   const className = cn(
-    'flex items-center gap-1.5 rounded-xl border border-border bg-card/60 px-2 py-1.5 transition-colors',
+    'flex items-center gap-1.5 rounded-xl surface-skeuo px-2 py-1.5 transition-colors',
     href && !loading && 'hover:bg-muted/40 active:scale-[0.98] cursor-pointer'
   )
 

@@ -39,18 +39,18 @@ export const formatEpisodeLabel = (num: number | string): string => {
 
 /** Simple row for per-episode / per-subtitle downloads (packs keep the fancy shell). */
 export const episodeOneLineShellClass =
-  'group relative flex items-center gap-3 overflow-hidden rounded-xl border border-border bg-card px-3 py-2.5 transition-colors hover:bg-muted/40 cursor-pointer active:scale-[0.99]'
+  'group relative flex items-center gap-3 overflow-hidden rounded-xl surface-skeuo px-3 py-2.5 transition-colors hover:bg-muted/40 cursor-pointer active:scale-[0.99]'
 
 export const episodeActionBtnClass =
   'relative z-10 inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-lg border px-2.5 text-[11px] font-semibold transition-colors active:scale-[0.97]'
 
-/** Neutral/white download chip for regular episode & subtitle rows. */
+/** Neutral download chip for regular episode & subtitle rows. */
 export const episodeActionBtnNeutralClass =
-  'border-white/25 bg-white/10 text-white hover:bg-white/15'
+  'border-transparent bg-zinc-900 text-white hover:bg-zinc-800 dark:border-white/25 dark:bg-white/10 dark:text-white dark:hover:bg-white/15'
 
 /** Purple download chip — packs only. */
 export const episodeActionBtnPackClass =
-  'border-primary-400/35 bg-primary-400/10 text-primary-300 hover:bg-primary-400/15'
+  'border-transparent bg-primary-500 text-white hover:bg-primary-500/90 dark:border-primary-400/35 dark:bg-primary-400/10 dark:text-primary-300 dark:hover:bg-primary-400/15'
 
 export const EpisodeDownloadCard = ({
   episode,
@@ -319,10 +319,10 @@ export const FreeTokenWalletCard = ({
 }) => (
   <div
     className={cn(
-      'overflow-hidden rounded-2xl border p-4',
+      'overflow-hidden rounded-2xl p-4',
       exhausted
-        ? 'border-amber-500/35 bg-gradient-to-br from-amber-500/15 to-card/80'
-        : 'border-border bg-gradient-to-br from-primary-400/10 via-card/80 to-card/60'
+        ? 'border border-amber-500/35 bg-gradient-to-br from-amber-500/15 to-card/80'
+        : 'surface-skeuo'
     )}
   >
     <div className="flex items-start justify-between gap-3">
@@ -339,7 +339,7 @@ export const FreeTokenWalletCard = ({
           هر دانلود رایگان ۱ توکن · کیفیت ثابت {FREE_QUALITY_LABEL}
         </p>
       </div>
-      <div className="shrink-0 rounded-xl border border-border/70 bg-background/50 px-3 py-2 text-center">
+      <div className="shrink-0 rounded-xl border border-black/[0.08] bg-background/50 px-3 py-2 text-center dark:border-border">
         <p className="text-[10px] text-muted-foreground">موجودی</p>
         <p className="text-xl font-bold tabular-nums leading-tight text-foreground">
           {pending ? '…' : toPersianNumber(balance)}

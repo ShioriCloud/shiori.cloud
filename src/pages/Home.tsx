@@ -93,38 +93,40 @@ const PosterCardContent = ({ anime }: { anime: Anime }) => {
       className="group block active:scale-[0.98] transition-transform"
       aria-label={`مشاهده ${anime.title}`}
     >
-      <div className="relative aspect-[2/3] rounded-xl overflow-hidden border border-border bg-muted shadow-sm">
-        <img
-          src={anime.image}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          loading="lazy"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent" />
-        <AnimeViewCountBadge count={anime.viewCount} />
-        {anime.isNew && (
-          <span className="absolute top-2 end-2 text-[10px] font-semibold bg-primary-400 text-white px-1.5 py-0.5 rounded-md">
-            جدید
-          </span>
-        )}
-        <div className="absolute left-0 bottom-0 p-2.5 pt-10">
-          <BidiText as="h3" className="text-xs text-left font-semibold text-white line-clamp-2 leading-2">
-            {anime.title}
-          </BidiText>
-          {genres.length > 0 ? (
-            <div className="flex flex-wrap gap-1 mt-1 justify-end">
-              {genres.map((g) => (
-                <span
-                  key={g.slug}
-                  className="text-[9px] leading-none px-1 py-0.5 rounded-md bg-white/15 text-white/90 border border-white/10 max-w-full truncate"
-                >
-                  {genreLabel(g)}
-                </span>
-              ))}
-            </div>
-          ) : (
-            <p className="text-[10px] text-white/60 mt-1">{anime.episode || 'شیوری'}</p>
+      <div className="media-card-skeuo rounded-xl">
+        <div className="media-card-skeuo-face aspect-[2/3] bg-muted">
+          <img
+            src={anime.image}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent" />
+          <AnimeViewCountBadge count={anime.viewCount} />
+          {anime.isNew && (
+            <span className="absolute top-2 end-2 text-[10px] font-semibold bg-primary-400 text-white px-1.5 py-0.5 rounded-md">
+              جدید
+            </span>
           )}
+          <div className="absolute left-0 bottom-0 p-2.5 pt-10">
+            <BidiText as="h3" className="text-xs text-left font-semibold text-white line-clamp-2 leading-2">
+              {anime.title}
+            </BidiText>
+            {genres.length > 0 ? (
+              <div className="flex flex-wrap gap-1 mt-1 justify-end">
+                {genres.map((g) => (
+                  <span
+                    key={g.slug}
+                    className="text-[9px] leading-none px-1 py-0.5 rounded-md bg-white/15 text-white/90 border border-white/10 max-w-full truncate"
+                  >
+                    {genreLabel(g)}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-[10px] text-white/60 mt-1">{anime.episode || 'شیوری'}</p>
+            )}
+          </div>
         </div>
       </div>
     </AnimePrefetchLink>
@@ -135,7 +137,7 @@ const SectionSkeleton = () => (
   <div className="flex gap-3 overflow-hidden px-4">
     {Array.from({ length: 4 }).map((_, i) => (
       <div key={i} className="w-[9.25rem] shrink-0 animate-pulse">
-        <div className="aspect-[2/3] rounded-2xl bg-muted" />
+        <div className="aspect-[2/3] rounded-xl bg-muted" />
       </div>
     ))}
   </div>
@@ -267,7 +269,7 @@ const Home = () => {
       <AppHeader />
 
       <div className="px-4">
-        <div className="relative flex rounded-xl border border-border bg-muted/20 p-0">
+        <div className="home-type-tabs relative flex rounded-xl p-1">
           {TYPE_TABS.map((tab) => {
             const active = selectedType === tab.id
             return (
@@ -278,18 +280,15 @@ const Home = () => {
                   hapticSelection()
                   setSelectedType(tab.id)
                 }}
-                className={`relative flex-1 py-2.5 rounded-xl text-sm transition-all duration-200 ${
+                className={`relative flex-1 py-2.5 rounded-[10px] text-sm transition-all duration-200 ${
                   active
-                    ? 'text-primary-400 font-semibold'
+                    ? 'text-foreground font-semibold'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
                 aria-pressed={active}
               >
                 {active && (
-                  <span
-                    aria-hidden
-                    className="absolute inset-0 rounded-xl bg-primary-400/15 border border-primary-400/35 shadow-sm shadow-primary-400/10"
-                  />
+                  <span aria-hidden className="home-type-tabs-thumb absolute inset-0 rounded-[10px]" />
                 )}
                 <span className="relative z-10">{tab.label}</span>
               </button>

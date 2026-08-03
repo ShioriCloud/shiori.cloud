@@ -107,10 +107,9 @@ export const MyListCompactCard = ({
         : undefined
     }
     className={cn(
-      'rounded-lg border border-border/40 bg-card/55',
-      'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]',
-      'transition-[transform,background-color,border-color] duration-150',
-      'active:scale-[0.995] active:bg-card/70',
+      'surface-skeuo rounded-lg',
+      'transition-[transform,background-color,box-shadow] duration-150',
+      'active:scale-[0.995]',
       onClick && 'cursor-pointer',
       className
     )}
@@ -194,20 +193,27 @@ export const MyListBadge = ({
   tone?: 'default' | 'primary' | 'muted' | 'success' | 'warning' | 'time'
   className?: string
 }) => {
+  /* Light: solid chips for contrast on white cards. Dark: soft glass tones. */
   const tones = {
-    default: 'border-white/15 bg-white/12 text-white/90',
-    primary: 'border-primary-400/35 bg-primary-400/20 text-primary-100',
-    muted: 'border-white/15 bg-white/12 text-white/85',
-    success: 'border-emerald-400/30 bg-emerald-400/20 text-emerald-200',
-    warning: 'border-amber-400/30 bg-amber-400/20 text-amber-200',
-    time: 'border-primary-400/35 bg-primary-400/20 text-primary-100',
+    default:
+      'border-transparent bg-zinc-900 text-white dark:border-white/15 dark:bg-white/12 dark:text-white/90',
+    primary:
+      'border-transparent bg-primary-500 text-white dark:border-primary-400/35 dark:bg-primary-400/20 dark:text-primary-100',
+    muted:
+      'border-transparent bg-zinc-200 text-zinc-800 dark:border-white/15 dark:bg-white/12 dark:text-white/85',
+    success:
+      'border-transparent bg-emerald-600 text-white dark:border-emerald-400/30 dark:bg-emerald-400/20 dark:text-emerald-200',
+    warning:
+      'border-transparent bg-amber-500 text-zinc-950 dark:border-amber-400/30 dark:bg-amber-400/20 dark:text-amber-200',
+    time:
+      'border-transparent bg-violet-600 text-white dark:border-primary-400/35 dark:bg-primary-400/20 dark:text-primary-100',
   }
   return (
     <span
       className={cn(
         'inline-flex shrink-0 items-center rounded-md border px-1.5 py-1',
         'text-[10px] leading-none font-medium whitespace-nowrap',
-        'backdrop-blur-md shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]',
+        'dark:backdrop-blur-md dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]',
         tones[tone],
         className
       )}

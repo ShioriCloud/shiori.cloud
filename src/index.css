@@ -49,7 +49,8 @@
     --border: 0.82 0 0;
     --input: 0.82 0 0;
     --ring: 0.708 0 0;
-    --skeuo-edge: 0.72 0 0;
+    --skeuo-edge: 0.88 0 0;
+    --skeuo-edge-inner: 0.96 0 0;
     --skeuo-highlight: 1 0 0;
     --skeuo-shade: 0.42 0 0;
     --chart-1: 0.809 0.105 251.813;
@@ -88,7 +89,9 @@
     --border: 0.32 0 0;
     --input: 0.32 0 0;
     --ring: 0.556 0 0;
-    --skeuo-edge: 0.38 0 0;
+    /* Match theme border; avoid bright gray rims on dark cards */
+    --skeuo-edge: 0.3 0 0;
+    --skeuo-edge-inner: 0.24 0 0;
     --skeuo-highlight: 1 0 0;
     --skeuo-shade: 0 0 0;
     --chart-1: 0.809 0.105 251.813;
@@ -297,20 +300,42 @@
   .home-featured-wrap {
     --swiper-theme-color: #a78bfa;
     --swiper-pagination-color: #a78bfa;
+    /* Let card drop-shadows escape Swiper’s default overflow:hidden */
+    overflow: visible;
+  }
+
+  .home-featured-wrap .home-featured-swiper.swiper {
+    overflow: visible;
+    /* Shadow bleed room; negative margin keeps layout footprint stable */
+    padding: 10px 8px 20px;
+    margin: -10px -8px -20px;
+  }
+
+  .home-featured-wrap .home-featured-swiper .swiper-slide {
+    overflow: visible;
   }
 
   /**
-   * Two-layer media frame (like Profile avatar: thick bg border + outer ring).
-   * Outer gray hairline + inner background gutter; face clips the image.
+   * Home media frames — soft photo-mount edge + layered lift.
+   * Light: cool hairline, tiny white bevel, deep soft shadow.
+   * Dark: faint rim + stronger ambient depth.
    */
   .media-card-skeuo {
-    --media-skeuo-inset: 3px;
-    border: 1px solid oklch(var(--skeuo-edge) / 0.9);
-    background: oklch(var(--background));
+    --media-skeuo-inset: 2px;
+    --media-skeuo-radius: 1rem; /* matches rounded-2xl */
+    border: 1px solid oklch(0.9 0.005 270);
+    background: oklch(1 0 0);
     padding: var(--media-skeuo-inset);
     box-shadow:
-      0 1px 1px oklch(var(--skeuo-shade) / 0.07),
-      0 6px 16px oklch(var(--skeuo-shade) / 0.1);
+      inset 0 1px 0 oklch(1 0 0),
+      inset 0 0 0 1px oklch(1 0 0 / 0.35),
+      0 1px 1px oklch(0.4 0 0 / 0.04),
+      0 6px 14px oklch(0.4 0 0 / 0.07),
+      0 16px 36px oklch(0.4 0 0 / 0.09);
+  }
+
+  .media-card-skeuo.rounded-xl {
+    --media-skeuo-radius: 0.75rem;
   }
 
   .media-card-skeuo > .media-card-skeuo-face {
@@ -318,16 +343,96 @@
     height: 100%;
     width: 100%;
     overflow: hidden;
-    /* rounded-2xl (1rem) minus outer border + padding */
-    border-radius: calc(1rem - var(--media-skeuo-inset) - 1px);
+    border-radius: calc(var(--media-skeuo-radius) - var(--media-skeuo-inset) - 1px);
   }
 
   .dark .media-card-skeuo {
-    border-color: oklch(var(--border));
-    background: oklch(var(--background));
+    border-color: oklch(1 0 0 / 0.1);
+    background: oklch(0.18 0 0);
     box-shadow:
-      0 1px 2px oklch(0 0 0 / 0.35),
+      inset 0 1px 0 oklch(1 0 0 / 0.08),
+      0 2px 4px oklch(0 0 0 / 0.35),
+      0 12px 28px oklch(0 0 0 / 0.42),
+      0 24px 48px oklch(0 0 0 / 0.28);
+  }
+
+  /* Slightly tighter lift on compact poster rails */
+  .home-section-swiper .media-card-skeuo {
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0),
+      inset 0 0 0 1px oklch(1 0 0 / 0.35),
+      0 1px 1px oklch(0.4 0 0 / 0.04),
+      0 5px 12px oklch(0.4 0 0 / 0.08),
+      0 12px 26px oklch(0.4 0 0 / 0.08);
+  }
+
+  .dark .home-section-swiper .media-card-skeuo {
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.08),
+      0 2px 4px oklch(0 0 0 / 0.35),
+      0 10px 22px oklch(0 0 0 / 0.4);
+  }
+
+  /**
+   * Home content-type segmented control (above featured slider).
+   * Same photo-mount language as media cards: soft rim + layered lift.
+   */
+  .home-type-tabs {
+    border: 1px solid oklch(0.9 0.005 270);
+    background: oklch(0.965 0.002 270);
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0),
+      inset 0 0 0 1px oklch(1 0 0 / 0.4),
+      0 1px 1px oklch(0.4 0 0 / 0.04),
+      0 6px 16px oklch(0.4 0 0 / 0.07);
+  }
+
+  .home-type-tabs-thumb {
+    border: 1px solid oklch(0.9 0.005 270);
+    background: oklch(1 0 0);
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0),
+      0 1px 2px oklch(0.4 0 0 / 0.05),
+      0 4px 12px oklch(0.4 0 0 / 0.08);
+  }
+
+  .dark .home-type-tabs {
+    border-color: oklch(var(--border));
+    background: oklch(var(--card));
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.04),
+      0 2px 4px oklch(0 0 0 / 0.3),
       0 10px 22px oklch(0 0 0 / 0.28);
+  }
+
+  .dark .home-type-tabs-thumb {
+    border-color: oklch(var(--border));
+    background: oklch(0.26 0 0);
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.05),
+      0 2px 4px oklch(0 0 0 / 0.35),
+      0 6px 16px oklch(0 0 0 / 0.35);
+  }
+
+  /**
+   * Raised UI panel — soft two-tone edge + drop shadow.
+   */
+  .surface-skeuo {
+    border: 1px solid oklch(var(--skeuo-edge));
+    background: oklch(var(--card));
+    box-shadow:
+      inset 0 0 0 1px oklch(var(--skeuo-edge-inner)),
+      0 1px 2px oklch(var(--skeuo-shade) / 0.05),
+      0 8px 22px oklch(var(--skeuo-shade) / 0.08);
+  }
+
+  .dark .surface-skeuo {
+    border-color: oklch(var(--border));
+    background: oklch(var(--card));
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.04),
+      0 1px 2px oklch(0 0 0 / 0.35),
+      0 10px 26px oklch(0 0 0 / 0.38);
   }
 
   .home-featured-wrap .home-featured-pagination .swiper-pagination-bullet {
@@ -358,7 +463,19 @@
 
   .home-section-swiper {
     width: 100%;
-    overflow: hidden;
+    overflow: visible;
+    /* Room for poster drop-shadows without shifting section layout */
+    padding-block: 8px 16px;
+    margin-block: -8px -16px;
+  }
+
+  .home-section-swiper.swiper {
+    overflow: visible;
+  }
+
+  .home-section-swiper .swiper-slide,
+  .home-section-swiper .home-section-slide {
+    overflow: visible;
   }
 
   .home-section-swiper .swiper-slide {
@@ -382,11 +499,11 @@
   }
 
   .my-list-progress {
-    @apply h-1 overflow-hidden rounded-full bg-muted/50;
+    @apply h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-muted;
   }
 
   .my-list-progress-fill {
-    @apply h-full rounded-full bg-gradient-to-l from-primary-400/90 to-primary-500 transition-all duration-500 ease-out;
+    @apply h-full rounded-full bg-gradient-to-l from-primary-400 to-primary-500 transition-all duration-500 ease-out;
   }
 
   @keyframes my-list-fade-in {

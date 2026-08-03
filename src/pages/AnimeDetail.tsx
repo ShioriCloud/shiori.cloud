@@ -81,6 +81,7 @@ import {
   DetailSkeleton,
   TranslatorsTabSkeleton,
 } from '@/components/anime-detail/AnimeDetailSkeletons'
+import { ExploreTabBar } from '@/components/explore/ExploreUi'
 import {
   FavoriteStatCard,
   NextAiringCard,
@@ -191,46 +192,6 @@ const LAUNCH_DOWNLOAD_TABS: { id: LaunchDownloadTab; label: string }[] = [
 const useLaunchDownloadTabs =
   !SHOW_HARD_AND_FREE_DOWNLOAD_TABS && !ENABLE_SUBSCRIPTION_DOWNLOAD_GATE
 
-const SegmentedTabs = <T extends string>({
-  tabs,
-  active,
-  onChange,
-  className,
-}: {
-  tabs: { id: T; label: string }[]
-  active: T
-  onChange: (id: T) => void
-  className?: string
-}) => (
-  <div className={cn('relative flex rounded-xl border border-border bg-muted/20 p-0', className)}>
-    {tabs.map((tab) => {
-      const isActive = active === tab.id
-      return (
-        <button
-          key={tab.id}
-          type="button"
-          onClick={() => onChange(tab.id)}
-          aria-pressed={isActive}
-          className={cn(
-            'relative flex-1 py-2.5 rounded-xl text-sm transition-all duration-200',
-            isActive
-              ? 'text-primary-400 font-semibold'
-              : 'text-muted-foreground hover:text-foreground'
-          )}
-        >
-          {isActive && (
-            <span
-              aria-hidden
-              className="absolute inset-0 rounded-xl bg-primary-400/15 border border-primary-400/35 shadow-sm shadow-primary-400/10"
-            />
-          )}
-          <span className="relative z-10">{tab.label}</span>
-        </button>
-      )
-    })}
-  </div>
-)
-
 const SeriesSeasonSwitcher = ({
   series,
   currentAnimeId,
@@ -269,16 +230,7 @@ const SeriesSeasonSwitcher = ({
 
   return (
     <div className="mx-4 mt-4">
-      <div className="relative overflow-hidden rounded-2xl border border-primary-400/15 bg-gradient-to-br from-primary-500/[0.12] via-card/90 to-card/70 p-3.5 shadow-[0_8px_30px_-12px_rgba(99,102,241,0.35)]">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-10 -left-6 h-28 w-28 rounded-full bg-primary-400/15 blur-3xl"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -bottom-8 -right-4 h-24 w-24 rounded-full bg-primary-300/10 blur-2xl"
-        />
-
+      <div className="surface-skeuo relative overflow-hidden rounded-2xl p-3.5">
         <div className="relative mb-3 flex items-center justify-between gap-2">
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-foreground">
@@ -287,7 +239,7 @@ const SeriesSeasonSwitcher = ({
             <p className="text-[11px] text-muted-foreground">دسترسی سریع به سایر فصل‌های انیمه</p>
           </div>
           {progressLabel ? (
-            <span className="shrink-0 rounded-full border border-primary-400/20 bg-primary-400/10 px-2.5 py-1 text-[10px] font-semibold tabular-nums text-primary-300">
+            <span className="shrink-0 rounded-md bg-zinc-900 px-2.5 py-1 text-[10px] font-semibold tabular-nums text-white dark:border dark:border-primary-400/25 dark:bg-primary-500/20 dark:text-primary-200">
               {progressLabel}
             </span>
           ) : null}
@@ -318,8 +270,8 @@ const SeriesSeasonSwitcher = ({
                   className={cn(
                     'relative aspect-[2/3] w-[5.25rem] overflow-hidden rounded-xl border-2 transition-all duration-300',
                     isActive
-                      ? 'border-primary-400 shadow-lg shadow-primary-400/30 ring-2 ring-primary-400/25'
-                      : 'border-border/70 group-hover:border-primary-400/35'
+                      ? 'border-primary-400 shadow-md shadow-primary-400/20'
+                      : 'border-black/[0.08] group-hover:border-primary-400/35 dark:border-border'
                   )}
                 >
                   {member.image ? (
@@ -336,7 +288,7 @@ const SeriesSeasonSwitcher = ({
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-black/10" />
                   {isActive ? (
-                    <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary-400 shadow-[0_0_8px_rgba(129,140,248,0.9)]" />
+                    <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary-400" />
                   ) : null}
                   <div className="absolute inset-x-0 bottom-0 p-2">
                     <p className="truncate text-[10px] font-bold leading-tight text-white">
@@ -407,18 +359,20 @@ const SimilarPosterCard = ({
     className="group block active:scale-[0.98] transition-transform"
     aria-label={`مشاهده ${anime.title}`}
   >
-    <div className="relative aspect-[2/3] rounded-xl overflow-hidden border border-border bg-muted shadow-sm">
-      <img
-        src={anime.image}
-        alt=""
-        className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-        loading="lazy"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 p-2 pt-10">
-        <BidiText as="h3" className="text-xs font-semibold text-white line-clamp-2 leading-5">
-          {anime.title}
-        </BidiText>
+    <div className="media-card-skeuo rounded-xl">
+      <div className="media-card-skeuo-face aspect-[2/3] bg-muted">
+        <img
+          src={anime.image}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          loading="lazy"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 p-2 pt-10">
+          <BidiText as="h3" className="text-xs font-semibold text-white line-clamp-2 leading-5">
+            {anime.title}
+          </BidiText>
+        </div>
       </div>
     </div>
   </AnimePrefetchLink>
@@ -888,8 +842,10 @@ const AnimeDetail = () => {
 
         <div className="relative z-10 pt-24 px-4 pb-2 flex flex-col items-center">
           <div className="relative">
-            <div className="w-32 aspect-[2/3] rounded-2xl overflow-hidden border-4 border-background bg-muted shadow-lg ring-2 ring-primary-400/25">
-              <img src={anime.image} alt={anime.title} className="w-full h-full object-cover" />
+            <div className="media-card-skeuo w-32 rounded-2xl">
+              <div className="media-card-skeuo-face aspect-[2/3] bg-muted">
+                <img src={anime.image} alt={anime.title} className="h-full w-full object-cover" />
+              </div>
             </div>
             {statusKey ? (
               <span
@@ -918,7 +874,7 @@ const AnimeDetail = () => {
             <button
               type="button"
               onClick={handleShare}
-              className="absolute left-0 top-0 p-2 rounded-xl border border-border bg-card/60 text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+              className="absolute left-0 top-0 p-2 rounded-xl surface-skeuo text-muted-foreground hover:text-foreground transition-colors"
               aria-label="اشتراک‌گذاری در تلگرام"
             >
               <Share08Icon className="w-4 h-4" />
@@ -926,14 +882,14 @@ const AnimeDetail = () => {
           </div>
 
           <div className="flex flex-wrap justify-center gap-1.5 mt-2">
-            <span className="text-[10px] px-2 py-0.5 rounded-md bg-muted/80 border border-border text-muted-foreground">
+            <span className="text-[10px] px-2 py-0.5 rounded-md bg-zinc-900 font-medium text-white dark:border dark:border-border dark:bg-muted/80 dark:text-muted-foreground">
               {translateFormat(anime.format)}
             </span>
             {anime.genres.slice(0, 4).map((genre) => (
               <button
                 key={genre.slug}
                 type="button"
-                className="text-[10px] px-2 py-0.5 rounded-md bg-primary-500/15 border border-primary-400/25 text-primary-300 hover:bg-primary-500/25 transition-colors"
+                className="text-[10px] px-2 py-0.5 rounded-md bg-primary-500 font-medium text-white hover:bg-primary-500/90 transition-colors dark:border dark:border-primary-400/25 dark:bg-primary-500/15 dark:text-primary-200 dark:hover:bg-primary-500/25"
                 onClick={() =>
                   navigate(exploreAllHref({ genreSlugs: [genre.slug] }))
                 }
@@ -1057,7 +1013,7 @@ const AnimeDetail = () => {
       />
 
       {/* Synopsis */}
-      <div className="mx-4 mt-4 rounded-xl border border-border bg-card/60 p-4">
+      <div className="mx-4 mt-4 surface-skeuo rounded-xl p-4">
         <h2 className="text-sm font-semibold text-foreground mb-2">خلاصه داستان</h2>
         <p className="text-sm text-muted-foreground leading-6 whitespace-pre-wrap">
           {truncatedDescription}
@@ -1075,13 +1031,13 @@ const AnimeDetail = () => {
 
       {/* Main tabs — sticky زیر هدر، استایل مثل Home */}
       <div className="sticky top-[var(--app-header-offset)] z-30 px-4 pt-5 pb-2 bg-background/90 backdrop-blur-md border-b border-border/50">
-        <SegmentedTabs tabs={MAIN_TABS} active={activeTab} onChange={handleMainTabChange} />
+        <ExploreTabBar tabs={MAIN_TABS} active={activeTab} onChange={handleMainTabChange} />
       </div>
 
       {/* Tab content */}
       <div className="px-4 pt-4">
         {activeTab === 'info' && (
-          <div className="rounded-xl border border-border bg-card/60 divide-y divide-border overflow-hidden">
+          <div className="surface-skeuo rounded-xl divide-y divide-border overflow-hidden">
             <InfoRow
               icon={<Video01Icon className="w-4 h-4 text-primary-400 shrink-0" />}
               label="نوع"
@@ -1198,7 +1154,7 @@ const AnimeDetail = () => {
             />
           ) : (
             <div className="space-y-3">
-              <SegmentedTabs
+              <ExploreTabBar
                 tabs={
                   useLaunchDownloadTabs
                     ? LAUNCH_DOWNLOAD_TABS
@@ -1272,7 +1228,7 @@ const AnimeDetail = () => {
               {ENABLE_SUBSCRIPTION_DOWNLOAD_GATE &&
               !hasActiveSubscription &&
               (episodeKindTab === 'softsub' || episodeKindTab === 'hardsub') ? (
-                <div className="rounded-xl border border-primary-400/30 bg-primary-400/10 p-3 space-y-2">
+                <div className="surface-skeuo rounded-xl p-3 space-y-2">
                   <p className="text-sm font-semibold text-foreground">
                     دانلود این بخش با اشتراک ماهانه
                   </p>
@@ -1571,10 +1527,10 @@ const AnimeDetail = () => {
                 <Link
                   key={String(l.id)}
                   to={`/translators/${encodeURIComponent(String(l.translator.slug))}`}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card/60 p-3 hover:bg-muted/30 transition-colors"
+                  className="surface-skeuo flex items-center justify-between gap-3 rounded-xl p-3 hover:bg-muted/30 transition-colors"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl overflow-hidden bg-muted border border-border shrink-0">
+                    <div className="w-10 h-10 rounded-xl overflow-hidden bg-muted border border-black/[0.08] shrink-0 dark:border-border">
                       {l.translator.avatar_url ? (
                         <img
                           src={String(l.translator.avatar_url)}

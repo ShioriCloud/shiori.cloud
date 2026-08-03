@@ -58,7 +58,7 @@ export const ExploreListToolbar = ({
       </div>
     </div>
 
-    <div className="relative mt-2.5 flex h-10 min-w-0 items-center rounded-xl border border-border bg-card px-2.5 ps-10">
+    <div className="relative mt-2.5 flex h-10 min-w-0 items-center rounded-xl border border-black/[0.08] bg-card px-2.5 ps-10 dark:border-border">
       <SearchIcon className="text-muted-foreground absolute start-3 h-4 w-4" />
       <input
         type="search"

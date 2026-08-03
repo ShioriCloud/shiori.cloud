@@ -96,8 +96,7 @@ const StatCell = ({
   to?: string
 }) => {
   const className = cn(
-    'rounded-lg border border-border/40 bg-card/55 px-2 py-3 text-center',
-    'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]',
+    'surface-skeuo rounded-lg px-2 py-3 text-center',
     to && 'active:scale-[0.98] transition-transform'
   )
   const body = (
@@ -120,7 +119,9 @@ const ProfileSkeleton = () => (
     <div className="relative h-44">
       <div className="absolute inset-x-0 top-0 h-full bg-muted/60" />
       <div className="relative z-10 flex flex-col items-center pt-24">
-        <div className="h-24 w-24 rounded-2xl border-4 border-background bg-muted" />
+        <div className="media-card-skeuo h-24 w-24 rounded-2xl">
+          <div className="media-card-skeuo-face bg-muted" />
+        </div>
         <div className="mt-4 h-6 w-36 rounded-md bg-muted" />
         <div className="mt-2 h-4 w-24 rounded-md bg-muted" />
       </div>
@@ -195,23 +196,25 @@ const Profile = () => {
         </div>
 
         <div className="relative z-10 flex flex-col items-center px-4 pb-2 pt-24">
-          <div className="h-24 w-24 overflow-hidden rounded-2xl border-4 border-background bg-muted shadow-lg ring-2 ring-primary-400/30">
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt={displayName}
-                className="h-full w-full object-cover"
-                onError={() => setAvatarFailed(true)}
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-primary-400/15">
-                {initials ? (
-                  <span className="text-2xl font-bold text-primary-400">{initials}</span>
-                ) : (
-                  <UserIcon className="h-10 w-10 text-muted-foreground/50" />
-                )}
-              </div>
-            )}
+          <div className="media-card-skeuo h-24 w-24 rounded-2xl">
+            <div className="media-card-skeuo-face bg-muted">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={displayName}
+                  className="h-full w-full object-cover"
+                  onError={() => setAvatarFailed(true)}
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-primary-400/15">
+                  {initials ? (
+                    <span className="text-2xl font-bold text-primary-400">{initials}</span>
+                  ) : (
+                    <UserIcon className="h-10 w-10 text-muted-foreground/50" />
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           <h1 className="mt-3 line-clamp-2 px-2 text-center text-lg font-bold text-foreground">
