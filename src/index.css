@@ -297,16 +297,44 @@
     border-radius: calc(0.75rem - 2px);
   }
 
-  .home-featured-wrap {
-    --swiper-theme-color: #a78bfa;
-    --swiper-pagination-color: #a78bfa;
+  .home-featured-scroller {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    padding-block: 6px 14px;
+    padding-inline: 4%;
   }
 
-  /* Keep Swiper clipping — overflow:visible + negative margins broke Home in Telegram WebView */
-  .home-featured-wrap .home-featured-swiper.swiper {
-    overflow: hidden;
-    /* Slight inset so soft shadows aren’t fully flush-clipped */
-    padding-block: 6px 14px;
+  .home-featured-slide {
+    flex: 0 0 92%;
+    width: 92%;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+  }
+
+  .home-rail-scroller {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    padding-block: 6px 12px;
+    padding-inline: 1rem;
+  }
+
+  .home-rail-track {
+    display: flex;
+    gap: 10px;
+    width: max-content;
+  }
+
+  .home-rail-slide {
+    width: 9.25rem;
+    flex-shrink: 0;
   }
 
   /**
@@ -351,7 +379,7 @@
   }
 
   /* Slightly tighter lift on compact poster rails */
-  .home-section-swiper .media-card-skeuo {
+  .home-rail-scroller .media-card-skeuo {
     box-shadow:
       inset 0 1px 0 oklch(1 0 0),
       inset 0 0 0 1px oklch(1 0 0 / 0.35),
@@ -360,7 +388,7 @@
       0 12px 26px oklch(0.4 0 0 / 0.08);
   }
 
-  .dark .home-section-swiper .media-card-skeuo {
+  .dark .home-rail-scroller .media-card-skeuo {
     box-shadow:
       inset 0 1px 0 oklch(1 0 0 / 0.08),
       0 2px 4px oklch(0 0 0 / 0.35),
@@ -461,23 +489,6 @@
       inset 0 1px 0 oklch(1 0 0 / 0.12);
   }
 
-  .home-featured-wrap .home-featured-pagination .swiper-pagination-bullet {
-    background: oklch(0.55 0 0);
-    border: 1px solid oklch(0.65 0 0 / 0.8);
-    opacity: 1;
-    width: 8px;
-    height: 8px;
-    margin: 0 !important;
-    transition: width 0.2s ease, background 0.2s ease, border-color 0.2s ease;
-  }
-
-  .home-featured-wrap .home-featured-pagination .swiper-pagination-bullet-active {
-    background: #a78bfa;
-    border-color: #a78bfa;
-    width: 22px;
-    border-radius: 9999px;
-  }
-
   .home-featured-wrap .home-featured-pagination {
     display: flex;
     justify-content: center;
@@ -487,22 +498,22 @@
     margin-top: 14px;
   }
 
-  .home-section-swiper {
-    width: 100%;
-    overflow: hidden;
-    padding-block: 6px 12px;
+  .home-featured-bullet {
+    flex-shrink: 0;
+    padding: 0;
+    border-radius: 9999px;
+    background: oklch(0.55 0 0);
+    border: 1px solid oklch(0.65 0 0 / 0.8);
+    width: 8px;
+    height: 8px;
+    cursor: pointer;
+    transition: width 0.2s ease, background 0.2s ease, border-color 0.2s ease;
   }
 
-  .home-section-swiper .swiper-slide {
-    width: 9.25rem !important;
-    height: auto;
-    flex-shrink: 0;
-  }
-
-  .home-section-swiper .home-section-slide {
-    width: 9.25rem !important;
-    height: auto;
-    flex-shrink: 0;
+  .home-featured-bullet-active {
+    background: #a78bfa;
+    border-color: #a78bfa;
+    width: 22px;
   }
 
   .scrollbar-none {

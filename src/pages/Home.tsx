@@ -1,11 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import AnimePrefetchLink from '../components/AnimePrefetchLink'
-import { Swiper, SwiperSlide } from 'swiper/react'
-import { Autoplay, FreeMode, Pagination } from 'swiper/modules'
-import 'swiper/css'
-import 'swiper/css/free-mode'
-import 'swiper/css/pagination'
 import {
   ArrowLeft01Icon,
   SparklesIcon,
@@ -15,6 +10,8 @@ import { BidiText } from '@/components/BidiText'
 import { AnimeViewCountBadge } from '@/components/anime/AnimeViewCountBadge'
 import { AppHeader } from '@/components/AppHeader'
 import { HomeCustomBlocksSection } from '@/components/home/HomeCustomBlocksSection'
+import { HomeFeaturedCarousel } from '@/components/home/HomeFeaturedCarousel'
+import { HomeRailScroller, HomeRailSlide } from '@/components/home/HomeRailScroller'
 import { Button } from '@/components/ui/button'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { exploreAllHref } from '@/lib/exploreParams'
@@ -239,19 +236,13 @@ const Home = () => {
         ) : list.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-6 px-4">فعلاً موردی نیست.</p>
         ) : (
-          <Swiper
-            modules={[FreeMode]}
-            spaceBetween={10}
-            slidesPerView="auto"
-            freeMode
-            className="home-section-swiper !px-4"
-          >
+          <HomeRailScroller>
             {list.map((anime) => (
-              <SwiperSlide key={anime.id} className="home-section-slide">
+              <HomeRailSlide key={anime.id}>
                 <PosterCardContent anime={anime} />
-              </SwiperSlide>
+              </HomeRailSlide>
             ))}
-          </Swiper>
+          </HomeRailScroller>
         )}
       </section>
     )
@@ -316,62 +307,49 @@ const Home = () => {
             </Button>
           </div>
         ) : featuredAnime.length > 0 ? (
-          <div className="home-featured-wrap">
-            <Swiper
-              modules={[Autoplay, Pagination]}
-              centeredSlides
-              loop={featuredAnime.length > 1}
-              autoplay={{ delay: 5000, disableOnInteraction: false }}
-              pagination={{ clickable: true, el: '.home-featured-pagination' }}
-              spaceBetween={12}
-              slidesPerView={1.08}
-              className="home-featured-swiper"
-            >
-              {featuredAnime.map((anime) => (
-                <SwiperSlide key={anime.id}>
-                  <AnimePrefetchLink
-                    animeId={animePublicSegment(anime)}
-                    to={animeDetailPath(anime)}
-                    className="block group h-52"
-                  >
-                    <div className="media-card-skeuo relative h-full w-full rounded-2xl">
-                      <div className="media-card-skeuo-face">
-                        <img
-                          src={anime.featuredImage || anime.image}
-                          alt=""
-                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-                        <AnimeViewCountBadge count={anime.viewCount} />
-                        <div className="absolute inset-x-0 bottom-0 p-4">
-                          <BidiText
-                            as="h3"
-                            className="text-base font-bold text-white text-left line-clamp-2 leading-6"
-                          >
-                            {anime.title}
-                          </BidiText>
-                          {(anime.genres || []).length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1 justify-end">
-                              {(anime.genres || []).slice(0, 3).map((g) => (
-                                <span
-                                  key={g.slug}
-                                  className="text-[10px] px-2 py-0.5 rounded-md bg-white/15 text-white/90 backdrop-blur-sm border border-white/10"
-                                >
-                                  {genreLabel(g)}
-                                </span>
-                              ))}
-                            </div>
-                          )}
+          <HomeFeaturedCarousel>
+            {featuredAnime.map((anime) => (
+              <AnimePrefetchLink
+                key={anime.id}
+                animeId={animePublicSegment(anime)}
+                to={animeDetailPath(anime)}
+                className="block group h-52"
+              >
+                <div className="media-card-skeuo relative h-full w-full rounded-2xl">
+                  <div className="media-card-skeuo-face">
+                    <img
+                      src={anime.featuredImage || anime.image}
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+                    <AnimeViewCountBadge count={anime.viewCount} />
+                    <div className="absolute inset-x-0 bottom-0 p-4">
+                      <BidiText
+                        as="h3"
+                        className="text-base font-bold text-white text-left line-clamp-2 leading-6"
+                      >
+                        {anime.title}
+                      </BidiText>
+                      {(anime.genres || []).length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1 justify-end">
+                          {(anime.genres || []).slice(0, 3).map((g) => (
+                            <span
+                              key={g.slug}
+                              className="text-[10px] px-2 py-0.5 rounded-md bg-white/15 text-white/90 backdrop-blur-sm border border-white/10"
+                            >
+                              {genreLabel(g)}
+                            </span>
+                          ))}
                         </div>
-                      </div>
+                      )}
                     </div>
-                  </AnimePrefetchLink>
-                </SwiperSlide>
-              ))}
-            </Swiper>
-            <div className="home-featured-pagination" />
-          </div>
+                  </div>
+                </div>
+              </AnimePrefetchLink>
+            ))}
+          </HomeFeaturedCarousel>
         ) : (
           <div className="h-40 rounded-2xl border border-dashed border-border bg-muted/20 flex items-center justify-center">
             <p className="text-sm text-muted-foreground">پیشنهاد ویژه‌ای ثبت نشده.</p>
