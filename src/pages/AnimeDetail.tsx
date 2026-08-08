@@ -850,7 +850,7 @@ const AnimeDetail = () => {
             {statusKey ? (
               <span
                 className={cn(
-                  'absolute top-2 right-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-md backdrop-blur-md bg-background/80 shadow-sm',
+                  'absolute top-2 right-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-md backdrop-blur-sm',
                   posterStatusClass(statusKey)
                 )}
               >
@@ -889,7 +889,7 @@ const AnimeDetail = () => {
               <button
                 key={genre.slug}
                 type="button"
-                className="min-h-8 text-[10px] px-2.5 py-1 rounded-md border border-primary-400/40 bg-primary-400/15 font-medium text-primary-700 hover:bg-primary-400/25 transition-colors dark:border-primary-400/25 dark:bg-primary-500/15 dark:text-primary-200 dark:hover:bg-primary-500/25"
+                className="text-[10px] px-2 py-0.5 rounded-md border border-primary-400/40 bg-primary-400/15 font-medium text-primary-700 hover:bg-primary-400/25 transition-colors dark:border-primary-400/25 dark:bg-primary-500/15 dark:text-primary-200 dark:hover:bg-primary-500/25"
                 onClick={() =>
                   navigate(exploreAllHref({ genreSlugs: [genre.slug] }))
                 }
@@ -926,8 +926,8 @@ const AnimeDetail = () => {
               className={cn(
                 'mt-3 flex w-full items-center gap-3 rounded-2xl border px-3.5 py-2.5',
                 hardsubLanguage === 'en'
-                  ? 'border-amber-500/35 bg-amber-500/10 dark:border-amber-500/25 dark:bg-gradient-to-l dark:from-amber-500/[0.12] dark:to-card/60'
-                  : 'border-emerald-500/30 bg-emerald-500/10 dark:border-emerald-500/20 dark:bg-gradient-to-l dark:from-emerald-500/[0.08] dark:to-card/60'
+                  ? 'border-amber-500/35 bg-amber-500/10 dark:border-amber-500/25 dark:bg-transparent dark:bg-gradient-to-l dark:from-amber-500/[0.12] dark:to-card/60'
+                  : 'border-emerald-500/30 bg-emerald-500/10 dark:border-emerald-500/20 dark:bg-transparent dark:bg-gradient-to-l dark:from-emerald-500/[0.08] dark:to-card/60'
               )}
             >
               <CheckmarkCircle02Icon

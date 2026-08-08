@@ -278,15 +278,15 @@ export const ScoreChip = ({
 export const posterStatusClass = (status: string) => {
   switch (status) {
     case 'RELEASING':
-      return 'border border-emerald-500/40 bg-emerald-500/15 text-emerald-800 dark:border-emerald-400/35 dark:bg-emerald-500/25 dark:text-emerald-100'
+      return 'border border-emerald-500/40 bg-emerald-500/15 text-emerald-800 dark:border-transparent dark:bg-green-500/90 dark:text-white'
     case 'FINISHED':
-      return 'border border-slate-400/45 bg-slate-500/15 text-slate-800 dark:border-slate-400/35 dark:bg-slate-500/25 dark:text-slate-100'
+      return 'border border-slate-400/45 bg-slate-500/15 text-slate-800 dark:border-transparent dark:bg-slate-600/90 dark:text-white'
     case 'NOT_YET_RELEASED':
-      return 'border border-amber-500/45 bg-amber-500/15 text-amber-900 dark:border-amber-400/40 dark:bg-amber-500/25 dark:text-amber-100'
+      return 'border border-amber-500/45 bg-amber-500/15 text-amber-900 dark:border-transparent dark:bg-amber-500/90 dark:text-white'
     case 'HIATUS':
-      return 'border border-orange-500/45 bg-orange-500/15 text-orange-900 dark:border-orange-400/40 dark:bg-orange-500/25 dark:text-orange-100'
+      return 'border border-orange-500/45 bg-orange-500/15 text-orange-900 dark:border-transparent dark:bg-orange-500/90 dark:text-white'
     case 'CANCELLED':
-      return 'border border-red-500/40 bg-red-500/15 text-red-800 dark:border-red-400/40 dark:bg-red-500/25 dark:text-red-100'
+      return 'border border-red-500/40 bg-red-500/15 text-red-800 dark:border-transparent dark:bg-red-600/90 dark:text-white'
     default:
       return 'border border-border bg-muted/90 text-foreground'
   }
