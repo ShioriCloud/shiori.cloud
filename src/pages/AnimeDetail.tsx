@@ -874,10 +874,10 @@ const AnimeDetail = () => {
             <button
               type="button"
               onClick={handleShare}
-              className="absolute left-0 top-0 p-2 rounded-xl surface-skeuo text-muted-foreground hover:text-foreground transition-colors"
+              className="absolute left-0 top-0 inline-flex min-h-10 min-w-10 items-center justify-center rounded-xl surface-skeuo text-muted-foreground hover:text-foreground transition-colors"
               aria-label="اشتراک‌گذاری در تلگرام"
             >
-              <Share08Icon className="w-4 h-4" />
+              <Share08Icon className="w-5 h-5" />
             </button>
           </div>
 
@@ -889,7 +889,7 @@ const AnimeDetail = () => {
               <button
                 key={genre.slug}
                 type="button"
-                className="text-[10px] px-2 py-0.5 rounded-md border border-primary-400/40 bg-primary-400/15 font-medium text-primary-700 hover:bg-primary-400/25 transition-colors dark:border-primary-400/25 dark:bg-primary-500/15 dark:text-primary-200 dark:hover:bg-primary-500/25"
+                className="min-h-8 text-[10px] px-2.5 py-1 rounded-md border border-primary-400/40 bg-primary-400/15 font-medium text-primary-700 hover:bg-primary-400/25 transition-colors dark:border-primary-400/25 dark:bg-primary-500/15 dark:text-primary-200 dark:hover:bg-primary-500/25"
                 onClick={() =>
                   navigate(exploreAllHref({ genreSlugs: [genre.slug] }))
                 }

@@ -64,11 +64,11 @@ export const MyListDeleteChip = ({
     aria-label={ariaLabel}
     onClick={onClick}
     className={cn(
-      'ui-elevated inline-flex h-7 shrink-0 items-center justify-center gap-1 rounded-md px-2',
+      'ui-elevated inline-flex h-9 min-h-9 shrink-0 items-center justify-center gap-1 rounded-md px-2.5',
       'text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground'
     )}
   >
-    <Delete02Icon className="h-3.5 w-3.5" />
+    <Delete02Icon className="h-4 w-4" />
     حذف
   </button>
 )
@@ -306,7 +306,7 @@ export const MyListGhostButton = ({
     aria-label={ariaLabel}
     onClick={onClick}
     className={cn(
-      'inline-flex shrink-0 items-center justify-center rounded-lg p-1.5',
+      'inline-flex min-h-9 min-w-9 shrink-0 items-center justify-center rounded-lg p-2',
       'text-muted-foreground transition-colors duration-150',
       'hover:bg-muted/50 hover:text-foreground active:scale-95',
       destructive && 'hover:text-red-400',

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { hapticSelection } from '@/lib/telegramHaptics'
 import { cn } from '@/lib/utils'
 import emptyExploreImage from '@/assets/images/frieren-03.webp'
 
@@ -8,7 +9,7 @@ export const EXPLORE_STICKY_SHELL_CLASS =
 
 /** Chip style shared by filter/sort buttons and season result count. */
 export const EXPLORE_CHIP_CLASS =
-  'ui-elevated inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/50'
+  'ui-elevated inline-flex h-9 min-h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-medium text-foreground transition-colors hover:bg-muted/50'
 
 type ExploreTabBarProps<T extends string> = {
   tabs: { id: T; label: string }[]
@@ -30,9 +31,13 @@ export const ExploreTabBar = <T extends string>({
         <button
           key={tab.id}
           type="button"
-          onClick={() => onChange(tab.id)}
+          onClick={() => {
+            if (tab.id === active) return
+            hapticSelection()
+            onChange(tab.id)
+          }}
           className={cn(
-            'relative flex-1 py-2.5 rounded-[10px] text-sm transition-all duration-200',
+            'relative flex-1 min-h-10 py-2.5 rounded-[10px] text-sm transition-all duration-200',
             isActive ? 'text-foreground font-semibold' : 'text-muted-foreground hover:text-foreground'
           )}
           aria-pressed={isActive}
@@ -85,9 +90,12 @@ export const ExploreOptionButton = ({
 }) => (
   <button
     type="button"
-    onClick={onClick}
+    onClick={() => {
+      hapticSelection()
+      onClick()
+    }}
     className={cn(
-      'ui-elevated min-h-10 rounded-xl px-3 py-2.5 text-sm text-start transition-colors',
+      'ui-elevated min-h-11 rounded-xl px-3 py-2.5 text-sm text-start transition-colors',
       active
         ? 'border-primary-400/45 bg-primary-400/15 font-semibold text-primary-700 dark:border-primary-400/25 dark:bg-primary-500/15 dark:text-primary-200'
         : 'text-foreground hover:bg-muted/50',

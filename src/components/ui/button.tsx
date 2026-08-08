@@ -23,14 +23,14 @@ const buttonVariants = cva(
       },
       size: {
         default:
-          'h-9 min-h-9 gap-1.5 px-3 has-data-[icon=inline-end]:pr-2.5 has-data-[icon=inline-start]:pl-2.5',
+          'h-10 min-h-10 gap-1.5 px-3.5 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3',
         xs: "h-9 min-h-9 gap-1 px-2.5 text-xs has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3.5",
         sm: "h-9 min-h-9 gap-1.5 px-3 text-[0.8125rem] has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3.5",
-        lg: 'h-10 min-h-10 gap-2 px-4 has-data-[icon=inline-end]:pr-3.5 has-data-[icon=inline-start]:pl-3.5',
-        icon: 'size-9 min-h-9 min-w-9',
+        lg: 'h-11 min-h-11 gap-2 px-4 has-data-[icon=inline-end]:pr-3.5 has-data-[icon=inline-start]:pl-3.5',
+        icon: 'size-10 min-h-10 min-w-10',
         'icon-xs': "size-9 min-h-9 min-w-9 [&_svg:not([class*='size-'])]:size-3.5",
         'icon-sm': 'size-9 min-h-9 min-w-9',
-        'icon-lg': 'size-10 min-h-10 min-w-10',
+        'icon-lg': 'size-11 min-h-11 min-w-11',
       },
     },
     defaultVariants: {

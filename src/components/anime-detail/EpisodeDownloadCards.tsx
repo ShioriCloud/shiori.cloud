@@ -42,7 +42,7 @@ export const episodeOneLineShellClass =
   'group relative flex items-center gap-3 overflow-hidden rounded-xl surface-skeuo px-3 py-2.5 transition-colors hover:bg-muted/40 cursor-pointer active:scale-[0.99]'
 
 export const episodeActionBtnClass =
-  'relative z-10 inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-lg border px-2.5 text-[11px] font-semibold transition-colors active:scale-[0.97]'
+  'relative z-10 inline-flex h-9 min-h-9 shrink-0 items-center justify-center gap-1 rounded-lg border px-3 text-[11px] font-semibold transition-colors active:scale-[0.97]'
 
 /** Neutral download chip for regular episode & subtitle rows. */
 export const episodeActionBtnNeutralClass =
