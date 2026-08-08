@@ -5,7 +5,7 @@ import {
   Calendar01Icon,
   UserIcon,
   FavouriteIcon,
-  Compass01Icon,
+  Search01Icon,
 } from 'hugeicons-react'
 import { AppHeader, APP_HEADER_PAD_CLASS } from '@/components/AppHeader'
 import { useTelegramBackButton } from '@/hooks/useTelegramBackButton'
@@ -126,7 +126,7 @@ const Layout = ({ children }: LayoutProps) => {
               )}
               aria-label="گشت‌و‌گذار"
             >
-              <Compass01Icon className="w-6 h-6" />
+              <Search01Icon className="w-6 h-6" />
               <span className="text-xs">گشت‌و‌گذار</span>
             </Link>
             <Link

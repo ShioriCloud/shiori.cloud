@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef } from 'react'
 import type { UiAnimeCard } from '@/utils/api'
 import { AnimePosterCard, AnimePosterSkeletonGrid } from '@/components/anime/AnimePosterCard'
 import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel'
-import { cn } from '@/lib/utils'
 import { ExploreEmptyState } from './ExploreUi'
 
 const GRID_COLS = 3
@@ -16,7 +15,7 @@ const nextPageSkeletonCount = (itemCount: number) => {
 type ExploreInfiniteAnimeListProps = {
   items: UiAnimeCard[]
   isLoading?: boolean
-  /** Filter/sort/search refetch while previous results stay visible (keepPreviousData). */
+  /** Soft refetch of the same query — progress shows under the search field, cards stay solid. */
   isRefreshing?: boolean
   isError?: boolean
   hasNextPage?: boolean
@@ -69,7 +68,7 @@ export const ExploreInfiniteAnimeList = ({
     return () => window.clearTimeout(timer)
   }, [hasNextPage, isLoading, isFetchingNextPage, isRefreshing, items.length, onLoadMore])
 
-  if (isLoading && items.length === 0) {
+  if (isLoading) {
     return <AnimePosterSkeletonGrid className="px-4" />
   }
 
@@ -98,10 +97,7 @@ export const ExploreInfiniteAnimeList = ({
   return (
     <div className="relative px-4 pb-8">
       <div
-        className={cn(
-          'grid grid-cols-3 gap-3 transition-opacity duration-200',
-          isRefreshing && 'pointer-events-none opacity-45'
-        )}
+        className="grid grid-cols-3 gap-3"
         aria-busy={isRefreshing || undefined}
       >
         {items.map((anime, index) => (
@@ -115,17 +111,6 @@ export const ExploreInfiniteAnimeList = ({
             ))
           : null}
       </div>
-      {isRefreshing ? (
-        <div
-          className="pointer-events-none absolute inset-x-4 top-8 flex justify-center"
-          aria-hidden
-        >
-          <span className="ui-elevated inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-medium text-foreground">
-            <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary-400 border-t-transparent" />
-            در حال به‌روزرسانی…
-          </span>
-        </div>
-      ) : null}
       <div ref={sentinelRef} className="h-4 w-full" aria-hidden />
     </div>
   )

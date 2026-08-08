@@ -1,4 +1,4 @@
-import { Filter, ArrowUpDown, Loader2, Search as SearchIcon } from 'lucide-react'
+import { Filter, ArrowUpDown, Search as SearchIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { EXPLORE_CHIP_CLASS, EXPLORE_STICKY_SHELL_CLASS } from './ExploreUi'
 
@@ -61,7 +61,7 @@ export const ExploreListToolbar = ({
       </div>
     </div>
 
-    <div className="ui-elevated relative mt-2.5 flex h-10 min-w-0 items-center rounded-xl px-2.5 ps-10 pe-10">
+    <div className="ui-elevated relative mt-2.5 flex h-10 min-w-0 items-center rounded-xl px-2.5 ps-10">
       <SearchIcon className="text-muted-foreground absolute start-3 h-4 w-4" />
       <input
         type="search"
@@ -73,12 +73,6 @@ export const ExploreListToolbar = ({
         aria-label="جستجو"
         aria-busy={busy}
       />
-      {busy ? (
-        <Loader2
-          className="absolute end-3 h-4 w-4 animate-spin text-primary-400"
-          aria-hidden
-        />
-      ) : null}
     </div>
     {busy ? (
       <div

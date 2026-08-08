@@ -181,6 +181,9 @@ const Explore = () => {
     (searchPending || (allQuery.isFetching && !allQuery.isFetchingNextPage))
   const seasonalListRefreshing =
     state.tab === 'seasonal' && seasonalQuery.isFetching && !seasonalQuery.isFetchingNextPage
+  /** keepPreviousData shows the prior filter's cards — treat as hard load, not overlay. */
+  const allListLoading = allQuery.isLoading || allQuery.isPlaceholderData
+  const seasonalListLoading = seasonalQuery.isLoading || seasonalQuery.isPlaceholderData
 
   return (
     <div className="min-h-full pb-24">
@@ -205,8 +208,8 @@ const Explore = () => {
           </div>
           <ExploreInfiniteAnimeList
             items={allItems}
-            isLoading={allQuery.isLoading}
-            isRefreshing={allListRefreshing}
+            isLoading={allListLoading}
+            isRefreshing={allListRefreshing && !allListLoading}
             isError={allQuery.isError}
             hasNextPage={allQuery.hasNextPage}
             isFetchingNextPage={allQuery.isFetchingNextPage}
@@ -234,8 +237,8 @@ const Explore = () => {
           </div>
           <ExploreInfiniteAnimeList
             items={seasonalItems}
-            isLoading={seasonalQuery.isLoading}
-            isRefreshing={seasonalListRefreshing}
+            isLoading={seasonalListLoading}
+            isRefreshing={seasonalListRefreshing && !seasonalListLoading}
             isError={seasonalQuery.isError}
             hasNextPage={seasonalQuery.hasNextPage}
             isFetchingNextPage={seasonalQuery.isFetchingNextPage}
