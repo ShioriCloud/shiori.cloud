@@ -3,6 +3,7 @@ import { useEffect, lazy, Suspense } from 'react'
 import WebApp from '@twa-dev/sdk'
 import Layout from './components/Layout'
 import ScrollToTop from './components/ScrollToTop'
+import { BrandBootScreen } from './components/BrandBootScreen'
 import { useTheme } from './utils/theme'
 import { useAppAuth } from './hooks/useAppAuth'
 import { isTelegramMiniApp } from './lib/platform'
@@ -80,23 +81,13 @@ function App() {
   }, [isReady, applyTheme])
 
   if (!isReady) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
-      </div>
-    )
+    return <BrandBootScreen />
   }
 
   return (
     <Layout>
       <ScrollToTop />
-      <Suspense
-        fallback={
-          <div className="flex items-center justify-center h-screen">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
-          </div>
-        }
-      >
+      <Suspense fallback={<BrandBootScreen />}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/anime/:id" element={<AnimeDetail />} />

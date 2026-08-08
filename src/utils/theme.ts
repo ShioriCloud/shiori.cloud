@@ -46,7 +46,7 @@ export const useTheme = () => {
           setBackgroundColor?: (color: string) => void
           setHeaderColor?: (color: string) => void
         }
-        const bg = isDarkMode ? '#252525' : '#ffffff'
+        const bg = isDarkMode ? '#161616' : '#ffffff'
         wa.setBackgroundColor?.(bg)
         wa.setHeaderColor?.(bg)
       } catch {

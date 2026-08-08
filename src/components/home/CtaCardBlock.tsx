@@ -15,14 +15,18 @@ export const CtaCardBlock = ({ block }: { block: HomeCtaCardBlock }) => {
         openInNewTab={block.open_in_new_tab}
         className={linked ? 'block active:scale-[0.995] transition-transform' : 'block'}
       >
-        <div className="overflow-hidden rounded-2xl border border-border/60 bg-card/50 shadow-sm">
+        <div className="surface-skeuo overflow-hidden rounded-2xl">
           <div className="flex gap-3 p-3">
-            <img
-              src={imageSrc}
-              alt=""
-              className="h-28 w-20 shrink-0 rounded-xl border border-border/80 object-cover"
-              loading="lazy"
-            />
+            <div className="media-card-skeuo h-28 w-20 shrink-0 rounded-xl">
+              <div className="media-card-skeuo-face h-full w-full">
+                <img
+                  src={imageSrc}
+                  alt=""
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+            </div>
 
             <div className="min-w-0 flex flex-1 flex-col justify-between py-0.5">
               <div className="min-w-0">
@@ -46,7 +50,7 @@ export const CtaCardBlock = ({ block }: { block: HomeCtaCardBlock }) => {
 
               {linked ? (
                 <div className="mt-2 flex justify-end">
-                  <span className="inline-flex items-center rounded-lg border border-primary-400/30 bg-primary-400/10 px-3 py-1.5 text-xs font-medium text-primary-400">
+                  <span className="inline-flex items-center rounded-lg border border-primary-400/40 bg-primary-400/15 px-3 py-1.5 text-xs font-medium text-primary-700 dark:border-primary-400/30 dark:bg-primary-400/10 dark:text-primary-300">
                     {block.button_label?.trim() || 'مشاهده'}
                   </span>
                 </div>

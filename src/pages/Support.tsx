@@ -24,9 +24,10 @@ const formatTime = (iso: string) => {
 }
 
 const statusTone = (status: string) => {
-  if (status === 'answered') return 'border-emerald-400/30 bg-emerald-400/15 text-emerald-200'
-  if (status === 'closed') return 'border-border/50 bg-muted/40 text-muted-foreground'
-  return 'border-primary-400/35 bg-primary-400/15 text-primary-200'
+  if (status === 'answered')
+    return 'border-emerald-500/35 bg-emerald-500/15 text-emerald-800 dark:border-emerald-400/30 dark:bg-emerald-400/15 dark:text-emerald-200'
+  if (status === 'closed') return 'border-border bg-muted/80 text-muted-foreground'
+  return 'border-primary-400/40 bg-primary-400/15 text-primary-700 dark:border-primary-400/35 dark:bg-primary-400/15 dark:text-primary-200'
 }
 
 const SupportPage = () => {
@@ -150,7 +151,7 @@ const SupportPage = () => {
                       className={cn(
                         'rounded-md border px-2 py-1.5 text-[11px] font-medium transition-colors',
                         category === key
-                          ? 'border-primary-400/40 bg-primary-400/15 text-primary-200'
+                          ? 'border-primary-400/40 bg-primary-400/15 text-primary-700 dark:text-primary-200'
                           : 'border-border/50 bg-muted/30 text-muted-foreground hover:bg-muted/50'
                       )}
                     >

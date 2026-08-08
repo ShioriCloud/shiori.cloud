@@ -850,7 +850,7 @@ const AnimeDetail = () => {
             {statusKey ? (
               <span
                 className={cn(
-                  'absolute top-2 right-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-md backdrop-blur-sm',
+                  'absolute top-2 right-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-md backdrop-blur-md bg-background/80 shadow-sm',
                   posterStatusClass(statusKey)
                 )}
               >
@@ -926,14 +926,16 @@ const AnimeDetail = () => {
               className={cn(
                 'mt-3 flex w-full items-center gap-3 rounded-2xl border px-3.5 py-2.5',
                 hardsubLanguage === 'en'
-                  ? 'border-amber-500/25 bg-gradient-to-l from-amber-500/[0.12] to-card/60'
-                  : 'border-emerald-500/20 bg-gradient-to-l from-emerald-500/[0.08] to-card/60'
+                  ? 'border-amber-500/35 bg-amber-500/10 dark:border-amber-500/25 dark:bg-gradient-to-l dark:from-amber-500/[0.12] dark:to-card/60'
+                  : 'border-emerald-500/30 bg-emerald-500/10 dark:border-emerald-500/20 dark:bg-gradient-to-l dark:from-emerald-500/[0.08] dark:to-card/60'
               )}
             >
               <CheckmarkCircle02Icon
                 className={cn(
                   'h-5 w-5 shrink-0',
-                  hardsubLanguage === 'en' ? 'text-amber-400' : 'text-emerald-400'
+                  hardsubLanguage === 'en'
+                    ? 'text-amber-700 dark:text-amber-400'
+                    : 'text-emerald-700 dark:text-emerald-400'
                 )}
               />
               <div className="min-w-0 flex-1">

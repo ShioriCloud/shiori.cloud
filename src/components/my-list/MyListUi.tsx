@@ -191,20 +191,20 @@ export const MyListBadge = ({
   tone?: 'default' | 'primary' | 'muted' | 'success' | 'warning' | 'time'
   className?: string
 }) => {
-  /* Light + dark: solid status chips stay; default uses muted surface (not zinc-900 slab). */
+  /* Wash chips (same language as Explore options / Detail genres) — readable in light + dark. */
   const tones = {
     default:
-      'border-border bg-muted text-foreground dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50',
+      'border-border bg-muted/90 text-foreground dark:border-zinc-600 dark:bg-zinc-700/90 dark:text-zinc-50',
     primary:
-      'border-transparent bg-primary-500 text-white dark:border-primary-400/40 dark:bg-primary-500/90 dark:text-white',
+      'border-primary-400/40 bg-primary-400/15 text-primary-700 dark:border-primary-400/35 dark:bg-primary-500/20 dark:text-primary-200',
     muted:
-      'border-transparent bg-zinc-200 text-zinc-800 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-100',
+      'border-border bg-muted text-muted-foreground dark:border-zinc-600 dark:bg-zinc-700/80 dark:text-zinc-200',
     success:
-      'border-transparent bg-emerald-600 text-white dark:border-emerald-500/40 dark:bg-emerald-600 dark:text-white',
+      'border-emerald-500/35 bg-emerald-500/15 text-emerald-800 dark:border-emerald-500/35 dark:bg-emerald-500/20 dark:text-emerald-200',
     warning:
-      'border-transparent bg-amber-500 text-zinc-950 dark:border-amber-400/40 dark:bg-amber-500 dark:text-zinc-950',
+      'border-amber-500/40 bg-amber-500/15 text-amber-900 dark:border-amber-400/40 dark:bg-amber-500/20 dark:text-amber-200',
     time:
-      'border-transparent bg-violet-600 text-white dark:border-violet-400/40 dark:bg-violet-600 dark:text-white',
+      'border-violet-500/35 bg-violet-500/15 text-violet-800 dark:border-violet-400/35 dark:bg-violet-500/20 dark:text-violet-200',
   }
   return (
     <span
@@ -273,10 +273,7 @@ export const MyListErrorState = ({ message, onRetry }: { message: string; onRetr
 export const MyListSkeletonCards = ({ count = 4 }: { count?: number }) => (
   <div className="space-y-2">
     {Array.from({ length: count }).map((_, i) => (
-      <div
-        key={i}
-        className="animate-pulse flex gap-2 rounded-lg border border-border/40 bg-card/40 p-2"
-      >
+      <div key={i} className="animate-pulse flex gap-2 rounded-lg surface-skeuo p-2">
         <div className="w-12 aspect-[2/3] rounded-md bg-muted shrink-0" />
         <div className="flex-1 space-y-1.5 py-0.5">
           <div className="h-3.5 bg-muted rounded-md w-4/5" />
