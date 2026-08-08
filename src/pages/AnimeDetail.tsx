@@ -239,7 +239,7 @@ const SeriesSeasonSwitcher = ({
             <p className="text-[11px] text-muted-foreground">دسترسی سریع به سایر فصل‌های انیمه</p>
           </div>
           {progressLabel ? (
-            <span className="shrink-0 rounded-md bg-zinc-900 px-2.5 py-1 text-[10px] font-semibold tabular-nums text-white dark:border dark:border-primary-400/25 dark:bg-primary-500/20 dark:text-primary-200">
+            <span className="shrink-0 rounded-md border border-primary-400/25 bg-primary-500/15 px-2.5 py-1 text-[10px] font-semibold tabular-nums text-primary-700 dark:bg-primary-500/20 dark:text-primary-200">
               {progressLabel}
             </span>
           ) : null}
@@ -882,14 +882,14 @@ const AnimeDetail = () => {
           </div>
 
           <div className="flex flex-wrap justify-center gap-1.5 mt-2">
-            <span className="text-[10px] px-2 py-0.5 rounded-md bg-zinc-900 font-medium text-white dark:border dark:border-border dark:bg-muted/80 dark:text-muted-foreground">
+            <span className="text-[10px] px-2 py-0.5 rounded-md border border-border bg-muted/80 font-medium text-muted-foreground">
               {translateFormat(anime.format)}
             </span>
             {anime.genres.slice(0, 4).map((genre) => (
               <button
                 key={genre.slug}
                 type="button"
-                className="text-[10px] px-2 py-0.5 rounded-md bg-primary-500 font-medium text-white hover:bg-primary-500/90 transition-colors dark:border dark:border-primary-400/25 dark:bg-primary-500/15 dark:text-primary-200 dark:hover:bg-primary-500/25"
+                className="text-[10px] px-2 py-0.5 rounded-md border border-primary-400/40 bg-primary-400/15 font-medium text-primary-700 hover:bg-primary-400/25 transition-colors dark:border-primary-400/25 dark:bg-primary-500/15 dark:text-primary-200 dark:hover:bg-primary-500/25"
                 onClick={() =>
                   navigate(exploreAllHref({ genreSlugs: [genre.slug] }))
                 }

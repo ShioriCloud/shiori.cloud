@@ -46,11 +46,11 @@ export const episodeActionBtnClass =
 
 /** Neutral download chip for regular episode & subtitle rows. */
 export const episodeActionBtnNeutralClass =
-  'border-transparent bg-zinc-900 text-white hover:bg-zinc-800 dark:border-white/25 dark:bg-white/10 dark:text-white dark:hover:bg-white/15'
+  'border-border bg-muted text-foreground hover:bg-muted/80 dark:border-white/25 dark:bg-white/10 dark:text-white dark:hover:bg-white/15'
 
 /** Purple download chip — packs only. */
 export const episodeActionBtnPackClass =
-  'border-transparent bg-primary-500 text-white hover:bg-primary-500/90 dark:border-primary-400/35 dark:bg-primary-400/10 dark:text-primary-300 dark:hover:bg-primary-400/15'
+  'border-primary-400/45 bg-primary-400/15 text-primary-700 hover:bg-primary-400/25 dark:border-primary-400/35 dark:bg-primary-400/10 dark:text-primary-300 dark:hover:bg-primary-400/15'
 
 export const EpisodeDownloadCard = ({
   episode,

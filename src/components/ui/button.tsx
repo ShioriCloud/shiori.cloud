@@ -10,7 +10,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          'ui-elevated-primary bg-primary text-primary-foreground [a]:hover:bg-primary/80',
+          'ui-elevated-primary bg-primary-500 text-white hover:bg-primary-500/90 [a]:hover:bg-primary-500/90',
         outline:
           'ui-elevated text-foreground hover:bg-muted/60 aria-expanded:bg-muted aria-expanded:text-foreground',
         secondary:

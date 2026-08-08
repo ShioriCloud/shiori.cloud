@@ -2,7 +2,7 @@ import type { MouseEvent, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Delete02Icon } from 'hugeicons-react'
 import { Button } from '@/components/ui/button'
-import { EXPLORE_CHIP_CLASS } from '@/components/explore/ExploreUi'
+import { EXPLORE_CHIP_CLASS, SHIORI_PRIMARY_BUTTON_CLASS } from '@/components/explore/ExploreUi'
 import { cn } from '@/lib/utils'
 import emptyListImage from '@/assets/images/frieren-03.webp'
 
@@ -191,10 +191,10 @@ export const MyListBadge = ({
   tone?: 'default' | 'primary' | 'muted' | 'success' | 'warning' | 'time'
   className?: string
 }) => {
-  /* Light: solid chips. Dark: solid muted tones (glass was unreadable). */
+  /* Light + dark: solid status chips stay; default uses muted surface (not zinc-900 slab). */
   const tones = {
     default:
-      'border-transparent bg-zinc-900 text-white dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50',
+      'border-border bg-muted text-foreground dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50',
     primary:
       'border-transparent bg-primary-500 text-white dark:border-primary-400/40 dark:bg-primary-500/90 dark:text-white',
     muted:
@@ -243,7 +243,7 @@ export const MyListEmptyState = ({
       <Button
         type="button"
         size="lg"
-        className="bg-primary-500 text-white font-bold rounded-lg px-6 hover:bg-primary-500/90"
+        className={cn('h-11 font-bold rounded-lg px-6', SHIORI_PRIMARY_BUTTON_CLASS)}
         onClick={onAction}
       >
         {actionLabel}
@@ -253,7 +253,7 @@ export const MyListEmptyState = ({
         asChild
         type="button"
         size="lg"
-        className="bg-primary-500 text-white font-bold rounded-lg px-6 hover:bg-primary-500/90"
+        className={cn('h-11 font-bold rounded-lg px-6', SHIORI_PRIMARY_BUTTON_CLASS)}
       >
         <Link to={actionTo}>{actionLabel}</Link>
       </Button>

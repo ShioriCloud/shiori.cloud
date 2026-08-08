@@ -216,7 +216,7 @@ export const SearchFiltersSheet = ({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="flex max-h-[88vh] flex-col rounded-t-2xl border-t border-border bg-background p-0 shadow-[0_-8px_30px_oklch(0.4_0_0/0.12)] dark:shadow-[0_-8px_30px_oklch(0_0_0/0.45)]"
+        className="flex max-h-[88vh] flex-col rounded-t-2xl border-t border-border bg-background p-0 shadow-[0_-8px_30px_oklch(0.4_0_0/0.12)] dark:shadow-[0_-8px_30px_oklch(0_0_0/0.45)] pb-[env(safe-area-inset-bottom,0px)]"
       >
         <SheetHeader className="shrink-0 border-b border-border/50 px-4 py-3">
           <SheetTitle className="text-base">{title}</SheetTitle>

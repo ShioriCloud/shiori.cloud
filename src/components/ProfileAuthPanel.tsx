@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { SHIORI_PRIMARY_BUTTON_CLASS } from '@/components/explore/ExploreUi'
+import { cn } from '@/lib/utils'
 import logo from '../assets/images/shiori-logo.svg'
 
 type Mode = 'login' | 'register'
@@ -102,7 +104,7 @@ export const ProfileAuthPanel = ({
         </p>
       )}
 
-      <Button type="submit" className="w-full h-11 font-semibold bg-primary-600 text-white" disabled={loading}>
+      <Button type="submit" className={cn('w-full h-11 font-semibold', SHIORI_PRIMARY_BUTTON_CLASS)} disabled={loading}>
         {loading ? 'لطفاً صبر کنید…' : mode === 'login' ? 'ورود' : 'ساخت حساب'}
       </Button>
     </form>

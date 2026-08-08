@@ -90,15 +90,16 @@ const Layout = ({ children }: LayoutProps) => {
         {children}
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 pb-[var(--app-tg-bottom-inset)]">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-md pb-[var(--app-tg-bottom-inset)]">
         <div className="container">
           <div className="flex justify-around py-4">
             <Link
               to="/"
               onClick={() => hapticSelection()}
-              className={`flex flex-col items-center space-y-1 ${
-                isActive('/') ? 'text-primary-400' : 'text-gray-400'
-              }`}
+              className={cn(
+                'flex flex-col items-center space-y-1 transition-colors',
+                isActive('/') ? 'text-primary-400' : 'text-muted-foreground'
+              )}
               aria-label="خانه"
             >
               <Home01Icon className="w-6 h-6" />
@@ -107,9 +108,10 @@ const Layout = ({ children }: LayoutProps) => {
             <Link
               to="/schedule"
               onClick={() => hapticSelection()}
-              className={`flex flex-col items-center space-y-1 ${
-                isActive('/schedule') ? 'text-primary-400' : 'text-gray-400'
-              }`}
+              className={cn(
+                'flex flex-col items-center space-y-1 transition-colors',
+                isActive('/schedule') ? 'text-primary-400' : 'text-muted-foreground'
+              )}
               aria-label="برنامه پخش"
             >
               <Calendar01Icon className="w-6 h-6" />
@@ -118,9 +120,10 @@ const Layout = ({ children }: LayoutProps) => {
             <Link
               to="/explore"
               onClick={() => hapticSelection()}
-              className={`flex flex-col items-center space-y-1 ${
-                isActive('/explore') ? 'text-primary-400' : 'text-gray-400'
-              }`}
+              className={cn(
+                'flex flex-col items-center space-y-1 transition-colors',
+                isActive('/explore') ? 'text-primary-400' : 'text-muted-foreground'
+              )}
               aria-label="گشت‌و‌گذار"
             >
               <Compass01Icon className="w-6 h-6" />
@@ -129,9 +132,10 @@ const Layout = ({ children }: LayoutProps) => {
             <Link
               to="/my-list"
               onClick={() => hapticSelection()}
-              className={`flex flex-col items-center space-y-1 ${
-                isActive('/my-list') ? 'text-primary-400' : 'text-gray-400'
-              }`}
+              className={cn(
+                'flex flex-col items-center space-y-1 transition-colors',
+                isActive('/my-list') ? 'text-primary-400' : 'text-muted-foreground'
+              )}
               aria-label="لیست من"
             >
               <FavouriteIcon className="w-6 h-6" />
@@ -140,9 +144,10 @@ const Layout = ({ children }: LayoutProps) => {
             <Link
               to="/profile"
               onClick={() => hapticSelection()}
-              className={`relative flex flex-col items-center space-y-1 ${
-                isActive('/profile') ? 'text-primary-400' : 'text-gray-400'
-              }`}
+              className={cn(
+                'relative flex flex-col items-center space-y-1 transition-colors',
+                isActive('/profile') ? 'text-primary-400' : 'text-muted-foreground'
+              )}
               aria-label={
                 unreadCount > 0
                   ? `پروفایل، ${toPersianNumber(unreadCount)} اعلان خوانده‌نشده`
@@ -155,7 +160,7 @@ const Layout = ({ children }: LayoutProps) => {
                   <span
                     className={cn(
                       'absolute -end-2 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full',
-                      'bg-primary-400 px-1 text-[9px] font-bold leading-none text-primary-foreground tabular-nums'
+                      'bg-primary-400 px-1 text-[9px] font-bold leading-none text-white tabular-nums'
                     )}
                   >
                     {unreadCount > 9 ? '۹+' : toPersianNumber(unreadCount)}

@@ -69,8 +69,8 @@ export const splitCountdown = (remainingMs: number) => {
 }
 
 export const CountdownUnit = ({ value, label }: { value: number; label: string }) => (
-  <div className="flex min-w-[2.5rem] flex-col items-center justify-center rounded-lg bg-zinc-900 px-1.5 py-1.5 dark:border dark:border-primary-400/20 dark:bg-primary-400/10">
-    <span className="text-[13px] font-bold tabular-nums leading-none text-white dark:text-primary-200">
+  <div className="flex min-w-[2.5rem] flex-col items-center justify-center rounded-lg border border-primary-400/25 bg-primary-400/10 px-1.5 py-1.5">
+    <span className="text-[13px] font-bold tabular-nums leading-none text-primary-700 dark:text-primary-200">
       {toPersianNumber(String(value).padStart(2, '0'))}
     </span>
     <span className="mt-1 text-[9px] font-medium leading-none text-muted-foreground">
