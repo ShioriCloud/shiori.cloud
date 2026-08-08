@@ -18,11 +18,21 @@ type ExploreGenreGridProps = {
   genres: GenreAdminItem[]
   isLoading?: boolean
   isError?: boolean
+  onRetry?: () => void
 }
 
-export const ExploreGenreGrid = ({ genres, isLoading, isError }: ExploreGenreGridProps) => {
+export const ExploreGenreGrid = ({ genres, isLoading, isError, onRetry }: ExploreGenreGridProps) => {
   if (isLoading) return <ExploreGenreSkeletonGrid />
-  if (isError) return <ExploreEmptyState title="خطا در دریافت ژانرها" showImage={false} />
+  if (isError)
+    return (
+      <ExploreEmptyState
+        title="خطا در دریافت ژانرها"
+        subtitle="لطفاً دوباره تلاش کنید."
+        showImage
+        actionLabel={onRetry ? 'تلاش مجدد' : undefined}
+        onAction={onRetry}
+      />
+    )
   if (genres.length === 0) return <ExploreEmptyState title="ژانری ثبت نشده" />
 
   return (

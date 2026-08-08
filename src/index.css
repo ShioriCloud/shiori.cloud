@@ -26,7 +26,9 @@
       max(var(--tg-safe-area-inset-bottom, 0px), env(safe-area-inset-bottom, 0px)) +
         var(--tg-content-safe-area-inset-bottom, 0px)
     );
-    /* Fixed header pages: safe + chrome row + logo row padding */
+    /* Sticky under Telegram chrome (in-page header routes: Home/Explore). */
+    --app-sticky-top: var(--app-tg-top-inset);
+    /* Fixed AppHeader pages: chrome + logo row padding */
     --app-header-offset: calc(var(--app-tg-top-inset) + 0.625rem);
 
     color-scheme: light;
@@ -558,6 +560,24 @@
 
   .my-list-enter {
     animation: my-list-fade-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-sheet-in-bottom,
+    .animate-sheet-out-bottom,
+    .animate-sheet-in-left,
+    .animate-sheet-out-left,
+    .animate-sheet-in-right,
+    .animate-sheet-out-right,
+    .explore-fetch-bar,
+    .episode-pack-card-wrap,
+    .my-list-enter {
+      animation: none !important;
+    }
+
+    .home-featured-scroller {
+      scroll-behavior: auto;
+    }
   }
 
   /** Latin / English strings in RTL UI — keeps trailing ? ! . at the visual end */

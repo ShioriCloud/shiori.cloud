@@ -211,6 +211,7 @@ const Explore = () => {
             hasNextPage={allQuery.hasNextPage}
             isFetchingNextPage={allQuery.isFetchingNextPage}
             onLoadMore={() => void allQuery.fetchNextPage()}
+            onRetry={() => void allQuery.refetch()}
             emptySubtitle={
               state.query || filterCount > 0
                 ? 'عبارت جستجو یا فیلترها را تغییر دهید.'
@@ -239,6 +240,7 @@ const Explore = () => {
             hasNextPage={seasonalQuery.hasNextPage}
             isFetchingNextPage={seasonalQuery.isFetchingNextPage}
             onLoadMore={() => void seasonalQuery.fetchNextPage()}
+            onRetry={() => void seasonalQuery.refetch()}
             emptyTitle="برای این فصل انیمه‌ای نیست"
           />
         </>
@@ -250,6 +252,7 @@ const Explore = () => {
             genres={genresQuery.data ?? []}
             isLoading={genresQuery.isLoading}
             isError={genresQuery.isError}
+            onRetry={() => void genresQuery.refetch()}
           />
         </div>
       ) : null}

@@ -22,6 +22,7 @@ type ExploreInfiniteAnimeListProps = {
   hasNextPage?: boolean
   isFetchingNextPage?: boolean
   onLoadMore?: () => void
+  onRetry?: () => void
   emptyTitle?: string
   emptySubtitle?: string
 }
@@ -36,6 +37,7 @@ export const ExploreInfiniteAnimeList = ({
   hasNextPage,
   isFetchingNextPage,
   onLoadMore,
+  onRetry,
   emptyTitle = 'انیمه‌ای پیدا نشد',
   emptySubtitle,
 }: ExploreInfiniteAnimeListProps) => {
@@ -76,7 +78,9 @@ export const ExploreInfiniteAnimeList = ({
       <ExploreEmptyState
         title="خطا در دریافت انیمه‌ها"
         subtitle="لطفاً دوباره تلاش کنید."
-        showImage={false}
+        showImage
+        actionLabel={onRetry ? 'تلاش مجدد' : undefined}
+        onAction={onRetry}
       />
     )
   }

@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react'
+import { Button } from '@/components/ui/button'
 import { hapticSelection } from '@/lib/telegramHaptics'
 import { cn } from '@/lib/utils'
 import emptyExploreImage from '@/assets/images/frieren-03.webp'
 
 /** Shared sticky chrome for Explore list / season headers (keep heights in sync). */
 export const EXPLORE_STICKY_SHELL_CLASS =
-  'sticky top-[var(--app-tg-top-inset)] z-20 -mx-4 px-4 py-2.5 bg-background/95 backdrop-blur-md'
+  'sticky top-[var(--app-sticky-top)] z-20 -mx-4 px-4 py-2.5 bg-background/95 backdrop-blur-md'
 
 /** Chip style shared by filter/sort buttons and season result count. */
 export const EXPLORE_CHIP_CLASS =
@@ -60,11 +61,15 @@ export const ExploreEmptyState = ({
   title,
   subtitle,
   showImage = true,
+  actionLabel,
+  onAction,
 }: {
   title: string
   subtitle?: string
-  /** Frieren empty art — on for no-results, off for hard errors. */
+  /** Frieren empty art — on for no-results; errors can opt in too. */
   showImage?: boolean
+  actionLabel?: string
+  onAction?: () => void
 }) => (
   <div className="flex flex-col items-center justify-center text-center gap-2 py-16 px-6">
     {showImage ? (
@@ -73,6 +78,16 @@ export const ExploreEmptyState = ({
     <h2 className="text-base font-semibold text-foreground">{title}</h2>
     {subtitle ? (
       <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">{subtitle}</p>
+    ) : null}
+    {onAction && actionLabel ? (
+      <Button
+        type="button"
+        size="lg"
+        className={cn('mt-4 h-11 font-semibold px-6', SHIORI_PRIMARY_BUTTON_CLASS)}
+        onClick={onAction}
+      >
+        {actionLabel}
+      </Button>
     ) : null}
   </div>
 )

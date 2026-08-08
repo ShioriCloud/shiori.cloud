@@ -39,7 +39,8 @@ export const HomeFeaturedCarousel = ({ children, className }: HomeFeaturedCarous
     const slideRect = slide.getBoundingClientRect()
     const delta =
       slideRect.left + slideRect.width / 2 - (rootRect.left + rootRect.width / 2)
-    root.scrollBy({ left: delta, behavior })
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    root.scrollBy({ left: delta, behavior: reduceMotion ? 'auto' : behavior })
   }, [])
 
   useEffect(() => {
@@ -89,12 +90,35 @@ export const HomeFeaturedCarousel = ({ children, className }: HomeFeaturedCarous
 
   useEffect(() => {
     if (count <= 1) return
-    const id = window.setInterval(() => {
-      if (pausedRef.current) return
-      const next = (activeIndexRef.current + 1) % count
-      scrollToIndex(next)
-    }, AUTOPLAY_MS)
-    return () => window.clearInterval(id)
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    let id: number | null = null
+
+    const stop = () => {
+      if (id == null) return
+      window.clearInterval(id)
+      id = null
+    }
+
+    const start = () => {
+      if (id != null || motionQuery.matches) return
+      id = window.setInterval(() => {
+        if (pausedRef.current || motionQuery.matches) return
+        const next = (activeIndexRef.current + 1) % count
+        scrollToIndex(next)
+      }, AUTOPLAY_MS)
+    }
+
+    const sync = () => {
+      if (motionQuery.matches) stop()
+      else start()
+    }
+
+    sync()
+    motionQuery.addEventListener('change', sync)
+    return () => {
+      stop()
+      motionQuery.removeEventListener('change', sync)
+    }
   }, [count, scrollToIndex])
 
   useEffect(
