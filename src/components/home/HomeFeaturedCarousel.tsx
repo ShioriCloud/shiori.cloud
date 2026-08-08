@@ -30,9 +30,16 @@ export const HomeFeaturedCarousel = ({ children, className }: HomeFeaturedCarous
   const count = slides.length
 
   const scrollToIndex = useCallback((index: number, behavior: ScrollBehavior = 'smooth') => {
+    const root = scrollerRef.current
     const slide = slideRefs.current[index]
-    if (!slide) return
-    slide.scrollIntoView({ behavior, inline: 'center', block: 'nearest' })
+    if (!root || !slide) return
+
+    // Scroll only the horizontal scroller — scrollIntoView also jumps the page.
+    const rootRect = root.getBoundingClientRect()
+    const slideRect = slide.getBoundingClientRect()
+    const delta =
+      slideRect.left + slideRect.width / 2 - (rootRect.left + rootRect.width / 2)
+    root.scrollBy({ left: delta, behavior })
   }, [])
 
   useEffect(() => {
