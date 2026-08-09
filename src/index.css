@@ -211,19 +211,24 @@
   }
 
   [data-sonner-toaster] {
-    --width: min(24rem, calc(100vw - 1.5rem));
+    --width: min(20.5rem, calc(100vw - 1.5rem));
+    width: var(--width) !important;
+    max-width: calc(100vw - 1.5rem) !important;
+    box-sizing: border-box;
   }
 
   [data-sonner-toast] {
-    --border-radius: 1rem;
-    width: var(--width) !important;
+    --border-radius: 0.9rem;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   [data-sonner-toast][data-styled='true'] {
-    padding: 0.9rem 1rem;
-    gap: 0.75rem;
+    padding: 0.75rem 0.85rem !important;
+    gap: 0.55rem !important;
     font-size: 0.875rem;
-    line-height: 1.5rem;
+    line-height: 1.4rem;
     font-weight: 500;
   }
 
@@ -233,14 +238,27 @@
     font-family: inherit !important;
   }
 
-  /* Action toasts: stack button under copy so RTL labels don't collide. */
+  /* Keep toast chrome neutral even if Sonner applies type styles. */
+  [data-sonner-toast][data-type='success'],
+  [data-sonner-toast][data-type='error'],
+  [data-sonner-toast][data-type='warning'],
+  [data-sonner-toast][data-type='info'] {
+    background: oklch(var(--card)) !important;
+    color: oklch(var(--card-foreground)) !important;
+    border-color: oklch(var(--border)) !important;
+  }
+
+  /* Action toasts: compact CTA under copy. */
+  [data-sonner-toast].app-toast-with-action,
   [data-sonner-toast]:has([data-button]) {
     display: grid !important;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto minmax(0, 1fr);
     grid-template-areas:
       'icon content'
-      'action action';
+      '. action';
     align-items: start;
+    column-gap: 0.55rem;
+    row-gap: 0.45rem;
   }
 
   [data-sonner-toast]:has([data-button]) [data-icon] {
@@ -254,12 +272,17 @@
 
   [data-sonner-toast]:has([data-button]) [data-button] {
     grid-area: action;
-    width: 100% !important;
-    margin: 0.15rem 0 0 !important;
-    height: 2.35rem !important;
-    font-size: 0.8125rem !important;
+    justify-self: start;
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    height: 1.9rem !important;
+    padding-inline: 0.7rem !important;
+    font-size: 0.7rem !important;
     font-weight: 600 !important;
-    border-radius: 0.75rem !important;
+    border-radius: 0.55rem !important;
+    background: oklch(var(--muted)) !important;
+    color: oklch(var(--foreground)) !important;
   }
 
   [data-sonner-toast] [data-close-button] {

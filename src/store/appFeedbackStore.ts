@@ -1,4 +1,6 @@
+import { createElement, type ReactNode } from 'react'
 import { toast } from 'sonner'
+import { Alert02Icon, CheckmarkCircle02Icon, InformationCircleIcon } from 'hugeicons-react'
 import { create } from 'zustand'
 
 export type ToastTone = 'default' | 'success' | 'error' | 'warning'
@@ -30,12 +32,40 @@ const newId = () =>
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 
+/** Tone drives icon color only — toast surface stays neutral. */
 const inferTone = (message: string): ToastTone => {
   const text = message.trim()
   if (/خطا|ناموفق|موجود نیست|تمام شده|لازم است|فعال نشده/i.test(text)) return 'error'
-  if (/هنوز در کاتالوگ|درخواست ترجمه/i.test(text)) return 'warning'
-  if (/شد|به‌روز|فعال|اضافه|ساخته|ذخیره|حذف شد/i.test(text)) return 'success'
+  if (/هنوز در کاتالوگ|درخواست ترجمه|کاتالوگ شیوری نیست/i.test(text)) return 'warning'
+  // Completed removals stay neutral (not "success green").
+  if (/حذف شد|از لیست حذف|از علاقه‌مندی/i.test(text)) return 'default'
+  if (/به‌روز|فعال|اضافه|ساخته|ذخیره شد|لیست‌ها به‌روز/i.test(text)) return 'success'
   return 'default'
+}
+
+const toneIcon = (tone: ToastTone): ReactNode => {
+  if (tone === 'success') {
+    return createElement(CheckmarkCircle02Icon, {
+      className: 'size-5 shrink-0 text-emerald-500',
+      'aria-hidden': true,
+    })
+  }
+  if (tone === 'error') {
+    return createElement(Alert02Icon, {
+      className: 'size-5 shrink-0 text-red-500',
+      'aria-hidden': true,
+    })
+  }
+  if (tone === 'warning') {
+    return createElement(Alert02Icon, {
+      className: 'size-5 shrink-0 text-amber-500',
+      'aria-hidden': true,
+    })
+  }
+  return createElement(InformationCircleIcon, {
+    className: 'size-5 shrink-0 text-muted-foreground',
+    'aria-hidden': true,
+  })
 }
 
 export const useAppFeedbackStore = create<AppFeedbackState>((set, get) => ({
@@ -79,31 +109,20 @@ export const showAppToast = (
   if (!trimmed) return
 
   const resolvedTone = tone ?? inferTone(trimmed)
-  const payload = {
+
+  toast(trimmed, {
     description: options?.description?.trim() || undefined,
     duration: options?.duration ?? 3200,
     closeButton: false,
+    icon: toneIcon(resolvedTone),
+    className: options?.action ? 'app-toast-with-action' : undefined,
     action: options?.action
       ? {
           label: options.action.label,
           onClick: options.action.onClick,
         }
       : undefined,
-  }
-
-  if (resolvedTone === 'success') {
-    toast.success(trimmed, payload)
-    return
-  }
-  if (resolvedTone === 'error') {
-    toast.error(trimmed, payload)
-    return
-  }
-  if (resolvedTone === 'warning') {
-    toast.warning(trimmed, payload)
-    return
-  }
-  toast(trimmed, payload)
+  })
 }
 
 export const showAppConfirm = (input: {
