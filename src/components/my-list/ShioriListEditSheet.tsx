@@ -62,13 +62,16 @@ export const EditListSheet = ({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="rounded-t-2xl">
-        <SheetHeader>
+      <SheetContent
+        side="bottom"
+        className="rounded-t-2xl border-t border-border bg-background p-0 pb-[var(--app-tg-bottom-inset)]"
+      >
+        <SheetHeader className="border-b border-border/50 px-4 py-3">
           <SheetTitle>ویرایش لیست</SheetTitle>
         </SheetHeader>
-        <div className="py-4 space-y-4">
+        <div className="space-y-4 px-4 py-4">
           <div>
-            <label htmlFor="edit-list-name" className="text-xs text-muted-foreground mb-1.5 block">
+            <label htmlFor="edit-list-name" className="mb-2 block text-sm font-semibold text-foreground">
               نام لیست
             </label>
             <Input
@@ -79,7 +82,7 @@ export const EditListSheet = ({
             />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground mb-2">آیکون</p>
+            <p className="mb-2 text-sm font-semibold text-foreground">آیکون</p>
             <div className="flex flex-wrap gap-2">
               {SHIORI_LIST_ICONS.map(({ id, label, Icon }) => (
                 <button
@@ -87,10 +90,10 @@ export const EditListSheet = ({
                   type="button"
                   onClick={() => setIcon(id)}
                   className={cn(
-                    'rounded-xl border p-2.5 transition-all duration-200',
+                    'inline-flex h-11 w-11 items-center justify-center rounded-lg border transition-colors',
                     icon === id
-                      ? 'border-primary-400/50 bg-primary-400/15 text-primary-400 shadow-sm shadow-primary-400/10'
-                      : 'border-border bg-muted/30 text-muted-foreground hover:bg-muted/50 active:scale-[0.98]'
+                      ? 'border-primary-400/45 bg-primary-400/15 text-primary-300'
+                      : 'border-border/60 bg-muted/35 text-muted-foreground hover:bg-muted/55 hover:text-foreground'
                   )}
                   aria-label={label}
                 >
@@ -102,19 +105,28 @@ export const EditListSheet = ({
           <Button
             type="button"
             variant="outline"
-            className="w-full gap-1.5 text-red-400 hover:text-red-400 border-red-500/20"
+            className="h-11 w-full gap-1.5 border-red-500/20 text-red-400 hover:text-red-400"
             onClick={handleDelete}
           >
             <Delete02Icon className="h-4 w-4" />
             حذف لیست
           </Button>
         </div>
-        <SheetFooter className="gap-2 flex-row">
-          <Button type="button" variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
-            انصراف
-          </Button>
-          <Button type="button" className="flex-1 bg-primary-500 hover:bg-primary-500/90" onClick={handleSave}>
+        <SheetFooter className="flex-row gap-2 border-t border-border/50 px-4 py-4">
+          <Button
+            type="button"
+            className="h-11 flex-1 bg-primary-500 hover:bg-primary-500/90"
+            onClick={handleSave}
+          >
             ذخیره
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11 flex-1"
+            onClick={() => onOpenChange(false)}
+          >
+            انصراف
           </Button>
         </SheetFooter>
       </SheetContent>

@@ -61,13 +61,16 @@ const CreateListSheet = ({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="rounded-t-2xl pb-[var(--app-tg-bottom-inset)]">
-        <SheetHeader>
+      <SheetContent
+        side="bottom"
+        className="rounded-t-2xl border-t border-border bg-background p-0 pb-[var(--app-tg-bottom-inset)]"
+      >
+        <SheetHeader className="border-b border-border/50 px-4 py-3">
           <SheetTitle>ساخت لیست جدید</SheetTitle>
         </SheetHeader>
-        <div className="px-4 pt-4 pb-2 space-y-4">
+        <div className="space-y-4 px-4 py-4">
           <div>
-            <label htmlFor="list-name" className="text-sm font-semibold text-foreground mb-2 block">
+            <label htmlFor="list-name" className="mb-2 block text-sm font-semibold text-foreground">
               نام لیست
             </label>
             <Input
@@ -79,7 +82,7 @@ const CreateListSheet = ({
             />
           </div>
           <div>
-            <p className="text-sm font-semibold text-foreground mb-2">آیکون</p>
+            <p className="mb-2 text-sm font-semibold text-foreground">آیکون</p>
             <div className="flex flex-wrap gap-2">
               {SHIORI_LIST_ICONS.map(({ id, label, Icon }) => (
                 <button
@@ -100,17 +103,22 @@ const CreateListSheet = ({
             </div>
           </div>
         </div>
-        <SheetFooter className="gap-2 flex-row border-t-0">
-          <Button type="button" variant="outline" className="flex-1 h-11" onClick={() => onOpenChange(false)}>
-            انصراف
-          </Button>
+        <SheetFooter className="flex-row gap-2 border-t border-border/50 px-4 py-4">
           <Button
             type="button"
-            className="flex-1 h-11 bg-primary-500 hover:bg-primary-500/90"
+            className="h-11 flex-1 bg-primary-500 hover:bg-primary-500/90"
             disabled={atLimit}
             onClick={handleCreate}
           >
             ساخت
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11 flex-1"
+            onClick={() => onOpenChange(false)}
+          >
+            انصراف
           </Button>
         </SheetFooter>
       </SheetContent>

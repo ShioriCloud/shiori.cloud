@@ -14,6 +14,7 @@ import {
   UserIcon,
   Share08Icon,
   Download04Icon,
+  FavouriteIcon,
 } from 'hugeicons-react'
 import { ExternalLink } from 'lucide-react'
 import { useUserAnimeList } from '../hooks/useUserAnimeList'
@@ -69,6 +70,8 @@ import { trackAnimeBrowse, trackEpisodeDownload } from '../lib/myListTracking'
 import { hapticImpact, hapticNotification } from '../lib/telegramHaptics'
 import { recordAnimeView } from '../services/shioriCatalog'
 import { AddToShioriListButton } from '@/components/my-list/AddToShioriListButton'
+import { Button } from '@/components/ui/button'
+import { ButtonGroup } from '@/components/ui/button-group'
 import {
   formatSeriesMemberLabel,
   genreLabel,
@@ -84,7 +87,6 @@ import {
 } from '@/components/anime-detail/AnimeDetailSkeletons'
 import { ExploreTabBar } from '@/components/explore/ExploreUi'
 import {
-  FavoriteStatCard,
   NextAiringCard,
   NextAiringCardSkeleton,
   ReminderStatCard,
@@ -846,25 +848,68 @@ const AnimeDetail = () => {
         </div>
 
         <div className="relative z-10 pt-24 px-4 pb-2 flex flex-col items-center">
-          <div className="relative">
-            <div className="media-card-skeuo w-32 rounded-2xl">
-              <div className="media-card-skeuo-face aspect-[2/3] bg-muted">
-                <img src={anime.image} alt={anime.title} className="h-full w-full object-cover" />
-              </div>
-            </div>
-            {statusKey ? (
-              <span
+          <div className="relative w-full flex justify-center">
+            <ButtonGroup
+              orientation="vertical"
+              aria-label="عملیات انیمه"
+              className="absolute left-0 top-0 z-20"
+            >
+              <Button
+                type="button"
+                variant="outline"
+                size="icon-sm"
+                onClick={handleFavorite}
                 className={cn(
-                  'absolute top-2 right-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-md backdrop-blur-sm',
-                  posterStatusClass(statusKey)
+                  'surface-skeuo border-border/60',
+                  favoriteActive
+                    ? 'text-red-500 hover:text-red-500'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
+                aria-label={
+                  favoriteActive ? 'ویرایش پیشرفت و امتیاز' : 'افزودن به علاقه‌مندی‌ها'
+                }
               >
-                {translateStatus(statusKey)}
-              </span>
-            ) : null}
+                <FavouriteIcon
+                  className={cn('h-4 w-4', favoriteActive && 'fill-red-500 text-red-500')}
+                />
+              </Button>
+              <AddToShioriListButton
+                animeId={anime.id}
+                iconOnly
+                triggerClassName="surface-skeuo border-border/60"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon-sm"
+                onClick={handleShare}
+                className="surface-skeuo border-border/60 text-muted-foreground hover:text-foreground"
+                aria-label="اشتراک‌گذاری در تلگرام"
+              >
+                <Share08Icon className="h-4 w-4" />
+              </Button>
+            </ButtonGroup>
+
+            <div className="relative">
+              <div className="media-card-skeuo w-32 rounded-2xl">
+                <div className="media-card-skeuo-face aspect-[2/3] bg-muted">
+                  <img src={anime.image} alt={anime.title} className="h-full w-full object-cover" />
+                </div>
+              </div>
+              {statusKey ? (
+                <span
+                  className={cn(
+                    'absolute top-2 right-2 z-10 text-[10px] font-semibold px-1.5 py-0.5 rounded-md backdrop-blur-sm',
+                    posterStatusClass(statusKey)
+                  )}
+                >
+                  {translateStatus(statusKey)}
+                </span>
+              ) : null}
+            </div>
           </div>
 
-          <div className="relative w-full mt-3 px-10">
+          <div className="relative w-full mt-3">
             <BidiText as="h1" className="text-lg font-bold text-foreground text-center line-clamp-3 leading-7">
               {anime.title}
             </BidiText>
@@ -876,14 +921,6 @@ const AnimeDetail = () => {
                 {anime.title_romaji}
               </BidiText>
             ) : null}
-            <button
-              type="button"
-              onClick={handleShare}
-              className="absolute left-0 top-0 inline-flex min-h-10 min-w-10 items-center justify-center rounded-xl surface-skeuo text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="اشتراک‌گذاری در تلگرام"
-            >
-              <Share08Icon className="w-5 h-5" />
-            </button>
           </div>
 
           <div className="flex flex-wrap justify-center gap-1.5 mt-2">
@@ -967,9 +1004,9 @@ const AnimeDetail = () => {
         <NextAiringCardSkeleton />
       ) : null}
 
-      {/* Reminder for airing / upcoming; finished (etc.) get a full-width favorite. */}
-      <div className="mx-4 mt-2 flex items-stretch gap-2">
-        {canHaveNextAiring ? (
+      {/* Reminder for airing / upcoming titles. */}
+      {canHaveNextAiring ? (
+        <div className="mx-4 mt-2 flex items-stretch gap-2">
           <ReminderStatCard
             active={reminderActive}
             busy={reminderBusy || reminderToggling || updatingPreferences}
@@ -977,17 +1014,8 @@ const AnimeDetail = () => {
               void handleAiringReminder()
             }}
           />
-        ) : null}
-        <FavoriteStatCard
-          active={favoriteActive}
-          expanded={!canHaveNextAiring}
-          onClick={handleFavorite}
-        />
-      </div>
-
-      <div className="mx-4 mt-2">
-        <AddToShioriListButton animeId={anime.id} triggerClassName="w-full" />
-      </div>
+        </div>
+      ) : null}
 
       {(anime.series?.members?.length ?? 0) > 1 ? (
         <SeriesSeasonSwitcher

@@ -251,10 +251,21 @@ const SupportPage = () => {
             {tickets.map((ticket) => (
               <Link key={ticket.id} to={`/support/${ticket.id}`} className="block">
                 <MyListCompactCard className="p-3 active:scale-[0.995]">
-                  <div className="flex items-start justify-between gap-2">
-                    <h2 className="min-w-0 flex-1 text-sm font-semibold leading-6 text-foreground line-clamp-2 text-end">
-                      {ticket.subject}
-                    </h2>
+                  <div className="flex items-start gap-2">
+                    <div className="min-w-0 flex-1 text-start">
+                      <h2 className="text-sm font-semibold leading-6 text-foreground line-clamp-2">
+                        {ticket.subject}
+                      </h2>
+                      <p className="mt-1.5 text-[11px] text-muted-foreground">
+                        {SUPPORT_TICKET_CATEGORY_LABELS[ticket.category]} ·{' '}
+                        {formatTime(ticket.updated_at)}
+                      </p>
+                      {ticket.last_message_preview ? (
+                        <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground/90">
+                          {ticket.last_message_preview}
+                        </p>
+                      ) : null}
+                    </div>
                     <span
                       className={cn(
                         'inline-flex shrink-0 rounded-md border px-1.5 py-1 text-[10px] font-medium',
@@ -264,14 +275,6 @@ const SupportPage = () => {
                       {SUPPORT_TICKET_STATUS_LABELS[ticket.status]}
                     </span>
                   </div>
-                  <p className="mt-1.5 text-[11px] text-muted-foreground">
-                    {SUPPORT_TICKET_CATEGORY_LABELS[ticket.category]} · {formatTime(ticket.updated_at)}
-                  </p>
-                  {ticket.last_message_preview ? (
-                    <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground/90 text-end">
-                      {ticket.last_message_preview}
-                    </p>
-                  ) : null}
                 </MyListCompactCard>
               </Link>
             ))}
