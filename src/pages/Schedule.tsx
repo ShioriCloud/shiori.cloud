@@ -9,6 +9,7 @@ import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { useScheduleQuery } from '../hooks/queries/useAnimeQueries'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { hapticSelection } from '../lib/telegramHaptics'
+import { cn } from '@/lib/utils'
 import shioriLogo from '../assets/images/shiori.svg'
 
 type Anime = {
@@ -218,24 +219,28 @@ const Schedule = () => {
   return (
     <div className="pb-24">
       {toast && (
-        <div className="fixed bottom-32 left-0 right-0 z-[60] px-4">
+        <div
+          className="fixed inset-x-0 z-[60] px-4"
+          style={{ top: 'calc(var(--app-tg-top-inset) + 0.65rem)' }}
+        >
           <div
             role="alert"
             key={toast}
-            className={`max-w-xl mx-auto rounded-xl border border-amber-500/40 bg-amber-500/15 backdrop-blur-md px-4 py-3 flex flex-col gap-3 shadow-xl dark:border-amber-800/80 ${
+            className={cn(
+              'mx-auto flex max-w-xl flex-col gap-3 rounded-2xl border px-4 py-3.5',
+              'border-amber-500/45 bg-zinc-950 text-amber-50',
+              'shadow-[0_12px_40px_-12px_rgba(0,0,0,0.7)]',
               toastClosing ? 'schedule-toast-exit' : 'schedule-toast-enter'
-            }`}
+            )}
           >
             <div className="flex items-start gap-3">
-              <Alert02Icon className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-              <p className="text-xs font-medium leading-5 text-amber-950 dark:text-amber-50 flex-1">
-                {toast}
-              </p>
+              <Alert02Icon className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
+              <p className="flex-1 text-xs font-medium leading-5 text-amber-50">{toast}</p>
               <Button
                 type="button"
                 variant="secondary"
                 size="sm"
-                className="shrink-0 border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-amber-50"
+                className="shrink-0 border-amber-500/35 bg-amber-500/15 text-amber-50 hover:bg-amber-500/25"
                 onClick={dismissToast}
               >
                 بستن
@@ -245,7 +250,7 @@ const Schedule = () => {
               <Button
                 type="button"
                 size="sm"
-                className="w-full"
+                className="w-full bg-amber-500 text-zinc-950 hover:bg-amber-400"
                 onClick={() => {
                   hapticSelection()
                   navigate(buildTranslationRequestHref(toastAnime))
