@@ -115,7 +115,6 @@ export const showAppToast = (
     duration: options?.duration ?? 3200,
     closeButton: false,
     icon: toneIcon(resolvedTone),
-    className: options?.action ? 'app-toast-with-action' : undefined,
     action: options?.action
       ? {
           label: options.action.label,

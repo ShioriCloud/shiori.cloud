@@ -210,11 +210,28 @@
     font-family: 'Vazirmatn', system-ui, sans-serif !important;
   }
 
-  [data-sonner-toaster] {
-    --width: min(20.5rem, calc(100vw - 1.5rem));
-    width: var(--width) !important;
+  /* Keep top-center truly centered on mobile/RTL (Sonner drops translateX on coarse pointers). */
+  [data-sonner-toaster][data-x-position='center'] {
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    width: min(20.5rem, calc(100vw - 1.5rem)) !important;
     max-width: calc(100vw - 1.5rem) !important;
     box-sizing: border-box;
+  }
+
+  @media (hover: none) and (pointer: coarse) {
+    [data-sonner-toaster][data-x-position='center'] {
+      left: 50% !important;
+      right: auto !important;
+      transform: translateX(-50%) !important;
+    }
+
+    [data-sonner-toaster][data-x-position='center'] [data-sonner-toast] {
+      left: 0 !important;
+      right: 0 !important;
+      width: 100% !important;
+    }
   }
 
   [data-sonner-toast] {
@@ -248,34 +265,30 @@
     border-color: oklch(var(--border)) !important;
   }
 
-  /* Action toasts: compact CTA under copy. */
-  [data-sonner-toast].app-toast-with-action,
+  /* Action toasts: icon + text + compact CTA in one row. */
   [data-sonner-toast]:has([data-button]) {
-    display: grid !important;
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas:
-      'icon content'
-      '. action';
-    align-items: start;
-    column-gap: 0.55rem;
-    row-gap: 0.45rem;
-  }
-
-  [data-sonner-toast]:has([data-button]) [data-icon] {
-    grid-area: icon;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0.55rem !important;
   }
 
   [data-sonner-toast]:has([data-button]) [data-content] {
-    grid-area: content;
+    flex: 1 1 auto;
     min-width: 0;
   }
 
+  [data-sonner-toast]:has([data-button]) [data-title] {
+    white-space: normal;
+  }
+
   [data-sonner-toast]:has([data-button]) [data-button] {
-    grid-area: action;
-    justify-self: start;
+    flex: 0 0 auto !important;
     width: auto !important;
-    min-width: 0 !important;
+    min-width: max-content !important;
     margin: 0 !important;
+    margin-inline-start: 0 !important;
+    margin-inline-end: 0 !important;
     height: 1.9rem !important;
     padding-inline: 0.7rem !important;
     font-size: 0.7rem !important;
@@ -283,6 +296,7 @@
     border-radius: 0.55rem !important;
     background: oklch(var(--muted)) !important;
     color: oklch(var(--foreground)) !important;
+    white-space: nowrap;
   }
 
   [data-sonner-toast] [data-close-button] {
