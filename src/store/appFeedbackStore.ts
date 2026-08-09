@@ -1,12 +1,7 @@
+import { toast } from 'sonner'
 import { create } from 'zustand'
 
-export type ToastTone = 'default' | 'success' | 'error'
-
-export type AppToast = {
-  id: string
-  message: string
-  tone: ToastTone
-}
+export type ToastTone = 'default' | 'success' | 'error' | 'warning'
 
 export type AppConfirmRequest = {
   id: string
@@ -19,10 +14,7 @@ export type AppConfirmRequest = {
 }
 
 type AppFeedbackState = {
-  toasts: AppToast[]
   confirm: AppConfirmRequest | null
-  pushToast: (message: string, tone?: ToastTone) => void
-  dismissToast: (id: string) => void
   requestConfirm: (input: {
     message: string
     title?: string
@@ -41,29 +33,13 @@ const newId = () =>
 const inferTone = (message: string): ToastTone => {
   const text = message.trim()
   if (/خطا|ناموفق|موجود نیست|تمام شده|لازم است|فعال نشده/i.test(text)) return 'error'
+  if (/هنوز در کاتالوگ|درخواست ترجمه/i.test(text)) return 'warning'
   if (/شد|به‌روز|فعال|اضافه|ساخته|ذخیره|حذف شد/i.test(text)) return 'success'
   return 'default'
 }
 
 export const useAppFeedbackStore = create<AppFeedbackState>((set, get) => ({
-  toasts: [],
   confirm: null,
-
-  pushToast: (message, tone) => {
-    const trimmed = String(message ?? '').trim()
-    if (!trimmed) return
-    const toast: AppToast = {
-      id: newId(),
-      message: trimmed,
-      tone: tone ?? inferTone(trimmed),
-    }
-    set((s) => ({ toasts: [...s.toasts.slice(-2), toast] }))
-    window.setTimeout(() => {
-      get().dismissToast(toast.id)
-    }, 2800)
-  },
-
-  dismissToast: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
 
   requestConfirm: ({ message, title, confirmLabel, cancelLabel, destructive }) =>
     new Promise<boolean>((resolve) => {
@@ -87,8 +63,44 @@ export const useAppFeedbackStore = create<AppFeedbackState>((set, get) => ({
   clearConfirm: () => set({ confirm: null }),
 }))
 
-export const showAppToast = (message: string, tone?: ToastTone) => {
-  useAppFeedbackStore.getState().pushToast(message, tone)
+export const showAppToast = (
+  message: string,
+  tone?: ToastTone,
+  options?: {
+    action?: {
+      label: string
+      onClick: () => void
+    }
+    duration?: number
+  }
+) => {
+  const trimmed = String(message ?? '').trim()
+  if (!trimmed) return
+
+  const resolvedTone = tone ?? inferTone(trimmed)
+  const payload = {
+    duration: options?.duration ?? 3200,
+    action: options?.action
+      ? {
+          label: options.action.label,
+          onClick: options.action.onClick,
+        }
+      : undefined,
+  }
+
+  if (resolvedTone === 'success') {
+    toast.success(trimmed, payload)
+    return
+  }
+  if (resolvedTone === 'error') {
+    toast.error(trimmed, payload)
+    return
+  }
+  if (resolvedTone === 'warning') {
+    toast.warning(trimmed, payload)
+    return
+  }
+  toast(trimmed, payload)
 }
 
 export const showAppConfirm = (input: {

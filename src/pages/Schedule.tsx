@@ -2,14 +2,13 @@ import { useMemo, useState, type MouseEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AnimePrefetchLink from '../components/AnimePrefetchLink'
 import { BidiText } from '../components/BidiText'
-import { Calendar01Icon, Alert02Icon } from 'hugeicons-react'
+import { Calendar01Icon } from 'hugeicons-react'
 import type { GenreItem } from '../types/catalog'
-import { Button } from '@/components/ui/button'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { useScheduleQuery } from '../hooks/queries/useAnimeQueries'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { hapticSelection } from '../lib/telegramHaptics'
-import { cn } from '@/lib/utils'
+import { showAppToast } from '@/store/appFeedbackStore'
 import shioriLogo from '../assets/images/shiori.svg'
 
 type Anime = {
@@ -129,18 +128,6 @@ const Schedule = () => {
 
   const { data, isLoading, isError, refetch } = useScheduleQuery()
   const [activeDay, setActiveDay] = useState<PersianDay>(getCurrentPersianDay())
-  const [toast, setToast] = useState<string | null>(null)
-  const [toastAnime, setToastAnime] = useState<Anime | null>(null)
-  const [toastClosing, setToastClosing] = useState(false)
-
-  const dismissToast = () => {
-    setToastClosing(true)
-    window.setTimeout(() => {
-      setToast(null)
-      setToastAnime(null)
-      setToastClosing(false)
-    }, 220)
-  }
 
   const buildTranslationRequestHref = (anime: Anime) => {
     const params = new URLSearchParams()
@@ -192,8 +179,16 @@ const Schedule = () => {
       return
     }
 
-    setToastAnime(anime)
-    setToast('این انیمه هنوز در کاتالوگ ترجمهٔ شیوری نیست.')
+    showAppToast('این انیمه هنوز در کاتالوگ ترجمهٔ شیوری نیست.', 'warning', {
+      duration: 6500,
+      action: {
+        label: 'درخواست ترجمه',
+        onClick: () => {
+          hapticSelection()
+          navigate(buildTranslationRequestHref(anime))
+        },
+      },
+    })
   }
 
   if (loading) return <ScheduleSkeleton />
@@ -218,51 +213,6 @@ const Schedule = () => {
 
   return (
     <div className="pb-24">
-      {toast && (
-        <div
-          className="fixed inset-x-0 z-[60] px-4"
-          style={{ top: 'calc(var(--app-tg-top-inset) + 0.65rem)' }}
-        >
-          <div
-            role="alert"
-            key={toast}
-            className={cn(
-              'mx-auto flex max-w-xl flex-col gap-3 rounded-2xl border px-4 py-3.5',
-              'border-amber-500/45 bg-zinc-950 text-amber-50',
-              'shadow-[0_12px_40px_-12px_rgba(0,0,0,0.7)]',
-              toastClosing ? 'schedule-toast-exit' : 'schedule-toast-enter'
-            )}
-          >
-            <div className="flex items-start gap-3">
-              <Alert02Icon className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
-              <p className="flex-1 text-xs font-medium leading-5 text-amber-50">{toast}</p>
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                className="shrink-0 border-amber-500/35 bg-amber-500/15 text-amber-50 hover:bg-amber-500/25"
-                onClick={dismissToast}
-              >
-                بستن
-              </Button>
-            </div>
-            {toastAnime ? (
-              <Button
-                type="button"
-                size="sm"
-                className="w-full bg-amber-500 text-zinc-950 hover:bg-amber-400"
-                onClick={() => {
-                  hapticSelection()
-                  navigate(buildTranslationRequestHref(toastAnime))
-                }}
-              >
-                درخواست ترجمه
-              </Button>
-            ) : null}
-          </div>
-        </div>
-      )}
-
       <div className="px-4 pt-4 flex items-center justify-between gap-3">
         <h1 className="text-lg font-semibold text-foreground shrink-0">برنامه پخش هفتگی</h1>
         {seasonLabel && (
