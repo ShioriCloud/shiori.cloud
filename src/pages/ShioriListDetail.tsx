@@ -28,7 +28,7 @@ const genreLabel = (g: GenreItem) => g.name_fa || g.name_en || g.slug
 const ShioriListDetail = () => {
   const { listId } = useParams<{ listId: string }>()
   const navigate = useNavigate()
-  const { showAlert } = useAppAuth()
+  const { showAlert, showConfirm } = useAppAuth()
   const list = useMyListStore((s) => s.customLists.find((l) => l.id === listId))
   const removeAnimeFromList = useMyListStore((s) => s.removeAnimeFromList)
   const deleteList = useMyListStore((s) => s.deleteList)
@@ -65,7 +65,9 @@ const ShioriListDetail = () => {
   const { Icon } = getListIcon(list.icon)
   const loading = animeIds.length > 0 && items.length === 0 && isLoading
 
-  const handleDeleteList = () => {
+  const handleDeleteList = async () => {
+    const confirmed = await showConfirm(`لیست «${list.name}» حذف شود؟ این کار قابل بازگشت نیست.`)
+    if (!confirmed) return
     deleteList(list.id)
     showAlert('لیست حذف شد')
     navigate('/my-list?tab=lists', { replace: true })
@@ -108,7 +110,9 @@ const ShioriListDetail = () => {
               variant="outline"
               className="border-red-500/25 text-red-400 hover:text-red-400"
               aria-label="حذف لیست"
-              onClick={handleDeleteList}
+              onClick={() => {
+                void handleDeleteList()
+              }}
             >
               <Delete02Icon className="h-4 w-4" />
             </Button>
@@ -220,7 +224,6 @@ const ShioriListDetail = () => {
         listId={list.id}
         open={editOpen}
         onOpenChange={setEditOpen}
-        onDeleted={() => navigate('/my-list?tab=lists', { replace: true })}
       />
     </div>
   )

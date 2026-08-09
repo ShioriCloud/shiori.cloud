@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Delete02Icon } from 'hugeicons-react'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -18,17 +17,14 @@ export const EditListSheet = ({
   listId,
   open,
   onOpenChange,
-  onDeleted,
 }: {
   listId: string | null
   open: boolean
   onOpenChange: (open: boolean) => void
-  onDeleted?: () => void
 }) => {
   const { showAlert } = useAppAuth()
   const list = useMyListStore((s) => s.customLists.find((l) => l.id === listId))
   const updateList = useMyListStore((s) => s.updateList)
-  const deleteList = useMyListStore((s) => s.deleteList)
   const [name, setName] = useState('')
   const [icon, setIcon] = useState<ShioriListIcon>('heart')
 
@@ -48,14 +44,6 @@ export const EditListSheet = ({
     updateList(listId, { name: trimmed, icon })
     onOpenChange(false)
     showAlert('لیست به‌روز شد')
-  }
-
-  const handleDelete = () => {
-    if (!listId) return
-    deleteList(listId)
-    onOpenChange(false)
-    showAlert('لیست حذف شد')
-    onDeleted?.()
   }
 
   if (!list) return null
@@ -102,15 +90,6 @@ export const EditListSheet = ({
               ))}
             </div>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            className="h-11 w-full gap-1.5 border-red-500/20 text-red-400 hover:text-red-400"
-            onClick={handleDelete}
-          >
-            <Delete02Icon className="h-4 w-4" />
-            حذف لیست
-          </Button>
         </div>
         <SheetFooter className="flex-row gap-2 border-t border-border/50 px-4 py-4">
           <Button
