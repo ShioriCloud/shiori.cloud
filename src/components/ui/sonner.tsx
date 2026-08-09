@@ -1,14 +1,14 @@
-import type { CSSProperties } from 'react'
 import { Toaster as Sonner, type ToasterProps } from 'sonner'
 import { useTheme } from '@/utils/theme'
+import { cn } from '@/lib/utils'
 
-const Toaster = ({ ...props }: ToasterProps) => {
+const Toaster = ({ className, ...props }: ToasterProps) => {
   const { isDarkMode } = useTheme()
 
   return (
     <Sonner
       theme={isDarkMode ? 'dark' : 'light'}
-      className="toaster group"
+      className={cn('toaster group font-sans', className)}
       position="top-center"
       dir="rtl"
       richColors
@@ -17,29 +17,21 @@ const Toaster = ({ ...props }: ToasterProps) => {
       mobileOffset="calc(var(--app-tg-top-inset) + 0.65rem)"
       toastOptions={{
         classNames: {
-          toast:
-            'group toast group-[.toaster]:border group-[.toaster]:shadow-lg group-[.toaster]:rounded-2xl',
-          description: 'group-[.toast]:text-muted-foreground',
-          actionButton: 'group-[.toast]:bg-primary-500 group-[.toast]:text-white',
-          cancelButton: 'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
+          toast: cn(
+            'group toast font-sans',
+            'group-[.toaster]:bg-card group-[.toaster]:text-card-foreground',
+            'group-[.toaster]:border-border group-[.toaster]:shadow-lg',
+            'group-[.toaster]:rounded-2xl'
+          ),
+          title: 'font-sans text-sm font-medium leading-6',
+          description: 'font-sans text-sm text-muted-foreground leading-6',
+          actionButton:
+            'font-sans group-[.toast]:bg-primary-500 group-[.toast]:text-white group-[.toast]:font-medium',
+          cancelButton:
+            'font-sans group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
+          closeButton: 'group-[.toast]:border-border group-[.toast]:bg-card',
         },
       }}
-      style={
-        {
-          '--normal-bg': 'oklch(var(--card))',
-          '--normal-text': 'oklch(var(--card-foreground))',
-          '--normal-border': 'oklch(var(--border))',
-          '--success-bg': 'oklch(0.22 0.04 155)',
-          '--success-text': 'oklch(0.93 0.04 155)',
-          '--success-border': 'oklch(0.55 0.14 155 / 0.45)',
-          '--error-bg': 'oklch(0.24 0.06 25)',
-          '--error-text': 'oklch(0.93 0.04 25)',
-          '--error-border': 'oklch(0.58 0.18 25 / 0.5)',
-          '--warning-bg': 'oklch(0.22 0.04 85)',
-          '--warning-text': 'oklch(0.93 0.05 85)',
-          '--warning-border': 'oklch(0.7 0.14 75 / 0.5)',
-        } as CSSProperties
-      }
       {...props}
     />
   )
