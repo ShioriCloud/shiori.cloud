@@ -2,129 +2,17 @@ import type { ComponentType } from 'react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Add01Icon, ArrowLeft01Icon } from 'hugeicons-react'
-import { Button } from '@/components/ui/button'
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
-import { Input } from '@/components/ui/input'
-import { useAppAuth } from '@/hooks/useAppAuth'
 import { useMyListStore, MAX_SHIORI_LISTS, type ShioriListIcon } from '@/store/myListStore'
 import { useFavoriteAnimeCardsQuery } from '@/hooks/queries/useAnimeQueries'
 import { toPersianNumber } from '@/lib/myListUtils'
 import { cn } from '@/lib/utils'
-import { getListIcon, SHIORI_LIST_ICONS } from './listIcons'
+import { getListIcon } from './listIcons'
+import { CreateShioriListSheet } from './CreateShioriListSheet'
 import {
   MyListCompactCard,
   MyListEmptyState,
   MyListTabHeader,
 } from './MyListUi'
-
-const CreateListSheet = ({
-  open,
-  onOpenChange,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}) => {
-  const { showAlert } = useAppAuth()
-  const createList = useMyListStore((s) => s.createList)
-  const listCount = useMyListStore((s) => s.customLists.length)
-  const [name, setName] = useState('')
-  const [icon, setIcon] = useState<ShioriListIcon>('heart')
-
-  const atLimit = listCount >= MAX_SHIORI_LISTS
-
-  const handleCreate = () => {
-    if (atLimit) {
-      showAlert(`حداکثر ${toPersianNumber(MAX_SHIORI_LISTS)} لیست می‌توانید بسازید`)
-      return
-    }
-    const trimmed = name.trim()
-    if (!trimmed) {
-      showAlert('نام لیست را وارد کنید')
-      return
-    }
-    const created = createList(trimmed, icon)
-    if (!created) {
-      showAlert('ساخت لیست ناموفق بود')
-      return
-    }
-    setName('')
-    setIcon('heart')
-    onOpenChange(false)
-    showAlert('لیست ساخته شد')
-  }
-
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="bottom"
-        className="rounded-t-2xl border-t border-border bg-background p-0 pb-[var(--app-tg-bottom-inset)]"
-      >
-        <SheetHeader className="border-b border-border/50 px-4 py-3">
-          <SheetTitle>ساخت لیست جدید</SheetTitle>
-        </SheetHeader>
-        <div className="space-y-4 px-4 py-4">
-          <div>
-            <label htmlFor="list-name" className="mb-2 block text-sm font-semibold text-foreground">
-              نام لیست
-            </label>
-            <Input
-              id="list-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="مثلاً انیمه‌های تابستان"
-              maxLength={48}
-            />
-          </div>
-          <div>
-            <p className="mb-2 text-sm font-semibold text-foreground">آیکون</p>
-            <div className="flex flex-wrap gap-2">
-              {SHIORI_LIST_ICONS.map(({ id, label, Icon }) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setIcon(id)}
-                  className={cn(
-                    'inline-flex h-11 w-11 items-center justify-center rounded-lg border transition-colors',
-                    icon === id
-                      ? 'border-primary-400/45 bg-primary-400/15 text-primary-300'
-                      : 'border-border/60 bg-muted/35 text-muted-foreground hover:bg-muted/55 hover:text-foreground'
-                  )}
-                  aria-label={label}
-                >
-                  <Icon className="h-5 w-5" />
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-        <SheetFooter className="flex-row gap-2 border-t border-border/50 px-4 py-4">
-          <Button
-            type="button"
-            className="h-11 flex-1 bg-primary-500 hover:bg-primary-500/90"
-            disabled={atLimit}
-            onClick={handleCreate}
-          >
-            ساخت
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="h-11 flex-1"
-            onClick={() => onOpenChange(false)}
-          >
-            انصراف
-          </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
-  )
-}
 
 const CollectionPosterStack = ({
   images,
@@ -186,13 +74,13 @@ const ShioriCollectionCard = ({
         <CollectionPosterStack images={previewImages} fallbackIcon={Icon} />
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5 min-w-0">
+          <div className="flex min-w-0 items-center gap-1.5">
             <Icon className="h-3.5 w-3.5 shrink-0 text-primary-300" aria-hidden />
-            <h3 className="min-w-0 flex-1 text-sm font-semibold text-foreground line-clamp-1 leading-5">
+            <h3 className="min-w-0 flex-1 text-sm font-semibold leading-5 text-foreground line-clamp-1">
               {name}
             </h3>
           </div>
-          <p className="mt-1 text-xs text-muted-foreground tabular-nums">
+          <p className="mt-1 text-xs tabular-nums text-muted-foreground">
             {toPersianNumber(animeIds.length)} انیمه
           </p>
         </div>
@@ -217,11 +105,9 @@ const CreateListCta = ({ onClick }: { onClick: () => void }) => (
     type="button"
     onClick={onClick}
     className={cn(
-      'w-full flex items-center justify-center gap-2 rounded-lg border border-dashed',
-      'border-primary-400/30 bg-primary-400/[0.06] px-4 py-3.5',
-      'text-sm font-medium text-primary-300',
-      'transition-colors hover:bg-primary-400/10 hover:border-primary-400/45',
-      'active:scale-[0.995]'
+      'flex w-full items-center justify-center gap-2 rounded-lg border border-dashed px-4 py-3.5',
+      'border-primary-400/30 bg-primary-400/[0.06] text-sm font-medium text-primary-300',
+      'transition-colors hover:border-primary-400/45 hover:bg-primary-400/10 active:scale-[0.995]'
     )}
   >
     <span className="flex h-7 w-7 items-center justify-center rounded-md border border-primary-400/30 bg-primary-400/10">
@@ -260,7 +146,7 @@ export const ShioriListsTab = () => {
           actionLabel="ساخت لیست جدید"
           onAction={() => setCreateOpen(true)}
         />
-        <CreateListSheet open={createOpen} onOpenChange={setCreateOpen} />
+        <CreateShioriListSheet open={createOpen} onOpenChange={setCreateOpen} />
       </>
     )
   }
@@ -293,7 +179,7 @@ export const ShioriListsTab = () => {
 
       {!atLimit ? <CreateListCta onClick={() => setCreateOpen(true)} /> : null}
 
-      <CreateListSheet open={createOpen} onOpenChange={setCreateOpen} />
+      <CreateShioriListSheet open={createOpen} onOpenChange={setCreateOpen} />
     </div>
   )
 }

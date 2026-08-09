@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Add01Icon, Bookmark02Icon, Tick02Icon } from 'hugeicons-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Bookmark02Icon, Search01Icon } from 'hugeicons-react'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -8,11 +8,16 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import { Input } from '@/components/ui/input'
+import { SHIORI_PRIMARY_BUTTON_CLASS } from '@/components/explore/ExploreUi'
 import { useAppAuth } from '@/hooks/useAppAuth'
+import { useFavoriteAnimeCardsQuery } from '@/hooks/queries/useAnimeQueries'
 import { useMyListStore, MAX_SHIORI_LISTS } from '@/store/myListStore'
 import { toPersianNumber } from '@/lib/myListUtils'
-import { getListIcon } from './listIcons'
+import { hapticSelection } from '@/lib/telegramHaptics'
 import { cn } from '@/lib/utils'
+import emptyListImage from '@/assets/images/frieren-03.webp'
+import { CreateShioriListSheet } from './CreateShioriListSheet'
 
 type Props = {
   animeId: string | number
@@ -21,12 +26,37 @@ type Props = {
   iconOnly?: boolean
 }
 
+const ListPosterGrid = ({ images }: { images: string[] }) => {
+  const cells = Array.from({ length: 4 }, (_, i) => images[i] ?? null)
+  return (
+    <div className="grid aspect-square grid-cols-2 gap-0.5 overflow-hidden rounded-lg bg-muted/60">
+      {cells.map((src, i) =>
+        src ? (
+          <img
+            key={`${src}-${i}`}
+            src={src}
+            alt=""
+            className="h-full w-full object-cover"
+            loading="lazy"
+            decoding="async"
+          />
+        ) : (
+          <div key={`empty-${i}`} className="bg-background/80" />
+        )
+      )}
+    </div>
+  )
+}
+
 export const AddToShioriListButton = ({ animeId, triggerClassName, iconOnly }: Props) => {
   const { showAlert } = useAppAuth()
   const customLists = useMyListStore((s) => s.customLists)
   const addAnimeToList = useMyListStore((s) => s.addAnimeToList)
   const removeAnimeFromList = useMyListStore((s) => s.removeAnimeFromList)
   const [open, setOpen] = useState(false)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const [draftSelected, setDraftSelected] = useState<Set<string>>(() => new Set())
 
   const key = String(animeId)
   const memberListIds = useMemo(
@@ -34,18 +64,68 @@ export const AddToShioriListButton = ({ animeId, triggerClassName, iconOnly }: P
     [customLists, key]
   )
   const inAnyList = memberListIds.size > 0
+  const atLimit = customLists.length >= MAX_SHIORI_LISTS
 
-  const toggleList = (listId: string) => {
-    if (memberListIds.has(listId)) {
-      removeAnimeFromList(listId, key)
-      showAlert('از لیست حذف شد')
-      return
+  useEffect(() => {
+    if (!open) return
+    setDraftSelected(new Set(memberListIds))
+    setQuery('')
+  }, [open, memberListIds])
+
+  const allAnimeIds = useMemo(
+    () => [...new Set(customLists.flatMap((l) => l.animeIds))],
+    [customLists]
+  )
+  const { data: cards = [] } = useFavoriteAnimeCardsQuery(allAnimeIds)
+  const imageById = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const card of cards) map.set(String(card.id), card.image)
+    return map
+  }, [cards])
+
+  const filteredLists = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return customLists
+    return customLists.filter((l) => l.name.toLowerCase().includes(q))
+  }, [customLists, query])
+
+  const draftDirty = useMemo(() => {
+    if (draftSelected.size !== memberListIds.size) return true
+    for (const id of draftSelected) {
+      if (!memberListIds.has(id)) return true
     }
-    addAnimeToList(listId, key)
-    showAlert('به لیست اضافه شد')
+    return false
+  }, [draftSelected, memberListIds])
+
+  const toggleDraft = (listId: string) => {
+    hapticSelection()
+    setDraftSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(listId)) next.delete(listId)
+      else next.add(listId)
+      return next
+    })
   }
 
-  if (customLists.length === 0) return null
+  const handleApply = () => {
+    for (const list of customLists) {
+      const want = draftSelected.has(list.id)
+      const has = memberListIds.has(list.id)
+      if (want && !has) addAnimeToList(list.id, key)
+      if (!want && has) removeAnimeFromList(list.id, key)
+    }
+    setOpen(false)
+    showAlert(draftSelected.size > 0 ? 'لیست‌ها به‌روز شد' : 'از لیست‌ها حذف شد')
+  }
+
+  const openCreate = () => {
+    if (atLimit) {
+      showAlert(`حداکثر ${toPersianNumber(MAX_SHIORI_LISTS)} لیست می‌توانید بسازید`)
+      return
+    }
+    hapticSelection()
+    setCreateOpen(true)
+  }
 
   return (
     <>
@@ -67,55 +147,127 @@ export const AddToShioriListButton = ({ animeId, triggerClassName, iconOnly }: P
         {iconOnly ? null : 'افزودن به لیست'}
       </Button>
 
-      <Sheet open={open} onOpenChange={setOpen}>
+      <Sheet
+        open={open}
+        onOpenChange={(next) => {
+          setOpen(next)
+          if (!next) setQuery('')
+        }}
+      >
         <SheetContent
           side="bottom"
           className="rounded-t-2xl border-t border-border bg-background p-0 pb-[var(--app-tg-bottom-inset)]"
         >
           <SheetHeader className="border-b border-border/50 px-4 py-3">
-            <SheetTitle>افزودن به شیوری‌لیست</SheetTitle>
+            <div className="flex items-center justify-between gap-3">
+              <SheetTitle className="min-w-0 flex-1 text-start">افزودن به لیست</SheetTitle>
+              <Button
+                type="button"
+                size="sm"
+                className={cn('h-9 shrink-0 px-3 text-xs font-semibold', SHIORI_PRIMARY_BUTTON_CLASS)}
+                disabled={atLimit}
+                onClick={openCreate}
+              >
+                ساخت لیست جدید
+              </Button>
+            </div>
           </SheetHeader>
-          <div className="max-h-[50vh] space-y-2 overflow-y-auto px-4 py-4 scrollbar-none">
-            {customLists.map((list) => {
-              const selected = memberListIds.has(list.id)
-              const { Icon } = getListIcon(list.icon)
-              return (
-                <button
-                  key={list.id}
+
+          <div className="space-y-4 px-4 py-4">
+            <div className="relative">
+              <Search01Icon className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="search"
+                enterKeyHint="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="جستجو در لیست‌ها…"
+                className="ps-10"
+                disabled={customLists.length === 0}
+              />
+            </div>
+
+            {customLists.length === 0 ? (
+              <div className="flex flex-col items-center justify-center px-2 py-8 text-center">
+                <img src={emptyListImage} alt="" className="mb-4 w-32 opacity-90" />
+                <p className="text-sm font-semibold text-foreground">هنوز لیستی نداری</p>
+                <p className="mt-1.5 max-w-xs text-xs leading-6 text-muted-foreground">
+                  یک لیست شخصی بساز تا این انیمه را به آن اضافه کنی.
+                </p>
+                <Button
                   type="button"
-                  onClick={() => toggleList(list.id)}
-                  className={cn(
-                    'flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-start transition-colors',
-                    selected
-                      ? 'border-primary-400/45 bg-primary-400/10'
-                      : 'border-border/60 bg-muted/20 hover:bg-muted/40 active:scale-[0.99]'
-                  )}
+                  size="lg"
+                  className={cn('mt-5 h-11 px-6 font-bold', SHIORI_PRIMARY_BUTTON_CLASS)}
+                  onClick={openCreate}
                 >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-primary-400/30 bg-primary-400/10 text-primary-400">
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="line-clamp-1 text-sm font-medium text-foreground">{list.name}</p>
-                    <p className="mt-0.5 text-xs tabular-nums text-muted-foreground">
-                      {toPersianNumber(list.animeIds.length)} انیمه
-                    </p>
-                  </div>
-                  {selected ? (
-                    <Tick02Icon className="h-5 w-5 shrink-0 text-primary-400" />
-                  ) : (
-                    <Add01Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  )}
-                </button>
-              )
-            })}
+                  ساخت لیست جدید
+                </Button>
+              </div>
+            ) : filteredLists.length === 0 ? (
+              <div className="px-2 py-10 text-center">
+                <p className="text-sm font-medium text-foreground">لیستی پیدا نشد</p>
+                <p className="mt-1 text-xs text-muted-foreground">عبارت جستجو را تغییر بده.</p>
+              </div>
+            ) : (
+              <div className="-mx-4 overflow-x-auto px-4 pb-1 scrollbar-none">
+                <div className="flex w-max gap-2.5">
+                  {filteredLists.map((list) => {
+                    const selected = draftSelected.has(list.id)
+                    const images = list.animeIds
+                      .map((id) => imageById.get(id))
+                      .filter((src): src is string => Boolean(src))
+                      .slice(0, 4)
+                    return (
+                      <button
+                        key={list.id}
+                        type="button"
+                        onClick={() => toggleDraft(list.id)}
+                        aria-pressed={selected}
+                        className={cn(
+                          'w-[7.25rem] shrink-0 rounded-xl border p-2 text-start transition-colors',
+                          selected
+                            ? 'border-primary-400 bg-primary-400/10'
+                            : 'border-border/70 bg-card hover:bg-muted/30'
+                        )}
+                      >
+                        <ListPosterGrid images={images} />
+                        <p className="mt-2 line-clamp-1 text-sm font-semibold text-foreground">
+                          {list.name}
+                        </p>
+                        <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
+                          {toPersianNumber(list.animeIds.length)} انیمه
+                        </p>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </div>
-          <SheetFooter className="border-t border-border/50 px-4 py-3">
-            <p className="w-full text-center text-[11px] leading-relaxed text-muted-foreground">
-              حداکثر {toPersianNumber(MAX_SHIORI_LISTS)} لیست · از «لیست من» لیست جدید بساز
-            </p>
-          </SheetFooter>
+
+          {customLists.length > 0 ? (
+            <SheetFooter className="border-t border-border/50 px-4 py-4">
+              <Button
+                type="button"
+                size="lg"
+                disabled={!draftDirty}
+                className={cn('h-12 w-full text-base font-semibold', SHIORI_PRIMARY_BUTTON_CLASS)}
+                onClick={handleApply}
+              >
+                افزودن به لیست‌ها
+              </Button>
+            </SheetFooter>
+          ) : null}
         </SheetContent>
       </Sheet>
+
+      <CreateShioriListSheet
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={(list) => {
+          setDraftSelected((prev) => new Set(prev).add(list.id))
+        }}
+      />
     </>
   )
 }
