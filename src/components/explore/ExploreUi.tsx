@@ -63,6 +63,7 @@ export const ExploreEmptyState = ({
   showImage = true,
   actionLabel,
   onAction,
+  compact,
 }: {
   title: string
   subtitle?: string
@@ -70,10 +71,21 @@ export const ExploreEmptyState = ({
   showImage?: boolean
   actionLabel?: string
   onAction?: () => void
+  /** Tighter padding for inline section errors (Home rails, etc.). */
+  compact?: boolean
 }) => (
-  <div className="flex flex-col items-center justify-center text-center gap-2 py-16 px-6">
+  <div
+    className={cn(
+      'flex flex-col items-center justify-center text-center gap-2 px-6',
+      compact ? 'py-8' : 'py-16'
+    )}
+  >
     {showImage ? (
-      <img src={emptyExploreImage} alt="" className="mb-3 w-40 opacity-90" />
+      <img
+        src={emptyExploreImage}
+        alt=""
+        className={cn('opacity-90', compact ? 'mb-2 w-28' : 'mb-3 w-40')}
+      />
     ) : null}
     <h2 className="text-base font-semibold text-foreground">{title}</h2>
     {subtitle ? (
@@ -82,8 +94,12 @@ export const ExploreEmptyState = ({
     {onAction && actionLabel ? (
       <Button
         type="button"
-        size="lg"
-        className={cn('mt-4 h-11 font-semibold px-6', SHIORI_PRIMARY_BUTTON_CLASS)}
+        size={compact ? 'default' : 'lg'}
+        className={cn(
+          'font-semibold px-6',
+          compact ? 'mt-3 h-10' : 'mt-4 h-11',
+          SHIORI_PRIMARY_BUTTON_CLASS
+        )}
         onClick={onAction}
       >
         {actionLabel}

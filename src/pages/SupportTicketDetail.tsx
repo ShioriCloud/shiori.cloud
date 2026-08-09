@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { CustomerServiceIcon } from 'hugeicons-react'
 import { BidiText } from '@/components/BidiText'
 import { MyListCompactCard } from '@/components/my-list/MyListUi'
@@ -51,12 +51,6 @@ const SupportTicketDetail = () => {
               </p>
             ) : null}
           </div>
-          <Link
-            to="/support"
-            className="shrink-0 text-xs text-muted-foreground hover:text-foreground"
-          >
-            بازگشت
-          </Link>
         </div>
       </div>
 

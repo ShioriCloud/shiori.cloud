@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { AnimePosterCard, AnimePosterSkeletonGrid } from '@/components/anime/AnimePosterCard'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import * as catalog from '../services/catalogSource'
@@ -47,7 +47,7 @@ const StudioDetail = () => {
 
   return (
     <div className="pb-24">
-      <div className="px-4 pt-4 pb-2 flex items-center justify-between gap-3">
+      <div className="px-4 pt-4 pb-2">
         {showTitleSkeleton ? (
           <div className="h-6 w-56 max-w-full bg-muted animate-pulse rounded" aria-hidden />
         ) : (
@@ -55,9 +55,6 @@ const StudioDetail = () => {
             {pageTitle ?? `انیمه‌های استودیو ${slug}`}
           </h2>
         )}
-        <Link to="/explore?tab=all" className="text-sm text-muted-foreground shrink-0">
-          گشت‌و‌گذار
-        </Link>
       </div>
 
       {loading ? (

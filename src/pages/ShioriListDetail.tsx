@@ -18,6 +18,7 @@ import {
   MyListSkeletonCards,
   MyListTabHeader,
 } from '@/components/my-list/MyListUi'
+import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { EditListSheet } from '@/components/my-list/ShioriListEditSheet'
 import { cn } from '@/lib/utils'
 import type { GenreItem } from '@/types/catalog'
@@ -112,12 +113,14 @@ const ShioriListDetail = () => {
             {loading && <MyListSkeletonCards />}
 
             {isError && (
-              <div className="text-center py-8 space-y-3">
-                <p className="text-sm text-red-400">خطا در بارگذاری</p>
-                <Button type="button" variant="secondary" size="sm" onClick={() => void refetch()}>
-                  تلاش مجدد
-                </Button>
-              </div>
+              <ExploreEmptyState
+                title="خطا در بارگذاری"
+                subtitle="محتوای این مجموعه بارگذاری نشد."
+                showImage={false}
+                compact
+                actionLabel="تلاش مجدد"
+                onAction={() => void refetch()}
+              />
             )}
 
             {!loading && items.length > 0 && (

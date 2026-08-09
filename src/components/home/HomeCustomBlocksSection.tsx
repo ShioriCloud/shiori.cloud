@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { Button } from '@/components/ui/button'
+import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { useHomeCustomBlocksQuery } from '@/hooks/queries/useAnimeQueries'
 import { HomeCustomBlocks } from './HomeCustomBlocks'
 
@@ -32,12 +32,14 @@ export const HomeCustomBlocksSection = memo(({ enabled = true }: { enabled?: boo
     const message =
       query.error instanceof Error ? query.error.message : 'خطا در بارگذاری بلاک‌های سفارشی'
     return (
-      <div className="px-4 py-4 text-center space-y-3">
-        <p className="text-sm text-red-500">{message}</p>
-        <Button type="button" variant="secondary" size="sm" onClick={() => void query.refetch()}>
-          تلاش مجدد
-        </Button>
-      </div>
+      <ExploreEmptyState
+        title="خطا در بارگذاری"
+        subtitle={message}
+        showImage={false}
+        compact
+        actionLabel="تلاش مجدد"
+        onAction={() => void query.refetch()}
+      />
     )
   }
 

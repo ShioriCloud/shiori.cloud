@@ -49,6 +49,7 @@ import {
   resolveHardsubLanguage,
 } from '../utils/animeMediaTags'
 import { Button } from '@/components/ui/button'
+import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { cn } from '@/lib/utils'
 import {
   useClaimFreeDownload,
@@ -785,11 +786,13 @@ const AnimeDetail = () => {
   if (!detailReady) {
     if (error && !catalogReady) {
       return (
-        <div className="px-4 py-16 text-center space-y-3 pb-24">
-          <p className="text-red-500 text-sm">{error}</p>
-          <Button type="button" variant="secondary" onClick={() => refetch()}>
-            تلاش مجدد
-          </Button>
+        <div className="pb-24">
+          <ExploreEmptyState
+            title="خطا در بارگذاری"
+            subtitle={error}
+            actionLabel="تلاش مجدد"
+            onAction={() => refetch()}
+          />
         </div>
       )
     }
@@ -798,11 +801,13 @@ const AnimeDetail = () => {
 
   if (error || !anime) {
     return (
-      <div className="px-4 py-16 text-center space-y-3 pb-24">
-        <p className="text-red-500 text-sm">{error || 'انیمه مورد نظر یافت نشد'}</p>
-        <Button type="button" variant="secondary" onClick={() => refetch()}>
-          تلاش مجدد
-        </Button>
+      <div className="pb-24">
+        <ExploreEmptyState
+          title="انیمه پیدا نشد"
+          subtitle={error || 'انیمه مورد نظر یافت نشد'}
+          actionLabel="تلاش مجدد"
+          onAction={() => refetch()}
+        />
       </div>
     )
   }

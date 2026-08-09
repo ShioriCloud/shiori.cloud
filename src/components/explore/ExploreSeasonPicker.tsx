@@ -103,7 +103,7 @@ export const ExploreSeasonSheet = ({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="max-h-[75vh] overflow-y-auto rounded-t-2xl border-t border-border bg-background p-0 shadow-[0_-8px_30px_oklch(0.4_0_0/0.12)] dark:shadow-[0_-8px_30px_oklch(0_0_0/0.45)] pb-[env(safe-area-inset-bottom,0px)]"
+        className="max-h-[75vh] overflow-y-auto rounded-t-2xl border-t border-border bg-background p-0 shadow-[0_-8px_30px_oklch(0.4_0_0/0.12)] dark:shadow-[0_-8px_30px_oklch(0_0_0/0.45)] pb-[var(--app-tg-bottom-inset)]"
       >
         <SheetHeader className="border-b border-border/50 px-4 py-3">
           <SheetTitle className="text-base">انتخاب فصل</SheetTitle>

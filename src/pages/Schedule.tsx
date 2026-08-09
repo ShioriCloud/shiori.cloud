@@ -5,6 +5,7 @@ import { BidiText } from '../components/BidiText'
 import { Calendar01Icon, Alert02Icon } from 'hugeicons-react'
 import type { GenreItem } from '../types/catalog'
 import { Button } from '@/components/ui/button'
+import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { useScheduleQuery } from '../hooks/queries/useAnimeQueries'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { hapticSelection } from '../lib/telegramHaptics'
@@ -198,11 +199,13 @@ const Schedule = () => {
 
   if (error) {
     return (
-      <div className="px-4 py-16 text-center space-y-3 pb-24">
-        <p className="text-red-500 text-sm">{error}</p>
-        <Button type="button" variant="secondary" onClick={() => refetch()}>
-          تلاش مجدد
-        </Button>
+      <div className="pb-24">
+        <ExploreEmptyState
+          title="خطا در بارگذاری برنامه پخش"
+          subtitle={error}
+          actionLabel="تلاش مجدد"
+          onAction={() => void refetch()}
+        />
       </div>
     )
   }

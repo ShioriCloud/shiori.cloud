@@ -12,7 +12,7 @@ import { AppHeader } from '@/components/AppHeader'
 import { HomeCustomBlocksSection } from '@/components/home/HomeCustomBlocksSection'
 import { HomeFeaturedCarousel } from '@/components/home/HomeFeaturedCarousel'
 import { HomeRailScroller, HomeRailSlide } from '@/components/home/HomeRailScroller'
-import { Button } from '@/components/ui/button'
+import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { exploreAllHref } from '@/lib/exploreParams'
 import { hapticSelection } from '@/lib/telegramHaptics'
@@ -221,18 +221,14 @@ const Home = () => {
         {loading ? (
           <SectionSkeleton />
         ) : loadError && list.length === 0 ? (
-          <div className="px-4">
-            <p className="text-sm text-red-500 text-center py-4">{loadError}</p>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              className="mx-auto flex"
-              onClick={() => void query.refetch()}
-            >
-              تلاش مجدد
-            </Button>
-          </div>
+          <ExploreEmptyState
+            title="خطا در بارگذاری"
+            subtitle={loadError}
+            showImage={false}
+            compact
+            actionLabel="تلاش مجدد"
+            onAction={() => void query.refetch()}
+          />
         ) : list.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-6 px-4">فعلاً موردی نیست.</p>
         ) : (
@@ -300,12 +296,13 @@ const Home = () => {
         {featuredLoading ? (
           <div className="h-52 rounded-2xl bg-muted animate-pulse" />
         ) : featuredError ? (
-          <div className="h-40 rounded-2xl border border-dashed border-border flex flex-col items-center justify-center px-4 gap-3">
-            <p className="text-sm text-red-500 text-center">{featuredError}</p>
-            <Button type="button" variant="secondary" size="sm" onClick={() => void featuredQuery.refetch()}>
-              تلاش مجدد
-            </Button>
-          </div>
+          <ExploreEmptyState
+            title="خطا در پیشنهاد ویژه"
+            subtitle={featuredError}
+            compact
+            actionLabel="تلاش مجدد"
+            onAction={() => void featuredQuery.refetch()}
+          />
         ) : featuredAnime.length > 0 ? (
           <HomeFeaturedCarousel>
             {featuredAnime.map((anime) => (

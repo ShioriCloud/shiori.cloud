@@ -5,7 +5,7 @@ import { BidiText } from '../components/BidiText'
 import { UserIcon } from 'hugeicons-react'
 import * as catalog from '../services/catalogSource'
 import type { AnimeCard, GenreItem, TranslatorItem } from '../services/catalogSource'
-import { Button } from '@/components/ui/button'
+import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { Badge } from '@/components/ui/badge'
 
@@ -140,11 +140,13 @@ const TranslatorProfile = () => {
 
   if (error || !translator) {
     return (
-      <div className="px-4 py-16 text-center space-y-3 pb-24">
-        <p className="text-sm text-red-500">{error || 'مترجم یافت نشد.'}</p>
-        <Button type="button" variant="secondary" onClick={loadProfile}>
-          تلاش مجدد
-        </Button>
+      <div className="pb-24">
+        <ExploreEmptyState
+          title="خطا در بارگذاری مترجم"
+          subtitle={error || 'مترجم یافت نشد.'}
+          actionLabel="تلاش مجدد"
+          onAction={loadProfile}
+        />
       </div>
     )
   }
