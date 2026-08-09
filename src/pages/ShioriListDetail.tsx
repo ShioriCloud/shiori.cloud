@@ -66,7 +66,13 @@ const ShioriListDetail = () => {
   const loading = animeIds.length > 0 && items.length === 0 && isLoading
 
   const handleDeleteList = async () => {
-    const confirmed = await showConfirm(`لیست «${list.name}» حذف شود؟ این کار قابل بازگشت نیست.`)
+    const confirmed = await showConfirm({
+      title: 'حذف لیست',
+      message: `لیست «${list.name}» حذف شود؟ این کار قابل بازگشت نیست.`,
+      confirmLabel: 'حذف',
+      cancelLabel: 'انصراف',
+      destructive: true,
+    })
     if (!confirmed) return
     deleteList(list.id)
     showAlert('لیست حذف شد')
