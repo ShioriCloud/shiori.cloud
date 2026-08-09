@@ -46,10 +46,24 @@ const Layout = ({ children }: LayoutProps) => {
     setIsScrolled(false)
   }, [location.pathname])
 
-  const isActive = (path: string) =>
-    path === '/explore'
-      ? location.pathname === '/explore' || location.pathname.startsWith('/explore/')
-      : location.pathname === path
+  const isActive = (path: string) => {
+    const pathname = location.pathname
+    if (path === '/explore') {
+      return pathname === '/explore' || pathname.startsWith('/explore/')
+    }
+    if (path === '/my-list') {
+      return pathname === '/my-list' || pathname.startsWith('/my-list/')
+    }
+    if (path === '/profile') {
+      return (
+        pathname === '/profile' ||
+        pathname.startsWith('/notifications') ||
+        pathname.startsWith('/support') ||
+        pathname.startsWith('/subscribe')
+      )
+    }
+    return pathname === path
+  }
 
   const isHomePage = location.pathname === '/'
   const isExplorePage =

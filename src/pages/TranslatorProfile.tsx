@@ -44,30 +44,32 @@ const AnimeGridCard = ({ anime }: { anime: AnimeCard }) => {
       className="group block active:scale-[0.98] transition-transform"
       aria-label={`مشاهده ${anime.title}`}
     >
-      <div className="relative aspect-[2/3] rounded-xl overflow-hidden border border-border bg-muted shadow-sm">
-        <img
-          src={anime.image}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          loading="lazy"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-        <div className="absolute left-0 bottom-0 p-2.5 pt-10">
-          <BidiText as="h3" className="text-xs font-semibold text-white text-left line-clamp-2">
-            {anime.title}
-          </BidiText>
-          {genres.length > 0 && (
-            <div className="flex flex-wrap gap-0.5 mt-1 justify-end">
-              {genres.map((g) => (
-                <span
-                  key={g.slug}
-                  className="text-[8px] leading-none px-1 py-0.5 rounded-md bg-white/15 text-white/90 border border-white/10 truncate max-w-full"
-                >
-                  {genreLabel(g)}
-                </span>
-              ))}
-            </div>
-          )}
+      <div className="media-card-skeuo rounded-xl">
+        <div className="media-card-skeuo-face relative aspect-[2/3] bg-muted">
+          <img
+            src={anime.image}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+          <div className="absolute left-0 bottom-0 p-2.5 pt-10">
+            <BidiText as="h3" className="text-xs font-semibold text-white text-left line-clamp-2">
+              {anime.title}
+            </BidiText>
+            {genres.length > 0 && (
+              <div className="flex flex-wrap gap-0.5 mt-1 justify-end">
+                {genres.map((g) => (
+                  <span
+                    key={g.slug}
+                    className="text-[8px] leading-none px-1 py-0.5 rounded-md bg-white/15 text-white/90 border border-white/10 truncate max-w-full"
+                  >
+                    {genreLabel(g)}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </AnimePrefetchLink>
@@ -204,10 +206,7 @@ const TranslatorProfile = () => {
           { value: toPersianNumber(totalEpisodes), label: 'قسمت' },
           { value: experienceLabel, label: 'سابقه' },
         ].map((stat) => (
-          <div
-            key={stat.label}
-            className="rounded-xl border border-border bg-card/60 py-3 px-2 text-center"
-          >
+          <div key={stat.label} className="surface-skeuo rounded-xl py-3 px-2 text-center">
             <p className="text-base font-bold text-foreground">{stat.value}</p>
             <p className="text-[11px] text-muted-foreground mt-0.5">{stat.label}</p>
           </div>

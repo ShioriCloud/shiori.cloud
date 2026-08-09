@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAppAuth } from '@/hooks/useAppAuth'
+import { BrandBootScreen } from '@/components/BrandBootScreen'
 import { MyListTabBar, parseMyListTab, type MyListTabId } from '@/components/my-list/MyListTabBar'
 import { WatchlistTab } from '@/components/my-list/WatchlistTab'
 import { ShioriListsTab } from '@/components/my-list/ShioriListsTab'
@@ -28,11 +29,7 @@ const MyList = () => {
   )
 
   if (!isReady) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center pb-24">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary-400/30 border-t-primary-400" />
-      </div>
-    )
+    return <BrandBootScreen compact />
   }
 
   return (

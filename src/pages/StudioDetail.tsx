@@ -1,70 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import AnimePrefetchLink from '../components/AnimePrefetchLink'
-import { BidiText } from '../components/BidiText'
+import { AnimePosterCard, AnimePosterSkeletonGrid } from '@/components/anime/AnimePosterCard'
+import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import * as catalog from '../services/catalogSource'
-import type { GenreItem, StudioPublicItem } from '../services/catalogSource'
-import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
+import type { StudioPublicItem } from '../services/catalogSource'
 import { fetchAnimeByStudioSlug, type UiAnimeCard } from '../utils/api'
-
-const genreLabel = (g: GenreItem) => g.name_fa || g.name_en || g.slug
-
-const SkeletonGrid = () => (
-  <div className="grid grid-cols-3 gap-3 px-4 pt-2">
-    {Array.from({ length: 9 }).map((_, i) => (
-      <div key={i} className="animate-pulse">
-        <div className="aspect-[2/3] rounded-xl bg-muted" />
-      </div>
-    ))}
-  </div>
-)
-
-const AnimeGridCard = ({ anime }: { anime: UiAnimeCard }) => {
-  const genres = (anime.genres || []).slice(0, 3)
-
-  return (
-    <AnimePrefetchLink
-      animeId={animePublicSegment(anime)}
-      to={animeDetailPath(anime)}
-      className="group block active:scale-[0.98] transition-transform"
-      aria-label={`مشاهده ${anime.title}`}
-    >
-      <div className="relative aspect-[2/3] rounded-xl overflow-hidden border border-border bg-muted shadow-sm">
-        <img
-          src={anime.image}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          loading="lazy"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent" />
-        {anime.isNew && (
-          <span className="absolute top-2 right-2 text-[10px] font-semibold bg-primary-400 text-white px-1.5 py-0.5 rounded-md">
-            جدید
-          </span>
-        )}
-        <div className="absolute inset-x-0 bottom-0 p-2.5 pt-10">
-          <BidiText as="h3" className="text-xs text-left font-semibold text-white line-clamp-2 leading-2">
-            {anime.title}
-          </BidiText>
-          {genres.length > 0 ? (
-            <div className="flex flex-wrap gap-1 mt-1 justify-end">
-              {genres.map((g) => (
-                <span
-                  key={g.slug}
-                  className="text-[9px] leading-none px-1 py-0.5 rounded-md bg-white/15 text-white/90 border border-white/10 max-w-full truncate"
-                >
-                  {genreLabel(g)}
-                </span>
-              ))}
-            </div>
-          ) : (
-            <p className="text-[10px] text-white/60 mt-1">{anime.episode || 'شیوری'}</p>
-          )}
-        </div>
-      </div>
-    </AnimePrefetchLink>
-  )
-}
 
 const StudioDetail = () => {
   const { slug } = useParams<{ slug: string }>()
@@ -74,27 +14,28 @@ const StudioDetail = () => {
   const [error, setError] = useState<string | null>(null)
   const [studio, setStudio] = useState<StudioPublicItem | null>(null)
   const [anime, setAnime] = useState<UiAnimeCard[]>([])
+  const [reloadKey, setReloadKey] = useState(0)
+
+  const load = useCallback(async () => {
+    if (!slug) return
+    setLoading(true)
+    setError(null)
+    try {
+      const s = await catalog.getStudioBySlug(slug)
+      setStudio(s)
+      const list = await fetchAnimeByStudioSlug(slug)
+      setAnime(list)
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'خطا در بارگذاری'
+      setError(msg)
+    } finally {
+      setLoading(false)
+    }
+  }, [slug])
 
   useEffect(() => {
-    const run = async () => {
-      if (!slug) return
-      setLoading(true)
-      setError(null)
-      try {
-        const s = await catalog.getStudioBySlug(slug)
-        setStudio(s)
-        const list = await fetchAnimeByStudioSlug(slug)
-        setAnime(list)
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : 'خطا در بارگذاری'
-        setError(msg)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    run()
-  }, [slug])
+    void load()
+  }, [load, reloadKey])
 
   const studioDisplayName = nameParam || studio?.name || null
   const showTitleSkeleton = loading && !nameParam
@@ -120,15 +61,21 @@ const StudioDetail = () => {
       </div>
 
       {loading ? (
-        <SkeletonGrid />
+        <AnimePosterSkeletonGrid />
       ) : error ? (
-        <div className="text-center text-red-500 p-4">{error}</div>
+        <ExploreEmptyState
+          title="خطا در بارگذاری استودیو"
+          subtitle={error}
+          showImage
+          actionLabel="تلاش مجدد"
+          onAction={() => setReloadKey((k) => k + 1)}
+        />
       ) : anime.length === 0 ? (
-        <div className="text-center text-muted-foreground p-4 text-sm">انیمه‌ای پیدا نشد.</div>
+        <ExploreEmptyState title="انیمه‌ای پیدا نشد" subtitle="برای این استودیو عنوانی ثبت نشده." />
       ) : (
         <div className="grid grid-cols-3 gap-3 px-4 pt-2">
           {anime.map((a) => (
-            <AnimeGridCard key={String(a.id)} anime={a} />
+            <AnimePosterCard key={String(a.id)} anime={a} />
           ))}
         </div>
       )}

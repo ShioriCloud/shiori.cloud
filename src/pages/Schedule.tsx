@@ -219,18 +219,20 @@ const Schedule = () => {
           <div
             role="alert"
             key={toast}
-            className={`max-w-xl mx-auto rounded-xl border border-amber-800/80 bg-amber-500/15 backdrop-blur-md px-4 py-3 flex flex-col gap-3 shadow-xl ${
+            className={`max-w-xl mx-auto rounded-xl border border-amber-500/40 bg-amber-500/15 backdrop-blur-md px-4 py-3 flex flex-col gap-3 shadow-xl dark:border-amber-800/80 ${
               toastClosing ? 'schedule-toast-exit' : 'schedule-toast-enter'
             }`}
           >
             <div className="flex items-start gap-3">
-              <Alert02Icon className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-              <p className="text-xs font-medium leading-5 text-amber-50 flex-1">{toast}</p>
+              <Alert02Icon className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <p className="text-xs font-medium leading-5 text-amber-950 dark:text-amber-50 flex-1">
+                {toast}
+              </p>
               <Button
                 type="button"
                 variant="secondary"
                 size="sm"
-                className="shrink-0 border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-50"
+                className="shrink-0 border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-amber-50"
                 onClick={dismissToast}
               >
                 بستن
@@ -256,7 +258,7 @@ const Schedule = () => {
       <div className="px-4 pt-4 flex items-center justify-between gap-3">
         <h1 className="text-lg font-semibold text-foreground shrink-0">برنامه پخش هفتگی</h1>
         {seasonLabel && (
-          <p className="text-sm text-white/90 font-medium">{seasonLabel}</p>
+          <p className="text-sm font-medium text-muted-foreground">{seasonLabel}</p>
         )}
       </div>
 
@@ -320,41 +322,45 @@ const Schedule = () => {
               onClick={(e) => handleAnimeClick(e, anime)}
               className="group block active:scale-[0.98] transition-transform"
             >
-              <div className="relative aspect-[2/3] rounded-xl overflow-hidden border border-border bg-muted shadow-sm">
-                <img
-                  src={anime.image}
-                  alt=""
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+              <div className="media-card-skeuo rounded-xl">
+                <div className="media-card-skeuo-face relative aspect-[2/3] bg-muted">
+                  <img
+                    src={anime.image}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
-                {anime.localId ? (
-                  <span
-                    className="absolute top-1.5 start-1.5 flex h-6 w-6 items-center justify-center rounded-md bg-rose-500 shadow-sm"
-                    title="ترجمه شیوری"
-                    aria-label="موجود در کاتالوگ شیوری"
-                  >
-                    <img src={shioriLogo} alt="" className="h-3.5 w-3.5 object-contain" />
-                  </span>
-                ) : null}
+                  {anime.localId ? (
+                    <span
+                      className="absolute top-1.5 start-1.5 flex h-6 w-6 items-center justify-center rounded-md bg-rose-500 shadow-sm"
+                      title="ترجمه شیوری"
+                      aria-label="موجود در کاتالوگ شیوری"
+                    >
+                      <img src={shioriLogo} alt="" className="h-3.5 w-3.5 object-contain" />
+                    </span>
+                  ) : null}
 
-                <div className="absolute left-0 bottom-0 p-2 pt-10">
-                  <BidiText
-                    as="h3"
-                    className="text-xs text-left font-semibold text-white line-clamp-2 drop-shadow-sm"
-                  >
-                    {anime.title}
-                  </BidiText>
-                  <p className="text-[11px] text-white/75 mt-0.5 text-left">
-                    {anime.time ? (
-                      <>
-                        <span>{anime.time}</span>
-                        <span className="mx-1.5 opacity-50">|</span>
-                      </>
-                    ) : null}
-                    <span className="text-white/90 font-medium">قسمت {toPersianNumber(anime.episode)}</span>
-                  </p>
+                  <div className="absolute left-0 bottom-0 p-2 pt-10">
+                    <BidiText
+                      as="h3"
+                      className="text-xs text-left font-semibold text-white line-clamp-2 drop-shadow-sm"
+                    >
+                      {anime.title}
+                    </BidiText>
+                    <p className="text-[11px] text-white/75 mt-0.5 text-left">
+                      {anime.time ? (
+                        <>
+                          <span>{anime.time}</span>
+                          <span className="mx-1.5 opacity-50">|</span>
+                        </>
+                      ) : null}
+                      <span className="text-white/90 font-medium">
+                        قسمت {toPersianNumber(anime.episode)}
+                      </span>
+                    </p>
+                  </div>
                 </div>
               </div>
             </AnimePrefetchLink>
