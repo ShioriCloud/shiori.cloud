@@ -1,9 +1,14 @@
 import { createElement, type ReactNode } from 'react'
 import { toast } from 'sonner'
-import { Alert02Icon, CheckmarkCircle02Icon, InformationCircleIcon } from 'hugeicons-react'
+import {
+  Alert02Icon,
+  CheckmarkCircle02Icon,
+  Delete02Icon,
+  InformationCircleIcon,
+} from 'hugeicons-react'
 import { create } from 'zustand'
 
-export type ToastTone = 'default' | 'success' | 'error' | 'warning'
+export type ToastTone = 'default' | 'success' | 'error' | 'warning' | 'destructive'
 
 export type AppConfirmRequest = {
   id: string
@@ -37,8 +42,7 @@ const inferTone = (message: string): ToastTone => {
   const text = message.trim()
   if (/خطا|ناموفق|موجود نیست|تمام شده|لازم است|فعال نشده/i.test(text)) return 'error'
   if (/هنوز در کاتالوگ|درخواست ترجمه|کاتالوگ شیوری نیست/i.test(text)) return 'warning'
-  // Completed removals stay neutral (not "success green").
-  if (/حذف شد|از لیست حذف|از علاقه‌مندی/i.test(text)) return 'default'
+  if (/حذف شد|از لیست حذف|از علاقه‌مندی|از لیست‌ها حذف/i.test(text)) return 'destructive'
   if (/به‌روز|فعال|اضافه|ساخته|ذخیره شد|لیست‌ها به‌روز/i.test(text)) return 'success'
   return 'default'
 }
@@ -59,6 +63,12 @@ const toneIcon = (tone: ToastTone): ReactNode => {
   if (tone === 'warning') {
     return createElement(Alert02Icon, {
       className: 'size-5 shrink-0 text-amber-500',
+      'aria-hidden': true,
+    })
+  }
+  if (tone === 'destructive') {
+    return createElement(Delete02Icon, {
+      className: 'size-5 shrink-0 text-red-400',
       'aria-hidden': true,
     })
   }
