@@ -179,7 +179,8 @@ const Schedule = () => {
       return
     }
 
-    showAppToast('این انیمه هنوز در کاتالوگ ترجمهٔ شیوری نیست.', 'warning', {
+    showAppToast('هنوز در کاتالوگ شیوری نیست', 'warning', {
+      description: 'می‌تونی برای ترجمه‌اش درخواست ثبت کنی.',
       duration: 6500,
       action: {
         label: 'درخواست ترجمه',

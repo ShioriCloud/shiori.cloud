@@ -67,6 +67,7 @@ export const showAppToast = (
   message: string,
   tone?: ToastTone,
   options?: {
+    description?: string
     action?: {
       label: string
       onClick: () => void
@@ -79,7 +80,9 @@ export const showAppToast = (
 
   const resolvedTone = tone ?? inferTone(trimmed)
   const payload = {
+    description: options?.description?.trim() || undefined,
     duration: options?.duration ?? 3200,
+    closeButton: false,
     action: options?.action
       ? {
           label: options.action.label,

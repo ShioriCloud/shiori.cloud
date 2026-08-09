@@ -12,7 +12,8 @@ const Toaster = ({ className, ...props }: ToasterProps) => {
       position="top-center"
       dir="rtl"
       richColors
-      closeButton
+      closeButton={false}
+      visibleToasts={3}
       offset="calc(var(--app-tg-top-inset) + 0.65rem)"
       mobileOffset="calc(var(--app-tg-top-inset) + 0.65rem)"
       toastOptions={{
@@ -24,12 +25,13 @@ const Toaster = ({ className, ...props }: ToasterProps) => {
             'group-[.toaster]:rounded-2xl'
           ),
           title: 'font-sans text-sm font-medium leading-6',
-          description: 'font-sans text-sm text-muted-foreground leading-6',
-          actionButton:
-            'font-sans group-[.toast]:bg-primary-500 group-[.toast]:text-white group-[.toast]:font-medium',
+          description: 'font-sans mt-1 text-sm leading-6 text-muted-foreground',
+          actionButton: cn(
+            'font-sans !h-9 !rounded-xl !px-3 !text-xs !font-semibold',
+            'group-[.toast]:bg-primary-500 group-[.toast]:text-white'
+          ),
           cancelButton:
             'font-sans group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
-          closeButton: 'group-[.toast]:border-border group-[.toast]:bg-card',
         },
       }}
       {...props}
