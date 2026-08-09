@@ -3,6 +3,11 @@ import { FormEvent, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { CustomerServiceIcon, Add01Icon } from 'hugeicons-react'
 import { MyListCompactCard } from '@/components/my-list/MyListUi'
+import {
+  ExploreOptionButton,
+  SHIORI_PRIMARY_BUTTON_CLASS,
+  SHIORI_SECONDARY_BUTTON_CLASS,
+} from '@/components/explore/ExploreUi'
 import { Button } from '@/components/ui/button'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import { useCreateSupportTicket, useSupportTickets } from '@/hooks/useSupportTickets'
@@ -12,6 +17,7 @@ import {
   SUPPORT_TICKET_STATUS_LABELS,
   type SupportTicketCategory,
 } from '@/types/supportTickets'
+import { hapticSelection } from '@/lib/telegramHaptics'
 import { cn } from '@/lib/utils'
 
 const isSupportCategory = (value: string | null): value is SupportTicketCategory =>
@@ -112,18 +118,18 @@ const SupportPage = () => {
             <h1 className="truncate text-lg font-semibold text-foreground">پشتیبانی</h1>
           </div>
           {canUse ? (
-            <button
+            <Button
               type="button"
-              onClick={() => setComposeOpen((v) => !v)}
-              className={cn(
-                'inline-flex h-9 shrink-0 items-center gap-1 rounded-lg border px-2.5',
-                'border-border/50 bg-muted/35 text-xs font-medium text-muted-foreground',
-                'transition-colors hover:bg-muted/50 hover:text-foreground'
-              )}
+              size="sm"
+              className={cn('h-9 shrink-0 gap-1 px-3 text-xs font-semibold', SHIORI_PRIMARY_BUTTON_CLASS)}
+              onClick={() => {
+                hapticSelection()
+                setComposeOpen((v) => !v)
+              }}
             >
               <Add01Icon className="h-3.5 w-3.5" />
               تیکت جدید
-            </button>
+            </Button>
           ) : null}
         </div>
       </div>
@@ -142,21 +148,16 @@ const SupportPage = () => {
                 <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
                   دسته‌بندی
                 </label>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="grid grid-cols-2 gap-2">
                   {SUPPORT_TICKET_CATEGORIES.map((key) => (
-                    <button
+                    <ExploreOptionButton
                       key={key}
-                      type="button"
+                      active={category === key}
                       onClick={() => setCategory(key)}
-                      className={cn(
-                        'rounded-md border px-2 py-1.5 text-[11px] font-medium transition-colors',
-                        category === key
-                          ? 'border-primary-400/40 bg-primary-400/15 text-primary-700 dark:text-primary-200'
-                          : 'border-border/50 bg-muted/30 text-muted-foreground hover:bg-muted/50'
-                      )}
+                      className="min-h-10 py-2 text-xs"
                     >
                       {SUPPORT_TICKET_CATEGORY_LABELS[key]}
-                    </button>
+                    </ExploreOptionButton>
                   ))}
                 </div>
               </div>
@@ -171,11 +172,7 @@ const SupportPage = () => {
                   onChange={(e) => setSubject(e.target.value)}
                   maxLength={120}
                   placeholder="خلاصه مشکل یا درخواست"
-                  className={cn(
-                    'h-11 w-full rounded-lg border border-border/50 bg-muted/25 px-3',
-                    'text-sm text-foreground outline-none placeholder:text-muted-foreground/70',
-                    'focus:border-primary-400/40'
-                  )}
+                  className="ui-elevated h-11 w-full rounded-lg px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground/70 focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
 
@@ -190,11 +187,7 @@ const SupportPage = () => {
                   maxLength={4000}
                   rows={5}
                   placeholder="جزئیات را بنویس…"
-                  className={cn(
-                    'w-full resize-none rounded-lg border border-border/50 bg-muted/25 px-3 py-2.5',
-                    'text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground/70',
-                    'focus:border-primary-400/40'
-                  )}
+                  className="ui-elevated w-full resize-none rounded-lg px-3 py-2.5 text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground/70 focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
 
@@ -206,13 +199,17 @@ const SupportPage = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  className="h-11 flex-1"
+                  className={cn('h-11 flex-1 font-semibold', SHIORI_SECONDARY_BUTTON_CLASS)}
                   onClick={() => setComposeOpen(false)}
                   disabled={createMutation.isPending}
                 >
                   انصراف
                 </Button>
-                <Button type="submit" className="h-11 flex-1" disabled={createMutation.isPending}>
+                <Button
+                  type="submit"
+                  className={cn('h-11 flex-1 font-semibold', SHIORI_PRIMARY_BUTTON_CLASS)}
+                  disabled={createMutation.isPending}
+                >
                   {createMutation.isPending ? 'در حال ارسال…' : 'ارسال تیکت'}
                 </Button>
               </div>
@@ -223,7 +220,7 @@ const SupportPage = () => {
         {isLoading ? (
           <div className="animate-pulse space-y-2">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-20 rounded-lg bg-muted/70" />
+              <div key={i} className="h-20 rounded-lg surface-skeuo" />
             ))}
           </div>
         ) : null}
