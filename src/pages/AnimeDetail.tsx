@@ -70,7 +70,6 @@ import { trackAnimeBrowse, trackEpisodeDownload } from '../lib/myListTracking'
 import { hapticImpact, hapticNotification } from '../lib/telegramHaptics'
 import { recordAnimeView } from '../services/shioriCatalog'
 import { AddToShioriListButton } from '@/components/my-list/AddToShioriListButton'
-import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
 import {
   formatSeriesMemberLabel,
