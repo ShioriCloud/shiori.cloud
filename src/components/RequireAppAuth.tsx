@@ -11,7 +11,7 @@ export const RequireAppAuth = ({ children }: RequireAppAuthProps) => {
   const { isReady, isAuthenticated, inTelegram } = useAppAuth()
 
   if (!isReady) {
-    return <BrandBootScreen compact />
+    return <BrandBootScreen />
   }
 
   if (inTelegram && isAuthenticated) {

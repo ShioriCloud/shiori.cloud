@@ -29,7 +29,7 @@ const MyList = () => {
   )
 
   if (!isReady) {
-    return <BrandBootScreen compact />
+    return <BrandBootScreen />
   }
 
   return (

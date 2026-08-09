@@ -2,7 +2,7 @@ import { RequireAppAuth } from '@/components/RequireAppAuth'
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { CustomerServiceIcon, Add01Icon } from 'hugeicons-react'
-import { MyListCompactCard } from '@/components/my-list/MyListUi'
+import { MyListCompactCard, MyListEmptyState } from '@/components/my-list/MyListUi'
 import {
   ExploreOptionButton,
   SHIORI_PRIMARY_BUTTON_CLASS,
@@ -235,13 +235,15 @@ const SupportPage = () => {
         ) : null}
 
         {!isLoading && !isError && canUse && tickets.length === 0 && !composeOpen ? (
-          <div className="flex flex-col items-center justify-center gap-2 px-6 py-16 text-center text-muted-foreground">
-            <CustomerServiceIcon className="mb-1 h-12 w-12" />
-            <p className="font-medium text-foreground">هنوز تیکتی نداری</p>
-            <p className="text-sm leading-6">
-              اگر مشکلی دیدی یا پیشنهادی داری، از دکمه «تیکت جدید» بفرست.
-            </p>
-          </div>
+          <MyListEmptyState
+            title="هنوز تیکتی نداری"
+            description="اگر مشکلی دیدی یا پیشنهادی داری، از دکمه «تیکت جدید» بفرست."
+            actionLabel="تیکت جدید"
+            onAction={() => {
+              hapticSelection()
+              setComposeOpen(true)
+            }}
+          />
         ) : null}
 
         {!isLoading && !isError && tickets.length > 0 ? (

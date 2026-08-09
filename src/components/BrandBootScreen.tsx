@@ -1,21 +1,16 @@
 import logo from '@/assets/images/shiori-logo.svg'
 import { cn } from '@/lib/utils'
 
-/** Branded boot / gate loading — matches app chrome, not a bare spinner. */
-export const BrandBootScreen = ({
-  className,
-  compact,
-}: {
-  className?: string
-  /** Shorter viewport for in-page auth gates. */
-  compact?: boolean
-} = {}) => (
+/** Branded boot / gate loading — fixed to the viewport so it never scrolls away. */
+export const BrandBootScreen = ({ className }: { className?: string } = {}) => (
   <div
     className={cn(
-      'flex flex-col items-center justify-center gap-5 bg-background px-6',
-      compact ? 'min-h-[50vh] pb-24' : 'h-screen',
+      'fixed inset-0 z-[100] flex flex-col items-center justify-center gap-5 bg-background px-6',
       className
     )}
+    role="status"
+    aria-live="polite"
+    aria-busy="true"
   >
     <img src={logo} alt="" className="h-7 w-auto max-w-[7.5rem] opacity-90" />
     <div
