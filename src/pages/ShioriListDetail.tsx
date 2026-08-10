@@ -9,7 +9,6 @@ import { useAppAuth } from '@/hooks/useAppAuth'
 import { useMyListStore } from '@/store/myListStore'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
 import { toPersianNumber } from '@/lib/myListUtils'
-import { translateSeason } from '@/lib/searchFilters'
 import { getListIcon } from '@/components/my-list/listIcons'
 import { MyListAnimeRow, MyListBadge } from '@/components/my-list/MyListAnimeRow'
 import {
@@ -152,19 +151,6 @@ const ShioriListDetail = () => {
             {!loading && items.length > 0 && (
               <div className="space-y-2">
                 {items.map((anime) => {
-                  const episodes =
-                    typeof anime.episodes_count === 'number' && anime.episodes_count > 0
-                      ? anime.episodes_count
-                      : null
-                  const seasonKey = anime.season ? String(anime.season).toUpperCase() : ''
-                  const seasonYearLabel =
-                    seasonKey && typeof anime.year === 'number'
-                      ? `${translateSeason(seasonKey)} ${toPersianNumber(anime.year)}`
-                      : typeof anime.year === 'number'
-                        ? toPersianNumber(anime.year)
-                        : seasonKey
-                          ? translateSeason(seasonKey)
-                          : null
                   const genres = (anime.genres ?? []).slice(0, 2)
 
                   return (
@@ -201,14 +187,6 @@ const ShioriListDetail = () => {
                               {genreLabel(g)}
                             </MyListBadge>
                           ))}
-                          {episodes != null ? (
-                            <MyListBadge tone="default">
-                              {toPersianNumber(episodes)} قسمت
-                            </MyListBadge>
-                          ) : null}
-                          {seasonYearLabel ? (
-                            <MyListBadge tone="default">{seasonYearLabel}</MyListBadge>
-                          ) : null}
                         </>
                       }
                       trailing={
