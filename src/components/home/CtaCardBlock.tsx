@@ -15,7 +15,7 @@ import {
   normalizeVideoFileType,
   normalizeVideoResolution,
   resolveHardsubLanguage,
-  videoQualityOneLiner,
+  videoQualityButtonLabel,
 } from '@/utils/animeMediaTags'
 import { HomeCustomBlockLink } from './HomeCustomBlocks'
 
@@ -24,38 +24,31 @@ const CTA_DEFAULT_LABEL = 'بزن بریم'
 const buildMetaBadges = (block: HomeCtaCardBlock) => {
   const badges: { key: string; label: string; tone: 'default' | 'primary' | 'muted' }[] = []
 
-  if (block.video_resolution || block.video_encode) {
-    badges.push({
-      key: 'quality',
-      label: videoQualityOneLiner(
-        normalizeVideoResolution(block.video_resolution),
-        normalizeVideoEncode(block.video_encode)
-      ),
-      tone: 'default',
-    })
-  }
+  badges.push({
+    key: 'quality',
+    label: videoQualityButtonLabel(
+      normalizeVideoResolution(block.video_resolution),
+      normalizeVideoEncode(block.video_encode)
+    ),
+    tone: 'default',
+  })
 
   const fileType = normalizeVideoFileType(block.video_file_type)
   const hardsubLanguage = resolveHardsubLanguage({
     hardsub_language: block.hardsub_language,
   })
 
-  if (fileType === 'hardsub') {
-    badges.push({
-      key: 'sub',
-      label: mediaSpecTagLabel({
-        video_file_type: fileType,
-        hardsub_language: hardsubLanguage,
-      }),
-      tone: 'primary',
-    })
-  } else if (hardsubLanguage === 'en') {
-    badges.push({
-      key: 'sub',
-      label: hardsubLanguageLabel('en'),
-      tone: 'primary',
-    })
-  }
+  badges.push({
+    key: 'sub',
+    label:
+      fileType === 'hardsub'
+        ? hardsubLanguageLabel(hardsubLanguage)
+        : mediaSpecTagLabel({
+            video_file_type: fileType,
+            hardsub_language: hardsubLanguage,
+          }),
+    tone: 'primary',
+  })
 
   return badges
 }
@@ -74,7 +67,12 @@ export const CtaCardBlock = ({ block }: { block: HomeCtaCardBlock }) => {
 
   return (
     <section className="px-4">
-      <article className="surface-skeuo overflow-hidden rounded-2xl p-2.5">
+      <article
+        className={cn(
+          'surface-skeuo overflow-hidden rounded-2xl p-2.5',
+          'bg-zinc-100 dark:bg-zinc-800'
+        )}
+      >
         <HomeCustomBlockLink
           href={animeHref}
           openInNewTab={block.open_in_new_tab}
@@ -95,7 +93,7 @@ export const CtaCardBlock = ({ block }: { block: HomeCtaCardBlock }) => {
           </div>
         </HomeCustomBlockLink>
 
-        <div className="space-y-2.5 px-1 pb-1 pt-3 text-end">
+        <div className="space-y-2.5 px-1 pb-1 pt-3 text-start">
           <HomeCustomBlockLink
             href={animeHref}
             openInNewTab={block.open_in_new_tab}
@@ -103,24 +101,22 @@ export const CtaCardBlock = ({ block }: { block: HomeCtaCardBlock }) => {
           >
             <BidiText
               as="h3"
-              className="text-lg font-bold leading-7 tracking-tight text-foreground text-end"
+              className="text-lg font-bold leading-7 tracking-tight text-foreground text-start"
             >
               {block.title}
             </BidiText>
           </HomeCustomBlockLink>
 
-          {metaBadges.length > 0 ? (
-            <MyListBadgeRow className="justify-end">
-              {metaBadges.map((badge) => (
-                <MyListBadge key={badge.key} tone={badge.tone}>
-                  {badge.label}
-                </MyListBadge>
-              ))}
-            </MyListBadgeRow>
-          ) : null}
+          <MyListBadgeRow className="justify-start">
+            {metaBadges.map((badge) => (
+              <MyListBadge key={badge.key} tone={badge.tone}>
+                {badge.label}
+              </MyListBadge>
+            ))}
+          </MyListBadgeRow>
 
           {block.description ? (
-            <p className="text-sm leading-6 text-muted-foreground line-clamp-3 text-end">
+            <p className="text-sm leading-6 text-muted-foreground line-clamp-3 text-start" dir="rtl">
               {block.description}
             </p>
           ) : null}
