@@ -121,6 +121,12 @@ export const HomeFeaturedCarousel = ({ children, className }: HomeFeaturedCarous
     [count, releaseScrollLock, setIndex]
   )
 
+  // RTL pages may init horizontal scroll at the far edge — always land on slide 0.
+  useEffect(() => {
+    if (count === 0) return
+    scrollToIndex(0, 'auto')
+  }, [count, scrollToIndex])
+
   useEffect(() => {
     const root = scrollerRef.current
     if (!root || count === 0) return

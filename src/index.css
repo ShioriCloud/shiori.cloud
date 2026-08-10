@@ -417,6 +417,7 @@
 
   .home-featured-scroller {
     display: flex;
+    flex-direction: row-reverse;
     gap: 12px;
     overflow-x: auto;
     overflow-y: hidden;

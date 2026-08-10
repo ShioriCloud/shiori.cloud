@@ -13,6 +13,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY . .
+RUN npm run lint
 RUN npm run build:api
 
 FROM nginx:1.27-alpine AS runner
