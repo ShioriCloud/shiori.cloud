@@ -69,8 +69,8 @@ export const CtaCardBlock = ({ block }: { block: HomeCtaCardBlock }) => {
     <section className="px-4">
       <article
         className={cn(
-          'surface-skeuo overflow-hidden rounded-2xl p-2.5',
-          'bg-zinc-100 dark:bg-zinc-800'
+          'surface-skeuo overflow-hidden rounded-2xl p-1.5',
+          'bg-zinc-200 dark:bg-[#222226]'
         )}
       >
         <HomeCustomBlockLink
@@ -78,7 +78,7 @@ export const CtaCardBlock = ({ block }: { block: HomeCtaCardBlock }) => {
           openInNewTab={block.open_in_new_tab}
           className={cn('group block', linked && 'active:opacity-95')}
         >
-          <div className="media-card-skeuo rounded-xl">
+          <div className="media-card-skeuo rounded-[0.7rem]">
             <div className="media-card-skeuo-face">
               <img
                 src={imageSrc}
@@ -93,7 +93,7 @@ export const CtaCardBlock = ({ block }: { block: HomeCtaCardBlock }) => {
           </div>
         </HomeCustomBlockLink>
 
-        <div className="space-y-2.5 px-1 pb-1 pt-3 text-start">
+        <div className="space-y-2.5 px-2 pb-1.5 pt-3 text-start">
           <HomeCustomBlockLink
             href={animeHref}
             openInNewTab={block.open_in_new_tab}
@@ -101,7 +101,7 @@ export const CtaCardBlock = ({ block }: { block: HomeCtaCardBlock }) => {
           >
             <BidiText
               as="h3"
-              className="text-lg font-bold leading-7 tracking-tight text-foreground text-start"
+              className="block w-full text-right text-lg font-bold leading-7 tracking-tight text-foreground"
             >
               {block.title}
             </BidiText>
