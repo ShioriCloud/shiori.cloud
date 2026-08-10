@@ -74,27 +74,28 @@ export const CtaCardBlock = ({ block }: { block: HomeCtaCardBlock }) => {
 
   return (
     <section className="px-4">
-      <article className="overflow-hidden rounded-2xl border border-border/50 bg-card/40">
+      <article className="surface-skeuo overflow-hidden rounded-2xl p-2.5">
         <HomeCustomBlockLink
           href={animeHref}
           openInNewTab={block.open_in_new_tab}
           className={cn('group block', linked && 'active:opacity-95')}
         >
-          <div className="relative overflow-hidden">
-            <img
-              src={imageSrc}
-              alt=""
-              className={cn(
-                'aspect-[16/9] w-full object-cover',
-                linked && 'transition-transform duration-500 ease-out group-hover:scale-[1.03]'
-              )}
-              loading="lazy"
-            />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background/80 to-transparent" />
+          <div className="media-card-skeuo rounded-xl">
+            <div className="media-card-skeuo-face">
+              <img
+                src={imageSrc}
+                alt=""
+                className={cn(
+                  'aspect-[16/9] w-full object-cover',
+                  linked && 'transition-transform duration-500 ease-out group-hover:scale-[1.03]'
+                )}
+                loading="lazy"
+              />
+            </div>
           </div>
         </HomeCustomBlockLink>
 
-        <div className="space-y-2.5 px-3.5 pb-3.5 pt-3 text-end">
+        <div className="space-y-2.5 px-1 pb-1 pt-3 text-end">
           <HomeCustomBlockLink
             href={animeHref}
             openInNewTab={block.open_in_new_tab}
