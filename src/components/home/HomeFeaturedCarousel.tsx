@@ -29,19 +29,43 @@ export const HomeFeaturedCarousel = ({ children, className }: HomeFeaturedCarous
   const slides = Children.toArray(children)
   const count = slides.length
 
-  const scrollToIndex = useCallback((index: number, behavior: ScrollBehavior = 'smooth') => {
-    const root = scrollerRef.current
-    const slide = slideRefs.current[index]
-    if (!root || !slide) return
+  const scrollToIndex = useCallback(
+    (index: number, behavior: ScrollBehavior = 'smooth') => {
+      const root = scrollerRef.current
+      const slide = slideRefs.current[index]
+      if (!root || !slide || count === 0) return
 
-    // Scroll only the horizontal scroller — scrollIntoView also jumps the page.
-    const rootRect = root.getBoundingClientRect()
-    const slideRect = slide.getBoundingClientRect()
-    const delta =
-      slideRect.left + slideRect.width / 2 - (rootRect.left + rootRect.width / 2)
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    root.scrollBy({ left: delta, behavior: reduceMotion ? 'auto' : behavior })
-  }, [])
+      const clamped = ((index % count) + count) % count
+      const target = slideRefs.current[clamped]
+      if (!target) return
+
+      // Scroll only the horizontal scroller — scrollIntoView also jumps the page.
+      const rootRect = root.getBoundingClientRect()
+      const slideRect = target.getBoundingClientRect()
+      const delta =
+        slideRect.left + slideRect.width / 2 - (rootRect.left + rootRect.width / 2)
+
+      const current = activeIndexRef.current
+      // Smooth scroll + scroll-snap-stop:always traps mid-way when wrapping
+      // last→first (user sees bounce between last and second-to-last).
+      const wrapping =
+        (current === count - 1 && clamped === 0) ||
+        (current === 0 && clamped === count - 1) ||
+        Math.abs(clamped - current) > 1
+
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      const finalBehavior: ScrollBehavior =
+        reduceMotion || wrapping || behavior === 'auto' ? 'auto' : 'smooth'
+
+      root.scrollBy({ left: delta, behavior: finalBehavior })
+      // Keep autoplay index in sync immediately on instant wrap jumps.
+      if (finalBehavior === 'auto') {
+        activeIndexRef.current = clamped
+        setActiveIndex(clamped)
+      }
+    },
+    [count]
+  )
 
   useEffect(() => {
     activeIndexRef.current = activeIndex
