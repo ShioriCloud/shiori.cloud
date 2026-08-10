@@ -425,12 +425,14 @@
     scroll-snap-type: x mandatory;
     padding-block: 6px 14px;
     padding-inline: 4%;
+    direction: ltr;
   }
 
   .home-featured-slide {
     flex: 0 0 92%;
     width: 92%;
     scroll-snap-align: center;
+    direction: rtl;
   }
 
   .home-rail-scroller {

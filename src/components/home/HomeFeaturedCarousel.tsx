@@ -17,10 +17,18 @@ type HomeFeaturedCarouselProps = {
   className?: string
 }
 
-const slideScrollLeft = (root: HTMLElement, slide: HTMLElement) => {
-  const max = Math.max(0, root.scrollWidth - root.clientWidth)
-  const centered = slide.offsetLeft - (root.clientWidth - slide.clientWidth) / 2
-  return Math.min(max, Math.max(0, centered))
+/** Center a slide in the scroller — works with direction:ltr track in RTL pages. */
+const centerSlide = (
+  root: HTMLElement,
+  slide: HTMLElement,
+  behavior: ScrollBehavior = 'auto'
+) => {
+  const rootRect = root.getBoundingClientRect()
+  const slideRect = slide.getBoundingClientRect()
+  const delta =
+    slideRect.left + slideRect.width / 2 - (rootRect.left + rootRect.width / 2)
+  if (Math.abs(delta) <= 0.5) return
+  root.scrollBy({ left: delta, behavior })
 }
 
 /** Featured carousel — CSS scroll-snap + dots + soft autoplay (no Swiper). */
@@ -69,8 +77,7 @@ export const HomeFeaturedCarousel = ({ children, className }: HomeFeaturedCarous
         Math.abs(clamped - current) > 1
 
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      const finalBehavior: ScrollBehavior =
-        reduceMotion || wrapping || behavior === 'auto' ? 'auto' : 'smooth'
+      const instant = reduceMotion || wrapping || behavior === 'auto'
 
       if (unlockTimerRef.current != null) {
         window.clearTimeout(unlockTimerRef.current)
@@ -78,25 +85,26 @@ export const HomeFeaturedCarousel = ({ children, className }: HomeFeaturedCarous
       }
 
       scrollLockRef.current = true
-      setIndex(clamped)
 
-      // scroll-snap-stop:always traps between last slides when wrapping — disable snap briefly.
-      if (wrapping || finalBehavior === 'auto') {
+      if (instant) {
         root.style.scrollSnapType = 'none'
       }
 
-      const left = slideScrollLeft(root, target)
-      root.scrollTo({ left, behavior: finalBehavior })
-
       const finish = () => {
-        // Re-align after snap disabled so we land exactly on the target slide.
-        root.scrollTo({ left: slideScrollLeft(root, target), behavior: 'auto' })
+        centerSlide(root, target, 'auto')
+        setIndex(clamped)
         releaseScrollLock()
       }
 
-      if (finalBehavior === 'auto') {
+      if (instant) {
+        centerSlide(root, target, 'auto')
         requestAnimationFrame(() => requestAnimationFrame(finish))
-      } else if ('onscrollend' in root) {
+        return
+      }
+
+      centerSlide(root, target, 'smooth')
+
+      if ('onscrollend' in root) {
         const onEnd = () => {
           root.removeEventListener('scrollend', onEnd)
           finish()
