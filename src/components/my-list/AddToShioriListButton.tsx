@@ -29,21 +29,22 @@ type Props = {
 const ListPosterGrid = ({ images }: { images: string[] }) => {
   const cells = Array.from({ length: 4 }, (_, i) => images[i] ?? null)
   return (
-    <div className="grid aspect-square grid-cols-2 gap-0.5 overflow-hidden rounded-lg bg-muted/60">
-      {cells.map((src, i) =>
-        src ? (
-          <img
-            key={`${src}-${i}`}
-            src={src}
-            alt=""
-            className="h-full w-full object-cover"
-            loading="lazy"
-            decoding="async"
-          />
-        ) : (
-          <div key={`empty-${i}`} className="bg-background/80" />
-        )
-      )}
+    <div className="grid aspect-square grid-cols-2 grid-rows-2 gap-0.5 overflow-hidden rounded-lg bg-muted/60">
+      {cells.map((src, i) => (
+        <div key={src ? `${src}-${i}` : `empty-${i}`} className="relative min-h-0 min-w-0 overflow-hidden">
+          {src ? (
+            <img
+              src={src}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-background/80" />
+          )}
+        </div>
+      ))}
     </div>
   )
 }
