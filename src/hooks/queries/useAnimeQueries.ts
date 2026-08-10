@@ -162,7 +162,8 @@ export const useHomeMoviesQuery = (enabled = true) => {
   })
 }
 
-const isUsableCustomBlocks = (rows: HomeCustomBlock[]): boolean => Array.isArray(rows)
+const isUsableCustomBlocks = (rows: HomeCustomBlock[]): boolean =>
+  Array.isArray(rows) && rows.length > 0
 
 export const useHomeCustomBlocksQuery = (enabled = true) => {
   const key = homeCustomBlocksCacheKey()
@@ -178,7 +179,8 @@ export const useHomeCustomBlocksQuery = (enabled = true) => {
       return data
     },
     enabled,
-    staleTime: HOME_RAIL_STALE_MS,
+    // Custom blocks change from admin often — don't keep an empty/stale snapshot for long.
+    staleTime: 30_000,
     gcTime: HOME_RAIL_STALE_MS * 6,
     initialData: cached?.data,
     initialDataUpdatedAt: cached?.ts,

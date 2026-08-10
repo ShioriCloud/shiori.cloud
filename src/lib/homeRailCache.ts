@@ -17,7 +17,7 @@ export const homePopularCacheKey = (limit = 20) => `shiori_home_popular_v2:${lim
 export const homeRecentCacheKey = (limit = 20) => `shiori_home_recent_v2:${limit}`
 export const homeFormatCacheKey = (format: string, limit = 20) =>
   `shiori_home_format_v2:${format}:${limit}`
-export const homeCustomBlocksCacheKey = () => 'shiori_home_custom_blocks_v2'
+export const homeCustomBlocksCacheKey = () => 'shiori_home_custom_blocks_v3'
 
 const isUsableCardList = (rows: unknown): rows is UiAnimeCard[] =>
   Array.isArray(rows) && rows.length > 0
