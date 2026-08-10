@@ -17,6 +17,12 @@ type HomeFeaturedCarouselProps = {
   className?: string
 }
 
+const slideScrollLeft = (root: HTMLElement, slide: HTMLElement) => {
+  const max = Math.max(0, root.scrollWidth - root.clientWidth)
+  const centered = slide.offsetLeft - (root.clientWidth - slide.clientWidth) / 2
+  return Math.min(max, Math.max(0, centered))
+}
+
 /** Featured carousel — CSS scroll-snap + dots + soft autoplay (no Swiper). */
 export const HomeFeaturedCarousel = ({ children, className }: HomeFeaturedCarouselProps) => {
   const scrollerRef = useRef<HTMLDivElement>(null)
@@ -24,30 +30,39 @@ export const HomeFeaturedCarousel = ({ children, className }: HomeFeaturedCarous
   const resumeTimerRef = useRef<number | null>(null)
   const pausedRef = useRef(false)
   const activeIndexRef = useRef(0)
+  /** Ignore IntersectionObserver while we drive scroll programmatically. */
+  const scrollLockRef = useRef(false)
+  const unlockTimerRef = useRef<number | null>(null)
   const [activeIndex, setActiveIndex] = useState(0)
 
   const slides = Children.toArray(children)
   const count = slides.length
 
+  const setIndex = useCallback((index: number) => {
+    activeIndexRef.current = index
+    setActiveIndex(index)
+  }, [])
+
+  const releaseScrollLock = useCallback(() => {
+    const root = scrollerRef.current
+    if (root) root.style.scrollSnapType = ''
+    scrollLockRef.current = false
+    if (unlockTimerRef.current != null) {
+      window.clearTimeout(unlockTimerRef.current)
+      unlockTimerRef.current = null
+    }
+  }, [])
+
   const scrollToIndex = useCallback(
     (index: number, behavior: ScrollBehavior = 'smooth') => {
       const root = scrollerRef.current
-      const slide = slideRefs.current[index]
-      if (!root || !slide || count === 0) return
+      if (!root || count === 0) return
 
       const clamped = ((index % count) + count) % count
       const target = slideRefs.current[clamped]
       if (!target) return
 
-      // Scroll only the horizontal scroller — scrollIntoView also jumps the page.
-      const rootRect = root.getBoundingClientRect()
-      const slideRect = target.getBoundingClientRect()
-      const delta =
-        slideRect.left + slideRect.width / 2 - (rootRect.left + rootRect.width / 2)
-
       const current = activeIndexRef.current
-      // Smooth scroll + scroll-snap-stop:always traps mid-way when wrapping
-      // last→first (user sees bounce between last and second-to-last).
       const wrapping =
         (current === count - 1 && clamped === 0) ||
         (current === 0 && clamped === count - 1) ||
@@ -57,19 +72,46 @@ export const HomeFeaturedCarousel = ({ children, className }: HomeFeaturedCarous
       const finalBehavior: ScrollBehavior =
         reduceMotion || wrapping || behavior === 'auto' ? 'auto' : 'smooth'
 
-      root.scrollBy({ left: delta, behavior: finalBehavior })
-      // Keep autoplay index in sync immediately on instant wrap jumps.
+      if (unlockTimerRef.current != null) {
+        window.clearTimeout(unlockTimerRef.current)
+        unlockTimerRef.current = null
+      }
+
+      scrollLockRef.current = true
+      setIndex(clamped)
+
+      // scroll-snap-stop:always traps between last slides when wrapping — disable snap briefly.
+      if (wrapping || finalBehavior === 'auto') {
+        root.style.scrollSnapType = 'none'
+      }
+
+      const left = slideScrollLeft(root, target)
+      root.scrollTo({ left, behavior: finalBehavior })
+
+      const finish = () => {
+        // Re-align after snap disabled so we land exactly on the target slide.
+        root.scrollTo({ left: slideScrollLeft(root, target), behavior: 'auto' })
+        releaseScrollLock()
+      }
+
       if (finalBehavior === 'auto') {
-        activeIndexRef.current = clamped
-        setActiveIndex(clamped)
+        requestAnimationFrame(() => requestAnimationFrame(finish))
+      } else if ('onscrollend' in root) {
+        const onEnd = () => {
+          root.removeEventListener('scrollend', onEnd)
+          finish()
+        }
+        root.addEventListener('scrollend', onEnd)
+        unlockTimerRef.current = window.setTimeout(() => {
+          root.removeEventListener('scrollend', onEnd)
+          finish()
+        }, 700)
+      } else {
+        unlockTimerRef.current = window.setTimeout(finish, 500)
       }
     },
-    [count]
+    [count, releaseScrollLock, setIndex]
   )
-
-  useEffect(() => {
-    activeIndexRef.current = activeIndex
-  }, [activeIndex])
 
   useEffect(() => {
     const root = scrollerRef.current
@@ -77,6 +119,8 @@ export const HomeFeaturedCarousel = ({ children, className }: HomeFeaturedCarous
 
     const observer = new IntersectionObserver(
       (entries) => {
+        if (scrollLockRef.current) return
+
         let best: { index: number; ratio: number } | null = null
         for (const entry of entries) {
           if (!entry.isIntersecting) continue
@@ -86,7 +130,7 @@ export const HomeFeaturedCarousel = ({ children, className }: HomeFeaturedCarous
             best = { index, ratio: entry.intersectionRatio }
           }
         }
-        if (best) setActiveIndex(best.index)
+        if (best) setIndex(best.index)
       },
       { root, threshold: [0.45, 0.6, 0.75] }
     )
@@ -94,7 +138,7 @@ export const HomeFeaturedCarousel = ({ children, className }: HomeFeaturedCarous
     const nodes = root.querySelectorAll<HTMLElement>('[data-index]')
     nodes.forEach((el) => observer.observe(el))
     return () => observer.disconnect()
-  }, [count])
+  }, [count, setIndex])
 
   const pauseAutoplay = useCallback(() => {
     pausedRef.current = true
@@ -126,7 +170,7 @@ export const HomeFeaturedCarousel = ({ children, className }: HomeFeaturedCarous
     const start = () => {
       if (id != null || motionQuery.matches) return
       id = window.setInterval(() => {
-        if (pausedRef.current || motionQuery.matches) return
+        if (pausedRef.current || scrollLockRef.current || motionQuery.matches) return
         const next = (activeIndexRef.current + 1) % count
         scrollToIndex(next)
       }, AUTOPLAY_MS)
@@ -148,8 +192,10 @@ export const HomeFeaturedCarousel = ({ children, className }: HomeFeaturedCarous
   useEffect(
     () => () => {
       if (resumeTimerRef.current != null) window.clearTimeout(resumeTimerRef.current)
+      if (unlockTimerRef.current != null) window.clearTimeout(unlockTimerRef.current)
+      releaseScrollLock()
     },
-    []
+    [releaseScrollLock]
   )
 
   if (count === 0) return null

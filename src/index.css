@@ -431,7 +431,6 @@
     flex: 0 0 92%;
     width: 92%;
     scroll-snap-align: center;
-    scroll-snap-stop: always;
   }
 
   .home-rail-scroller {
