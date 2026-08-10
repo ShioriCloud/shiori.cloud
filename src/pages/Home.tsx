@@ -355,12 +355,12 @@ const Home = () => {
       </div>
 
       <div className="space-y-8 pt-6">
-        <HomeCustomBlocksSection enabled={p0Ready} />
         {renderSection('recent')}
         {renderSection('latest')}
         {renderSection('popular')}
         {renderSection('donghua')}
         {renderSection('movies')}
+        <HomeCustomBlocksSection enabled={p0Ready} />
       </div>
     </div>
   )

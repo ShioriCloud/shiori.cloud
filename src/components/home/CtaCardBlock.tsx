@@ -1,6 +1,8 @@
 import { PlayIcon } from 'hugeicons-react'
 import { BidiText } from '@/components/BidiText'
+import { SHIORI_PRIMARY_BUTTON_CLASS } from '@/components/explore/ExploreUi'
 import { AddToShioriListButton } from '@/components/my-list/AddToShioriListButton'
+import { MyListBadge, MyListBadgeRow } from '@/components/my-list/MyListUi'
 import { hasUsableHref } from '@/lib/homeBlockLinks'
 import { animeDetailPath } from '@/lib/animePaths'
 import { resolveMediaServeUrl } from '@/lib/shioriApi'
@@ -19,16 +21,18 @@ import { HomeCustomBlockLink } from './HomeCustomBlocks'
 
 const CTA_DEFAULT_LABEL = 'بزن بریم'
 
-const buildMetaLine = (block: HomeCtaCardBlock): string | null => {
-  const parts: string[] = []
+const buildMetaBadges = (block: HomeCtaCardBlock) => {
+  const badges: { key: string; label: string; tone: 'default' | 'primary' | 'muted' }[] = []
 
   if (block.video_resolution || block.video_encode) {
-    parts.push(
-      videoQualityOneLiner(
+    badges.push({
+      key: 'quality',
+      label: videoQualityOneLiner(
         normalizeVideoResolution(block.video_resolution),
         normalizeVideoEncode(block.video_encode)
-      )
-    )
+      ),
+      tone: 'default',
+    })
   }
 
   const fileType = normalizeVideoFileType(block.video_file_type)
@@ -37,12 +41,23 @@ const buildMetaLine = (block: HomeCtaCardBlock): string | null => {
   })
 
   if (fileType === 'hardsub') {
-    parts.push(mediaSpecTagLabel({ video_file_type: fileType, hardsub_language: hardsubLanguage }))
+    badges.push({
+      key: 'sub',
+      label: mediaSpecTagLabel({
+        video_file_type: fileType,
+        hardsub_language: hardsubLanguage,
+      }),
+      tone: 'primary',
+    })
   } else if (hardsubLanguage === 'en') {
-    parts.push(hardsubLanguageLabel('en'))
+    badges.push({
+      key: 'sub',
+      label: hardsubLanguageLabel('en'),
+      tone: 'primary',
+    })
   }
 
-  return parts.length > 0 ? parts.join(' • ') : null
+  return badges
 }
 
 export const CtaCardBlock = ({ block }: { block: HomeCtaCardBlock }) => {
@@ -54,7 +69,7 @@ export const CtaCardBlock = ({ block }: { block: HomeCtaCardBlock }) => {
       : null)
   const linked = hasUsableHref(animeHref)
   const buttonLabel = block.button_label?.trim() || CTA_DEFAULT_LABEL
-  const metaLine = buildMetaLine(block)
+  const metaBadges = buildMetaBadges(block)
   const animeId = block.anime_id
 
   return (
@@ -93,10 +108,14 @@ export const CtaCardBlock = ({ block }: { block: HomeCtaCardBlock }) => {
             </BidiText>
           </HomeCustomBlockLink>
 
-          {metaLine ? (
-            <p className="text-xs font-medium leading-5 text-primary-300/95 text-end">
-              {metaLine}
-            </p>
+          {metaBadges.length > 0 ? (
+            <MyListBadgeRow className="justify-end">
+              {metaBadges.map((badge) => (
+                <MyListBadge key={badge.key} tone={badge.tone}>
+                  {badge.label}
+                </MyListBadge>
+              ))}
+            </MyListBadgeRow>
           ) : null}
 
           {block.description ? (
@@ -105,7 +124,7 @@ export const CtaCardBlock = ({ block }: { block: HomeCtaCardBlock }) => {
             </p>
           ) : null}
 
-          <div className="flex items-center gap-2.5 pt-1">
+          <div className="flex items-center gap-2 pt-1">
             <HomeCustomBlockLink
               href={animeHref}
               openInNewTab={block.open_in_new_tab}
@@ -113,11 +132,9 @@ export const CtaCardBlock = ({ block }: { block: HomeCtaCardBlock }) => {
             >
               <span
                 className={cn(
-                  'inline-flex h-11 w-full items-center justify-center gap-2 rounded-full',
-                  'bg-primary-500 text-sm font-bold text-white',
-                  'shadow-[0_8px_24px_-10px_rgba(139,92,246,0.7)]',
-                  linked &&
-                    'transition-[transform,background-color] duration-200 hover:bg-primary-400 active:scale-[0.985]'
+                  'inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg px-4',
+                  'text-sm font-semibold',
+                  SHIORI_PRIMARY_BUTTON_CLASS
                 )}
               >
                 <PlayIcon className="h-4 w-4 shrink-0" aria-hidden />
@@ -129,10 +146,7 @@ export const CtaCardBlock = ({ block }: { block: HomeCtaCardBlock }) => {
               <AddToShioriListButton
                 animeId={animeId}
                 iconOnly
-                triggerClassName={cn(
-                  'h-11 w-11 shrink-0 rounded-full border-2 border-primary-400/70',
-                  'bg-transparent text-primary-300 hover:bg-primary-400/10 hover:text-primary-200'
-                )}
+                triggerClassName="h-11 w-11 shrink-0 rounded-lg"
               />
             ) : null}
           </div>
