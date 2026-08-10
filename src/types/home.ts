@@ -19,13 +19,18 @@ export type HomeCtaBannerBlock = {
 export type HomeCtaCardBlock = {
   type: 'cta_card'
   id: string
+  anime_id: string | null
+  slug?: string | null
   title: string
-  subtitle: string | null
   description: string | null
   image_url: string
   link_url: string | null
   button_label: string | null
   open_in_new_tab: boolean
+  hardsub_language?: 'fa' | 'en'
+  video_file_type?: 'softsub' | 'hardsub'
+  video_resolution?: '480p' | '720p' | '1080p'
+  video_encode?: 'x264' | 'x265' | 'x265_10bit' | 'bluray'
 }
 
 export type HomeCustomBlock =
