@@ -5,7 +5,8 @@ import { BidiText } from '../components/BidiText'
 import { Calendar01Icon } from 'hugeicons-react'
 import type { GenreItem } from '../types/catalog'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
-import { TabSwipeArea } from '@/components/TabSwipeArea'
+import { TabSwipeArea, TAB_SWIPE_FIXED_HEADER_CLASS } from '@/components/TabSwipeArea'
+import { cn } from '@/lib/utils'
 import { useScheduleQuery } from '../hooks/queries/useAnimeQueries'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { hapticSelection } from '../lib/telegramHaptics'
@@ -214,15 +215,20 @@ const Schedule = () => {
       : null
 
   return (
-    <div className="pb-24">
-      <div className="px-4 pt-4 flex items-center justify-between gap-3">
+    <TabSwipeArea
+      tabs={PERSIAN_DAYS}
+      active={activeDay}
+      onChange={setActiveDay}
+      className={cn('pb-24', TAB_SWIPE_FIXED_HEADER_CLASS)}
+    >
+      <div className="shrink-0 px-4 pt-4 flex items-center justify-between gap-3">
         <h1 className="text-lg font-semibold text-foreground shrink-0">برنامه پخش هفتگی</h1>
         {seasonLabel && (
           <p className="text-sm font-medium text-muted-foreground">{seasonLabel}</p>
         )}
       </div>
 
-      <TabSwipeArea tabs={PERSIAN_DAYS} active={activeDay} onChange={setActiveDay}>
+      <div className="flex-1">
         {/* Day picker */}
         <div className="px-4 pt-3">
           <div className="flex items-center justify-between gap-1">
@@ -342,8 +348,8 @@ const Schedule = () => {
       <p className="text-[10px] text-muted-foreground/70 text-center px-6 pt-6 leading-5">
         داده از AniList · فقط عناوین موجود در شیوری قابل باز شدن هستند
       </p>
-      </TabSwipeArea>
-    </div>
+      </div>
+    </TabSwipeArea>
   )
 }
 

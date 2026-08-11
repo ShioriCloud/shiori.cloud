@@ -93,13 +93,13 @@ export const useTabSwipeNavigation = <T extends string>({
       const currentIndex = tabs.indexOf(active)
       if (currentIndex === -1) return
 
-      if (deltaX < 0 && currentIndex < tabs.length - 1) {
+      if (deltaX > 0 && currentIndex < tabs.length - 1) {
         hapticSelection()
         onChange(tabs[currentIndex + 1])
         return
       }
 
-      if (deltaX > 0 && currentIndex > 0) {
+      if (deltaX < 0 && currentIndex > 0) {
         hapticSelection()
         onChange(tabs[currentIndex - 1])
       }

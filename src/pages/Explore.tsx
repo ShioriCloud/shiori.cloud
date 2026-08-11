@@ -34,8 +34,9 @@ import { ExploreListToolbar } from '@/components/explore/ExploreListToolbar'
 import { ExploreSortSheet } from '@/components/explore/ExploreSheets'
 import { ExploreSeasonHeader, ExploreSeasonSheet } from '@/components/explore/ExploreSeasonPicker'
 import { ExploreTabBar } from '@/components/explore/ExploreUi'
-import { TabSwipeArea } from '@/components/TabSwipeArea'
+import { TabSwipeArea, TAB_SWIPE_IN_PAGE_HEADER_CLASS } from '@/components/TabSwipeArea'
 import { SearchFiltersSheet } from '@/components/search/SearchFiltersSheet'
+import { cn } from '@/lib/utils'
 
 const TABS: { id: ExploreTab; label: string }[] = [
   { id: 'all', label: 'همه انیمه‌ها' },
@@ -187,18 +188,21 @@ const Explore = () => {
   const seasonalListLoading = seasonalQuery.isLoading || seasonalQuery.isPlaceholderData
 
   return (
-    <div className="min-h-full pb-24">
-      <AppHeader />
-
-      <div className="px-4">
-        <ExploreTabBar tabs={TABS} active={state.tab} onChange={setTab} />
+    <>
+    <TabSwipeArea
+      tabs={TABS.map((tab) => tab.id)}
+      active={state.tab}
+      onChange={setTab}
+      className={cn('pb-24', TAB_SWIPE_IN_PAGE_HEADER_CLASS)}
+    >
+      <div className="shrink-0">
+        <AppHeader />
+        <div className="px-4">
+          <ExploreTabBar tabs={TABS} active={state.tab} onChange={setTab} />
+        </div>
       </div>
 
-      <TabSwipeArea
-        tabs={TABS.map((tab) => tab.id)}
-        active={state.tab}
-        onChange={setTab}
-      >
+      <div className="flex-1">
         {state.tab === 'all' ? (
           <>
             <div className="px-4 mt-3">
@@ -265,7 +269,8 @@ const Explore = () => {
             />
           </div>
         ) : null}
-      </TabSwipeArea>
+      </div>
+    </TabSwipeArea>
 
       <SearchFiltersSheet
         open={filterOpen}
@@ -323,7 +328,7 @@ const Explore = () => {
           setSeasonOpen(false)
         }}
       />
-    </div>
+    </>
   )
 }
 
