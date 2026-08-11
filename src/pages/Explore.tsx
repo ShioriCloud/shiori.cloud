@@ -34,6 +34,7 @@ import { ExploreListToolbar } from '@/components/explore/ExploreListToolbar'
 import { ExploreSortSheet } from '@/components/explore/ExploreSheets'
 import { ExploreSeasonHeader, ExploreSeasonSheet } from '@/components/explore/ExploreSeasonPicker'
 import { ExploreTabBar } from '@/components/explore/ExploreUi'
+import { TabSwipeArea } from '@/components/TabSwipeArea'
 import { SearchFiltersSheet } from '@/components/search/SearchFiltersSheet'
 
 const TABS: { id: ExploreTab; label: string }[] = [
@@ -193,72 +194,78 @@ const Explore = () => {
         <ExploreTabBar tabs={TABS} active={state.tab} onChange={setTab} />
       </div>
 
-      {state.tab === 'all' ? (
-        <>
-          <div className="px-4 mt-3">
-            <ExploreListToolbar
-              listTitle={listTitle}
-              filterCount={filterCount}
-              onFilterClick={() => setFilterOpen(true)}
-              onSortClick={() => setSortOpen(true)}
-              searchValue={searchInput}
-              onSearchChange={setSearchInput}
-              busy={allListRefreshing}
+      <TabSwipeArea
+        tabs={TABS.map((tab) => tab.id)}
+        active={state.tab}
+        onChange={setTab}
+      >
+        {state.tab === 'all' ? (
+          <>
+            <div className="px-4 mt-3">
+              <ExploreListToolbar
+                listTitle={listTitle}
+                filterCount={filterCount}
+                onFilterClick={() => setFilterOpen(true)}
+                onSortClick={() => setSortOpen(true)}
+                searchValue={searchInput}
+                onSearchChange={setSearchInput}
+                busy={allListRefreshing}
+              />
+            </div>
+            <ExploreInfiniteAnimeList
+              items={allItems}
+              isLoading={allListLoading}
+              isRefreshing={allListRefreshing && !allListLoading}
+              isError={allQuery.isError}
+              hasNextPage={allQuery.hasNextPage}
+              isFetchingNextPage={allQuery.isFetchingNextPage}
+              onLoadMore={() => void allQuery.fetchNextPage()}
+              onRetry={() => void allQuery.refetch()}
+              emptySubtitle={
+                state.query || filterCount > 0
+                  ? 'عبارت جستجو یا فیلترها را تغییر دهید.'
+                  : 'فیلترها را تغییر دهید.'
+              }
+            />
+          </>
+        ) : null}
+
+        {state.tab === 'seasonal' ? (
+          <>
+            <div className="px-4 mt-3">
+              <ExploreSeasonHeader
+                season={state.season}
+                year={state.year}
+                resultCount={seasonalQuery.data?.pages[0]?.total}
+                isLoadingCount={seasonalQuery.isLoading || seasonalListRefreshing}
+                onOpenPicker={() => setSeasonOpen(true)}
+              />
+            </div>
+            <ExploreInfiniteAnimeList
+              items={seasonalItems}
+              isLoading={seasonalListLoading}
+              isRefreshing={seasonalListRefreshing && !seasonalListLoading}
+              isError={seasonalQuery.isError}
+              hasNextPage={seasonalQuery.hasNextPage}
+              isFetchingNextPage={seasonalQuery.isFetchingNextPage}
+              onLoadMore={() => void seasonalQuery.fetchNextPage()}
+              onRetry={() => void seasonalQuery.refetch()}
+              emptyTitle="برای این فصل انیمه‌ای نیست"
+            />
+          </>
+        ) : null}
+
+        {state.tab === 'genres' ? (
+          <div className="mt-4">
+            <ExploreGenreGrid
+              genres={genresQuery.data ?? []}
+              isLoading={genresQuery.isLoading}
+              isError={genresQuery.isError}
+              onRetry={() => void genresQuery.refetch()}
             />
           </div>
-          <ExploreInfiniteAnimeList
-            items={allItems}
-            isLoading={allListLoading}
-            isRefreshing={allListRefreshing && !allListLoading}
-            isError={allQuery.isError}
-            hasNextPage={allQuery.hasNextPage}
-            isFetchingNextPage={allQuery.isFetchingNextPage}
-            onLoadMore={() => void allQuery.fetchNextPage()}
-            onRetry={() => void allQuery.refetch()}
-            emptySubtitle={
-              state.query || filterCount > 0
-                ? 'عبارت جستجو یا فیلترها را تغییر دهید.'
-                : 'فیلترها را تغییر دهید.'
-            }
-          />
-        </>
-      ) : null}
-
-      {state.tab === 'seasonal' ? (
-        <>
-          <div className="px-4 mt-3">
-            <ExploreSeasonHeader
-              season={state.season}
-              year={state.year}
-              resultCount={seasonalQuery.data?.pages[0]?.total}
-              isLoadingCount={seasonalQuery.isLoading || seasonalListRefreshing}
-              onOpenPicker={() => setSeasonOpen(true)}
-            />
-          </div>
-          <ExploreInfiniteAnimeList
-            items={seasonalItems}
-            isLoading={seasonalListLoading}
-            isRefreshing={seasonalListRefreshing && !seasonalListLoading}
-            isError={seasonalQuery.isError}
-            hasNextPage={seasonalQuery.hasNextPage}
-            isFetchingNextPage={seasonalQuery.isFetchingNextPage}
-            onLoadMore={() => void seasonalQuery.fetchNextPage()}
-            onRetry={() => void seasonalQuery.refetch()}
-            emptyTitle="برای این فصل انیمه‌ای نیست"
-          />
-        </>
-      ) : null}
-
-      {state.tab === 'genres' ? (
-        <div className="mt-4">
-          <ExploreGenreGrid
-            genres={genresQuery.data ?? []}
-            isLoading={genresQuery.isLoading}
-            isError={genresQuery.isError}
-            onRetry={() => void genresQuery.refetch()}
-          />
-        </div>
-      ) : null}
+        ) : null}
+      </TabSwipeArea>
 
       <SearchFiltersSheet
         open={filterOpen}

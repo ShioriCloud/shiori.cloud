@@ -5,6 +5,7 @@ import { BidiText } from '../components/BidiText'
 import { Calendar01Icon } from 'hugeicons-react'
 import type { GenreItem } from '../types/catalog'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
+import { TabSwipeArea } from '@/components/TabSwipeArea'
 import { useScheduleQuery } from '../hooks/queries/useAnimeQueries'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { hapticSelection } from '../lib/telegramHaptics'
@@ -221,77 +222,78 @@ const Schedule = () => {
         )}
       </div>
 
-      {/* Day picker */}
-      <div className="px-4 pt-3">
-        <div className="flex items-center justify-between gap-1">
-          {PERSIAN_DAYS.map((day) => {
-            const isActive = activeDay === day
+      <TabSwipeArea tabs={PERSIAN_DAYS} active={activeDay} onChange={setActiveDay}>
+        {/* Day picker */}
+        <div className="px-4 pt-3">
+          <div className="flex items-center justify-between gap-1">
+            {PERSIAN_DAYS.map((day) => {
+              const isActive = activeDay === day
 
-            return (
-              <button
-                key={day}
-                type="button"
-                title={day}
-                onClick={() => {
-                  hapticSelection()
-                  setActiveDay(day)
-                }}
-                className="flex-1 flex justify-center py-1"
-              >
-                <span
-                  className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
-                    isActive
-                      ? 'bg-primary-500 text-white shadow-md shadow-primary-400/35'
-                      : 'bg-muted/80 text-muted-foreground hover:bg-muted'
-                  }`}
+              return (
+                <button
+                  key={day}
+                  type="button"
+                  title={day}
+                  onClick={() => {
+                    hapticSelection()
+                    setActiveDay(day)
+                  }}
+                  className="flex-1 flex justify-center py-1"
                 >
-                  {DAY_SHORT[day]}
-                </span>
-              </button>
-            )
-          })}
+                  <span
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                      isActive
+                        ? 'bg-primary-500 text-white shadow-md shadow-primary-400/35'
+                        : 'bg-muted/80 text-muted-foreground hover:bg-muted'
+                    }`}
+                  >
+                    {DAY_SHORT[day]}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
         </div>
-      </div>
 
-      {/* Content header */}
-      <div className="px-4 pt-4 pb-2 flex items-baseline justify-between">
-        <h2 className="text-base font-semibold text-foreground">{activeDay}</h2>
-        <span className="text-xs text-muted-foreground">
-          {activeList.length > 0
-            ? `${toPersianNumber(activeList.length)} عنوان`
-            : 'خالی'}
-        </span>
-      </div>
+        {/* Content header */}
+        <div className="px-4 pt-4 pb-2 flex items-baseline justify-between">
+          <h2 className="text-base font-semibold text-foreground">{activeDay}</h2>
+          <span className="text-xs text-muted-foreground">
+            {activeList.length > 0
+              ? `${toPersianNumber(activeList.length)} عنوان`
+              : 'خالی'}
+          </span>
+        </div>
 
-      {activeList.length > 0 ? (
-        <div className="grid grid-cols-3 gap-3 px-4">
-          {activeList.map((anime) => (
-            <AnimePrefetchLink
-              key={anime.id}
-              animeId={
-                anime.localId
-                  ? animePublicSegment({ id: anime.localId, title: anime.title })
-                  : anime.id
-              }
-              to={
-                anime.localId
-                  ? animeDetailPath({ id: anime.localId, title: anime.title })
-                  : '#'
-              }
-              onClick={(e) => handleAnimeClick(e, anime)}
-              className="group block active:scale-[0.98] transition-transform"
-            >
-              <div className="media-card-skeuo rounded-xl">
-                <div className="media-card-skeuo-face relative aspect-[2/3] bg-muted">
-                  <img
-                    src={anime.image}
-                    alt=""
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+        {activeList.length > 0 ? (
+          <div className="grid grid-cols-3 gap-3 px-4">
+            {activeList.map((anime) => (
+              <AnimePrefetchLink
+                key={anime.id}
+                animeId={
+                  anime.localId
+                    ? animePublicSegment({ id: anime.localId, title: anime.title })
+                    : anime.id
+                }
+                to={
+                  anime.localId
+                    ? animeDetailPath({ id: anime.localId, title: anime.title })
+                    : '#'
+                }
+                onClick={(e) => handleAnimeClick(e, anime)}
+                className="group block active:scale-[0.98] transition-transform"
+              >
+                <div className="media-card-skeuo rounded-xl">
+                  <div className="media-card-skeuo-face relative aspect-[2/3] bg-muted">
+                    <img
+                      src={anime.image}
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
-                  {anime.localId ? (
+                    {anime.localId ? (
                     <span
                       className="absolute top-1.5 start-1.5 flex h-6 w-6 items-center justify-center rounded-md bg-rose-500 shadow-sm"
                       title="ترجمه شیوری"
@@ -340,6 +342,7 @@ const Schedule = () => {
       <p className="text-[10px] text-muted-foreground/70 text-center px-6 pt-6 leading-5">
         داده از AniList · فقط عناوین موجود در شیوری قابل باز شدن هستند
       </p>
+      </TabSwipeArea>
     </div>
   )
 }

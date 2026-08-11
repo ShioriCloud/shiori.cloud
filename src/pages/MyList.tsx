@@ -2,7 +2,8 @@ import { useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import { BrandBootScreen } from '@/components/BrandBootScreen'
-import { MyListTabBar, parseMyListTab, type MyListTabId } from '@/components/my-list/MyListTabBar'
+import { MyListTabBar, MY_LIST_TABS, parseMyListTab, type MyListTabId } from '@/components/my-list/MyListTabBar'
+import { TabSwipeArea } from '@/components/TabSwipeArea'
 import { WatchlistTab } from '@/components/my-list/WatchlistTab'
 import { ShioriListsTab } from '@/components/my-list/ShioriListsTab'
 import { HistoryTab } from '@/components/my-list/HistoryTab'
@@ -38,12 +39,17 @@ const MyList = () => {
         <MyListTabBar active={activeTab} onChange={setActiveTab} />
       </div>
 
-      <div className="px-4 mt-4 my-list-enter">
+      <TabSwipeArea
+        tabs={MY_LIST_TABS.map((tab) => tab.id)}
+        active={activeTab}
+        onChange={setActiveTab}
+        className="px-4 mt-4 my-list-enter"
+      >
         {activeTab === 'watchlist' && <WatchlistTab />}
         {activeTab === 'lists' && <ShioriListsTab />}
         {activeTab === 'history' && <HistoryTab />}
         {activeTab === 'downloads' && <DownloadsTab />}
-      </div>
+      </TabSwipeArea>
     </div>
   )
 }
