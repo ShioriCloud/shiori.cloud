@@ -3,6 +3,7 @@ import WebApp from '@twa-dev/sdk'
 import { buildTelegramUserPayload } from '@/utils/telegramUser'
 import type { TelegramUserPayload } from '@/types/telegramUser'
 import { isTelegramMiniApp } from '@/lib/platform'
+import { ensureTelegramWebAppReady } from '@/lib/telegramReady'
 import { showAppConfirm, showAppToast } from '@/store/appFeedbackStore'
 
 interface PopupButton {
@@ -32,17 +33,14 @@ export const useTelegramApp = () => {
       return
     }
 
-    const init = async () => {
-      try {
-        await WebApp.ready()
-        setIsReady(true)
-        setUser(buildTelegramUserPayload(WebApp.initDataUnsafe.user, WebApp.initData))
-      } catch (error) {
-        console.error('Failed to initialize Telegram Web App:', error)
-      }
+    try {
+      // ready() already fired from index.html / main.tsx; ensure + read user sync.
+      ensureTelegramWebAppReady()
+      setUser(buildTelegramUserPayload(WebApp.initDataUnsafe.user, WebApp.initData))
+      setIsReady(true)
+    } catch (error) {
+      console.error('Failed to initialize Telegram Web App:', error)
     }
-
-    init()
   }, [])
 
   const showAlert = (message: string) => {

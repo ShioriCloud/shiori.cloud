@@ -4,7 +4,15 @@ import { BrowserRouter } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import App from './App'
 import { queryClient } from './lib/queryClient'
+import { ensureTelegramWebAppReady } from './lib/telegramReady'
+import { refreshBootQuotesCache } from './services/bootQuotes'
 import './index.css'
+
+// Before first paint of React — reinforces index.html early ready() after SDK init.
+ensureTelegramWebAppReady()
+
+// Warm splash quote cache for the next boot (current paint already picked from cache/fallback).
+void refreshBootQuotesCache()
 
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual'

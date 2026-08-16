@@ -1,24 +1,37 @@
-import logo from '@/assets/images/shiori-logo.svg'
+import { useState } from 'react'
+import { BOOT_SPLASH_BG, pickRandomBootQuote, type BootQuote } from '@/data/bootQuotes'
+import { getBootQuotePool } from '@/services/bootQuotes'
 import { cn } from '@/lib/utils'
 
-/** Branded boot / gate loading — fixed to the viewport so it never scrolls away. */
-export const BrandBootScreen = ({ className }: { className?: string } = {}) => (
-  <div
-    className={cn(
-      'fixed inset-0 z-[100] flex flex-col items-center justify-center gap-5 bg-background px-6',
-      className
-    )}
-    role="status"
-    aria-live="polite"
-    aria-busy="true"
-  >
-    <img src={logo} alt="" className="h-7 w-auto max-w-[7.5rem] opacity-90" />
+/** Branded boot / gate — IGN-style dialogue panel; fixed so it never scrolls away. */
+export const BrandBootScreen = ({ className }: { className?: string } = {}) => {
+  const [quote] = useState<BootQuote>(() => pickRandomBootQuote(getBootQuotePool()))
+
+  return (
     <div
-      className="h-1 w-28 overflow-hidden rounded-full bg-muted"
-      role="progressbar"
-      aria-label="در حال بارگذاری"
+      className={cn(
+        'fixed inset-0 z-[100] flex flex-col justify-center px-7 sm:px-10',
+        className
+      )}
+      style={{ backgroundColor: BOOT_SPLASH_BG }}
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
     >
-      <div className="explore-fetch-bar h-full w-1/3 rounded-full bg-primary-500" />
+      <blockquote className="mx-auto w-full max-w-md text-right text-white">
+        <p className="text-[1.65rem] font-extrabold leading-[1.35] tracking-tight sm:text-3xl">
+          <span className="select-none" aria-hidden>
+            «
+          </span>
+          {quote.text}
+          <span className="select-none" aria-hidden>
+            »
+          </span>
+        </p>
+        <footer className="mt-5 text-base font-medium text-white/90 sm:text-lg">
+          —{quote.attribution}
+        </footer>
+      </blockquote>
     </div>
-  </div>
-)
+  )
+}

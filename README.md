@@ -59,6 +59,10 @@ src/services/
 └── shioriAppAuth.ts      # email session + Telegram link
 ```
 
+## Telegram Mini App splash
+
+Native loading splash is configured in **BotFather** — see [`docs/telegram-mini-app-splash.md`](docs/telegram-mini-app-splash.md). In-app boot shows a random anime/manga dialogue; manage quotes from the dashboard (**مینی‌اپ → دیالوگ اسپلش**) via API `boot_quotes`.
+
 ## Deploy
 
 Self-hosted only — Docker image on GHCR (`docker-publish.yml`) or static `dist/` behind nginx. See [`docs/DEPLOY.md`](docs/DEPLOY.md).
