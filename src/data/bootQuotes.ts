@@ -1,4 +1,4 @@
-/** Anime / manga lines shown on the branded boot splash (IGN-style quote panel). */
+/** Anime / manga lines shown on the branded boot splash. */
 export type BootQuote = {
   text: string
   /** Character or source, shown after an em dash */
@@ -105,8 +105,8 @@ export const BOOT_QUOTES: readonly BootQuote[] = [
   },
 ]
 
-/** Solid splash field — IGN-like quote panel (not the app chrome theme). */
-export const BOOT_SPLASH_BG = '#E85D4C'
+/** Minimum time to keep the cold-start splash so the dialogue is readable. */
+export const BOOT_SPLASH_MIN_MS = 3200
 
 const CACHE_KEY = 'shiori_boot_quotes_v1'
 

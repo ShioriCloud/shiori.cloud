@@ -7,6 +7,7 @@ import { BrandBootScreen } from './components/BrandBootScreen'
 import { AppFeedbackHost } from './components/AppFeedbackHost'
 import { useTheme } from './utils/theme'
 import { useAppAuth } from './hooks/useAppAuth'
+import { useBootSplashHold } from './hooks/useBootSplashHold'
 import { isTelegramMiniApp } from './lib/platform'
 import { useTelegramStartNavigation } from './hooks/useTelegramStartNavigation'
 import { useTelegramUserSync } from './hooks/useTelegramUserSync'
@@ -31,6 +32,7 @@ const Subscribe = lazy(() => import('./pages/Subscribe'))
 
 function App() {
   const { isReady } = useAppAuth()
+  const holdBootSplash = useBootSplashHold(isReady)
   const { applyTheme } = useTheme()
   useTelegramStartNavigation(isReady)
   useTelegramUserSync(isReady)
@@ -81,8 +83,8 @@ function App() {
     }
   }, [isReady, applyTheme])
 
-  if (!isReady) {
-    return <BrandBootScreen />
+  if (holdBootSplash) {
+    return <BrandBootScreen variant="boot" />
   }
 
   return (
