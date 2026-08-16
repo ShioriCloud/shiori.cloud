@@ -6,30 +6,24 @@ import { cn } from '@/lib/utils'
 
 type BrandBootScreenProps = {
   className?: string
-  /**
-   * `boot` — determinate progress matching the minimum splash hold (cold start).
-   * `gate` — indeterminate bar for short Suspense / auth gates.
-   */
-  variant?: 'boot' | 'gate'
+  /** Soft exit before the app shell mounts (avoids a hard cut). */
+  exiting?: boolean
 }
 
-/** Branded boot / gate — quote + soft aurora, fixed to the viewport. */
-export const BrandBootScreen = ({
-  className,
-  variant = 'gate',
-}: BrandBootScreenProps = {}) => {
+/** Cold-start splash only — quote + aurora. Do not reuse for route Suspense. */
+export const BrandBootScreen = ({ className, exiting = false }: BrandBootScreenProps = {}) => {
   const [quote] = useState<BootQuote>(() => resolveDisplayBootQuote(getBootQuotePool()))
-  const isBoot = variant === 'boot'
 
   return (
     <div
       className={cn(
-        'boot-splash fixed inset-0 z-[100] flex flex-col overflow-hidden bg-background text-foreground',
+        'boot-splash fixed inset-0 z-[100] flex flex-col overflow-hidden bg-background text-foreground transition-opacity duration-280 ease-out',
+        exiting && 'pointer-events-none opacity-0',
         className
       )}
       role="status"
       aria-live="polite"
-      aria-busy="true"
+      aria-busy={!exiting}
     >
       <div className="boot-splash-aurora pointer-events-none absolute inset-0" aria-hidden />
       <div
@@ -64,12 +58,7 @@ export const BrandBootScreen = ({
           role="progressbar"
           aria-label="در حال بارگذاری"
         >
-          <div
-            className={cn(
-              'h-full rounded-full bg-primary-500',
-              isBoot ? 'boot-splash-progress-fill' : 'explore-fetch-bar w-1/3'
-            )}
-          />
+          <div className="boot-splash-progress-fill h-full rounded-full bg-primary-500" />
         </div>
       </div>
     </div>

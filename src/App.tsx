@@ -4,6 +4,7 @@ import WebApp from '@twa-dev/sdk'
 import Layout from './components/Layout'
 import ScrollToTop from './components/ScrollToTop'
 import { BrandBootScreen } from './components/BrandBootScreen'
+import { RouteFallback } from './components/RouteFallback'
 import { AppFeedbackHost } from './components/AppFeedbackHost'
 import { useTheme } from './utils/theme'
 import { useAppAuth } from './hooks/useAppAuth'
@@ -32,11 +33,16 @@ const Subscribe = lazy(() => import('./pages/Subscribe'))
 
 function App() {
   const { isReady } = useAppAuth()
-  const holdBootSplash = useBootSplashHold(isReady)
+  const { visible: showBootSplash, exiting: bootExiting } = useBootSplashHold(isReady)
   const { applyTheme } = useTheme()
   useTelegramStartNavigation(isReady)
   useTelegramUserSync(isReady)
   useTelegramLinkComplete(isReady)
+
+  // Warm the first route chunk while splash is up so Suspense does not flash.
+  useEffect(() => {
+    void import('./pages/Home')
+  }, [])
 
   useEffect(() => {
     if (!isReady) return
@@ -83,36 +89,39 @@ function App() {
     }
   }, [isReady, applyTheme])
 
-  if (holdBootSplash) {
-    return <BrandBootScreen variant="boot" />
-  }
+  const showAppShell = !showBootSplash || bootExiting
 
   return (
     <>
-      <Layout>
-        <ScrollToTop />
-        <Suspense fallback={<BrandBootScreen />}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/anime/:id" element={<AnimeDetail />} />
-            <Route path="/studios/:slug" element={<StudioDetail />} />
-            <Route path="/translators/:slug" element={<TranslatorProfile />} />
-            <Route path="/schedule" element={<Schedule />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/explore" element={<Explore />} />
-            <Route path="/my-list" element={<MyList />} />
-            <Route path="/my-list/lists/:listId" element={<ShioriListDetail />} />
-            <Route path="/profile" element={<Profile />} />
-            {/* Monetization routes kept; UI entry points gated by ENABLE_SUBSCRIPTION_DOWNLOAD_GATE */}
-            <Route path="/donate" element={<Navigate to="/subscribe" replace />} />
-            <Route path="/subscribe" element={<Subscribe />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/support" element={<Support />} />
-            <Route path="/support/:ticketId" element={<SupportTicketDetail />} />
-          </Routes>
-        </Suspense>
-      </Layout>
-      <AppFeedbackHost />
+      {showAppShell ? (
+        <>
+          <Layout>
+            <ScrollToTop />
+            <Suspense fallback={<RouteFallback />}>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/anime/:id" element={<AnimeDetail />} />
+                <Route path="/studios/:slug" element={<StudioDetail />} />
+                <Route path="/translators/:slug" element={<TranslatorProfile />} />
+                <Route path="/schedule" element={<Schedule />} />
+                <Route path="/search" element={<Search />} />
+                <Route path="/explore" element={<Explore />} />
+                <Route path="/my-list" element={<MyList />} />
+                <Route path="/my-list/lists/:listId" element={<ShioriListDetail />} />
+                <Route path="/profile" element={<Profile />} />
+                {/* Monetization routes kept; UI entry points gated by ENABLE_SUBSCRIPTION_DOWNLOAD_GATE */}
+                <Route path="/donate" element={<Navigate to="/subscribe" replace />} />
+                <Route path="/subscribe" element={<Subscribe />} />
+                <Route path="/notifications" element={<Notifications />} />
+                <Route path="/support" element={<Support />} />
+                <Route path="/support/:ticketId" element={<SupportTicketDetail />} />
+              </Routes>
+            </Suspense>
+          </Layout>
+          <AppFeedbackHost />
+        </>
+      ) : null}
+      {showBootSplash ? <BrandBootScreen exiting={bootExiting} /> : null}
     </>
   )
 }

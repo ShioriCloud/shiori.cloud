@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAppAuth } from '@/hooks/useAppAuth'
-import { BrandBootScreen } from '@/components/BrandBootScreen'
+import { RouteFallback } from '@/components/RouteFallback'
 import { MyListTabBar, MY_LIST_TABS, parseMyListTab, type MyListTabId } from '@/components/my-list/MyListTabBar'
 import { TabSwipeArea, TAB_SWIPE_FIXED_HEADER_CLASS } from '@/components/TabSwipeArea'
 import { WatchlistTab } from '@/components/my-list/WatchlistTab'
@@ -31,7 +31,7 @@ const MyList = () => {
   )
 
   if (!isReady) {
-    return <BrandBootScreen />
+    return <RouteFallback />
   }
 
   return (

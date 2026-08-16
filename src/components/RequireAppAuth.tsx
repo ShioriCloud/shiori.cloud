@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { useAppAuth } from '../hooks/useAppAuth'
-import { BrandBootScreen } from './BrandBootScreen'
+import { RouteFallback } from './RouteFallback'
 
 type RequireAppAuthProps = {
   children: ReactNode
@@ -11,7 +11,7 @@ export const RequireAppAuth = ({ children }: RequireAppAuthProps) => {
   const { isReady, isAuthenticated, inTelegram } = useAppAuth()
 
   if (!isReady) {
-    return <BrandBootScreen />
+    return <RouteFallback />
   }
 
   if (inTelegram && isAuthenticated) {
