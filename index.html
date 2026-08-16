@@ -48,27 +48,28 @@
         #boot-splash .boot-orb {
             position: absolute;
             border-radius: 9999px;
-            filter: blur(48px);
+            filter: blur(40px);
             pointer-events: none;
-            opacity: 0.45;
+            opacity: 0.7;
+            will-change: transform, opacity;
         }
 
         #boot-splash .boot-orb-a {
-            width: 14rem;
-            height: 14rem;
-            top: 12%;
-            inset-inline-end: -3rem;
-            background: rgba(139, 92, 246, 0.35);
-            animation: boot-orb-float 9s ease-in-out infinite alternate;
+            width: 16rem;
+            height: 16rem;
+            top: 8%;
+            inset-inline-end: -2rem;
+            background: rgba(139, 92, 246, 0.55);
+            animation: boot-orb-float-a 5.5s ease-in-out infinite alternate;
         }
 
         #boot-splash .boot-orb-b {
-            width: 11rem;
-            height: 11rem;
-            bottom: 18%;
-            inset-inline-start: -2.5rem;
-            background: rgba(59, 130, 246, 0.28);
-            animation: boot-orb-float 11s ease-in-out infinite alternate-reverse;
+            width: 13rem;
+            height: 13rem;
+            bottom: 14%;
+            inset-inline-start: -1.5rem;
+            background: rgba(59, 130, 246, 0.45);
+            animation: boot-orb-float-b 7s ease-in-out infinite alternate;
         }
 
         #boot-splash .boot-main {
@@ -147,9 +148,14 @@
             100% { background-position: 100% 60%; }
         }
 
-        @keyframes boot-orb-float {
-            0% { transform: translate3d(0, 0, 0) scale(1); }
-            100% { transform: translate3d(-12px, 18px, 0) scale(1.08); }
+        @keyframes boot-orb-float-a {
+            0% { transform: translate3d(0, 0, 0) scale(0.92); opacity: 0.45; }
+            100% { transform: translate3d(-48px, 56px, 0) scale(1.18); opacity: 0.85; }
+        }
+
+        @keyframes boot-orb-float-b {
+            0% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.4; }
+            100% { transform: translate3d(40px, -52px, 0) scale(1.22); opacity: 0.8; }
         }
 
         @keyframes boot-quote-in {
@@ -223,6 +229,10 @@
                 { text: 'عشق یعنی وقتی برای یکی دیگه، خودت رو فراموش می‌کنی.', attribution: 'ویولت · ویولت اورگاردن' }
             ]
             var q = quotes[Math.floor(Math.random() * quotes.length)]
+            window.__SHIORI_BOOT_QUOTE__ = q
+            try {
+                sessionStorage.setItem('shiori_boot_quote_display', JSON.stringify(q))
+            } catch (e) { /* ignore */ }
             var textEl = document.getElementById('boot-quote-text')
             var attrEl = document.getElementById('boot-quote-attr')
             if (textEl) textEl.innerHTML = '<span class="q" aria-hidden="true">«</span>' + q.text + '<span class="q" aria-hidden="true">»</span>'

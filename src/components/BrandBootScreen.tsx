@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import logo from '@/assets/images/shiori-logo.svg'
-import { pickRandomBootQuote, type BootQuote } from '@/data/bootQuotes'
+import { resolveDisplayBootQuote, type BootQuote } from '@/data/bootQuotes'
 import { getBootQuotePool } from '@/services/bootQuotes'
 import { cn } from '@/lib/utils'
 
@@ -18,7 +18,7 @@ export const BrandBootScreen = ({
   className,
   variant = 'gate',
 }: BrandBootScreenProps = {}) => {
-  const [quote] = useState<BootQuote>(() => pickRandomBootQuote(getBootQuotePool()))
+  const [quote] = useState<BootQuote>(() => resolveDisplayBootQuote(getBootQuotePool()))
   const isBoot = variant === 'boot'
 
   return (
@@ -32,8 +32,14 @@ export const BrandBootScreen = ({
       aria-busy="true"
     >
       <div className="boot-splash-aurora pointer-events-none absolute inset-0" aria-hidden />
-      <div className="boot-splash-orb boot-splash-orb-a pointer-events-none absolute" aria-hidden />
-      <div className="boot-splash-orb boot-splash-orb-b pointer-events-none absolute" aria-hidden />
+      <div
+        className="boot-splash-orb boot-splash-orb-a pointer-events-none absolute will-change-transform"
+        aria-hidden
+      />
+      <div
+        className="boot-splash-orb boot-splash-orb-b pointer-events-none absolute will-change-transform"
+        aria-hidden
+      />
 
       <div className="relative z-[1] flex min-h-0 flex-1 flex-col items-center justify-center gap-8 px-7 pb-16 pt-[max(2rem,var(--app-tg-top-inset))]">
         <img src={logo} alt="" className="h-6 w-auto max-w-[6.5rem] opacity-80" />

@@ -669,26 +669,26 @@
 
   .boot-splash-orb {
     border-radius: 9999px;
-    filter: blur(48px);
-    opacity: 0.45;
+    filter: blur(40px);
+    opacity: 0.7;
   }
 
   .boot-splash-orb-a {
-    width: 14rem;
-    height: 14rem;
-    top: 12%;
-    inset-inline-end: -3rem;
-    background: oklch(0.62 0.2 295 / 0.35);
-    animation: boot-orb-float 9s ease-in-out infinite alternate;
+    width: 16rem;
+    height: 16rem;
+    top: 8%;
+    inset-inline-end: -2rem;
+    background: oklch(0.65 0.22 295 / 0.55);
+    animation: boot-orb-float-a 5.5s ease-in-out infinite alternate;
   }
 
   .boot-splash-orb-b {
-    width: 11rem;
-    height: 11rem;
-    bottom: 18%;
-    inset-inline-start: -2.5rem;
-    background: oklch(0.55 0.12 230 / 0.3);
-    animation: boot-orb-float 11s ease-in-out infinite alternate-reverse;
+    width: 13rem;
+    height: 13rem;
+    bottom: 14%;
+    inset-inline-start: -1.5rem;
+    background: oklch(0.6 0.14 230 / 0.5);
+    animation: boot-orb-float-b 7s ease-in-out infinite alternate;
   }
 
   .boot-splash-quote {
@@ -703,19 +703,34 @@
 
   @keyframes boot-aurora-drift {
     0% {
-      background-position: 0% 40%;
+      background-position: 0% 30%;
+      opacity: 0.85;
     }
     100% {
-      background-position: 100% 60%;
+      background-position: 100% 70%;
+      opacity: 1;
     }
   }
 
-  @keyframes boot-orb-float {
+  @keyframes boot-orb-float-a {
     0% {
-      transform: translate3d(0, 0, 0) scale(1);
+      transform: translate3d(0, 0, 0) scale(0.92);
+      opacity: 0.45;
     }
     100% {
-      transform: translate3d(-12px, 18px, 0) scale(1.08);
+      transform: translate3d(-48px, 56px, 0) scale(1.18);
+      opacity: 0.85;
+    }
+  }
+
+  @keyframes boot-orb-float-b {
+    0% {
+      transform: translate3d(0, 0, 0) scale(1);
+      opacity: 0.4;
+    }
+    100% {
+      transform: translate3d(40px, -52px, 0) scale(1.22);
+      opacity: 0.8;
     }
   }
 

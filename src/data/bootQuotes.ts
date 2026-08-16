@@ -148,3 +148,49 @@ export function pickRandomBootQuote(
   const i = Math.floor(random() * list.length) % list.length
   return list[i]!
 }
+
+const DISPLAY_QUOTE_KEY = 'shiori_boot_quote_display'
+
+type BootQuoteBridge = {
+  __SHIORI_BOOT_QUOTE__?: { text?: string; attribution?: string }
+}
+
+function normalizeQuote(raw: unknown): BootQuote | null {
+  if (!raw || typeof raw !== 'object') return null
+  const text = String((raw as BootQuote).text ?? '').trim()
+  const attribution = String((raw as BootQuote).attribution ?? '').trim()
+  if (!text || !attribution) return null
+  return { text, attribution }
+}
+
+/** One quote per page load — reuses the HTML bridge / session pick so it never swaps mid-boot. */
+export function resolveDisplayBootQuote(pool: readonly BootQuote[] = BOOT_QUOTES): BootQuote {
+  if (typeof window !== 'undefined') {
+    const fromBridge = normalizeQuote((window as BootQuoteBridge).__SHIORI_BOOT_QUOTE__)
+    if (fromBridge) {
+      try {
+        sessionStorage.setItem(DISPLAY_QUOTE_KEY, JSON.stringify(fromBridge))
+      } catch {
+        // ignore
+      }
+      return fromBridge
+    }
+  }
+
+  if (typeof sessionStorage !== 'undefined') {
+    try {
+      const stored = normalizeQuote(JSON.parse(sessionStorage.getItem(DISPLAY_QUOTE_KEY) ?? 'null'))
+      if (stored) return stored
+    } catch {
+      // ignore
+    }
+  }
+
+  const picked = pickRandomBootQuote(pool)
+  try {
+    sessionStorage.setItem(DISPLAY_QUOTE_KEY, JSON.stringify(picked))
+  } catch {
+    // ignore
+  }
+  return picked
+}
