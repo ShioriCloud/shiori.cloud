@@ -15,12 +15,7 @@ type Props = {
 }
 
 export const MyListTabBar = ({ active, onChange }: Props) => (
-  <ExploreTabBar
-    tabs={MY_LIST_TABS}
-    active={active}
-    onChange={onChange}
-    layoutId="my-list-tab-thumb"
-  />
+  <ExploreTabBar tabs={MY_LIST_TABS} active={active} onChange={onChange} />
 )
 
 export const parseMyListTab = (value: string | null): MyListTabId => {

@@ -34,10 +34,6 @@ import { ExploreListToolbar } from '@/components/explore/ExploreListToolbar'
 import { ExploreSortSheet } from '@/components/explore/ExploreSheets'
 import { ExploreSeasonHeader, ExploreSeasonSheet } from '@/components/explore/ExploreSeasonPicker'
 import { ExploreTabBar } from '@/components/explore/ExploreUi'
-import {
-  AnimatedTabContent,
-  useTabSlideDirection,
-} from '@/components/AnimatedTabContent'
 import { TabSwipeArea, TAB_SWIPE_IN_PAGE_HEADER_CLASS } from '@/components/TabSwipeArea'
 import { SearchFiltersSheet } from '@/components/search/SearchFiltersSheet'
 import { cn } from '@/lib/utils'
@@ -47,8 +43,6 @@ const TABS: { id: ExploreTab; label: string }[] = [
   { id: 'seasonal', label: 'فصل جاری' },
   { id: 'genres', label: 'ژانرها' },
 ]
-
-const TAB_IDS = TABS.map((tab) => tab.id) as ExploreTab[]
 
 const Explore = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -192,12 +186,11 @@ const Explore = () => {
   /** keepPreviousData shows the prior filter's cards — treat as hard load, not overlay. */
   const allListLoading = allQuery.isLoading || allQuery.isPlaceholderData
   const seasonalListLoading = seasonalQuery.isLoading || seasonalQuery.isPlaceholderData
-  const tabDirection = useTabSlideDirection(TAB_IDS, state.tab)
 
   return (
     <>
     <TabSwipeArea
-      tabs={TAB_IDS}
+      tabs={TABS.map((tab) => tab.id)}
       active={state.tab}
       onChange={setTab}
       className={cn('pb-24', TAB_SWIPE_IN_PAGE_HEADER_CLASS)}
@@ -205,17 +198,11 @@ const Explore = () => {
       <div className="shrink-0">
         <AppHeader />
         <div className="px-4">
-          <ExploreTabBar
-            tabs={TABS}
-            active={state.tab}
-            onChange={setTab}
-            layoutId="explore-main-tab-thumb"
-          />
+          <ExploreTabBar tabs={TABS} active={state.tab} onChange={setTab} />
         </div>
       </div>
 
       <div className="flex-1">
-        <AnimatedTabContent activeKey={state.tab} direction={tabDirection}>
         {state.tab === 'all' ? (
           <>
             <div className="px-4 mt-3">
@@ -282,7 +269,6 @@ const Explore = () => {
             />
           </div>
         ) : null}
-        </AnimatedTabContent>
       </div>
     </TabSwipeArea>
 

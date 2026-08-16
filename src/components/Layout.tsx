@@ -1,6 +1,5 @@
 import { ReactNode, useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutGroup, motion, useReducedMotion } from 'motion/react'
 import {
   Home01Icon,
   Calendar01Icon,
@@ -9,7 +8,6 @@ import {
   Search01Icon,
 } from 'hugeicons-react'
 import { AppHeader, APP_HEADER_PAD_CLASS } from '@/components/AppHeader'
-import { tabThumbTransition } from '@/components/AnimatedTabContent'
 import { useTelegramBackButton } from '@/hooks/useTelegramBackButton'
 import { useTelegramSafeArea } from '@/hooks/useTelegramSafeArea'
 import { useNotifications } from '@/hooks/useNotifications'
@@ -26,20 +24,10 @@ const toPersianNumber = (num: number): string => {
   return String(num).replace(/[0-9]/g, (w) => persianDigits[+w])
 }
 
-type NavItem = {
-  to: string
-  label: string
-  path: string
-  Icon: typeof Home01Icon
-  ariaLabel?: string
-  badge?: ReactNode
-}
-
 const Layout = ({ children }: LayoutProps) => {
   const location = useLocation()
   const [isScrolled, setIsScrolled] = useState(false)
   const { unreadCount } = useNotifications()
-  const reduceMotion = useReducedMotion()
   useAiringReminders()
 
   useTelegramBackButton()
@@ -88,52 +76,6 @@ const Layout = ({ children }: LayoutProps) => {
   const isTransparentHeaderPage = isAnimeDetailPage || isProfileHeroPage
   const showFixedHeader = !usesInPageHeader
 
-  const navItems: NavItem[] = [
-    { to: '/', path: '/', label: 'خانه', Icon: Home01Icon, ariaLabel: 'خانه' },
-    {
-      to: '/schedule',
-      path: '/schedule',
-      label: 'برنامه پخش',
-      Icon: Calendar01Icon,
-      ariaLabel: 'برنامه پخش',
-    },
-    {
-      to: '/explore',
-      path: '/explore',
-      label: 'گشت‌و‌گذار',
-      Icon: Search01Icon,
-      ariaLabel: 'گشت‌و‌گذار',
-    },
-    {
-      to: '/my-list',
-      path: '/my-list',
-      label: 'لیست من',
-      Icon: FavouriteIcon,
-      ariaLabel: 'لیست من',
-    },
-    {
-      to: '/profile',
-      path: '/profile',
-      label: 'پروفایل',
-      Icon: UserIcon,
-      ariaLabel:
-        unreadCount > 0
-          ? `پروفایل، ${toPersianNumber(unreadCount)} اعلان خوانده‌نشده`
-          : 'پروفایل',
-      badge:
-        unreadCount > 0 ? (
-          <span
-            className={cn(
-              'absolute -end-2 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full',
-              'bg-primary-400 px-1 text-[9px] font-bold leading-none text-white tabular-nums'
-            )}
-          >
-            {unreadCount > 9 ? '۹+' : toPersianNumber(unreadCount)}
-          </span>
-        ) : null,
-    },
-  ]
-
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       {showFixedHeader && (
@@ -164,48 +106,84 @@ const Layout = ({ children }: LayoutProps) => {
 
       <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-md pb-[var(--app-tg-bottom-inset)]">
         <div className="container">
-          <LayoutGroup id="bottom-nav">
-            <div className="flex justify-around py-2">
-              {navItems.map((item) => {
-                const active = isActive(item.path)
-                const Icon = item.Icon
-                return (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    onClick={() => hapticSelection()}
+          <div className="flex justify-around py-2">
+            <Link
+              to="/"
+              onClick={() => hapticSelection()}
+              className={cn(
+                'flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 transition-colors',
+                isActive('/') ? 'text-primary-400' : 'text-muted-foreground'
+              )}
+              aria-label="خانه"
+            >
+              <Home01Icon className="w-6 h-6" />
+              <span className="text-xs">خانه</span>
+            </Link>
+            <Link
+              to="/schedule"
+              onClick={() => hapticSelection()}
+              className={cn(
+                'flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 transition-colors',
+                isActive('/schedule') ? 'text-primary-400' : 'text-muted-foreground'
+              )}
+              aria-label="برنامه پخش"
+            >
+              <Calendar01Icon className="w-6 h-6" />
+              <span className="text-xs">برنامه پخش</span>
+            </Link>
+            <Link
+              to="/explore"
+              onClick={() => hapticSelection()}
+              className={cn(
+                'flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 transition-colors',
+                isActive('/explore') ? 'text-primary-400' : 'text-muted-foreground'
+              )}
+              aria-label="گشت‌و‌گذار"
+            >
+              <Search01Icon className="w-6 h-6" />
+              <span className="text-xs">گشت‌و‌گذار</span>
+            </Link>
+            <Link
+              to="/my-list"
+              onClick={() => hapticSelection()}
+              className={cn(
+                'flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 transition-colors',
+                isActive('/my-list') ? 'text-primary-400' : 'text-muted-foreground'
+              )}
+              aria-label="لیست من"
+            >
+              <FavouriteIcon className="w-6 h-6" />
+              <span className="text-xs">لیست من</span>
+            </Link>
+            <Link
+              to="/profile"
+              onClick={() => hapticSelection()}
+              className={cn(
+                'relative flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 transition-colors',
+                isActive('/profile') ? 'text-primary-400' : 'text-muted-foreground'
+              )}
+              aria-label={
+                unreadCount > 0
+                  ? `پروفایل، ${toPersianNumber(unreadCount)} اعلان خوانده‌نشده`
+                  : 'پروفایل'
+              }
+            >
+              <span className="relative inline-flex">
+                <UserIcon className="w-6 h-6" />
+                {unreadCount > 0 ? (
+                  <span
                     className={cn(
-                      'relative flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 transition-colors',
-                      active ? 'text-primary-400' : 'text-muted-foreground'
+                      'absolute -end-2 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full',
+                      'bg-primary-400 px-1 text-[9px] font-bold leading-none text-white tabular-nums'
                     )}
-                    aria-label={item.ariaLabel ?? item.label}
-                    aria-current={active ? 'page' : undefined}
                   >
-                    {active ? (
-                      reduceMotion ? (
-                        <span
-                          aria-hidden
-                          className="absolute inset-x-3 top-0 h-0.5 rounded-full bg-primary-400"
-                        />
-                      ) : (
-                        <motion.span
-                          layoutId="bottom-nav-indicator"
-                          aria-hidden
-                          className="absolute inset-x-3 top-0 h-0.5 rounded-full bg-primary-400"
-                          transition={tabThumbTransition}
-                        />
-                      )
-                    ) : null}
-                    <span className="relative inline-flex">
-                      <Icon className="h-6 w-6" />
-                      {item.badge}
-                    </span>
-                    <span className="text-xs">{item.label}</span>
-                  </Link>
-                )
-              })}
-            </div>
-          </LayoutGroup>
+                    {unreadCount > 9 ? '۹+' : toPersianNumber(unreadCount)}
+                  </span>
+                ) : null}
+              </span>
+              <span className="text-xs">پروفایل</span>
+            </Link>
+          </div>
         </div>
       </nav>
     </div>
