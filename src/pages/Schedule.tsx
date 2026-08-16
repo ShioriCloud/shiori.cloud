@@ -5,6 +5,11 @@ import { BidiText } from '../components/BidiText'
 import { Calendar01Icon } from 'hugeicons-react'
 import type { GenreItem } from '../types/catalog'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
+import {
+  AnimatedTabContent,
+  tabThumbTransition,
+  useTabSlideDirection,
+} from '@/components/AnimatedTabContent'
 import { TabSwipeArea, TAB_SWIPE_FIXED_HEADER_CLASS } from '@/components/TabSwipeArea'
 import { cn } from '@/lib/utils'
 import { useScheduleQuery } from '../hooks/queries/useAnimeQueries'
@@ -12,6 +17,7 @@ import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { hapticSelection } from '../lib/telegramHaptics'
 import { showAppToast } from '@/store/appFeedbackStore'
 import shioriLogo from '../assets/images/shiori.svg'
+import { LayoutGroup, motion, useReducedMotion } from 'motion/react'
 
 type Anime = {
   id: number
@@ -172,6 +178,8 @@ const Schedule = () => {
     () => filterScheduleList(schedule[activeDay] ?? []),
     [schedule, activeDay]
   )
+  const dayDirection = useTabSlideDirection(PERSIAN_DAYS, activeDay)
+  const reduceMotion = useReducedMotion()
 
   const handleAnimeClick = (e: MouseEvent<HTMLAnchorElement>, anime: Anime) => {
     e.preventDefault()
@@ -231,36 +239,61 @@ const Schedule = () => {
       <div className="flex-1">
         {/* Day picker */}
         <div className="px-4 pt-3">
-          <div className="flex items-center justify-between gap-1">
-            {PERSIAN_DAYS.map((day) => {
-              const isActive = activeDay === day
+          <LayoutGroup id="schedule-day-thumb">
+            <div className="flex items-center justify-between gap-1">
+              {PERSIAN_DAYS.map((day) => {
+                const isActive = activeDay === day
 
-              return (
-                <button
-                  key={day}
-                  type="button"
-                  title={day}
-                  onClick={() => {
-                    hapticSelection()
-                    setActiveDay(day)
-                  }}
-                  className="flex-1 flex justify-center py-1"
-                >
-                  <span
-                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
-                      isActive
-                        ? 'bg-primary-500 text-white shadow-md shadow-primary-400/35'
-                        : 'bg-muted/80 text-muted-foreground hover:bg-muted'
-                    }`}
+                return (
+                  <button
+                    key={day}
+                    type="button"
+                    title={day}
+                    onClick={() => {
+                      if (day === activeDay) return
+                      hapticSelection()
+                      setActiveDay(day)
+                    }}
+                    className="flex-1 flex justify-center py-1"
                   >
-                    {DAY_SHORT[day]}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
+                    <span className="relative flex h-10 w-10 items-center justify-center">
+                      {isActive ? (
+                        reduceMotion ? (
+                          <span
+                            aria-hidden
+                            className="absolute inset-0 rounded-full bg-primary-500 shadow-md shadow-primary-400/35"
+                          />
+                        ) : (
+                          <motion.span
+                            layoutId="schedule-day-thumb"
+                            aria-hidden
+                            className="absolute inset-0 rounded-full bg-primary-500 shadow-md shadow-primary-400/35"
+                            transition={tabThumbTransition}
+                          />
+                        )
+                      ) : (
+                        <span
+                          aria-hidden
+                          className="absolute inset-0 rounded-full bg-muted/80"
+                        />
+                      )}
+                      <span
+                        className={cn(
+                          'relative z-10 text-sm font-bold',
+                          isActive ? 'text-white' : 'text-muted-foreground'
+                        )}
+                      >
+                        {DAY_SHORT[day]}
+                      </span>
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </LayoutGroup>
         </div>
 
+        <AnimatedTabContent activeKey={activeDay} direction={dayDirection}>
         {/* Content header */}
         <div className="px-4 pt-4 pb-2 flex items-baseline justify-between">
           <h2 className="text-base font-semibold text-foreground">{activeDay}</h2>
@@ -348,6 +381,7 @@ const Schedule = () => {
       <p className="text-[10px] text-muted-foreground/70 text-center px-6 pt-6 leading-5">
         داده از AniList · فقط عناوین موجود در شیوری قابل باز شدن هستند
       </p>
+        </AnimatedTabContent>
       </div>
     </TabSwipeArea>
   )

@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
+import { LayoutGroup, motion, useReducedMotion } from 'motion/react'
 import { Button } from '@/components/ui/button'
+import { tabThumbTransition } from '@/components/AnimatedTabContent'
 import { hapticSelection } from '@/lib/telegramHaptics'
 import { cn } from '@/lib/utils'
 import emptyExploreImage from '@/assets/images/frieren-03.webp'
@@ -17,6 +19,8 @@ type ExploreTabBarProps<T extends string> = {
   active: T
   onChange: (id: T) => void
   className?: string
+  /** Unique id so multiple bars on one page do not share one thumb. */
+  layoutId?: string
 }
 
 export const ExploreTabBar = <T extends string>({
@@ -24,34 +28,52 @@ export const ExploreTabBar = <T extends string>({
   active,
   onChange,
   className,
-}: ExploreTabBarProps<T>) => (
-  <div className={cn('home-type-tabs relative flex rounded-xl p-1', className)}>
-    {tabs.map((tab) => {
-      const isActive = active === tab.id
-      return (
-        <button
-          key={tab.id}
-          type="button"
-          onClick={() => {
-            if (tab.id === active) return
-            hapticSelection()
-            onChange(tab.id)
-          }}
-          className={cn(
-            'relative flex-1 min-h-10 py-2.5 rounded-[10px] text-sm transition-all duration-200',
-            isActive ? 'text-foreground font-semibold' : 'text-muted-foreground hover:text-foreground'
-          )}
-          aria-pressed={isActive}
-        >
-          {isActive ? (
-            <span aria-hidden className="home-type-tabs-thumb absolute inset-0 rounded-[10px]" />
-          ) : null}
-          <span className="relative z-10">{tab.label}</span>
-        </button>
-      )
-    })}
-  </div>
-)
+  layoutId = 'explore-tab-thumb',
+}: ExploreTabBarProps<T>) => {
+  const reduceMotion = useReducedMotion()
+
+  return (
+    <LayoutGroup id={layoutId}>
+      <div className={cn('home-type-tabs relative flex rounded-xl p-1', className)}>
+        {tabs.map((tab) => {
+          const isActive = active === tab.id
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => {
+                if (tab.id === active) return
+                hapticSelection()
+                onChange(tab.id)
+              }}
+              className={cn(
+                'relative flex-1 min-h-10 py-2.5 rounded-[10px] text-sm transition-colors duration-200',
+                isActive
+                  ? 'text-foreground font-semibold'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+              aria-pressed={isActive}
+            >
+              {isActive ? (
+                reduceMotion ? (
+                  <span aria-hidden className="home-type-tabs-thumb absolute inset-0 rounded-[10px]" />
+                ) : (
+                  <motion.span
+                    layoutId={layoutId}
+                    aria-hidden
+                    className="home-type-tabs-thumb absolute inset-0 rounded-[10px]"
+                    transition={tabThumbTransition}
+                  />
+                )
+              ) : null}
+              <span className="relative z-10">{tab.label}</span>
+            </button>
+          )
+        })}
+      </div>
+    </LayoutGroup>
+  )
+}
 
 export const ExploreSectionTitle = ({ children }: { children: ReactNode }) => (
   <h3 className="text-sm font-semibold text-foreground mb-2">{children}</h3>

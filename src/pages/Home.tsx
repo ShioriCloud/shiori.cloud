@@ -12,10 +12,9 @@ import { AppHeader } from '@/components/AppHeader'
 import { HomeCustomBlocksSection } from '@/components/home/HomeCustomBlocksSection'
 import { HomeFeaturedCarousel } from '@/components/home/HomeFeaturedCarousel'
 import { HomeRailScroller, HomeRailSlide } from '@/components/home/HomeRailScroller'
-import { ExploreEmptyState } from '@/components/explore/ExploreUi'
+import { ExploreEmptyState, ExploreTabBar } from '@/components/explore/ExploreUi'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { exploreAllHref } from '@/lib/exploreParams'
-import { hapticSelection } from '@/lib/telegramHaptics'
 import {
   useHomeDonghuaQuery,
   useHomeFeaturedQuery,
@@ -256,32 +255,12 @@ const Home = () => {
       <AppHeader />
 
       <div className="px-4">
-        <div className="home-type-tabs relative flex rounded-xl p-1">
-          {TYPE_TABS.map((tab) => {
-            const active = selectedType === tab.id
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => {
-                  hapticSelection()
-                  setSelectedType(tab.id)
-                }}
-                className={`relative flex-1 py-2.5 rounded-[10px] text-sm transition-all duration-200 ${
-                  active
-                    ? 'text-foreground font-semibold'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-                aria-pressed={active}
-              >
-                {active && (
-                  <span aria-hidden className="home-type-tabs-thumb absolute inset-0 rounded-[10px]" />
-                )}
-                <span className="relative z-10">{tab.label}</span>
-              </button>
-            )
-          })}
-        </div>
+        <ExploreTabBar
+          tabs={TYPE_TABS}
+          active={selectedType}
+          onChange={setSelectedType}
+          layoutId="home-type-tab-thumb"
+        />
       </div>
 
       <div className="mt-4 px-4">

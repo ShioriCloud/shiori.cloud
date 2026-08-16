@@ -2,6 +2,10 @@ import { useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import { RouteFallback } from '@/components/RouteFallback'
+import {
+  AnimatedTabContent,
+  useTabSlideDirection,
+} from '@/components/AnimatedTabContent'
 import { MyListTabBar, MY_LIST_TABS, parseMyListTab, type MyListTabId } from '@/components/my-list/MyListTabBar'
 import { TabSwipeArea, TAB_SWIPE_FIXED_HEADER_CLASS } from '@/components/TabSwipeArea'
 import { WatchlistTab } from '@/components/my-list/WatchlistTab'
@@ -10,10 +14,13 @@ import { HistoryTab } from '@/components/my-list/HistoryTab'
 import { DownloadsTab } from '@/components/my-list/DownloadsTab'
 import { cn } from '@/lib/utils'
 
+const TAB_IDS = MY_LIST_TABS.map((tab) => tab.id)
+
 const MyList = () => {
   const { isReady } = useAppAuth()
   const [searchParams, setSearchParams] = useSearchParams()
   const activeTab = parseMyListTab(searchParams.get('tab'))
+  const direction = useTabSlideDirection(TAB_IDS, activeTab)
 
   const setActiveTab = useCallback(
     (tab: MyListTabId) => {
@@ -36,7 +43,7 @@ const MyList = () => {
 
   return (
     <TabSwipeArea
-      tabs={MY_LIST_TABS.map((tab) => tab.id)}
+      tabs={TAB_IDS}
       active={activeTab}
       onChange={setActiveTab}
       className={cn('pb-24', TAB_SWIPE_FIXED_HEADER_CLASS)}
@@ -45,11 +52,13 @@ const MyList = () => {
         <MyListTabBar active={activeTab} onChange={setActiveTab} />
       </div>
 
-      <div className="flex-1 px-4 mt-4 my-list-enter">
-        {activeTab === 'watchlist' && <WatchlistTab />}
-        {activeTab === 'lists' && <ShioriListsTab />}
-        {activeTab === 'history' && <HistoryTab />}
-        {activeTab === 'downloads' && <DownloadsTab />}
+      <div className="flex-1 px-4 mt-4">
+        <AnimatedTabContent activeKey={activeTab} direction={direction}>
+          {activeTab === 'watchlist' && <WatchlistTab />}
+          {activeTab === 'lists' && <ShioriListsTab />}
+          {activeTab === 'history' && <HistoryTab />}
+          {activeTab === 'downloads' && <DownloadsTab />}
+        </AnimatedTabContent>
       </div>
     </TabSwipeArea>
   )

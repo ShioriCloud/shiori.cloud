@@ -1065,7 +1065,7 @@ const AnimeDetail = () => {
 
       {/* Main tabs — sticky زیر هدر، استایل مثل Home */}
       <div className="sticky top-[var(--app-header-offset)] z-30 px-4 pt-5 pb-2 bg-background/90 backdrop-blur-md border-b border-border/50">
-        <ExploreTabBar tabs={MAIN_TABS} active={activeTab} onChange={handleMainTabChange} />
+        <ExploreTabBar tabs={MAIN_TABS} active={activeTab} onChange={handleMainTabChange} layoutId="anime-detail-main-tab" />
       </div>
 
       {/* Tab content */}
@@ -1205,6 +1205,7 @@ const AnimeDetail = () => {
                   setEpisodeKindTab(tab as EpisodeKindTab)
                 }}
                 className="text-[13px]"
+                layoutId="anime-detail-episode-tab"
               />
 
               {useLaunchDownloadTabs && launchDownloadTab === 'subtitles' ? (
