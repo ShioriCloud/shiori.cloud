@@ -10,7 +10,7 @@ type BrandBootScreenProps = {
   exiting?: boolean
 }
 
-/** Cold-start splash only — cinematic title card. Do not reuse for route Suspense. */
+/** Cold-start splash only — dark purple atmosphere with wallpaper underneath. */
 export const BrandBootScreen = ({ className, exiting = false }: BrandBootScreenProps = {}) => {
   const [quote] = useState<BootQuote>(() => resolveDisplayBootQuote(getBootQuotePool()))
   const wallpaper = quote.image?.trim() || ''
@@ -34,25 +34,16 @@ export const BrandBootScreen = ({ className, exiting = false }: BrandBootScreenP
       ) : (
         <div className="boot-splash-void" aria-hidden />
       )}
-      <div className="boot-splash-scrim" aria-hidden />
+      <div className="boot-splash-tint" aria-hidden />
+      <div className="boot-splash-wash" aria-hidden />
       <div className="boot-splash-grain" aria-hidden />
       <div className="boot-splash-ribbon" aria-hidden />
-      <div className="boot-splash-sweep" aria-hidden />
 
-      <div className="relative z-[1] flex min-h-0 flex-1 flex-col px-6 pt-[max(1.25rem,var(--app-tg-top-inset))] pb-[max(1.25rem,var(--app-tg-bottom-inset))]">
-        <img src={logo} alt="" className="boot-splash-logo mx-auto h-5 w-auto max-w-[6rem]" />
+      <div className="relative z-[1] flex min-h-0 flex-1 flex-col items-center justify-center gap-8 px-6 pb-16 pt-[max(2rem,var(--app-tg-top-inset))]">
+        <img src={logo} alt="" className="boot-splash-logo h-5 w-auto max-w-[6rem]" />
 
-        <div className="min-h-0 flex-1" />
-
-        <blockquote className="boot-splash-card mx-auto w-full max-w-sm">
-          <div
-            className="boot-splash-progress"
-            role="progressbar"
-            aria-label="در حال بارگذاری"
-          >
-            <div className="boot-splash-progress-fill" />
-          </div>
-          <p className="boot-splash-quote-text pt-1 text-center text-[1.05rem] leading-8 sm:text-lg sm:leading-9">
+        <blockquote className="boot-splash-card w-full max-w-sm">
+          <p className="boot-splash-quote-text text-center text-[1.05rem] leading-8 sm:text-lg sm:leading-9">
             <span className="boot-splash-q" aria-hidden>
               «
             </span>
@@ -65,6 +56,16 @@ export const BrandBootScreen = ({ className, exiting = false }: BrandBootScreenP
             — {quote.attribution}
           </footer>
         </blockquote>
+      </div>
+
+      <div className="relative z-[1] px-8 pb-[max(1.5rem,var(--app-tg-bottom-inset))]">
+        <div
+          className="boot-splash-progress mx-auto"
+          role="progressbar"
+          aria-label="در حال بارگذاری"
+        >
+          <div className="boot-splash-progress-fill" />
+        </div>
       </div>
     </div>
   )
