@@ -10,7 +10,7 @@ type BrandBootScreenProps = {
   exiting?: boolean
 }
 
-/** Cold-start splash only — dark purple atmosphere with wallpaper underneath. */
+/** Cold-start splash only — black through mid-screen so the quote reads; wallpaper below. */
 export const BrandBootScreen = ({ className, exiting = false }: BrandBootScreenProps = {}) => {
   const [quote] = useState<BootQuote>(() => resolveDisplayBootQuote(getBootQuotePool()))
   const wallpaper = quote.image?.trim() || ''
