@@ -10,7 +10,7 @@ type BrandBootScreenProps = {
   exiting?: boolean
 }
 
-/** Cold-start splash only — quote + aurora. Do not reuse for route Suspense. */
+/** Cold-start splash only — cinematic title card. Do not reuse for route Suspense. */
 export const BrandBootScreen = ({ className, exiting = false }: BrandBootScreenProps = {}) => {
   const [quote] = useState<BootQuote>(() => resolveDisplayBootQuote(getBootQuotePool()))
   const wallpaper = quote.image?.trim() || ''
@@ -18,7 +18,7 @@ export const BrandBootScreen = ({ className, exiting = false }: BrandBootScreenP
   return (
     <div
       className={cn(
-        'boot-splash fixed inset-0 z-[100] flex flex-col overflow-hidden bg-background text-foreground transition-opacity duration-280 ease-out',
+        'boot-splash fixed inset-0 z-[100] flex flex-col overflow-hidden text-foreground transition-opacity duration-280 ease-out',
         wallpaper && 'has-wallpaper',
         exiting && 'pointer-events-none opacity-0',
         className
@@ -30,44 +30,41 @@ export const BrandBootScreen = ({ className, exiting = false }: BrandBootScreenP
       {wallpaper ? (
         <div className="boot-splash-wallpaper" aria-hidden>
           <img src={wallpaper} alt="" />
-          <div className="boot-splash-wallpaper-scrim" />
         </div>
-      ) : null}
-      <div className="boot-splash-aurora pointer-events-none absolute inset-0" aria-hidden />
-      <div
-        className="boot-splash-orb boot-splash-orb-a pointer-events-none absolute will-change-transform"
-        aria-hidden
-      />
-      <div
-        className="boot-splash-orb boot-splash-orb-b pointer-events-none absolute will-change-transform"
-        aria-hidden
-      />
+      ) : (
+        <div className="boot-splash-void" aria-hidden />
+      )}
+      <div className="boot-splash-scrim" aria-hidden />
+      <div className="boot-splash-grain" aria-hidden />
+      <div className="boot-splash-ribbon" aria-hidden />
+      <div className="boot-splash-sweep" aria-hidden />
 
-      <div className="relative z-[1] flex min-h-0 flex-1 flex-col items-center justify-center gap-8 px-7 pb-16 pt-[max(2rem,var(--app-tg-top-inset))]">
-        <img src={logo} alt="" className="h-6 w-auto max-w-[6.5rem] opacity-80" />
+      <div className="relative z-[1] flex min-h-0 flex-1 flex-col px-6 pt-[max(1.25rem,var(--app-tg-top-inset))] pb-[max(1.25rem,var(--app-tg-bottom-inset))]">
+        <img src={logo} alt="" className="boot-splash-logo mx-auto h-5 w-auto max-w-[6rem]" />
 
-        <blockquote className="boot-splash-quote mx-auto w-full max-w-sm text-center">
-          <p className="boot-splash-quote-text text-lg leading-8 text-foreground sm:text-xl sm:leading-9">
-            <span className="text-primary-400/80" aria-hidden>
+        <div className="min-h-0 flex-1" />
+
+        <blockquote className="boot-splash-card mx-auto w-full max-w-sm">
+          <div
+            className="boot-splash-progress"
+            role="progressbar"
+            aria-label="در حال بارگذاری"
+          >
+            <div className="boot-splash-progress-fill" />
+          </div>
+          <p className="boot-splash-quote-text pt-1 text-center text-[1.05rem] leading-8 sm:text-lg sm:leading-9">
+            <span className="boot-splash-q" aria-hidden>
               «
             </span>
             {quote.text}
-            <span className="text-primary-400/80" aria-hidden>
+            <span className="boot-splash-q" aria-hidden>
               »
             </span>
           </p>
-          <footer className="mt-4 text-sm text-muted-foreground">— {quote.attribution}</footer>
+          <footer className="boot-splash-attr mt-3 text-center text-[0.8rem]">
+            — {quote.attribution}
+          </footer>
         </blockquote>
-      </div>
-
-      <div className="relative z-[1] px-8 pb-[max(1.5rem,var(--app-tg-bottom-inset))]">
-        <div
-          className="mx-auto h-0.5 w-28 overflow-hidden rounded-full bg-muted"
-          role="progressbar"
-          aria-label="در حال بارگذاری"
-        >
-          <div className="boot-splash-progress-fill h-full rounded-full bg-primary-500" />
-        </div>
       </div>
     </div>
   )
