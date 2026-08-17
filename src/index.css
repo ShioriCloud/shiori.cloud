@@ -5,6 +5,14 @@
 @tailwind utilities;
 
 @layer base {
+  @font-face {
+    font-family: 'ShioriDialogue';
+    src: url('/fonts/dialogue.woff2') format('woff2');
+    font-weight: 400 700;
+    font-style: normal;
+    font-display: swap;
+  }
+
   html {
     font-family: 'Vazirmatn', system-ui, sans-serif;
     @apply font-sans;
@@ -658,6 +666,52 @@
   }
 
   /* Cold-start / gate splash — soft aurora on app background */
+  .boot-splash-wallpaper {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .boot-splash-wallpaper img {
+    position: absolute;
+    inset: -10% 0 auto;
+    width: 100%;
+    height: 120%;
+    object-fit: cover;
+    object-position: center 22%;
+    transform-origin: center 28%;
+    filter: saturate(0.72) contrast(1.08) brightness(0.62);
+    animation: boot-wallpaper-ken 16s ease-in-out infinite alternate;
+  }
+
+  .boot-splash-wallpaper-scrim {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(
+        to top,
+        oklch(0.18 0.02 280 / 0.96) 0%,
+        oklch(0.18 0.02 280 / 0.42) 42%,
+        oklch(0.18 0.02 280 / 0.22) 62%,
+        oklch(0.16 0.03 280 / 0.78) 100%
+      ),
+      radial-gradient(ellipse 90% 55% at 50% 100%, transparent 10%, oklch(0.16 0.02 280 / 0.55) 100%);
+  }
+
+  .boot-splash.has-wallpaper .boot-splash-aurora {
+    opacity: 0.45;
+  }
+
+  .boot-splash.has-wallpaper .boot-splash-orb {
+    opacity: 0.45;
+  }
+
+  .boot-splash-quote-text {
+    font-family: 'ShioriDialogue', 'Vazirmatn', serif;
+    font-weight: 500;
+  }
+
   .boot-splash-aurora {
     background:
       radial-gradient(ellipse 80% 55% at 15% 20%, oklch(0.55 0.18 295 / 0.28), transparent 55%),
@@ -758,6 +812,15 @@
     }
   }
 
+  @keyframes boot-wallpaper-ken {
+    0% {
+      transform: scale(1.04) translate3d(0, 0, 0);
+    }
+    100% {
+      transform: scale(1.14) translate3d(0, -3.5%, 0);
+    }
+  }
+
   .my-list-progress {
     @apply h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-muted;
   }
@@ -794,7 +857,8 @@
     .boot-splash-aurora,
     .boot-splash-orb-a,
     .boot-splash-orb-b,
-    .boot-splash-quote {
+    .boot-splash-quote,
+    .boot-splash-wallpaper img {
       animation: none !important;
     }
 

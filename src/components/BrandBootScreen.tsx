@@ -13,11 +13,13 @@ type BrandBootScreenProps = {
 /** Cold-start splash only — quote + aurora. Do not reuse for route Suspense. */
 export const BrandBootScreen = ({ className, exiting = false }: BrandBootScreenProps = {}) => {
   const [quote] = useState<BootQuote>(() => resolveDisplayBootQuote(getBootQuotePool()))
+  const wallpaper = quote.image?.trim() || ''
 
   return (
     <div
       className={cn(
         'boot-splash fixed inset-0 z-[100] flex flex-col overflow-hidden bg-background text-foreground transition-opacity duration-280 ease-out',
+        wallpaper && 'has-wallpaper',
         exiting && 'pointer-events-none opacity-0',
         className
       )}
@@ -25,6 +27,12 @@ export const BrandBootScreen = ({ className, exiting = false }: BrandBootScreenP
       aria-live="polite"
       aria-busy={!exiting}
     >
+      {wallpaper ? (
+        <div className="boot-splash-wallpaper" aria-hidden>
+          <img src={wallpaper} alt="" />
+          <div className="boot-splash-wallpaper-scrim" />
+        </div>
+      ) : null}
       <div className="boot-splash-aurora pointer-events-none absolute inset-0" aria-hidden />
       <div
         className="boot-splash-orb boot-splash-orb-a pointer-events-none absolute will-change-transform"
@@ -39,7 +47,7 @@ export const BrandBootScreen = ({ className, exiting = false }: BrandBootScreenP
         <img src={logo} alt="" className="h-6 w-auto max-w-[6.5rem] opacity-80" />
 
         <blockquote className="boot-splash-quote mx-auto w-full max-w-sm text-center">
-          <p className="text-lg font-semibold leading-8 text-foreground sm:text-xl sm:leading-9">
+          <p className="boot-splash-quote-text text-lg leading-8 text-foreground sm:text-xl sm:leading-9">
             <span className="text-primary-400/80" aria-hidden>
               «
             </span>

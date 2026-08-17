@@ -74,7 +74,7 @@ export const syncTelegramSafeAreaCss = (): void => {
   root.style.setProperty('--app-tg-bottom-inset', px(safeBottom + contentBottom))
 }
 
-/** Expand + enter fullscreen so contentSafeAreaInset includes Telegram chrome. */
+/** Expand to the available Mini App height. Does not force Bot API fullscreen. */
 export const ensureTelegramFullscreenLayout = (): void => {
   const wa = WebApp as unknown as WebAppSafeAreaApi
   try {
@@ -86,14 +86,6 @@ export const ensureTelegramFullscreenLayout = (): void => {
     wa.setHeaderColor?.('secondary_bg_color')
   } catch {
     // ignore
-  }
-  if (wa.isFullscreen) return
-  if (typeof wa.requestFullscreen !== 'function') return
-  if (typeof wa.isVersionAtLeast === 'function' && !wa.isVersionAtLeast('8.0')) return
-  try {
-    wa.requestFullscreen()
-  } catch {
-    // Unsupported client / already transitioning
   }
 }
 

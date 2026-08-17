@@ -39,9 +39,12 @@ function App() {
   useTelegramUserSync(isReady)
   useTelegramLinkComplete(isReady)
 
-  // Warm the first route chunk while splash is up so Suspense does not flash.
+  // Warm likely route chunks while splash is up so Suspense does not flash a spinner.
   useEffect(() => {
     void import('./pages/Home')
+    void import('./pages/AnimeDetail')
+    void import('./pages/Explore')
+    void import('./pages/Schedule')
   }, [])
 
   useEffect(() => {
@@ -51,23 +54,6 @@ function App() {
         WebApp.expand()
       } catch {
         // ignore
-      }
-      // BotFather fullscreen + explicit request so contentSafeAreaInset includes chrome.
-      try {
-        const wa = WebApp as unknown as {
-          isFullscreen?: boolean
-          requestFullscreen?: () => void
-          isVersionAtLeast?: (v: string) => boolean
-        }
-        if (
-          !wa.isFullscreen &&
-          typeof wa.requestFullscreen === 'function' &&
-          (typeof wa.isVersionAtLeast !== 'function' || wa.isVersionAtLeast('8.0'))
-        ) {
-          wa.requestFullscreen()
-        }
-      } catch {
-        // Unsupported client
       }
     }
     applyTheme()
@@ -89,38 +75,32 @@ function App() {
     }
   }, [isReady, applyTheme])
 
-  const showAppShell = !showBootSplash || bootExiting
-
   return (
     <>
-      {showAppShell ? (
-        <>
-          <Layout>
-            <ScrollToTop />
-            <Suspense fallback={<RouteFallback />}>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/anime/:id" element={<AnimeDetail />} />
-                <Route path="/studios/:slug" element={<StudioDetail />} />
-                <Route path="/translators/:slug" element={<TranslatorProfile />} />
-                <Route path="/schedule" element={<Schedule />} />
-                <Route path="/search" element={<Search />} />
-                <Route path="/explore" element={<Explore />} />
-                <Route path="/my-list" element={<MyList />} />
-                <Route path="/my-list/lists/:listId" element={<ShioriListDetail />} />
-                <Route path="/profile" element={<Profile />} />
-                {/* Monetization routes kept; UI entry points gated by ENABLE_SUBSCRIPTION_DOWNLOAD_GATE */}
-                <Route path="/donate" element={<Navigate to="/subscribe" replace />} />
-                <Route path="/subscribe" element={<Subscribe />} />
-                <Route path="/notifications" element={<Notifications />} />
-                <Route path="/support" element={<Support />} />
-                <Route path="/support/:ticketId" element={<SupportTicketDetail />} />
-              </Routes>
-            </Suspense>
-          </Layout>
-          <AppFeedbackHost />
-        </>
-      ) : null}
+      <Layout>
+        <ScrollToTop />
+        <Suspense fallback={<RouteFallback />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/anime/:id" element={<AnimeDetail />} />
+            <Route path="/studios/:slug" element={<StudioDetail />} />
+            <Route path="/translators/:slug" element={<TranslatorProfile />} />
+            <Route path="/schedule" element={<Schedule />} />
+            <Route path="/search" element={<Search />} />
+            <Route path="/explore" element={<Explore />} />
+            <Route path="/my-list" element={<MyList />} />
+            <Route path="/my-list/lists/:listId" element={<ShioriListDetail />} />
+            <Route path="/profile" element={<Profile />} />
+            {/* Monetization routes kept; UI entry points gated by ENABLE_SUBSCRIPTION_DOWNLOAD_GATE */}
+            <Route path="/donate" element={<Navigate to="/subscribe" replace />} />
+            <Route path="/subscribe" element={<Subscribe />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/support/:ticketId" element={<SupportTicketDetail />} />
+          </Routes>
+        </Suspense>
+      </Layout>
+      <AppFeedbackHost />
       {showBootSplash ? <BrandBootScreen exiting={bootExiting} /> : null}
     </>
   )

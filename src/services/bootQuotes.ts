@@ -7,17 +7,18 @@ import {
 } from '@/data/bootQuotes'
 
 type BootQuotesApiResponse = {
-  quotes?: Array<{ text?: string; attribution?: string }>
+  quotes?: Array<{ text?: string; attribution?: string; image?: string }>
 }
 
 const normalizeQuotes = (
-  rows: Array<{ text?: string; attribution?: string }> | undefined
+  rows: Array<{ text?: string; attribution?: string; image?: string }> | undefined
 ): BootQuote[] => {
   if (!Array.isArray(rows)) return []
   return rows
     .map((row) => ({
       text: String(row?.text ?? '').trim(),
       attribution: String(row?.attribution ?? '').trim(),
+      image: String(row?.image ?? '').trim() || undefined,
     }))
     .filter((row) => row.text.length > 0 && row.attribution.length > 0)
 }

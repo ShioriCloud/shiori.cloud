@@ -6,7 +6,7 @@ import {
   syncTelegramSafeAreaCss,
 } from '@/lib/telegramSafeArea'
 
-/** Keep CSS safe-area variables in sync with Telegram fullscreen chrome. */
+/** Keep CSS safe-area variables in sync with Telegram chrome / insets. */
 export const useTelegramSafeArea = () => {
   useEffect(() => {
     if (!isTelegramMiniApp()) return
