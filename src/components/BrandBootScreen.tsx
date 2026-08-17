@@ -37,7 +37,6 @@ export const BrandBootScreen = ({ className, exiting = false }: BrandBootScreenP
       <div className="boot-splash-tint" aria-hidden />
       <div className="boot-splash-wash" aria-hidden />
       <div className="boot-splash-grain" aria-hidden />
-      <div className="boot-splash-ribbon" aria-hidden />
 
       <div className="relative z-[1] flex min-h-0 flex-1 flex-col items-center justify-center gap-8 px-6 pb-16 pt-[max(2rem,var(--app-tg-top-inset))]">
         <img src={logo} alt="" className="boot-splash-logo h-5 w-auto max-w-[6rem]" />
