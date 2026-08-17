@@ -56,7 +56,7 @@
             object-fit: cover;
             object-position: center 22%;
             transform-origin: center 28%;
-            filter: saturate(0.72) contrast(1.08) brightness(0.62);
+            filter: saturate(0.82) contrast(1.06) brightness(0.78);
             animation: boot-wallpaper-ken 16s ease-in-out infinite alternate;
         }
 
@@ -64,16 +64,16 @@
             position: absolute;
             inset: 0;
             background:
-                linear-gradient(to top, rgba(18, 18, 18, 0.96) 0%, rgba(18, 18, 18, 0.42) 42%, rgba(18, 18, 18, 0.22) 62%, rgba(18, 18, 18, 0.78) 100%),
-                radial-gradient(ellipse 90% 55% at 50% 100%, transparent 10%, rgba(18, 18, 18, 0.55) 100%);
+                linear-gradient(to top, rgba(22, 12, 38, 0.94) 0%, rgba(22, 12, 38, 0.56) 26%, rgba(22, 12, 38, 0.12) 48%, transparent 68%),
+                radial-gradient(ellipse 85% 42% at 50% 100%, rgba(22, 12, 38, 0.45), transparent 72%);
         }
 
         #boot-splash.has-wallpaper .boot-aurora {
-            opacity: 0.45;
+            opacity: 0.32;
         }
 
         #boot-splash.has-wallpaper .boot-orb {
-            opacity: 0.45;
+            opacity: 0.28;
         }
 
         #boot-splash .boot-aurora {
@@ -81,9 +81,9 @@
             inset: 0;
             pointer-events: none;
             background:
-                radial-gradient(ellipse 80% 55% at 15% 20%, rgba(139, 92, 246, 0.28), transparent 55%),
-                radial-gradient(ellipse 70% 50% at 90% 75%, rgba(96, 165, 250, 0.18), transparent 50%),
-                radial-gradient(ellipse 60% 40% at 50% 100%, rgba(167, 139, 250, 0.14), transparent 55%);
+                radial-gradient(ellipse 72% 48% at 88% 82%, rgba(139, 92, 246, 0.34), transparent 58%),
+                radial-gradient(ellipse 58% 40% at 8% 90%, rgba(124, 58, 237, 0.28), transparent 55%),
+                radial-gradient(ellipse 95% 36% at 50% 100%, rgba(109, 40, 217, 0.24), transparent 62%);
             background-size: 140% 140%;
             animation: boot-aurora-drift 14s ease-in-out infinite alternate;
         }
@@ -100,18 +100,19 @@
         #boot-splash .boot-orb-a {
             width: 16rem;
             height: 16rem;
-            top: 8%;
+            top: auto;
+            bottom: 16%;
             inset-inline-end: -2rem;
-            background: rgba(139, 92, 246, 0.55);
+            background: rgba(139, 92, 246, 0.5);
             animation: boot-orb-float-a 5.5s ease-in-out infinite alternate;
         }
 
         #boot-splash .boot-orb-b {
             width: 13rem;
             height: 13rem;
-            bottom: 14%;
+            bottom: 6%;
             inset-inline-start: -1.5rem;
-            background: rgba(59, 130, 246, 0.45);
+            background: rgba(109, 40, 217, 0.42);
             animation: boot-orb-float-b 7s ease-in-out infinite alternate;
         }
 

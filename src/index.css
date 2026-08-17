@@ -681,7 +681,7 @@
     object-fit: cover;
     object-position: center 22%;
     transform-origin: center 28%;
-    filter: saturate(0.72) contrast(1.08) brightness(0.62);
+    filter: saturate(0.82) contrast(1.06) brightness(0.78);
     animation: boot-wallpaper-ken 16s ease-in-out infinite alternate;
   }
 
@@ -691,20 +691,20 @@
     background:
       linear-gradient(
         to top,
-        oklch(0.18 0.02 280 / 0.96) 0%,
-        oklch(0.18 0.02 280 / 0.42) 42%,
-        oklch(0.18 0.02 280 / 0.22) 62%,
-        oklch(0.16 0.03 280 / 0.78) 100%
+        oklch(0.16 0.05 295 / 0.94) 0%,
+        oklch(0.16 0.05 295 / 0.58) 26%,
+        oklch(0.16 0.04 295 / 0.14) 48%,
+        transparent 68%
       ),
-      radial-gradient(ellipse 90% 55% at 50% 100%, transparent 10%, oklch(0.16 0.02 280 / 0.55) 100%);
+      radial-gradient(ellipse 85% 42% at 50% 100%, oklch(0.16 0.06 295 / 0.45), transparent 72%);
   }
 
   .boot-splash.has-wallpaper .boot-splash-aurora {
-    opacity: 0.45;
+    opacity: 0.32;
   }
 
   .boot-splash.has-wallpaper .boot-splash-orb {
-    opacity: 0.45;
+    opacity: 0.28;
   }
 
   .boot-splash-quote-text {
@@ -714,9 +714,9 @@
 
   .boot-splash-aurora {
     background:
-      radial-gradient(ellipse 80% 55% at 15% 20%, oklch(0.55 0.18 295 / 0.28), transparent 55%),
-      radial-gradient(ellipse 70% 50% at 90% 75%, oklch(0.58 0.14 250 / 0.22), transparent 50%),
-      radial-gradient(ellipse 60% 40% at 50% 100%, oklch(0.5 0.08 320 / 0.16), transparent 55%);
+      radial-gradient(ellipse 72% 48% at 88% 82%, oklch(0.62 0.24 295 / 0.34), transparent 58%),
+      radial-gradient(ellipse 58% 40% at 8% 90%, oklch(0.54 0.22 295 / 0.28), transparent 55%),
+      radial-gradient(ellipse 95% 36% at 50% 100%, oklch(0.48 0.18 295 / 0.24), transparent 62%);
     background-size: 140% 140%;
     animation: boot-aurora-drift 14s ease-in-out infinite alternate;
   }
@@ -730,18 +730,19 @@
   .boot-splash-orb-a {
     width: 16rem;
     height: 16rem;
-    top: 8%;
+    top: auto;
+    bottom: 16%;
     inset-inline-end: -2rem;
-    background: oklch(0.65 0.22 295 / 0.55);
+    background: oklch(0.64 0.24 295 / 0.5);
     animation: boot-orb-float-a 5.5s ease-in-out infinite alternate;
   }
 
   .boot-splash-orb-b {
     width: 13rem;
     height: 13rem;
-    bottom: 14%;
+    bottom: 6%;
     inset-inline-start: -1.5rem;
-    background: oklch(0.6 0.14 230 / 0.5);
+    background: oklch(0.5 0.2 295 / 0.42);
     animation: boot-orb-float-b 7s ease-in-out infinite alternate;
   }
 
