@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { GenreAdminItem } from '@/types/catalog'
 import { exploreAllHref } from '@/lib/exploreParams'
+import { resolveMediaServeUrl } from '@/lib/shioriApi'
 import { genreIconForSlug } from './genreIcons'
 import { ExploreEmptyState } from './ExploreUi'
 
@@ -51,7 +52,7 @@ export const ExploreGenreGrid = ({ genres, isLoading, isError, onRetry }: Explor
               <div className="media-card-skeuo-face relative aspect-[4/3] bg-muted">
                 {genre.image_url ? (
                   <img
-                    src={genre.image_url}
+                    src={resolveMediaServeUrl(genre.image_url)}
                     alt=""
                     className="absolute inset-0 h-full w-full object-cover"
                     loading="lazy"

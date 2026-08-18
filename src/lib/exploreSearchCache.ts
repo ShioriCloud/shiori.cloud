@@ -42,7 +42,7 @@ export type ExploreInfiniteInitialData = {
   pageParams: number[]
 }
 
-export const exploreGenresCacheKey = () => 'shiori_genres_v2'
+export const exploreGenresCacheKey = () => 'shiori_genres_v3'
 
 const normalizeSort = (sortBy?: string | null) => sortBy || 'created_at'
 
