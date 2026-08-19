@@ -8,6 +8,13 @@ import { ensureTelegramWebAppReady } from './lib/telegramReady'
 import { refreshBootQuotesCache } from './services/bootQuotes'
 import './index.css'
 
+// Block the entire app when opened outside Telegram.
+const tg = window.Telegram?.WebApp
+if (!tg?.initData) {
+  document.documentElement.classList.add('outside-telegram')
+  throw new Error('Not inside Telegram — app blocked.')
+}
+
 // Before first paint of React — reinforces index.html early ready() after SDK init.
 ensureTelegramWebAppReady()
 
