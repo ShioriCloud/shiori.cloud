@@ -5,12 +5,12 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import App from './App'
 import { queryClient } from './lib/queryClient'
 import { ensureTelegramWebAppReady } from './lib/telegramReady'
+import { isTelegramMiniApp } from './lib/platform'
 import { refreshBootQuotesCache } from './services/bootQuotes'
 import './index.css'
 
 // Block the entire app when opened outside Telegram.
-const tg = window.Telegram?.WebApp
-if (!tg?.initData) {
+if (!isTelegramMiniApp()) {
   document.documentElement.classList.add('outside-telegram')
   throw new Error('Not inside Telegram — app blocked.')
 }
