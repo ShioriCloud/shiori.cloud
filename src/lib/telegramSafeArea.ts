@@ -12,9 +12,6 @@ type WebAppSafeAreaApi = {
   safeAreaInset?: Partial<InsetBox>
   contentSafeAreaInset?: Partial<InsetBox>
   isFullscreen?: boolean
-  requestFullscreen?: () => void
-  exitFullscreen?: () => void
-  expand?: () => void
   setHeaderColor?: (color: 'bg_color' | 'secondary_bg_color' | string) => void
   onEvent?: (event: string, cb: () => void) => void
   offEvent?: (event: string, cb: () => void) => void
@@ -76,15 +73,11 @@ export const syncTelegramSafeAreaCss = (): void => {
   root.style.setProperty('--app-tg-bottom-inset', px(safeBottom + contentBottom))
 }
 
-/** Mobile: expand to full height. Desktop: stay windowed so the panel stays draggable/resizable. */
+/** Apply Telegram chrome styling. Launch size is controlled by BotFather (compact/fullscreen). */
 export const ensureTelegramFullscreenLayout = (): void => {
   const wa = WebApp as unknown as WebAppSafeAreaApi
   try {
-    if (isTelegramDesktopPlatform()) {
-      if (wa.isFullscreen) wa.exitFullscreen?.()
-      return
-    }
-    wa.expand?.()
+    if (isTelegramDesktopPlatform()) return
     wa.setHeaderColor?.('secondary_bg_color')
   } catch {
     // ignore
