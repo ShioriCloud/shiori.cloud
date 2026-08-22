@@ -14,7 +14,10 @@ export const useTelegramSafeArea = () => {
     ensureTelegramFullscreenLayout()
     syncTelegramSafeAreaCss()
 
-    const onChange = () => syncTelegramSafeAreaCss()
+    const onChange = () => {
+      ensureTelegramFullscreenLayout()
+      syncTelegramSafeAreaCss()
+    }
     // Insets often arrive after first paint / after fullscreen settles.
     const timers = [50, 150, 400, 1000].map((ms) => window.setTimeout(onChange, ms))
     const unsubscribe = subscribeTelegramSafeArea(onChange)
