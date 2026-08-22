@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useEffect, lazy, Suspense } from 'react'
-import WebApp from '@twa-dev/sdk'
 import Layout from './components/Layout'
 import ScrollToTop from './components/ScrollToTop'
 import { BrandBootScreen } from './components/BrandBootScreen'
@@ -9,7 +8,6 @@ import { AppFeedbackHost } from './components/AppFeedbackHost'
 import { useTheme } from './utils/theme'
 import { useAppAuth } from './hooks/useAppAuth'
 import { useBootSplashHold } from './hooks/useBootSplashHold'
-import { isTelegramMiniApp } from './lib/platform'
 import { useTelegramStartNavigation } from './hooks/useTelegramStartNavigation'
 import { useTelegramUserSync } from './hooks/useTelegramUserSync'
 import { useTelegramLinkComplete } from './hooks/useTelegramLinkComplete'
@@ -49,13 +47,6 @@ function App() {
 
   useEffect(() => {
     if (!isReady) return
-    if (isTelegramMiniApp()) {
-      try {
-        WebApp.expand()
-      } catch {
-        // ignore
-      }
-    }
     applyTheme()
 
     // Warm schedule cache after shell is ready (idle-ish: next tick).

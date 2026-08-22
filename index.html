@@ -218,7 +218,13 @@
                     return
                 }
                 wa.ready()
-                if (typeof wa.expand === 'function') wa.expand()
+                var platform = String(wa.platform || '').toLowerCase()
+                var isDesktop = ['tdesktop', 'macos', 'web', 'weba', 'webk', 'unigram'].indexOf(platform) >= 0
+                if (isDesktop) {
+                    if (wa.isFullscreen && typeof wa.exitFullscreen === 'function') wa.exitFullscreen()
+                } else if (typeof wa.expand === 'function') {
+                    wa.expand()
+                }
             } catch (e) {
                 document.documentElement.classList.add('outside-telegram')
             }

@@ -17,5 +17,12 @@ export const isTelegramMiniApp = (): boolean => {
 
 export type AppPlatform = 'telegram' | 'web'
 
+/** Telegram Desktop / Web clients — mini-app panel should stay windowed, not expanded/fullscreen. */
+export const isTelegramDesktopPlatform = (): boolean => {
+  if (typeof window === 'undefined') return false
+  const platform = String(WebApp.platform ?? '').toLowerCase()
+  return ['tdesktop', 'macos', 'web', 'weba', 'webk', 'unigram'].includes(platform)
+}
+
 export const getAppPlatform = (): AppPlatform =>
   isTelegramMiniApp() ? 'telegram' : 'web'

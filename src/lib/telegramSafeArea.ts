@@ -1,4 +1,5 @@
 import WebApp from '@twa-dev/sdk'
+import { isTelegramDesktopPlatform } from '@/lib/platform'
 
 type InsetBox = {
   top: number
@@ -12,6 +13,7 @@ type WebAppSafeAreaApi = {
   contentSafeAreaInset?: Partial<InsetBox>
   isFullscreen?: boolean
   requestFullscreen?: () => void
+  exitFullscreen?: () => void
   expand?: () => void
   setHeaderColor?: (color: 'bg_color' | 'secondary_bg_color' | string) => void
   onEvent?: (event: string, cb: () => void) => void
@@ -64,7 +66,7 @@ export const syncTelegramSafeAreaCss = (): void => {
     '--tg-content-safe-area-inset-bottom',
   )
 
-  if (wa.isFullscreen && contentTop < 40) {
+  if (wa.isFullscreen && contentTop < 40 && !isTelegramDesktopPlatform()) {
     contentTop = FULLSCREEN_CONTENT_TOP_FALLBACK
   }
 
@@ -74,15 +76,15 @@ export const syncTelegramSafeAreaCss = (): void => {
   root.style.setProperty('--app-tg-bottom-inset', px(safeBottom + contentBottom))
 }
 
-/** Expand to the available Mini App height. Does not force Bot API fullscreen. */
+/** Mobile: expand to full height. Desktop: stay windowed so the panel stays draggable/resizable. */
 export const ensureTelegramFullscreenLayout = (): void => {
   const wa = WebApp as unknown as WebAppSafeAreaApi
   try {
+    if (isTelegramDesktopPlatform()) {
+      if (wa.isFullscreen) wa.exitFullscreen?.()
+      return
+    }
     wa.expand?.()
-  } catch {
-    // ignore
-  }
-  try {
     wa.setHeaderColor?.('secondary_bg_color')
   } catch {
     // ignore
