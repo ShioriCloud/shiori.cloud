@@ -16,9 +16,13 @@ export const getMyNotifications = async (
   const qs = new URLSearchParams()
   if (before) qs.set('before', before)
   const query = qs.toString()
-  return shioriFetch<PaginatedNotifications>(
+  const raw = await shioriFetch<PaginatedNotifications | UserNotificationRow[]>(
     `/anime-notifications${query ? `?${query}` : ''}`
   )
+  if (Array.isArray(raw)) {
+    return { items: raw, has_more: false, next_before: null }
+  }
+  return raw
 }
 
 export const getMyUnreadCount = async (): Promise<number> => {
