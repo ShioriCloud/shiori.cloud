@@ -4,8 +4,29 @@ import type {
   UserNotificationRow,
 } from '../types/notifications'
 
-export const getMyNotifications = async (): Promise<UserNotificationRow[]> =>
-  shioriFetch<UserNotificationRow[]>('/anime-notifications')
+export type PaginatedNotifications = {
+  items: UserNotificationRow[]
+  has_more: boolean
+  next_before: string | null
+}
+
+export const getMyNotifications = async (
+  before?: string
+): Promise<PaginatedNotifications> => {
+  const qs = new URLSearchParams()
+  if (before) qs.set('before', before)
+  const query = qs.toString()
+  return shioriFetch<PaginatedNotifications>(
+    `/anime-notifications${query ? `?${query}` : ''}`
+  )
+}
+
+export const getMyUnreadCount = async (): Promise<number> => {
+  const data = await shioriFetch<{ unread_count: number }>(
+    '/anime-notifications/unread-count'
+  )
+  return data?.unread_count ?? 0
+}
 
 export const markMyNotificationRead = async (notificationId: string): Promise<void> => {
   await shioriFetch(`/anime-notifications/${encodeURIComponent(notificationId)}/read`, {

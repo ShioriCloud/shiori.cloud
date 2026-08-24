@@ -3,6 +3,7 @@ import { useAppAuth } from './useAppAuth'
 import {
   getMyNotificationPreferences,
   getMyNotifications,
+  getMyUnreadCount,
   markAllMyNotificationsRead,
   markMyNotificationRead,
   updateMyNotificationPreferences,
@@ -20,9 +21,17 @@ export const useNotifications = () => {
 
   const notificationsQuery = useQuery({
     queryKey: queryKeys.notifications(telegramUserId ?? 0),
-    queryFn: getMyNotifications,
+    queryFn: () => getMyNotifications(),
     enabled,
     staleTime: 20_000,
+    select: (data) => data.items,
+  })
+
+  const unreadCountQuery = useQuery({
+    queryKey: [...queryKeys.notifications(telegramUserId ?? 0), 'unread-count'],
+    queryFn: getMyUnreadCount,
+    enabled,
+    staleTime: 15_000,
   })
 
   const preferencesQuery = useQuery({
@@ -32,18 +41,18 @@ export const useNotifications = () => {
     staleTime: 60_000,
   })
 
+  const invalidateNotifs = () => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.notifications(telegramUserId ?? 0) })
+  }
+
   const markReadMutation = useMutation({
     mutationFn: markMyNotificationRead,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.notifications(telegramUserId ?? 0) })
-    },
+    onSuccess: invalidateNotifs,
   })
 
   const markAllReadMutation = useMutation({
     mutationFn: markAllMyNotificationsRead,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.notifications(telegramUserId ?? 0) })
-    },
+    onSuccess: invalidateNotifs,
   })
 
   const updatePreferencesMutation = useMutation({
@@ -73,7 +82,7 @@ export const useNotifications = () => {
   })
 
   const notifications = notificationsQuery.data ?? []
-  const unreadCount = notifications.filter((n) => !n.is_read).length
+  const unreadCount = unreadCountQuery.data ?? notifications.filter((n) => !n.is_read).length
   const pendingPrefs = updatePreferencesMutation.isPending
     ? updatePreferencesMutation.variables
     : undefined
