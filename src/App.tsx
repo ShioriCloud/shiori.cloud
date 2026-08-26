@@ -5,6 +5,7 @@ import ScrollToTop from './components/ScrollToTop'
 import { BrandBootScreen } from './components/BrandBootScreen'
 import { RouteFallback } from './components/RouteFallback'
 import { AppFeedbackHost } from './components/AppFeedbackHost'
+import { ReleaseNotesDialog } from './components/ReleaseNotesDialog'
 import { useTheme } from './utils/theme'
 import { useAppAuth } from './hooks/useAppAuth'
 import { useBootSplashHold } from './hooks/useBootSplashHold'
@@ -92,6 +93,7 @@ function App() {
         </Suspense>
       </Layout>
       <AppFeedbackHost />
+      <ReleaseNotesDialog enabled={!showBootSplash} />
       {showBootSplash ? <BrandBootScreen exiting={bootExiting} /> : null}
     </>
   )
