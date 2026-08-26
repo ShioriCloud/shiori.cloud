@@ -45,7 +45,8 @@ npm run preview
 | Variable | Required | Purpose |
 |----------|----------|---------|
 | `VITE_SHIORI_API_URL` | **Yes** | REST API base (no trailing slash) |
-| `VITE_TELEGRAM_BOT_USERNAME` | No | Bot username for deep-links / link-telegram |
+| `VITE_TELEGRAM_BOT_USERNAME` | No | Upload bot for file download links (default `ShioriUploadBot`) |
+| `VITE_TELEGRAM_MINI_APP_BOT_USERNAME` | No | Mini App host bot for share/startapp (default `ShioriMiniBot`) |
 | `VITE_DARAMET_DONATE_URL` | No | External donate URL (monetization relaunch) |
 
 Monetization UI (subscription / token wallet / softsub·hardsub tabs) is gated by flags in `src/config/monetizationFlags.ts` (off for launch).

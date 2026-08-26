@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -9,11 +10,29 @@ const appVersion = JSON.parse(
   readFileSync(path.resolve(rootDir, 'package.json'), 'utf-8')
 ).version as string
 
+/** Short git SHA for build identity — empty if git is unavailable. */
+const resolveAppBuild = (): string => {
+  const fromEnv = String(process.env.VITE_APP_BUILD ?? process.env.GITHUB_SHA ?? '').trim()
+  if (fromEnv) return fromEnv.slice(0, 7)
+  try {
+    return execSync('git rev-parse --short HEAD', {
+      cwd: rootDir,
+      encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim()
+  } catch {
+    return ''
+  }
+}
+
+const appBuild = resolveAppBuild()
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   define: {
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion),
+    'import.meta.env.VITE_APP_BUILD': JSON.stringify(appBuild),
   },
   server: {
     port: 5173,

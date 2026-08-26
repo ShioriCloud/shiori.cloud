@@ -18,10 +18,13 @@ import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
 import { Button } from '@/components/ui/button'
 import {
   buildTelegramBotLink,
-  getTelegramBotUsername,
+  getMiniAppBotUsername,
 } from '@/utils/externalLinks'
 
+/** Semver from package.json at build time (see vite.config.ts). */
 const APP_VERSION = String(import.meta.env.VITE_APP_VERSION ?? '0.1.0').trim() || '0.1.0'
+/** Optional short git SHA baked in CI builds. */
+const APP_BUILD = String(import.meta.env.VITE_APP_BUILD ?? '').trim()
 
 const toPersianNumber = (num: number | string): string => {
   const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
@@ -393,10 +396,20 @@ const Profile = () => {
 
       <footer className="mx-4 mt-8 mb-2 space-y-2 text-center">
         <p className="text-xs leading-relaxed text-muted-foreground">
-          شیوری — آرشیو و دانلود انیمه با زیرنویس فارسی
+          مینی‌شیوری | آرشیو جمع‌و‌جور دانلود انیمه
         </p>
         <p className="text-[11px] text-muted-foreground/80">
           نسخه {toPersianNumber(APP_VERSION)}
+          {APP_BUILD ? (
+            <>
+              <span className="mx-1.5 text-border" aria-hidden>
+                ·
+              </span>
+              <span dir="ltr" className="font-mono text-[10px] opacity-80">
+                {APP_BUILD}
+              </span>
+            </>
+          ) : null}
           <span className="mx-1.5 text-border" aria-hidden>
             ·
           </span>
@@ -407,7 +420,7 @@ const Profile = () => {
             className="text-primary-400/90 underline-offset-2 hover:underline"
             dir="ltr"
           >
-            @{getTelegramBotUsername()}
+            @{getMiniAppBotUsername()}
           </a>
         </p>
       </footer>

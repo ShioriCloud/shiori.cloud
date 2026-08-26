@@ -2,19 +2,28 @@ import { buildTelegramStartParam, type AnimeDetailTab } from './telegramStartPar
 
 export type { AnimeDetailTab }
 
+/** Upload / file-delivery bot (start=get_… / pack_…). */
 export const getTelegramBotUsername = () =>
   String(import.meta.env.VITE_TELEGRAM_BOT_USERNAME ?? 'ShioriUploadBot').trim() ||
   'ShioriUploadBot'
 
-/** Public bot chat / profile link (no start payload). */
-export const buildTelegramBotLink = () => `https://t.me/${getTelegramBotUsername()}`
+/** Mini App host bot (startapp deep links + profile / share). */
+export const getMiniAppBotUsername = () =>
+  String(
+    import.meta.env.VITE_TELEGRAM_MINI_APP_BOT_USERNAME ??
+      import.meta.env.VITE_MINI_APP_BOT_USERNAME ??
+      'ShioriMiniBot'
+  ).trim() || 'ShioriMiniBot'
+
+/** Public Mini App bot chat / profile link (no start payload). */
+export const buildTelegramBotLink = () => `https://t.me/${getMiniAppBotUsername()}`
 
 export const buildMalUrl = (malId: number) => `https://myanimelist.net/anime/${malId}`
 
 export const buildAnilistUrl = (anilistId: number) => `https://anilist.co/anime/${anilistId}`
 
 export const buildAnimeMiniAppLink = (id: string | number, tab?: AnimeDetailTab) => {
-  const bot = getTelegramBotUsername()
+  const bot = getMiniAppBotUsername()
   return `https://t.me/${bot}?startapp=${encodeURIComponent(buildTelegramStartParam(id, tab))}`
 }
 
