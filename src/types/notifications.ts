@@ -5,6 +5,7 @@ export type UserNotificationRow = {
   message: string
   href: string | null
   anime_id: string | null
+  anime_cover_image?: string | null
   episode_number: number | null
   is_read: boolean
   created_at: string

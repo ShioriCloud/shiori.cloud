@@ -15,6 +15,14 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.2',
+    title: 'اعلان‌ها',
+    items: [
+      'نمایش پوستر انیمه در کارت اعلان',
+      'اعداد اعلان‌ها به فارسی',
+    ],
+  },
+  {
     version: '0.2.1',
     title: 'آپدیت مینی‌شیوری',
     items: [

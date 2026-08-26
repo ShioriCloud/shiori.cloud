@@ -5,6 +5,8 @@ import { RequireAppAuth } from '../components/RequireAppAuth'
 import { useNotifications } from '../hooks/useNotifications'
 import { formatNotificationTime } from '../utils/notificationTime'
 import { hapticSelection } from '@/lib/telegramHaptics'
+import { resolveMediaServeUrl } from '@/lib/shioriApi'
+import { toPersianDigits } from '@/lib/persianDigits'
 import { cn } from '@/lib/utils'
 import emptyListImage from '@/assets/images/frieren-03.webp'
 
@@ -39,29 +41,67 @@ const NotificationsPage = () => {
       </div>
 
       {isLoading ? (
-        <div className="p-4 space-y-3 animate-pulse">
+        <div className="space-y-3 p-4 animate-pulse">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-20 rounded-lg surface-skeuo" />
+            <div key={i} className="flex gap-3 rounded-lg surface-skeuo p-3">
+              <div className="h-16 w-12 shrink-0 rounded-md bg-muted" />
+              <div className="min-w-0 flex-1 space-y-2 py-1">
+                <div className="h-4 w-2/3 rounded bg-muted" />
+                <div className="h-3 w-full rounded bg-muted" />
+                <div className="h-3 w-1/3 rounded bg-muted" />
+              </div>
+            </div>
           ))}
         </div>
       ) : notifications.length > 0 ? (
         <div className="space-y-3 p-4">
           {notifications.map((notification) => {
-            const inner = (
-              <div className="flex-1 min-w-0 mt-1">
-                <div className="flex items-center gap-2">
-                  <BidiText as="h3" mode="auto" className="font-medium text-foreground">
-                    {notification.title}
-                  </BidiText>
-                  {!notification.is_read ? <span className={unreadBadgeClass}>جدید</span> : null}
-                </div>
-                <BidiText as="p" mode="auto" className="text-muted-foreground text-sm mt-1">
-                  {notification.message}
-                </BidiText>
-                <span className="text-muted-foreground text-xs mt-2 block">
-                  {formatNotificationTime(notification.created_at)}
-                </span>
+            const coverSrc = resolveMediaServeUrl(notification.anime_cover_image)
+            const poster = coverSrc ? (
+              <img
+                src={coverSrc}
+                alt=""
+                className="h-16 w-12 shrink-0 rounded-md object-cover ring-1 ring-border/60"
+                loading="lazy"
+                decoding="async"
+              />
+            ) : (
+              <div
+                className="flex h-16 w-12 shrink-0 items-center justify-center rounded-md bg-muted ring-1 ring-border/40"
+                aria-hidden
+              >
+                <AlarmClockIcon className="h-5 w-5 text-muted-foreground/70" />
               </div>
+            )
+
+            const inner = (
+              <>
+                {poster}
+                <div className="mt-0.5 min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <BidiText as="h3" mode="auto" className="font-medium text-foreground">
+                      {toPersianDigits(notification.title)}
+                    </BidiText>
+                    {!notification.is_read ? (
+                      <span className={unreadBadgeClass}>جدید</span>
+                    ) : null}
+                  </div>
+                  <BidiText as="p" mode="auto" className="mt-1 text-sm text-muted-foreground">
+                    {toPersianDigits(notification.message)}
+                  </BidiText>
+                  <span className="mt-2 block text-xs text-muted-foreground">
+                    {formatNotificationTime(notification.created_at)}
+                    {notification.episode_number != null ? (
+                      <>
+                        <span className="mx-1.5 text-border" aria-hidden>
+                          ·
+                        </span>
+                        قسمت {toPersianDigits(notification.episode_number)}
+                      </>
+                    ) : null}
+                  </span>
+                </div>
+              </>
             )
 
             const onOpen = () => {
@@ -72,7 +112,7 @@ const NotificationsPage = () => {
             }
 
             const cardClass = cn(
-              'flex gap-4 p-3 rounded-lg surface-skeuo',
+              'flex gap-3 p-3 rounded-lg surface-skeuo',
               !notification.is_read && 'ring-1 ring-primary-400/25'
             )
 
@@ -97,9 +137,9 @@ const NotificationsPage = () => {
           })}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center h-[55vh] text-muted-foreground px-6 text-center gap-2">
+        <div className="flex h-[55vh] flex-col items-center justify-center gap-2 px-6 text-center text-muted-foreground">
           <img src={emptyListImage} alt="" className="mb-2 w-36 opacity-90" />
-          <p className="text-foreground font-medium">اعلانی وجود ندارد</p>
+          <p className="font-medium text-foreground">اعلانی وجود ندارد</p>
           <p className="text-sm leading-6">
             وقتی قسمت جدید انیمه‌ای از لیستت منتشر شود اینجا نمایش داده می‌شود.
           </p>
