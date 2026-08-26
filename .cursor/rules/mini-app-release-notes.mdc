@@ -1,0 +1,24 @@
+---
+description: After mini-app user-facing changes, bump version and update release notes
+alwaysApply: true
+---
+
+# Mini-app version + release notes
+
+Whenever you ship **user-facing** changes in `shiori.cloud` (UI, features, fixes users will notice), before commit/push:
+
+1. **Bump** `package.json` `version` (semver: patch for fixes/small UI, minor for features).
+2. **Add** a matching entry at the top of `src/data/releaseNotes.ts` with the same `version`, optional `title`, and Persian `items` (short bullets of what users see).
+3. Do **not** skip this for “just a small fix” if it affects the mini-app experience.
+4. Pure docs/chore/CI-only changes: no bump needed.
+
+```ts
+// src/data/releaseNotes.ts — newest first
+{
+  version: '0.2.2', // must match package.json
+  title: '…',
+  items: ['…', '…'],
+}
+```
+
+The dialog shows unseen notes after splash when `VITE_APP_VERSION` > last acknowledged version in `localStorage`.
