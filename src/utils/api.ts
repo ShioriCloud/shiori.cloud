@@ -135,32 +135,38 @@ export const fetchRecentAnimeCards = async (limit = 20): Promise<UiAnimeCard[]> 
 export type HomeFeaturedTab = 'anime' | 'movie' | 'donghua'
 
 export const fetchHomeFeaturedCards = async (tab: HomeFeaturedTab): Promise<UiAnimeCard[]> => {
+  const allFeatured = (await catalog.getFeaturedAnime(0)).map(toCacheAnime)
+
   if (tab === 'movie') {
+    const movies = allFeatured.filter(
+      (item) => normalizeAnimeFormat(item.format) === 'MOVIE',
+    )
+    if (movies.length > 0) return movies
     const result = await catalog.searchAnimeCards({
       format: 'MOVIE',
-      limit: 12,
+      limit: 48,
       sortBy: 'score',
     })
-    const featured = result.items.filter((item) => item.isFeatured)
-    return (featured.length > 0 ? featured : result.items).slice(0, 8).map(toCacheAnime)
+    return result.items.map(toCacheAnime)
   }
 
   if (tab === 'donghua') {
+    const donghua = allFeatured.filter(
+      (item) => normalizeAnimeFormat(item.format) === 'ONA (CHINESE)',
+    )
+    if (donghua.length > 0) return donghua
     const result = await catalog.searchAnimeCards({
       format: 'DONGHUA',
-      limit: 12,
+      limit: 48,
       sortBy: 'score',
     })
-    const featured = result.items.filter((item) => item.isFeatured)
-    return (featured.length > 0 ? featured : result.items).slice(0, 8).map(toCacheAnime)
+    return result.items.map(toCacheAnime)
   }
 
-  const rows = await catalog.getFeaturedAnime(12)
-  const filtered = rows.filter((item) => {
+  return allFeatured.filter((item) => {
     const format = normalizeAnimeFormat(item.format)
     return format !== 'MOVIE' && format !== 'ONA (CHINESE)'
   })
-  return filtered.slice(0, 8).map(toCacheAnime)
 }
 
 export const fetchHomeLatestSeasonCards = async (

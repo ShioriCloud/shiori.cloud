@@ -156,7 +156,7 @@ export const getAllAnime = async (): Promise<AnimeCard[]> => {
 }
 
 export const getFeaturedAnime = async (limit = 10): Promise<AnimeCard[]> => {
-  const qs = limit > 0 ? `?limit=${encodeURIComponent(String(limit))}` : ''
+  const qs = `?limit=${encodeURIComponent(String(limit))}`
   const rows = await shioriFetch<ApiCard[]>(`/anime-catalog/featured${qs}`)
   return rows.map(toCard)
 }
