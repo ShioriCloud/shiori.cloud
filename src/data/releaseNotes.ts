@@ -15,6 +15,11 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.4',
+    title: 'پیام دسترسی',
+    items: ['راهنمای واضح‌تر برای باز کردن مینی‌اپ از تلگرام رسمی'],
+  },
+  {
     version: '0.2.3',
     title: 'بهبود تجربه',
     items: [
