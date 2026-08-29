@@ -23,8 +23,6 @@ import {
 
 /** Semver from package.json at build time (see vite.config.ts). */
 const APP_VERSION = String(import.meta.env.VITE_APP_VERSION ?? '0.1.0').trim() || '0.1.0'
-/** Optional short git SHA baked in CI builds. */
-const APP_BUILD = String(import.meta.env.VITE_APP_BUILD ?? '').trim()
 
 const toPersianNumber = (num: number | string): string => {
   const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
@@ -400,16 +398,6 @@ const Profile = () => {
         </p>
         <p className="text-[11px] text-muted-foreground/80">
           نسخه {toPersianNumber(APP_VERSION)}
-          {APP_BUILD ? (
-            <>
-              <span className="mx-1.5 text-border" aria-hidden>
-                ·
-              </span>
-              <span dir="ltr" className="font-mono text-[10px] opacity-80">
-                {APP_BUILD}
-              </span>
-            </>
-          ) : null}
           <span className="mx-1.5 text-border" aria-hidden>
             ·
           </span>

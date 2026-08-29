@@ -7,6 +7,7 @@ import type { GenreItem } from '../types/catalog'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { TabSwipeArea, TAB_SWIPE_FIXED_HEADER_CLASS } from '@/components/TabSwipeArea'
 import { cn } from '@/lib/utils'
+import { withViewTransition } from '@/lib/viewTransition'
 import { useScheduleQuery } from '../hooks/queries/useAnimeQueries'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { hapticSelection } from '../lib/telegramHaptics'
@@ -134,7 +135,7 @@ const Schedule = () => {
   const buildTranslationRequestHref = (anime: Anime) => {
     const params = new URLSearchParams()
     params.set('compose', '1')
-    params.set('category', 'feature_request')
+    params.set('category', 'translation_request')
     params.set('subject', `درخواست ترجمه: ${anime.title}`)
     params.set(
       'body',
@@ -172,6 +173,20 @@ const Schedule = () => {
     () => filterScheduleList(schedule[activeDay] ?? []),
     [schedule, activeDay]
   )
+
+  const dayLists = useMemo(() => {
+    const lists = {} as Record<PersianDay, Anime[]>
+    for (const day of PERSIAN_DAYS) {
+      lists[day] = filterScheduleList(schedule[day] ?? [])
+    }
+    return lists
+  }, [schedule])
+
+  const selectDay = (day: PersianDay) => {
+    if (day === activeDay) return
+    hapticSelection()
+    withViewTransition(() => setActiveDay(day))
+  }
 
   const handleAnimeClick = (e: MouseEvent<HTMLAnchorElement>, anime: Anime) => {
     e.preventDefault()
@@ -240,10 +255,7 @@ const Schedule = () => {
                   key={day}
                   type="button"
                   title={day}
-                  onClick={() => {
-                    hapticSelection()
-                    setActiveDay(day)
-                  }}
+                  onClick={() => selectDay(day)}
                   className="flex-1 flex justify-center py-1"
                 >
                   <span
@@ -272,68 +284,80 @@ const Schedule = () => {
         </div>
 
         {activeList.length > 0 ? (
-          <div className="grid grid-cols-3 gap-3 px-4">
-            {activeList.map((anime) => (
-              <AnimePrefetchLink
-                key={anime.id}
-                animeId={
-                  anime.localId
-                    ? animePublicSegment({ id: anime.localId, title: anime.title })
-                    : anime.id
-                }
-                to={
-                  anime.localId
-                    ? animeDetailPath({ id: anime.localId, title: anime.title })
-                    : '#'
-                }
-                onClick={(e) => handleAnimeClick(e, anime)}
-                className="group block active:scale-[0.98] transition-transform"
-              >
-                <div className="media-card-skeuo rounded-xl">
-                  <div className="media-card-skeuo-face relative aspect-[2/3] bg-muted">
-                    <img
-                      src={anime.image}
-                      alt=""
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+          <div>
+            {PERSIAN_DAYS.map((day) => {
+              const list = dayLists[day]
+              const isActive = activeDay === day
+              if (list.length === 0) return null
 
-                    {anime.localId ? (
-                    <span
-                      className="absolute top-1.5 start-1.5 flex h-6 w-6 items-center justify-center rounded-md bg-rose-500 shadow-sm"
-                      title="ترجمه شیوری"
-                      aria-label="موجود در کاتالوگ شیوری"
-                    >
-                      <img src={shioriLogo} alt="" className="h-3.5 w-3.5 object-contain" />
-                    </span>
-                  ) : null}
+              return (
+                <div key={day} hidden={!isActive} className={cn(!isActive && 'hidden')}>
+                  <div className="grid grid-cols-3 gap-3 px-4">
+                    {list.map((anime) => (
+                      <AnimePrefetchLink
+                        key={`${day}-${anime.id}`}
+                        animeId={
+                          anime.localId
+                            ? animePublicSegment({ id: anime.localId, title: anime.title })
+                            : anime.id
+                        }
+                        to={
+                          anime.localId
+                            ? animeDetailPath({ id: anime.localId, title: anime.title })
+                            : '#'
+                        }
+                        onClick={(e) => handleAnimeClick(e, anime)}
+                        className="group block active:scale-[0.98] transition-transform"
+                      >
+                        <div className="media-card-skeuo rounded-xl">
+                          <div className="media-card-skeuo-face relative aspect-[2/3] bg-muted">
+                            <img
+                              src={anime.image}
+                              alt=""
+                              className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              decoding="async"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
-                  <div className="absolute left-0 bottom-0 p-2 pt-10">
-                    <BidiText
-                      as="h3"
-                      className="text-xs text-left font-semibold text-white line-clamp-2 drop-shadow-sm"
-                    >
-                      {anime.title}
-                    </BidiText>
-                    <p className="text-[11px] text-white/75 mt-0.5 text-left">
-                      {anime.time ? (
-                        <>
-                          <span>{anime.time}</span>
-                          <span className="mx-1.5 opacity-50">|</span>
-                        </>
-                      ) : null}
-                      <span className="text-white/90 font-medium">
-                        قسمت {toPersianNumber(anime.episode)}
-                      </span>
-                    </p>
+                            {anime.localId ? (
+                              <span
+                                className="absolute top-1.5 start-1.5 flex h-6 w-6 items-center justify-center rounded-md bg-rose-500 shadow-sm"
+                                title="ترجمه شیوری"
+                                aria-label="موجود در کاتالوگ شیوری"
+                              >
+                                <img src={shioriLogo} alt="" className="h-3.5 w-3.5 object-contain" />
+                              </span>
+                            ) : null}
+
+                            <div className="absolute bottom-0 left-0 p-2 pt-10">
+                              <BidiText
+                                as="h3"
+                                className="text-left text-xs font-semibold text-white line-clamp-2 drop-shadow-sm"
+                              >
+                                {anime.title}
+                              </BidiText>
+                              <p className="mt-0.5 text-left text-[11px] text-white/75">
+                                {anime.time ? (
+                                  <>
+                                    <span>{anime.time}</span>
+                                    <span className="mx-1.5 opacity-50">|</span>
+                                  </>
+                                ) : null}
+                                <span className="font-medium text-white/90">
+                                  قسمت {toPersianNumber(anime.episode)}
+                                </span>
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </AnimePrefetchLink>
+                    ))}
                   </div>
                 </div>
-              </div>
-            </AnimePrefetchLink>
-          ))}
-        </div>
-      ) : (
+              )
+            })}
+          </div>
+        ) : (
         <div className="mx-4 mt-2 rounded-2xl border border-dashed border-border bg-muted/20 flex flex-col items-center justify-center py-16 px-6 text-center">
           <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mb-4">
             <Calendar01Icon className="w-7 h-7 text-muted-foreground/50" />

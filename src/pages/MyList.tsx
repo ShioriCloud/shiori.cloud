@@ -9,6 +9,7 @@ import { ShioriListsTab } from '@/components/my-list/ShioriListsTab'
 import { HistoryTab } from '@/components/my-list/HistoryTab'
 import { DownloadsTab } from '@/components/my-list/DownloadsTab'
 import { cn } from '@/lib/utils'
+import { withViewTransition } from '@/lib/viewTransition'
 
 const MyList = () => {
   const { isReady } = useAppAuth()
@@ -17,15 +18,17 @@ const MyList = () => {
 
   const setActiveTab = useCallback(
     (tab: MyListTabId) => {
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev)
-          if (tab === 'watchlist') next.delete('tab')
-          else next.set('tab', tab)
-          return next
-        },
-        { replace: true }
-      )
+      withViewTransition(() => {
+        setSearchParams(
+          (prev) => {
+            const next = new URLSearchParams(prev)
+            if (tab === 'watchlist') next.delete('tab')
+            else next.set('tab', tab)
+            return next
+          },
+          { replace: true }
+        )
+      })
     },
     [setSearchParams]
   )

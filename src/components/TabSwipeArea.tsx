@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { useTabSwipeNavigation } from '@/hooks/useTabSwipeNavigation'
+import { withViewTransition } from '@/lib/viewTransition'
 import { cn } from '@/lib/utils'
 
 /** Fills the viewport below fixed layout header + bottom nav so empty space still accepts swipes. */
@@ -27,7 +28,11 @@ export const TabSwipeArea = <T extends string>({
   className,
   children,
 }: TabSwipeAreaProps<T>) => {
-  const swipeHandlers = useTabSwipeNavigation({ tabs, active, onChange, enabled })
+  const handleChange = (tab: T) => {
+    withViewTransition(() => onChange(tab))
+  }
+
+  const swipeHandlers = useTabSwipeNavigation({ tabs, active, onChange: handleChange, enabled })
 
   return (
     <div className={cn('touch-pan-y flex flex-col', className)} {...swipeHandlers}>

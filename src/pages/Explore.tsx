@@ -37,6 +37,7 @@ import { ExploreTabBar } from '@/components/explore/ExploreUi'
 import { TabSwipeArea, TAB_SWIPE_IN_PAGE_HEADER_CLASS } from '@/components/TabSwipeArea'
 import { SearchFiltersSheet } from '@/components/search/SearchFiltersSheet'
 import { cn } from '@/lib/utils'
+import { withViewTransition } from '@/lib/viewTransition'
 
 const TABS: { id: ExploreTab; label: string }[] = [
   { id: 'all', label: 'همه انیمه‌ها' },
@@ -124,15 +125,17 @@ const Explore = () => {
 
   const setTab = (tab: ExploreTab) => {
     if (tab === state.tab) return
-    if (state.tab === 'all') {
-      allTabSnapshotRef.current = captureExploreAllTabSnapshot(state)
-    }
-    if (state.tab === 'seasonal') {
-      seasonalPickerRef.current = { season: state.season, year: state.year }
-    }
-    replaceState(
-      switchExploreTab(state, tab, allTabSnapshotRef.current, seasonalPickerRef.current)
-    )
+    withViewTransition(() => {
+      if (state.tab === 'all') {
+        allTabSnapshotRef.current = captureExploreAllTabSnapshot(state)
+      }
+      if (state.tab === 'seasonal') {
+        seasonalPickerRef.current = { season: state.season, year: state.year }
+      }
+      replaceState(
+        switchExploreTab(state, tab, allTabSnapshotRef.current, seasonalPickerRef.current)
+      )
+    })
   }
 
   const allFilters = useMemo(

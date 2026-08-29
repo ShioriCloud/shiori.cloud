@@ -2,6 +2,7 @@ export type SupportTicketCategory =
   | 'bug_report'
   | 'app_improvement'
   | 'feature_request'
+  | 'translation_request'
   | 'account_issue'
   | 'other'
 
@@ -11,6 +12,7 @@ export const SUPPORT_TICKET_CATEGORY_LABELS: Record<SupportTicketCategory, strin
   bug_report: 'گزارش خطا',
   app_improvement: 'بهبود اپلیکیشن',
   feature_request: 'درخواست قابلیت جدید',
+  translation_request: 'درخواست ترجمه',
   account_issue: 'مشکل حساب کاربری',
   other: 'سایر',
 }
