@@ -1,12 +1,13 @@
+import { resolveBootQuoteImage } from '@/lib/bootSplashImage'
+
 /** Anime / manga lines shown on the branded boot splash. */
 export type BootQuote = {
   text: string
   /** Character or source, shown after an em dash */
   attribution: string
   /**
-   * Optional portrait wallpaper (URL or `/boot-wallpapers/name.webp`).
-   * Put local files in `public/boot-wallpapers/`.
-   * Shown as a vertical wallpaper under the splash gradient.
+   * Portrait wallpaper — prefer art with empty space at the top (dialogue sits upper).
+   * URL or `/boot-wallpapers/name.webp` in `public/boot-wallpapers/`.
    */
   image?: string
 }
@@ -131,7 +132,7 @@ export function readCachedBootQuotes(): BootQuote[] {
         if (!row || typeof row !== 'object') return null
         const text = String((row as BootQuote).text ?? '').trim()
         const attribution = String((row as BootQuote).attribution ?? '').trim()
-        const image = String((row as BootQuote).image ?? '').trim()
+        const image = resolveBootQuoteImage((row as BootQuote).image)
         if (!text || !attribution) return null
         return image ? { text, attribution, image } : { text, attribution }
       })
@@ -169,7 +170,7 @@ function normalizeQuote(raw: unknown): BootQuote | null {
   if (!raw || typeof raw !== 'object') return null
   const text = String((raw as BootQuote).text ?? '').trim()
   const attribution = String((raw as BootQuote).attribution ?? '').trim()
-  const image = String((raw as BootQuote).image ?? '').trim()
+  const image = resolveBootQuoteImage((raw as BootQuote).image)
   if (!text || !attribution) return null
   return image ? { text, attribution, image } : { text, attribution }
 }

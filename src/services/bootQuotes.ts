@@ -1,3 +1,4 @@
+import { resolveBootQuoteImage } from '@/lib/bootSplashImage'
 import { shioriFetch, isShioriApiEnabled } from '@/lib/shioriApi'
 import {
   BOOT_QUOTES,
@@ -18,7 +19,7 @@ const normalizeQuotes = (
     .map((row) => ({
       text: String(row?.text ?? '').trim(),
       attribution: String(row?.attribution ?? '').trim(),
-      image: String(row?.image ?? '').trim() || undefined,
+      image: resolveBootQuoteImage(row?.image) || undefined,
     }))
     .filter((row) => row.text.length > 0 && row.attribution.length > 0)
 }

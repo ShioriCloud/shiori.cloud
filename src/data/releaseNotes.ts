@@ -15,6 +15,14 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.6',
+    title: 'اسپلش',
+    items: [
+      'رفع لود نشدن بعضی پس‌زمینه‌های دیالوگ',
+      'روشن‌تر شدن تصویر و جابه‌جایی دیالوگ به بالای صفحه',
+    ],
+  },
+  {
     version: '0.2.5',
     title: 'صفحه اصلی',
     items: ['نمایش همهٔ آیتم‌های ویژه در اسلایدر بالای خانه'],
