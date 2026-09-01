@@ -5,20 +5,6 @@ import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-const injectBootApiMeta = (): import('vite').Plugin => ({
-  name: 'inject-boot-api-meta',
-  transformIndexHtml(html) {
-    const apiUrl = String(process.env.VITE_SHIORI_API_URL ?? '')
-      .trim()
-      .replace(/"/g, '')
-    if (!apiUrl) return html
-    return html.replace(
-      '<head>',
-      `<head>\n    <meta name="shiori-api-url" content="${apiUrl}" />`,
-    )
-  },
-})
-
 const rootDir = path.dirname(fileURLToPath(import.meta.url))
 const appVersion = JSON.parse(
   readFileSync(path.resolve(rootDir, 'package.json'), 'utf-8')
@@ -43,7 +29,7 @@ const appBuild = resolveAppBuild()
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), injectBootApiMeta()],
+  plugins: [react()],
   define: {
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion),
     'import.meta.env.VITE_APP_BUILD': JSON.stringify(appBuild),

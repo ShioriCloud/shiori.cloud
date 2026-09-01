@@ -15,6 +15,14 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.7',
+    title: 'اسپلش',
+    items: [
+      'بازگشت اسپلش به گرادیان بنفش شیوری بدون تصویر پس‌زمینه',
+      'دیالوگ دوباره وسط صفحه نمایش داده می‌شود',
+    ],
+  },
+  {
     version: '0.2.6',
     title: 'اسپلش',
     items: [

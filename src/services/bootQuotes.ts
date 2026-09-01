@@ -1,4 +1,3 @@
-import { resolveBootQuoteImage } from '@/lib/bootSplashImage'
 import { shioriFetch, isShioriApiEnabled } from '@/lib/shioriApi'
 import {
   BOOT_QUOTES,
@@ -8,18 +7,17 @@ import {
 } from '@/data/bootQuotes'
 
 type BootQuotesApiResponse = {
-  quotes?: Array<{ text?: string; attribution?: string; image?: string }>
+  quotes?: Array<{ text?: string; attribution?: string }>
 }
 
 const normalizeQuotes = (
-  rows: Array<{ text?: string; attribution?: string; image?: string }> | undefined
+  rows: Array<{ text?: string; attribution?: string }> | undefined
 ): BootQuote[] => {
   if (!Array.isArray(rows)) return []
   return rows
     .map((row) => ({
       text: String(row?.text ?? '').trim(),
       attribution: String(row?.attribution ?? '').trim(),
-      image: resolveBootQuoteImage(row?.image) || undefined,
     }))
     .filter((row) => row.text.length > 0 && row.attribution.length > 0)
 }

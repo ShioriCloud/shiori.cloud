@@ -1,20 +1,12 @@
-import { resolveBootQuoteImage } from '@/lib/bootSplashImage'
-
 /** Anime / manga lines shown on the branded boot splash. */
 export type BootQuote = {
   text: string
   /** Character or source, shown after an em dash */
   attribution: string
-  /**
-   * Portrait wallpaper — prefer art with empty space at the top (dialogue sits upper).
-   * URL or `/boot-wallpapers/name.webp` in `public/boot-wallpapers/`.
-   */
-  image?: string
 }
 
 /** Built-in fallback when API/cache has no active quotes.
  *  Quote typeface: put `dialogue.woff2` in `public/fonts/`.
- *  Wallpaper: `image: '/boot-wallpapers/name.webp'` (files in `public/boot-wallpapers/`).
  */
 export const BOOT_QUOTES: readonly BootQuote[] = [
   {
@@ -132,9 +124,8 @@ export function readCachedBootQuotes(): BootQuote[] {
         if (!row || typeof row !== 'object') return null
         const text = String((row as BootQuote).text ?? '').trim()
         const attribution = String((row as BootQuote).attribution ?? '').trim()
-        const image = resolveBootQuoteImage((row as BootQuote).image)
         if (!text || !attribution) return null
-        return image ? { text, attribution, image } : { text, attribution }
+        return { text, attribution }
       })
       .filter((row): row is BootQuote => Boolean(row))
   } catch {
@@ -163,16 +154,15 @@ export function pickRandomBootQuote(
 const DISPLAY_QUOTE_KEY = 'shiori_boot_quote_display'
 
 type BootQuoteBridge = {
-  __SHIORI_BOOT_QUOTE__?: { text?: string; attribution?: string; image?: string }
+  __SHIORI_BOOT_QUOTE__?: { text?: string; attribution?: string }
 }
 
 function normalizeQuote(raw: unknown): BootQuote | null {
   if (!raw || typeof raw !== 'object') return null
   const text = String((raw as BootQuote).text ?? '').trim()
   const attribution = String((raw as BootQuote).attribution ?? '').trim()
-  const image = resolveBootQuoteImage((raw as BootQuote).image)
   if (!text || !attribution) return null
-  return image ? { text, attribution, image } : { text, attribution }
+  return { text, attribution }
 }
 
 /** One quote per page load — reuses the HTML bridge / session pick so it never swaps mid-boot. */
