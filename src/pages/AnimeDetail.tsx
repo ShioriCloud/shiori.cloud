@@ -982,7 +982,7 @@ const AnimeDetail = () => {
               />
               <div className="min-w-0 flex-1">
                 <p className="text-[13px] font-semibold text-foreground">
-                  {hardsubLanguage === 'en' ? 'زیرنویس انگلیسی' : 'سافت‌ساب فارسی'}
+                  {hardsubLanguage === 'en' ? 'زیرنویس انگلیسی' : 'زیرنویس چسبیده فارسی'}
                 </p>
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
                   {hardsubLanguage === 'en'

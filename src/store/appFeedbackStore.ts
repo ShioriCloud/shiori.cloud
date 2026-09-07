@@ -41,7 +41,7 @@ const newId = () =>
 const inferTone = (message: string): ToastTone => {
   const text = message.trim()
   if (/خطا|ناموفق|موجود نیست|تمام شده|لازم است|فعال نشده/i.test(text)) return 'error'
-  if (/هنوز در کاتالوگ|درخواست ترجمه|کاتالوگ شیوری نیست/i.test(text)) return 'warning'
+  if (/هنوز در کاتالوگ|لیست ترجمه‌ی شیوری نیست|کاتالوگ شیوری نیست/i.test(text)) return 'warning'
   if (/حذف شد|از لیست حذف|از علاقه‌مندی|از لیست‌ها حذف/i.test(text)) return 'destructive'
   if (/به‌روز|فعال|اضافه|ساخته|ذخیره شد|لیست‌ها به‌روز/i.test(text)) return 'success'
   return 'default'

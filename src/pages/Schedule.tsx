@@ -132,24 +132,15 @@ const Schedule = () => {
   const { data, isLoading, isError, refetch } = useScheduleQuery()
   const [activeDay, setActiveDay] = useState<PersianDay>(getCurrentPersianDay())
 
-  const buildTranslationRequestHref = (anime: Anime) => {
-    const params = new URLSearchParams()
-    params.set('compose', '1')
-    params.set('category', 'translation_request')
-    params.set('subject', `درخواست ترجمه: ${anime.title}`)
-    params.set(
-      'body',
-      [
-        `لطفاً ترجمهٔ این عنوان را به کاتالوگ شیوری اضافه کنید.`,
-        ``,
-        `عنوان: ${anime.title}`,
-        `AniList ID: ${anime.id}`,
-        anime.episode ? `قسمت برنامه پخش: ${anime.episode}` : null,
-      ]
-        .filter(Boolean)
-        .join('\n')
-    )
-    return `/support?${params.toString()}`
+  const handleAnimeClick = (e: MouseEvent<HTMLAnchorElement>, anime: Anime) => {
+    e.preventDefault()
+
+    if (anime.localId) {
+      navigate(animeDetailPath({ id: anime.localId, title: anime.title }))
+      return
+    }
+
+    showAppToast('این انیمه در لیست ترجمه‌ی شیوری نیست', 'warning')
   }
 
   const scheduleInfo = data as ScheduleInfo | undefined
@@ -186,27 +177,6 @@ const Schedule = () => {
     if (day === activeDay) return
     hapticSelection()
     withViewTransition(() => setActiveDay(day))
-  }
-
-  const handleAnimeClick = (e: MouseEvent<HTMLAnchorElement>, anime: Anime) => {
-    e.preventDefault()
-
-    if (anime.localId) {
-      navigate(animeDetailPath({ id: anime.localId, title: anime.title }))
-      return
-    }
-
-    showAppToast('هنوز در کاتالوگ شیوری نیست', 'warning', {
-      description: 'می‌تونی برای ترجمه‌اش درخواست ثبت کنی.',
-      duration: 6500,
-      action: {
-        label: 'درخواست ترجمه',
-        onClick: () => {
-          hapticSelection()
-          navigate(buildTranslationRequestHref(anime))
-        },
-      },
-    })
   }
 
   if (loading) return <ScheduleSkeleton />

@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import { useCreateSupportTicket, useSupportTickets } from '@/hooks/useSupportTickets'
 import {
-  SUPPORT_TICKET_CATEGORIES,
+  SUPPORT_TICKET_CREATE_CATEGORIES,
   SUPPORT_TICKET_CATEGORY_LABELS,
   SUPPORT_TICKET_STATUS_LABELS,
   type SupportTicketCategory,
@@ -20,8 +20,8 @@ import {
 import { hapticSelection } from '@/lib/telegramHaptics'
 import { cn } from '@/lib/utils'
 
-const isSupportCategory = (value: string | null): value is SupportTicketCategory =>
-  Boolean(value && (SUPPORT_TICKET_CATEGORIES as string[]).includes(value))
+const isCreateSupportCategory = (value: string | null): value is SupportTicketCategory =>
+  Boolean(value && (SUPPORT_TICKET_CREATE_CATEGORIES as string[]).includes(value))
 
 const formatTime = (iso: string) => {
   const d = new Date(iso)
@@ -59,7 +59,7 @@ const SupportPage = () => {
     composePrefillDone.current = true
 
     const nextCategory = searchParams.get('category')
-    if (isSupportCategory(nextCategory)) setCategory(nextCategory)
+    if (isCreateSupportCategory(nextCategory)) setCategory(nextCategory)
 
     const nextSubject = searchParams.get('subject')?.trim()
     if (nextSubject) setSubject(nextSubject)
@@ -149,7 +149,7 @@ const SupportPage = () => {
                   دسته‌بندی
                 </label>
                 <div className="grid grid-cols-2 gap-2">
-                  {SUPPORT_TICKET_CATEGORIES.map((key) => (
+                  {SUPPORT_TICKET_CREATE_CATEGORIES.map((key) => (
                     <ExploreOptionButton
                       key={key}
                       active={category === key}

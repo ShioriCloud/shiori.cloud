@@ -23,6 +23,15 @@ export const SUPPORT_TICKET_STATUS_LABELS: Record<SupportTicketStatus, string> =
   closed: 'بسته',
 }
 
+/** Categories offered when composing a new ticket (existing tickets may still use others). */
+export const SUPPORT_TICKET_CREATE_CATEGORIES: SupportTicketCategory[] = [
+  'bug_report',
+  'app_improvement',
+  'feature_request',
+  'account_issue',
+  'other',
+]
+
 export const SUPPORT_TICKET_CATEGORIES = Object.keys(
   SUPPORT_TICKET_CATEGORY_LABELS
 ) as SupportTicketCategory[]
