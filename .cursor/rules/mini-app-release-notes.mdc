@@ -8,17 +8,27 @@ alwaysApply: true
 Whenever you ship **user-facing** changes in `shiori.cloud` (UI, features, fixes users will notice), before commit/push:
 
 1. **Bump** `package.json` `version` (semver: patch for fixes/small UI, minor for features).
-2. **Add** a matching entry at the top of `src/data/releaseNotes.ts` with the same `version`, optional `title`, and Persian `items` (short bullets of what users see).
+2. **Add** a matching entry at the top of `src/data/releaseNotes.ts` with the same `version`, optional `title`, and Persian `items`.
 3. Do **not** skip this for “just a small fix” if it affects the mini-app experience.
 4. Pure docs/chore/CI-only changes: no bump needed.
+
+## Writing notes (user-facing)
+
+- Keep **at most ~3** short bullets; benefit language, not engineering detail.
+- Bad: «رفع فلیکر پوستر هنگام جابه‌جایی روزها»
+- Good: «برنامهٔ پخش روان‌تر شد»
+- Set `showDialog: true` **only** when the update is worth interrupting the user (usually minor/major or a clearly noticeable feature).
+- Day-to-day patches: omit `showDialog` (silent bump; still listed in Profile → «چی جدید شده؟»).
+- During heavy beta, set `VITE_SHOW_RELEASE_NOTES=false` so the popup stays off; archive still works.
 
 ```ts
 // src/data/releaseNotes.ts — newest first
 {
-  version: '0.2.2', // must match package.json
+  version: '0.2.8', // must match package.json
   title: '…',
+  // showDialog: true, // only for important updates
   items: ['…', '…'],
 }
 ```
 
-The dialog shows unseen notes after splash when `VITE_APP_VERSION` > last acknowledged version in `localStorage`.
+The post-splash dialog shows at most the newest unseen note with `showDialog: true` when `VITE_APP_VERSION` > last acknowledged version in `localStorage` and `VITE_SHOW_RELEASE_NOTES` is not false.

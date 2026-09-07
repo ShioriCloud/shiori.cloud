@@ -1,7 +1,8 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { AlarmClockIcon, CustomerServiceIcon, UserIcon } from 'hugeicons-react'
-import { ChevronLeft, Crown, Moon, Sun } from 'lucide-react'
+import { ChevronLeft, Crown, Moon, Sparkles, Sun } from 'lucide-react'
+import { ReleaseNotesArchiveDialog } from '@/components/ReleaseNotesArchiveDialog'
 import { useAppAuth } from '../hooks/useAppAuth'
 import { useUserAnimeList } from '../hooks/useUserAnimeList'
 import { useNotifications } from '../hooks/useNotifications'
@@ -43,22 +44,15 @@ const SectionTitle = ({ children }: { children: ReactNode }) => (
   <h2 className="mb-3 text-sm font-semibold text-foreground">{children}</h2>
 )
 
-type MenuItemProps = {
-  to: string
+type MenuRowProps = {
   icon: ReactNode
   label: string
   hint?: string
   badge?: number
 }
 
-const MenuItem = ({ to, icon, label, hint, badge }: MenuItemProps) => (
-  <Link
-    to={to}
-    className={cn(
-      'flex items-center gap-3 px-3 py-3',
-      'transition-colors hover:bg-muted/40 active:bg-muted/55'
-    )}
-  >
+const MenuRowContent = ({ icon, label, hint, badge }: MenuRowProps) => (
+  <>
     <span
       className={cn(
         'flex h-9 w-9 shrink-0 items-center justify-center rounded-md border',
@@ -84,7 +78,40 @@ const MenuItem = ({ to, icon, label, hint, badge }: MenuItemProps) => (
       </span>
     ) : null}
     <ChevronLeft className="h-4 w-4 shrink-0 text-muted-foreground/60" aria-hidden />
+  </>
+)
+
+type MenuItemProps = MenuRowProps & {
+  to: string
+}
+
+const MenuItem = ({ to, ...row }: MenuItemProps) => (
+  <Link
+    to={to}
+    className={cn(
+      'flex items-center gap-3 px-3 py-3',
+      'transition-colors hover:bg-muted/40 active:bg-muted/55'
+    )}
+  >
+    <MenuRowContent {...row} />
   </Link>
+)
+
+type MenuButtonProps = MenuRowProps & {
+  onClick: () => void
+}
+
+const MenuButton = ({ onClick, ...row }: MenuButtonProps) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={cn(
+      'flex w-full items-center gap-3 px-3 py-3 text-right',
+      'transition-colors hover:bg-muted/40 active:bg-muted/55'
+    )}
+  >
+    <MenuRowContent {...row} />
+  </button>
 )
 
 const StatCell = ({
@@ -149,6 +176,7 @@ const Profile = () => {
     updatingNotifyTelegramDm,
   } = useNotifications()
   const [avatarFailed, setAvatarFailed] = useState(false)
+  const [releaseNotesOpen, setReleaseNotesOpen] = useState(false)
   const { preference, setPreference, isDarkMode } = useTheme()
 
   const displayName = user?.displayName ?? 'کاربر'
@@ -293,6 +321,15 @@ const Profile = () => {
             label="تیکت پشتیبانی"
             hint="گزارش خطا، پیشنهاد و درخواست قابلیت"
           />
+          <MenuButton
+            onClick={() => {
+              hapticSelection()
+              setReleaseNotesOpen(true)
+            }}
+            icon={<Sparkles className="h-4 w-4" />}
+            label="چی جدید شده؟"
+            hint="خلاصهٔ آپدیت‌های مینی‌اپ"
+          />
         </MyListCompactCard>
       </div>
 
@@ -412,6 +449,8 @@ const Profile = () => {
           </a>
         </p>
       </footer>
+
+      <ReleaseNotesArchiveDialog open={releaseNotesOpen} onOpenChange={setReleaseNotesOpen} />
     </div>
   )
 }

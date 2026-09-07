@@ -4,6 +4,7 @@ import { buildTelegramUserPayload } from '@/utils/telegramUser'
 import type { TelegramUserPayload } from '@/types/telegramUser'
 import { isTelegramMiniApp } from '@/lib/platform'
 import { ensureTelegramWebAppReady } from '@/lib/telegramReady'
+import { openTelegramDeepLink } from '@/lib/telegramOpenLink'
 import { showAppConfirm, showAppToast } from '@/store/appFeedbackStore'
 
 interface PopupButton {
@@ -79,11 +80,16 @@ export const useTelegramApp = () => {
     WebApp.openLink(url)
   }
 
+  /** t.me / tg:// deep links — keeps Mini App open (unlike window.open on Desktop). */
+  const openTelegramLink = (url: string) => {
+    openTelegramDeepLink(url)
+  }
+
   const shareUrl = (url: string, text?: string) => {
     const shareLink = new URL('https://t.me/share/url')
     shareLink.searchParams.set('url', url)
     if (text?.trim()) shareLink.searchParams.set('text', text.trim())
-    WebApp.openTelegramLink(shareLink.toString())
+    openTelegramDeepLink(shareLink.toString())
   }
 
   return {
@@ -93,6 +99,7 @@ export const useTelegramApp = () => {
     showConfirm,
     showPopup,
     openLink,
+    openTelegramLink,
     shareUrl,
   }
 }

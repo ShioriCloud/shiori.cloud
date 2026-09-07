@@ -12,6 +12,8 @@ interface ImportMetaEnv {
   readonly VITE_APP_VERSION?: string
   /** Short git SHA (injected at build) */
   readonly VITE_APP_BUILD?: string
+  /** When false/0/off, skip post-splash release notes popup */
+  readonly VITE_SHOW_RELEASE_NOTES?: string
 }
 
 interface ImportMeta {

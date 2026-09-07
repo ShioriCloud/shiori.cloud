@@ -37,6 +37,7 @@ import {
   buildAnilistUrl,
   buildAnimeMiniAppLink,
   buildMalUrl,
+  buildTelegramFileDownloadLink,
   parseAnimeDetailTab,
 } from '../utils/externalLinks'
 import { isAnimeDetailShell } from '../utils/api'
@@ -392,7 +393,7 @@ const AnimeDetail = () => {
     toggleReminder: toggleAiringReminder,
     isToggling: reminderToggling,
   } = useAiringReminders()
-  const { showAlert, openLink, shareUrl } = useTelegramApp()
+  const { showAlert, openLink, openTelegramLink, shareUrl } = useTelegramApp()
   const [reminderBusy, setReminderBusy] = useState(false)
 
   const {
@@ -981,12 +982,12 @@ const AnimeDetail = () => {
               />
               <div className="min-w-0 flex-1">
                 <p className="text-[13px] font-semibold text-foreground">
-                  {hardsubLanguage === 'en' ? 'زیرنویس انگلیسی' : 'زیرنویس چسبیده فارسی'}
+                  {hardsubLanguage === 'en' ? 'زیرنویس انگلیسی' : 'سافت‌ساب فارسی'}
                 </p>
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
                   {hardsubLanguage === 'en'
                     ? 'تمام قسمت‌ها با زیرنویس انگلیسی چسبیده هستند'
-                    : 'تمام قسمت‌ها دارای نسخه‌ی سافت‌ساب و هاردساب فارسی هستند.'}
+                    : 'تمام قسمت‌ها دارای نسخه‌ی سافت‌ساب فارسی هستند.'}
                 </p>
               </div>
             </div>
@@ -1224,7 +1225,7 @@ const AnimeDetail = () => {
                                 showAlert('لینک پک زیرنویس موجود نیست')
                                 return
                               }
-                              window.open(String(p.subtitle_link), '_blank')
+                              openTelegramLink(String(p.subtitle_link))
                             }}
                           />
                         ))}
@@ -1247,7 +1248,7 @@ const AnimeDetail = () => {
                                 showAlert('زیرنویس برای این قسمت موجود نیست')
                                 return
                               }
-                              window.open(String(episode.subtitle_link), '_blank')
+                              openTelegramLink(String(episode.subtitle_link))
                             }}
                           />
                         ))}
@@ -1308,7 +1309,7 @@ const AnimeDetail = () => {
                         showAlert('لینک پک موجود نیست')
                         return
                       }
-                      window.open(link, '_blank')
+                      openTelegramLink(link)
                       return
                     }
                     void (async () => {
@@ -1316,7 +1317,7 @@ const AnimeDetail = () => {
                         String(anime.id)
                       )
                       if (result.ok) {
-                        window.open(result.download_link, '_blank')
+                        openTelegramLink(result.download_link)
                         return
                       }
                       if (result.code === 'subscription_required') {
@@ -1396,7 +1397,7 @@ const AnimeDetail = () => {
                                     )
                                   if (result.ok) {
                                     recordEpisodeDownload(episode)
-                                    window.open(result.download_link, '_blank')
+                                    openTelegramLink(result.download_link)
                                     return
                                   }
                                   if (result.code === 'insufficient_tokens') {
@@ -1461,7 +1462,7 @@ const AnimeDetail = () => {
                               )
                             if (result.ok) {
                               recordEpisodeDownload(episode)
-                              window.open(result.download_link, '_blank')
+                              openTelegramLink(result.download_link)
                               return
                             }
                             showAlert(result.message || 'خطا در دانلود')
@@ -1470,9 +1471,13 @@ const AnimeDetail = () => {
                         }
                         const link =
                           episode.download_link ||
-                          `https://t.me/ShioriUploadBot?start=get_${episode.id}`
+                          buildTelegramFileDownloadLink(String(episode.id))
+                        if (!link) {
+                          showAlert('لینک دانلود موجود نیست')
+                          return
+                        }
                         recordEpisodeDownload(episode)
-                        window.open(String(link), '_blank')
+                        openTelegramLink(link)
                       }}
                       onLockedQuality={(quality) => {
                         if (
@@ -1502,7 +1507,7 @@ const AnimeDetail = () => {
                           showAlert('لینک پک زیرنویس موجود نیست')
                           return
                         }
-                        window.open(String(p.subtitle_link), '_blank')
+                        openTelegramLink(String(p.subtitle_link))
                       }}
                     />
                   ))}
