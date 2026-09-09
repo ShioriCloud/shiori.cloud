@@ -27,6 +27,11 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.15',
+    title: 'برنامه پخش',
+    items: ['برنامه پخش هفتگی دوباره انیمه‌های هر روز را نشان می‌دهد'],
+  },
+  {
     version: '0.2.14',
     title: 'برنامه پخش',
     items: ['قسمت‌های پخش‌شده دیگر به‌اشتباه به‌عنوان قسمت بعدی نشان داده نمی‌شوند'],
