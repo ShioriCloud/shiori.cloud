@@ -329,18 +329,19 @@ const Home = () => {
                       >
                         {anime.title}
                       </BidiText>
-                      {(anime.genres || []).length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1 justify-end">
-                          {(anime.genres || []).slice(0, 3).map((g) => (
-                            <span
-                              key={g.slug}
-                              className="text-[10px] px-2 py-0.5 rounded-md bg-white/15 text-white/90 backdrop-blur-sm border border-white/10"
-                            >
-                              {genreLabel(g)}
-                            </span>
-                          ))}
-                        </div>
-                      )}
+                      <div className="flex flex-wrap gap-1 mt-1 justify-end">
+                        <span className="text-[10px] px-2 py-0.5 rounded-md border border-primary-400/40 bg-primary-400/15 font-medium text-primary-700 dark:border-primary-400/25 dark:bg-primary-500/15 dark:text-primary-200">
+                          ترجمه اختصاصی
+                        </span>
+                        {(anime.genres || []).slice(0, 3).map((g) => (
+                          <span
+                            key={g.slug}
+                            className="text-[10px] px-2 py-0.5 rounded-md bg-white/15 text-white/90 backdrop-blur-sm border border-white/10"
+                          >
+                            {genreLabel(g)}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>

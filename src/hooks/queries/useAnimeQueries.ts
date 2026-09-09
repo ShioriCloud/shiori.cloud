@@ -251,7 +251,7 @@ export const useScheduleQuery = () => {
   return useQuery({
     queryKey: queryKeys.schedule,
     queryFn: fetchSchedule,
-    staleTime: 30 * 60_000,
+    staleTime: 15 * 60_000,
     gcTime: 2 * 60 * 60_000,
     initialData: cached?.data,
     initialDataUpdatedAt: cached?.ts,

@@ -27,6 +27,16 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.14',
+    title: 'برنامه پخش',
+    items: ['قسمت‌های پخش‌شده دیگر به‌اشتباه به‌عنوان قسمت بعدی نشان داده نمی‌شوند'],
+  },
+  {
+    version: '0.2.13',
+    title: 'خانه',
+    items: ['بج «ترجمه اختصاصی» روی کارت‌های پیشنهاد ویژه'],
+  },
+  {
     version: '0.2.12',
     title: 'برنامه پخش',
     items: [

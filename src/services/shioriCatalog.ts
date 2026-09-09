@@ -181,6 +181,8 @@ export type ScheduleAnimeItem = {
   image: string
   genres?: { slug: string; name_en?: string }[]
   localId?: string | number | null
+  /** Unix seconds — used to drop stale AniList next-airing pointers. */
+  airing_at?: number
 }
 
 export type SchedulePayload = {

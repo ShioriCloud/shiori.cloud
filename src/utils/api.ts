@@ -518,6 +518,9 @@ const fetchScheduleFromAniListClient = async (): Promise<catalog.SchedulePayload
           coverImage { large }
           genres
           nextAiringEpisode { airingAt episode }
+          airingSchedule(notYetAired: true, perPage: 1) {
+            nodes { airingAt episode }
+          }
         }
       }
     }
@@ -555,18 +558,17 @@ const fetchScheduleFromAniListClient = async (): Promise<catalog.SchedulePayload
 
   const mediaList: any[] = json?.data?.Page?.media ?? []
   const schedule = { ...empty.schedule }
+  const nowSec = Math.floor(Date.now() / 1000)
 
   for (const m of mediaList) {
     const allowedFormats = new Set(['TV', 'ONA', 'OVA', 'SPECIAL'])
     const format = typeof m?.format === 'string' ? m.format.trim().toUpperCase() : ''
     if (!allowedFormats.has(format)) continue
 
-    const ep = m?.nextAiringEpisode
-    if (!ep || typeof ep.airingAt !== 'number') continue
+    const ep = resolveUpcomingAiring(m, nowSec)
+    if (!ep) continue
 
     const airingAtMs = ep.airingAt * 1000
-    if (!Number.isFinite(airingAtMs)) continue
-
     const d = new Date(airingAtMs)
     const day = toPersianWeekday(d)
     if (!schedule[day]) continue
@@ -595,6 +597,7 @@ const fetchScheduleFromAniListClient = async (): Promise<catalog.SchedulePayload
             .map((g: string) => ({ slug: g.trim().toLowerCase(), name_en: g }))
         : [],
       localId: null,
+      airing_at: ep.airingAt,
     })
   }
 
@@ -624,9 +627,50 @@ const loadSchedulePayload = async (): Promise<catalog.SchedulePayload> => {
   }
 }
 
-const SCHEDULE_CACHE_KEY = 'shiori_schedule_v3'
+const SCHEDULE_CACHE_KEY = 'shiori_schedule_v4'
 /** Soft TTL for treating disk cache as fresh enough for initialData. */
-export const SCHEDULE_CACHE_TTL_MS = 6 * 60 * 60 * 1000
+export const SCHEDULE_CACHE_TTL_MS = 30 * 60 * 1000
+/** Keep "on air now" cards briefly after airingAt. */
+const SCHEDULE_AIRING_GRACE_MS = 30 * 60 * 1000
+
+type UpcomingAiring = { airingAt: number; episode: number }
+
+const resolveUpcomingAiring = (
+  media: {
+    nextAiringEpisode?: { airingAt?: number; episode?: number } | null
+    airingSchedule?: { nodes?: Array<{ airingAt?: number; episode?: number }> | null } | null
+  },
+  nowSec = Math.floor(Date.now() / 1000),
+  graceSec = Math.floor(SCHEDULE_AIRING_GRACE_MS / 1000)
+): UpcomingAiring | null => {
+  const fromSchedule = media.airingSchedule?.nodes?.[0]
+  const fromNext = media.nextAiringEpisode
+  for (const candidate of [fromSchedule, fromNext]) {
+    if (!candidate || typeof candidate.airingAt !== 'number') continue
+    const airingAt = Number(candidate.airingAt)
+    const episode = Number(candidate.episode)
+    if (!Number.isFinite(airingAt) || airingAt <= 0) continue
+    if (airingAt + graceSec < nowSec) continue
+    if (!Number.isFinite(episode) || episode <= 0) continue
+    return { airingAt, episode }
+  }
+  return null
+}
+
+const prunePastScheduleEntries = (
+  payload: catalog.SchedulePayload,
+  nowMs = Date.now()
+): catalog.SchedulePayload => {
+  const cutoffSec = Math.floor((nowMs - SCHEDULE_AIRING_GRACE_MS) / 1000)
+  const schedule: catalog.SchedulePayload['schedule'] = {}
+  for (const [day, list] of Object.entries(payload.schedule ?? {})) {
+    schedule[day] = (list ?? []).filter((item) => {
+      if (item.airing_at == null) return true
+      return Number(item.airing_at) >= cutoffSec
+    })
+  }
+  return { ...payload, schedule }
+}
 
 type ScheduleCacheEntry = {
   ts: number
@@ -689,15 +733,15 @@ export const fetchSchedule = async (): Promise<catalog.SchedulePayload> => {
   const cached = peekScheduleCache()
 
   try {
-    const data = await loadSchedulePayload()
+    const data = prunePastScheduleEntries(await loadSchedulePayload())
     if (isUsableSchedulePayload(data)) {
       writeScheduleCache(data)
       return data
     }
-    if (cached) return cached.data
+    if (cached) return prunePastScheduleEntries(cached.data)
     return data
   } catch (error) {
-    if (cached) return cached.data
+    if (cached) return prunePastScheduleEntries(cached.data)
     throw error
   }
 }
