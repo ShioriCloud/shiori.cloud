@@ -608,21 +608,33 @@ const fetchScheduleFromAniListClient = async (): Promise<catalog.SchedulePayload
   return enrichScheduleWithLocalIds({ schedule, currentSeason, currentYear })
 }
 
+const normalizeSchedulePayload = (
+  payload: catalog.SchedulePayload
+): catalog.SchedulePayload => prunePastScheduleEntries(payload)
+
 const loadSchedulePayload = async (): Promise<catalog.SchedulePayload> => {
   try {
     const fromApi = await catalog.getAiringSchedule()
-    if (!fromApi.degraded && countScheduleItems(fromApi) > 0) {
-      return fromApi
+    if (!fromApi.degraded) {
+      const normalized = normalizeSchedulePayload(fromApi)
+      if (countScheduleItems(normalized) > 0) {
+        return normalized
+      }
     }
   } catch {
     // API unavailable or returned degraded payload — fall back to client AniList
   }
 
   try {
-    return await fetchScheduleFromAniListClient()
+    const fromClient = await fetchScheduleFromAniListClient()
+    const normalized = normalizeSchedulePayload(fromClient)
+    if (countScheduleItems(normalized) > 0) {
+      return normalized
+    }
+    return normalized
   } catch {
     const stale = peekScheduleCache()
-    if (stale?.data) return stale.data
+    if (stale?.data) return normalizeSchedulePayload(stale.data)
     return buildEmptySchedulePayload()
   }
 }
@@ -733,15 +745,21 @@ export const fetchSchedule = async (): Promise<catalog.SchedulePayload> => {
   const cached = peekScheduleCache()
 
   try {
-    const data = prunePastScheduleEntries(await loadSchedulePayload())
+    const data = await loadSchedulePayload()
     if (isUsableSchedulePayload(data)) {
       writeScheduleCache(data)
       return data
     }
-    if (cached) return prunePastScheduleEntries(cached.data)
+    if (cached) {
+      const fromCache = normalizeSchedulePayload(cached.data)
+      if (isUsableSchedulePayload(fromCache)) return fromCache
+    }
     return data
   } catch (error) {
-    if (cached) return prunePastScheduleEntries(cached.data)
+    if (cached) {
+      const fromCache = normalizeSchedulePayload(cached.data)
+      if (isUsableSchedulePayload(fromCache)) return fromCache
+    }
     throw error
   }
 }
