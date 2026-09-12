@@ -13,6 +13,7 @@ import { getListIcon } from '@/components/my-list/listIcons'
 import { MyListAnimeRow, MyListBadge } from '@/components/my-list/MyListAnimeRow'
 import {
   MyListDeleteChip,
+  MyListDeviceNote,
   MyListEmptyState,
   MyListPoster,
   MyListSkeletonCards,
@@ -125,7 +126,8 @@ const ShioriListDetail = () => {
         </div>
       </div>
 
-      <div className="my-list-enter px-4 pt-3">
+      <div className="my-list-enter space-y-3 px-4 pt-3">
+        <MyListDeviceNote>این لیست فقط روی همین دستگاه می‌ماند و بین تلگرام‌ها همگام نیست.</MyListDeviceNote>
         {animeIds.length === 0 ? (
           <MyListEmptyState
             title="این مجموعه خالیه"

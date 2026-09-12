@@ -193,7 +193,7 @@ export const AddToShioriListButton = ({ animeId, triggerClassName, iconOnly }: P
                 <img src={emptyListImage} alt="" className="mb-4 w-32 opacity-90" />
                 <p className="text-sm font-semibold text-foreground">هنوز لیستی نداری</p>
                 <p className="mt-1.5 max-w-xs text-xs leading-6 text-muted-foreground">
-                  یک لیست شخصی بساز تا این انیمه را به آن اضافه کنی.
+                  یک لیست شخصی بساز تا این انیمه را به آن اضافه کنی. این لیست فقط روی همین دستگاه می‌ماند.
                 </p>
                 <Button
                   type="button"

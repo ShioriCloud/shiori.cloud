@@ -10,6 +10,7 @@ import { getListIcon } from './listIcons'
 import { CreateShioriListSheet } from './CreateShioriListSheet'
 import {
   MyListCompactCard,
+  MyListDeviceNote,
   MyListEmptyState,
   MyListTabHeader,
 } from './MyListUi'
@@ -139,7 +140,8 @@ export const ShioriListsTab = () => {
 
   if (customLists.length === 0) {
     return (
-      <>
+      <div className="space-y-3">
+        <MyListDeviceNote />
         <MyListEmptyState
           title="هنوز لیست شخصی نساختی"
           description={`تا ${toPersianNumber(MAX_SHIORI_LISTS)} لیست شخصی با نام و آیکون دلخواه بساز و انیمه‌هات رو دسته‌بندی کن.`}
@@ -147,7 +149,7 @@ export const ShioriListsTab = () => {
           onAction={() => setCreateOpen(true)}
         />
         <CreateShioriListSheet open={createOpen} onOpenChange={setCreateOpen} />
-      </>
+      </div>
     )
   }
 
@@ -161,6 +163,8 @@ export const ShioriListsTab = () => {
             : `${toPersianNumber(remaining)} لیست باقی‌مانده`
         }
       />
+
+      <MyListDeviceNote />
 
       <div className="space-y-2">
         {customLists.map((list) => (

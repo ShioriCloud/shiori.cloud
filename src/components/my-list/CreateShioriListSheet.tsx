@@ -88,6 +88,9 @@ export const CreateShioriListSheet = ({
               placeholder="مثلاً انیمه‌های تابستان"
               maxLength={48}
             />
+            <p className="mt-2 text-[11px] leading-5 text-muted-foreground">
+              لیست‌های شخصی فقط روی همین دستگاه می‌مانند و بین تلگرام‌ها همگام نمی‌شوند.
+            </p>
           </div>
           <div>
             <p className="mb-2 text-sm font-semibold text-foreground">آیکون</p>

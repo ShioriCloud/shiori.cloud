@@ -27,6 +27,14 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.18',
+    title: 'لیست‌های من',
+    items: [
+      'لیست‌های شخصی فقط روی همین دستگاه می‌مانند',
+      'لیست تماشا مثل قبل بین دستگاه‌ها همگام است',
+    ],
+  },
+  {
     version: '0.2.17',
     title: 'برنامه پخش',
     items: [

@@ -6,6 +6,18 @@ import { EXPLORE_CHIP_CLASS, SHIORI_PRIMARY_BUTTON_CLASS } from '@/components/ex
 import { cn } from '@/lib/utils'
 import emptyListImage from '@/assets/images/frieren-03.webp'
 
+export const CUSTOM_LISTS_DEVICE_NOTE =
+  'لیست‌های شخصی فقط روی همین دستگاه می‌مانند و بین تلگرام‌ها همگام نمی‌شوند.'
+
+export const MyListDeviceNote = ({ children = CUSTOM_LISTS_DEVICE_NOTE }: { children?: ReactNode }) => (
+  <p
+    role="note"
+    className="rounded-lg border border-border/60 bg-muted/40 px-3 py-2.5 text-[12px] leading-6 text-muted-foreground"
+  >
+    {children}
+  </p>
+)
+
 /* ─── Tab header: title … meta ─── */
 
 export const MyListTabHeader = ({
