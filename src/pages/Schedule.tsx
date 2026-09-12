@@ -334,13 +334,13 @@ const Schedule = () => {
           </div>
           <p className="text-sm font-medium text-foreground">روز خالی</p>
           <p className="text-xs text-muted-foreground mt-2 leading-6 max-w-[240px]">
-            {activeDay} انیمه‌ای در برنامه پخش این فصل ثبت نشده.
+            برای {activeDay} هنوز عنوانی با روز پخش در کاتالوگ ثبت نشده.
           </p>
         </div>
       )}
 
       <p className="text-[10px] text-muted-foreground/70 text-center px-6 pt-6 leading-5">
-        داده از AniList · فقط عناوین موجود در شیوری قابل باز شدن هستند
+        برنامهٔ عناوین در حال ترجمهٔ شیوری · روز و ساعت از کاتالوگ
       </p>
       </div>
     </TabSwipeArea>

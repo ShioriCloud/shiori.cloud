@@ -192,8 +192,13 @@ export type SchedulePayload = {
   degraded?: boolean
 }
 
-export const getAiringSchedule = async (): Promise<SchedulePayload> =>
-  shioriFetch<SchedulePayload>('/anime-catalog/schedule')
+export const getAiringSchedule = async (
+  opts?: { scope?: 'shiori' | 'anilist' }
+): Promise<SchedulePayload> => {
+  const scope = opts?.scope ?? 'shiori'
+  const qs = scope === 'anilist' ? '' : `?scope=${encodeURIComponent(scope)}`
+  return shioriFetch<SchedulePayload>(`/anime-catalog/schedule${qs}`)
+}
 
 export const searchAnimeCards = async (params: AnimeSearchParams): Promise<AnimeSearchResult> => {
   const qs = new URLSearchParams()

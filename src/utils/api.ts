@@ -614,24 +614,27 @@ const normalizeSchedulePayload = (
 
 const loadSchedulePayload = async (): Promise<catalog.SchedulePayload> => {
   try {
-    const fromApi = await catalog.getAiringSchedule()
+    // Preferred source: Shiori catalog slots (may be empty until admins set weekday/time).
+    const fromApi = await catalog.getAiringSchedule({ scope: 'shiori' })
     if (!fromApi.degraded) {
-      const normalized = normalizeSchedulePayload(fromApi)
-      if (countScheduleItems(normalized) > 0) {
-        return normalized
-      }
+      return normalizeSchedulePayload(fromApi)
     }
   } catch {
-    // API unavailable or returned degraded payload — fall back to client AniList
+    // API unavailable — try legacy sources below
   }
 
   try {
-    const fromClient = await fetchScheduleFromAniListClient()
-    const normalized = normalizeSchedulePayload(fromClient)
-    if (countScheduleItems(normalized) > 0) {
-      return normalized
+    const fromApi = await catalog.getAiringSchedule({ scope: 'anilist' })
+    if (!fromApi.degraded) {
+      const normalized = normalizeSchedulePayload(fromApi)
+      if (countScheduleItems(normalized) > 0) return normalized
     }
-    return normalized
+  } catch {
+    // ignore
+  }
+
+  try {
+    return normalizeSchedulePayload(await fetchScheduleFromAniListClient())
   } catch {
     const stale = peekScheduleCache()
     if (stale?.data) return normalizeSchedulePayload(stale.data)
@@ -639,7 +642,7 @@ const loadSchedulePayload = async (): Promise<catalog.SchedulePayload> => {
   }
 }
 
-const SCHEDULE_CACHE_KEY = 'shiori_schedule_v4'
+const SCHEDULE_CACHE_KEY = 'shiori_schedule_v5'
 /** Soft TTL for treating disk cache as fresh enough for initialData. */
 export const SCHEDULE_CACHE_TTL_MS = 30 * 60 * 1000
 /** Keep "on air now" cards briefly after airingAt. */
@@ -746,8 +749,9 @@ export const fetchSchedule = async (): Promise<catalog.SchedulePayload> => {
 
   try {
     const data = await loadSchedulePayload()
-    if (isUsableSchedulePayload(data)) {
-      writeScheduleCache(data)
+    // Accept live payloads even when empty (Shiori slots may not be filled yet).
+    if (data?.schedule && !data.degraded) {
+      if (isUsableSchedulePayload(data)) writeScheduleCache(data)
       return data
     }
     if (cached) {

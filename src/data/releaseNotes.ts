@@ -27,6 +27,11 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.16',
+    title: 'برنامه پخش',
+    items: ['برنامه پخش فقط عناوین در حال ترجمهٔ شیوری را نشان می‌دهد'],
+  },
+  {
     version: '0.2.15',
     title: 'برنامه پخش',
     items: ['برنامه پخش هفتگی دوباره انیمه‌های هر روز را نشان می‌دهد'],
