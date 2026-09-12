@@ -1,9 +1,5 @@
 import { ViewIcon } from 'hugeicons-react'
-
-const toPersianNumber = (num: number | string): string => {
-  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
-  return String(num).replace(/[0-9]/g, (w) => persianDigits[+w])
-}
+import { toPersianDigits } from '@/lib/persianDigits'
 
 /** Compact view-count chip for poster / featured cards (top-start). */
 export const AnimeViewCountBadge = ({ count }: { count?: number | null }) => {
@@ -13,10 +9,10 @@ export const AnimeViewCountBadge = ({ count }: { count?: number | null }) => {
   return (
     <span
       className="absolute top-2 start-2 z-[1] inline-flex items-center gap-0.5 rounded-md border border-white/20 bg-black/50 backdrop-blur-sm px-1 py-0.5 text-[9px] font-medium tabular-nums leading-none text-white/95"
-      aria-label={`${toPersianNumber(n)} بازدید`}
+      aria-label={`${toPersianDigits(n)} بازدید`}
     >
       <ViewIcon className="h-2.5 w-2.5 shrink-0 text-white/90" aria-hidden />
-      {toPersianNumber(n)}
+      {toPersianDigits(n)}
     </span>
   )
 }

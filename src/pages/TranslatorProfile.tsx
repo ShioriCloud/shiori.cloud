@@ -8,11 +8,7 @@ import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { useTranslatorProfileQuery } from '@/hooks/queries/useAnimeQueries'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { Badge } from '@/components/ui/badge'
-
-const toPersianNumber = (num: number | string): string => {
-  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
-  return String(num).replace(/[0-9]/g, (w) => persianDigits[+w])
-}
+import { toPersianDigits } from '@/lib/persianDigits'
 
 const genreLabel = (g: GenreItem) => g.name_fa || g.name_en || g.slug
 
@@ -180,8 +176,8 @@ const TranslatorProfile = () => {
       {/* Stats */}
       <div className="mx-4 mt-5 grid grid-cols-3 gap-2">
         {[
-          { value: toPersianNumber(animeCount), label: 'انیمه' },
-          { value: toPersianNumber(totalEpisodes), label: 'قسمت' },
+          { value: toPersianDigits(animeCount), label: 'انیمه' },
+          { value: toPersianDigits(totalEpisodes), label: 'قسمت' },
           { value: experienceLabel, label: 'سابقه' },
         ].map((stat) => (
           <div key={stat.label} className="surface-skeuo rounded-xl py-3 px-2 text-center">
@@ -195,7 +191,7 @@ const TranslatorProfile = () => {
       <div className="px-4 pt-6 pb-2 flex items-baseline justify-between">
         <h2 className="text-base font-semibold text-foreground">آثار</h2>
         <span className="text-xs text-muted-foreground">
-          {animeCount > 0 ? `${toPersianNumber(animeCount)} عنوان` : 'خالی'}
+          {animeCount > 0 ? `${toPersianDigits(animeCount)} عنوان` : 'خالی'}
         </span>
       </div>
 

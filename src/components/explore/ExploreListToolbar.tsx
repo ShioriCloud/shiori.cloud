@@ -1,11 +1,7 @@
 import { Filter, ArrowUpDown, Search as SearchIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { toPersianDigits } from '@/lib/persianDigits'
 import { EXPLORE_CHIP_CLASS, EXPLORE_STICKY_SHELL_CLASS } from './ExploreUi'
-
-const toPersianNumber = (num: number | string): string => {
-  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
-  return String(num).replace(/[0-9]/g, (w) => persianDigits[+w])
-}
 
 type ExploreListToolbarProps = {
   /** Contextual list title (sort label, genre name, season, …). */
@@ -45,7 +41,7 @@ export const ExploreListToolbar = ({
           فیلتر
           {filterCount > 0 ? (
             <span className="rounded-full bg-primary-400/20 text-primary-400 text-[10px] min-w-[1.125rem] px-1 py-0.5 font-semibold leading-none">
-              {toPersianNumber(filterCount)}
+              {toPersianDigits(filterCount)}
             </span>
           ) : null}
         </button>

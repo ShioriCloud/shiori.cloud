@@ -12,14 +12,10 @@ import {
 } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
 import { BidiText } from '@/components/BidiText'
+import { toPersianDigits } from '@/lib/persianDigits'
 
 const DISMISS_DRAG_PX = 80
 const MAX_UPWARD_DRAG_PX = 24
-
-const toPersianNumber = (num: number | string): string => {
-  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
-  return String(num).replace(/[0-9]/g, (w) => persianDigits[+w])
-}
 
 const dragTranslateY = (offset: number) => {
   if (offset > 0) return offset
@@ -218,9 +214,9 @@ const FavoriteAnimeEditor = ({
                   </Button>
                   <div className="flex-1 text-center">
                     <p className="text-xl font-bold tabular-nums">
-                      {toPersianNumber(episodesWatched)}
+                      {toPersianDigits(episodesWatched)}
                       <span className="mx-1 text-sm font-normal text-muted-foreground">/</span>
-                      {toPersianNumber(maxEpisodes)}
+                      {toPersianDigits(maxEpisodes)}
                     </p>
                     <p className="mt-0.5 text-[11px] text-muted-foreground">قسمت</p>
                   </div>
@@ -249,7 +245,7 @@ const FavoriteAnimeEditor = ({
                     disabled={saving}
                     onClick={() => setEpisodesWatched(maxEpisodes)}
                   >
-                    علامت‌گذاری همه ({toPersianNumber(maxEpisodes)} قسمت)
+                    علامت‌گذاری همه ({toPersianDigits(maxEpisodes)} قسمت)
                   </Button>
                 ) : null}
               </div>
@@ -271,7 +267,7 @@ const FavoriteAnimeEditor = ({
                             : 'border-border bg-card/60 text-muted-foreground hover:bg-muted/50'
                         )}
                       >
-                        {toPersianNumber(score)}
+                        {toPersianDigits(score)}
                       </button>
                     )
                   })}

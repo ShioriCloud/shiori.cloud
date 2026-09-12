@@ -20,11 +20,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-
-const toPersianNumber = (num: number | string): string => {
-  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
-  return String(num).replace(/[0-9]/g, (w) => persianDigits[+w])
-}
+import { toPersianDigits } from '@/lib/persianDigits'
 
 type ExploreSeasonPickerProps = {
   season: SearchSeasonKey
@@ -62,7 +58,7 @@ export const ExploreSeasonHeader = ({
     isLoadingCount && resultCount == null
       ? '…'
       : resultCount != null
-        ? `${toPersianNumber(resultCount)} انیمه`
+        ? `${toPersianDigits(resultCount)} انیمه`
         : null
 
   return (
@@ -76,7 +72,7 @@ export const ExploreSeasonHeader = ({
           aria-label={`انتخاب فصل، ${seasonLabel} ${year}`}
         >
           <h2 className="text-sm font-semibold text-foreground truncate">
-            {seasonLabel} {toPersianNumber(year)}
+            {seasonLabel} {toPersianDigits(year)}
           </h2>
           <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
         </button>
@@ -118,7 +114,7 @@ export const ExploreSeasonSheet = ({
                   active={draftYear === y}
                   onClick={() => onDraftYear(y)}
                 >
-                  {toPersianNumber(y)}
+                  {toPersianDigits(y)}
                 </ExploreOptionButton>
               ))}
             </div>

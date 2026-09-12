@@ -11,6 +11,7 @@ import { withViewTransition } from '@/lib/viewTransition'
 import { useScheduleQuery } from '../hooks/queries/useAnimeQueries'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { hapticSelection } from '../lib/telegramHaptics'
+import { toPersianDigits } from '@/lib/persianDigits'
 import { showAppToast } from '@/store/appFeedbackStore'
 import shioriLogo from '../assets/images/shiori.svg'
 
@@ -92,11 +93,6 @@ const translateSeason = (season: string): string => {
     default:
       return season
   }
-}
-
-const toPersianNumber = (num: number | string): string => {
-  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
-  return String(num).replace(/[0-9]/g, (w) => persianDigits[+w])
 }
 
 const filterScheduleList = (list: Anime[]): Anime[] =>
@@ -196,7 +192,7 @@ const Schedule = () => {
 
   const seasonLabel =
     currentSeason && currentYear
-      ? `فصل ${translateSeason(currentSeason)} ${toPersianNumber(currentYear)}`
+      ? `فصل ${translateSeason(currentSeason)} ${toPersianDigits(currentYear)}`
       : null
 
   return (
@@ -248,7 +244,7 @@ const Schedule = () => {
           <h2 className="text-base font-semibold text-foreground">{activeDay}</h2>
           <span className="text-xs text-muted-foreground">
             {activeList.length > 0
-              ? `${toPersianNumber(activeList.length)} عنوان`
+              ? `${toPersianDigits(activeList.length)} عنوان`
               : 'خالی'}
           </span>
         </div>
@@ -314,7 +310,7 @@ const Schedule = () => {
                                   </>
                                 ) : null}
                                 <span className="font-medium text-white/90">
-                                  قسمت {toPersianNumber(anime.episode)}
+                                  قسمت {toPersianDigits(anime.episode)}
                                 </span>
                               </p>
                             </div>

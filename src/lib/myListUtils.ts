@@ -1,4 +1,5 @@
 import type { FavoriteProgress } from '@/store/animeStore'
+import { toPersianDigits } from '@/lib/persianDigits'
 import { translateAiringStatus } from '@/lib/searchFilters'
 
 export type WatchStatus = 'planning' | 'watching' | 'completed'
@@ -24,10 +25,7 @@ export const airingStatusLabel = (status?: string | null): string => {
   return translateAiringStatus(status.trim().toUpperCase())
 }
 
-const toPersianNumber = (num: number | string): string => {
-  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
-  return String(num).replace(/[0-9]/g, (w) => persianDigits[+w])
-}
+export const toPersianNumber = toPersianDigits
 
 export const formatRelativeTimeFa = (iso: string): string => {
   const then = new Date(iso).getTime()
@@ -53,8 +51,6 @@ export const formatDateTimeFa = (iso: string): string => {
     hour12: false,
   }).format(date)
 }
-
-export { toPersianNumber }
 
 export const displayScore = (
   userRating: number | null | undefined,

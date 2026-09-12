@@ -18,6 +18,7 @@ import {
   translateExploreSort,
   translateSeason,
 } from '@/lib/searchFilters'
+import { toPersianDigits } from '@/lib/persianDigits'
 
 export type ExploreTab = 'all' | 'seasonal' | 'genres'
 
@@ -320,11 +321,6 @@ export const exploreAllHref = (partial: Partial<ExploreState> = {}): string => {
   return `/explore?${params.toString()}`
 }
 
-const toPersianNumber = (num: number | string): string => {
-  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
-  return String(num).replace(/[0-9]/g, (w) => persianDigits[+w])
-}
-
 type GenreLike = { slug: string; name_fa?: string | null; name_en?: string | null }
 
 const genreLabel = (g: GenreLike) => g.name_fa || g.name_en || g.slug
@@ -335,7 +331,7 @@ export const buildExploreAllListTitle = (
   genres: GenreLike[] = []
 ): string => {
   if (state.listSeason && state.listYear != null) {
-    return `انیمه‌های فصل ${translateSeason(state.listSeason)} ${toPersianNumber(state.listYear)}`
+    return `انیمه‌های فصل ${translateSeason(state.listSeason)} ${toPersianDigits(state.listYear)}`
   }
   if (state.genreSlugs.length > 0) {
     const labels = state.genreSlugs.map((slug) => {

@@ -1,9 +1,7 @@
 import type { GenreItem } from '../../types/catalog'
+import { toPersianDigits } from '@/lib/persianDigits'
 
-export const toPersianNumber = (num: number | string): string => {
-  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
-  return String(num).replace(/[0-9]/g, (w) => persianDigits[+w])
-}
+export const toPersianNumber = toPersianDigits
 
 /** برچسب فصل از پنل ادمین (label_fa) — با اعداد فارسی */
 export const formatSeriesMemberLabel = (member: {

@@ -15,6 +15,7 @@ import { HomeRailScroller, HomeRailSlide } from '@/components/home/HomeRailScrol
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { exploreAllHref } from '@/lib/exploreParams'
+import { toPersianDigits } from '@/lib/persianDigits'
 import { hapticSelection } from '@/lib/telegramHaptics'
 import {
   useHomeDonghuaQuery,
@@ -37,11 +38,6 @@ const TYPE_TABS: { id: ContentType; label: string }[] = [
   { id: 'movie', label: 'سینمایی' },
   { id: 'donghua', label: 'دونگهوا' },
 ]
-
-const toPersianNumber = (num: number | string): string => {
-  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
-  return String(num).replace(/[0-9]/g, (w) => persianDigits[+w])
-}
 
 const translateSeason = (season: string): string => {
   switch (season) {
@@ -148,7 +144,7 @@ const Home = () => {
     []
   )
   const currentSeasonFa = translateSeason(currentSeasonKey)
-  const seasonLabel = `فصل ${currentSeasonFa} ${toPersianNumber(currentYearNumber)}`
+  const seasonLabel = `فصل ${currentSeasonFa} ${toPersianDigits(currentYearNumber)}`
 
   // P0: above-the-fold — always enabled
   const featuredQuery = useHomeFeaturedQuery(selectedType, true)
@@ -180,7 +176,7 @@ const Home = () => {
         seeAll: exploreAllHref({ sortBy: 'created_at' }),
       },
       latest: {
-        title: `فصل ${currentSeasonFa} ${toPersianNumber(currentYearNumber)}`,
+        title: `فصل ${currentSeasonFa} ${toPersianDigits(currentYearNumber)}`,
         seeAll: exploreAllHref({
           listYear: currentYearNumber,
           listSeason: currentSeasonKey,

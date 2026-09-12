@@ -21,14 +21,10 @@ import {
   buildTelegramBotLink,
   getMiniAppBotUsername,
 } from '@/utils/externalLinks'
+import { toPersianDigits } from '@/lib/persianDigits'
 
 /** Semver from package.json at build time (see vite.config.ts). */
 const APP_VERSION = String(import.meta.env.VITE_APP_VERSION ?? '0.1.0').trim() || '0.1.0'
-
-const toPersianNumber = (num: number | string): string => {
-  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
-  return String(num).replace(/[0-9]/g, (w) => persianDigits[+w])
-}
 
 const getInitials = (name: string): string => {
   const trimmed = name.trim()
@@ -74,7 +70,7 @@ const MenuRowContent = ({ icon, label, hint, badge }: MenuRowProps) => (
           'border-border/50 bg-muted/50 text-[11px] font-medium tabular-nums text-foreground'
         )}
       >
-        {badge > 99 ? '۹۹+' : toPersianNumber(badge)}
+        {badge > 99 ? '۹۹+' : toPersianDigits(badge)}
       </span>
     ) : null}
     <ChevronLeft className="h-4 w-4 shrink-0 text-muted-foreground/60" aria-hidden />
@@ -186,7 +182,7 @@ const Profile = () => {
   const avatarUrl = user?.photoUrl && !avatarFailed ? user.photoUrl : null
   const favoritesCount = stats.animeCount
   const avgRatingLabel =
-    stats.averageRating != null ? toPersianNumber(stats.averageRating.toFixed(1)) : '—'
+    stats.averageRating != null ? toPersianDigits(stats.averageRating.toFixed(1)) : '—'
   const showNotificationSettings = inTelegram && user != null
   const showWebAuth = !inTelegram && !user
 
@@ -283,10 +279,10 @@ const Profile = () => {
         <div className="grid grid-cols-3 gap-2">
           <StatCell
             to="/my-list"
-            value={toPersianNumber(favoritesCount)}
+            value={toPersianDigits(favoritesCount)}
             label="انیمه"
           />
-          <StatCell value={toPersianNumber(stats.episodesWatched)} label="قسمت دیده" />
+          <StatCell value={toPersianDigits(stats.episodesWatched)} label="قسمت دیده" />
           <StatCell value={avgRatingLabel} label="میانگین امتیاز" />
         </div>
       </div>
@@ -312,7 +308,7 @@ const Profile = () => {
             to="/notifications"
             icon={<AlarmClockIcon className="h-4 w-4" />}
             label="اعلان‌ها"
-            hint={unreadCount > 0 ? `${toPersianNumber(unreadCount)} پیام جدید` : 'همه خوانده شده'}
+            hint={unreadCount > 0 ? `${toPersianDigits(unreadCount)} پیام جدید` : 'همه خوانده شده'}
             badge={unreadCount}
           />
           <MenuItem
@@ -434,7 +430,7 @@ const Profile = () => {
           مینی‌شیوری | آرشیو جمع‌و‌جور دانلود انیمه
         </p>
         <p className="text-[11px] text-muted-foreground/80">
-          نسخه {toPersianNumber(APP_VERSION)}
+          نسخه {toPersianDigits(APP_VERSION)}
           <span className="mx-1.5 text-border" aria-hidden>
             ·
           </span>

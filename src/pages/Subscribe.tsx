@@ -4,14 +4,10 @@ import { SHIORI_PRIMARY_BUTTON_CLASS } from '@/components/explore/ExploreUi'
 import { useSubscriptionMe, useSubscriptionPlans } from '../hooks/useSubscription'
 import { useTelegramApp } from '../hooks/useTelegramApp'
 import { cn } from '@/lib/utils'
-
-const toPersianNumber = (num: number | string): string => {
-  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
-  return String(num).replace(/[0-9]/g, (w) => persianDigits[+w])
-}
+import { toPersianDigits } from '@/lib/persianDigits'
 
 const formatIrr = (amount: number): string =>
-  `${toPersianNumber(amount.toLocaleString('en-US'))} تومان`
+  `${toPersianDigits(amount.toLocaleString('en-US'))} تومان`
 
 const darametDonateUrl = (): string => {
   const raw = String(import.meta.env.VITE_DARAMET_DONATE_URL ?? '').trim()
@@ -97,7 +93,7 @@ const Subscribe = () => {
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed">
           پس از پرداخت در دارمت، اشتراک به‌صورت خودکار (یا توسط ادمین تا اتصال کامل webhook) برای{' '}
-          {toPersianNumber(plan?.days ?? 30)} روز فعال می‌شود. در توضیحات پرداخت شناسه تلگرام خود را
+          {toPersianDigits(plan?.days ?? 30)} روز فعال می‌شود. در توضیحات پرداخت شناسه تلگرام خود را
           بنویسید.
         </p>
         <Button

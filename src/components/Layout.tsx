@@ -14,14 +14,10 @@ import { useNotifications } from '@/hooks/useNotifications'
 import { useAiringReminders } from '@/hooks/useAiringReminders'
 import { hapticSelection } from '@/lib/telegramHaptics'
 import { cn } from '@/lib/utils'
+import { toPersianDigits } from '@/lib/persianDigits'
 
 interface LayoutProps {
   children: ReactNode
-}
-
-const toPersianNumber = (num: number): string => {
-  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
-  return String(num).replace(/[0-9]/g, (w) => persianDigits[+w])
 }
 
 const Layout = ({ children }: LayoutProps) => {
@@ -164,7 +160,7 @@ const Layout = ({ children }: LayoutProps) => {
               )}
               aria-label={
                 unreadCount > 0
-                  ? `پروفایل، ${toPersianNumber(unreadCount)} اعلان خوانده‌نشده`
+                  ? `پروفایل، ${toPersianDigits(unreadCount)} اعلان خوانده‌نشده`
                   : 'پروفایل'
               }
             >
@@ -177,7 +173,7 @@ const Layout = ({ children }: LayoutProps) => {
                       'bg-primary-400 px-1 text-[9px] font-bold leading-none text-white tabular-nums'
                     )}
                   >
-                    {unreadCount > 9 ? '۹+' : toPersianNumber(unreadCount)}
+                    {unreadCount > 9 ? '۹+' : toPersianDigits(unreadCount)}
                   </span>
                 ) : null}
               </span>
