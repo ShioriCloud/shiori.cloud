@@ -181,7 +181,7 @@ export type ScheduleAnimeItem = {
   image: string
   genres?: { slug: string; name_en?: string }[]
   localId?: string | number | null
-  /** Unix seconds — used to drop stale AniList next-airing pointers. */
+  /** Unix seconds — optional; used to drop past airing slots. */
   airing_at?: number
 }
 
@@ -192,13 +192,8 @@ export type SchedulePayload = {
   degraded?: boolean
 }
 
-export const getAiringSchedule = async (
-  opts?: { scope?: 'shiori' | 'anilist' }
-): Promise<SchedulePayload> => {
-  const scope = opts?.scope ?? 'shiori'
-  const qs = scope === 'anilist' ? '' : `?scope=${encodeURIComponent(scope)}`
-  return shioriFetch<SchedulePayload>(`/anime-catalog/schedule${qs}`)
-}
+export const getAiringSchedule = async (): Promise<SchedulePayload> =>
+  shioriFetch<SchedulePayload>('/anime-catalog/schedule?scope=shiori')
 
 export const searchAnimeCards = async (params: AnimeSearchParams): Promise<AnimeSearchResult> => {
   const qs = new URLSearchParams()
@@ -272,22 +267,6 @@ export const recordAnimeView = async (
     `/anime-catalog/${encodeURIComponent(String(animeId))}/view`,
     { method: 'POST' }
   )
-
-export const getLocalAnimeIdsByAniListIds = async (
-  anilistIds: number[]
-): Promise<Map<number, string | number>> => {
-  const unique = [...new Set(anilistIds.filter((id) => Number.isFinite(id) && id > 0))]
-  if (unique.length === 0) return new Map()
-
-  const qs = new URLSearchParams({ ids: unique.join(',') })
-  const record = await shioriFetch<Record<string, string>>(`/anime-catalog/anilist/batch?${qs}`)
-
-  const map = new Map<number, string | number>()
-  for (const [anilistId, localId] of Object.entries(record)) {
-    map.set(Number(anilistId), localId)
-  }
-  return map
-}
 
 export const getAnimeCardsByStudioSlug = async (slug: string): Promise<AnimeCard[]> => {
   const rows = await shioriFetch<ApiCard[]>(

@@ -332,15 +332,15 @@ const Schedule = () => {
           <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mb-4">
             <Calendar01Icon className="w-7 h-7 text-muted-foreground/50" />
           </div>
-          <p className="text-sm font-medium text-foreground">روز خالی</p>
+          <p className="text-sm font-medium text-foreground">در تقویم شیوری عنوانی نیست</p>
           <p className="text-xs text-muted-foreground mt-2 leading-6 max-w-[240px]">
-            برای {activeDay} هنوز عنوانی با روز پخش در کاتالوگ ثبت نشده.
+            برای {activeDay} هنوز زمان پخش در کاتالوگ ثبت نشده.
           </p>
         </div>
       )}
 
       <p className="text-[10px] text-muted-foreground/70 text-center px-6 pt-6 leading-5">
-        برنامهٔ عناوین در حال ترجمهٔ شیوری · روز و ساعت از کاتالوگ
+        تقویم ترجمهٔ شیوری · روز خالی یعنی هنوز زمان پخش ثبت نشده
       </p>
       </div>
     </TabSwipeArea>
