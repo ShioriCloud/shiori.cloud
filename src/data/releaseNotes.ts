@@ -27,6 +27,11 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.21',
+    title: 'زمان پخش',
+    items: ['شمارش معکوس قسمت بعد فقط از تقویم شیوری می‌آید'],
+  },
+  {
     version: '0.2.20',
     title: 'اعلان‌ها',
     items: ['اگر اعلان‌ها بارگذاری نشد، می‌توانید دوباره تلاش کنید'],

@@ -5,7 +5,6 @@ import { animeDetailPath } from '../lib/animePaths'
 import { DetailSkeleton } from '@/components/anime-detail/AnimeDetailSkeletons'
 import {
   NextAiringCard,
-  NextAiringCardSkeleton,
   ReminderStatCard,
 } from '@/components/anime-detail/AnimeDetailStatCards'
 import { AnimeDetailDownloadTab } from '@/components/anime-detail/AnimeDetailDownloadTab'
@@ -38,7 +37,6 @@ const AnimeDetail = () => {
     similarAnime,
     similarLoading,
     nextAiring,
-    showNextAiringSkeleton,
     canHaveNextAiring,
     isDonghua,
     isMovie,
@@ -115,8 +113,6 @@ const AnimeDetail = () => {
           episode={nextAiring.episode}
           airingAt={nextAiring.airing_at}
         />
-      ) : showNextAiringSkeleton ? (
-        <NextAiringCardSkeleton />
       ) : null}
 
       {/* Reminder for airing / upcoming titles. */}

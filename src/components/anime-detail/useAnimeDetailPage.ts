@@ -5,7 +5,6 @@ import { useNotifications } from '../../hooks/useNotifications'
 import { useAiringReminders } from '../../hooks/useAiringReminders'
 import { useTelegramApp } from '../../hooks/useTelegramApp'
 import {
-  useAnilistNextAiringQuery,
   useAnimeDetailQuery,
   useSimilarAnimeQuery,
   useTranslatorLinksQuery,
@@ -81,24 +80,10 @@ export function useAnimeDetailPage() {
   const airingStatusKey = String(anime?.airing_status ?? anime?.status ?? 'RELEASING')
     .trim()
     .toUpperCase()
-  // Upcoming titles (first episode scheduled) use NOT_YET_RELEASED but still have AniList countdown.
+  // Upcoming titles (first episode scheduled) use NOT_YET_RELEASED.
   const canHaveNextAiring =
     airingStatusKey === 'RELEASING' || airingStatusKey === 'NOT_YET_RELEASED'
-  // Non-blocking: fill countdown in background; never gate the detail skeleton.
-  const needsClientNextAiring =
-    Boolean(anime) &&
-    !isPlaceholderData &&
-    !isAnimeDetailShell(animeData) &&
-    !anime?.next_airing &&
-    Boolean(anime?.anilist_id && anime.anilist_id > 0) &&
-    canHaveNextAiring
-
-  const { data: clientNextAiring, isPending: clientNextAiringPending } =
-    useAnilistNextAiringQuery(anime?.anilist_id, needsClientNextAiring)
-
-  const nextAiring = anime?.next_airing ?? clientNextAiring ?? null
-  const showNextAiringSkeleton =
-    !nextAiring && needsClientNextAiring && clientNextAiringPending
+  const nextAiring = anime?.next_airing ?? null
 
   const [activeTab, setActiveTab] = useState<TabType>(() =>
     parseAnimeDetailTab(searchParams.get('tab'))
@@ -274,7 +259,6 @@ export function useAnimeDetailPage() {
     similarAnime,
     similarLoading,
     nextAiring,
-    showNextAiringSkeleton,
     canHaveNextAiring,
     isDonghua,
     isMovie,

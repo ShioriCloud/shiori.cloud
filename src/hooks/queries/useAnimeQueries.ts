@@ -25,7 +25,6 @@ import {
   getTranslatorLinksByAnimeId,
   listGenres,
 } from '../../services/catalogSource'
-import { fetchAnilistNextAiring } from '../../services/externalScores'
 import { getAnimeFavoriteCount, getAnimeFavoriteCounts } from '../../services/userDataSource'
 import {
   fetchHomeCardRail,
@@ -358,19 +357,6 @@ export const useTranslatorLinksQuery = (
     queryKey: queryKeys.translatorLinks(animeId ?? ''),
     queryFn: () => getTranslatorLinksByAnimeId(animeId!),
     enabled: enabled && Boolean(animeId),
-  })
-
-/** Client AniList fallback when API next_airing is null (server blocked from AniList). */
-export const useAnilistNextAiringQuery = (
-  anilistId: number | null | undefined,
-  enabled = true
-) =>
-  useQuery({
-    queryKey: queryKeys.anilistNextAiring(anilistId ?? ''),
-    queryFn: () => fetchAnilistNextAiring(anilistId!),
-    enabled: enabled && Boolean(anilistId && anilistId > 0),
-    staleTime: 5 * 60_000,
-    gcTime: 30 * 60_000,
   })
 
 /** فیلتر section روی لیست cache‌شده (بدون درخواست جدید) */
