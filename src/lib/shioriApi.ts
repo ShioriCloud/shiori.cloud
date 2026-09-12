@@ -1,3 +1,4 @@
+import { formatUserFacingApiError } from '../services/userListErrors'
 import { getTelegramInitData } from './telegramRequestHeaders'
 import { getAppSessionHeaders } from './appSessionStorage'
 import { getTelegramMiniAppSessionHeaders } from './telegramSessionStorage'
@@ -45,10 +46,16 @@ const buildHeaders = (extra?: HeadersInit): HeadersInit => {
   return headers
 }
 
+const throwUserFacing = (technical: string, context?: string): never => {
+  console.error('[shioriFetch]', context ?? technical, technical)
+  throw new Error(formatUserFacingApiError(technical))
+}
+
 export async function shioriFetch<T>(path: string, init?: RequestInit): Promise<T> {
   if (!shioriApiBaseUrl) {
-    throw new Error(
-      'VITE_SHIORI_API_URL تنظیم نشده. در .env آدرس shiori-api را قرار دهید (مثلاً http://localhost:4001).'
+    throwUserFacing(
+      'VITE_SHIORI_API_URL تنظیم نشده. در .env آدرس shiori-api را قرار دهید (مثلاً http://localhost:4001).',
+      'missing API base URL'
     )
   }
 
@@ -72,7 +79,7 @@ export async function shioriFetch<T>(path: string, init?: RequestInit): Promise<
 
     if (!res.ok) {
       const text = await res.text().catch(() => '')
-      throw new Error(`API ${res.status}: ${text || res.statusText}`)
+      throwUserFacing(`API ${res.status}: ${text || res.statusText}`, path)
     }
 
     const text = await res.text()
@@ -83,7 +90,7 @@ export async function shioriFetch<T>(path: string, init?: RequestInit): Promise<
     return JSON.parse(text) as T
   } catch (err) {
     if (err instanceof DOMException && err.name === 'AbortError') {
-      throw new Error(`API timeout after ${timeoutMs}ms: ${path}`)
+      throwUserFacing(`API timeout after ${timeoutMs}ms: ${path}`, path)
     }
     throw err
   } finally {

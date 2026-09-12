@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import WebApp from '@twa-dev/sdk'
 import { isTelegramMiniApp } from '../lib/platform'
 import { completeTelegramAccountLink } from '../services/shioriAppAuth'
+import { formatUserFacingApiError } from '../services/userListErrors'
 import { parseTelegramLinkToken } from '../utils/telegramStartParam'
 
 const SESSION_KEY = 'shiori_tg_link_token_handled'
@@ -33,8 +34,8 @@ export const useTelegramLinkComplete = (enabled: boolean) => {
         await completeTelegramAccountLink(token)
         WebApp.showAlert('حساب وب با Telegram ادغام شد. لیست و اعلان‌ها یکی شدند.')
       } catch (e) {
-        const message = e instanceof Error ? e.message : 'خطا در اتصال حساب'
-        WebApp.showAlert(message.replace(/^API \d+: /, '').replace(/^"|"$/g, ''))
+        console.error('[useTelegramLinkComplete]', e)
+        WebApp.showAlert(formatUserFacingApiError(e))
       } finally {
         if (fromQuery) {
           const next = new URLSearchParams(searchParams)

@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { SHIORI_PRIMARY_BUTTON_CLASS } from '@/components/explore/ExploreUi'
 import { cn } from '@/lib/utils'
+import { formatUserFacingApiError } from '@/services/userListErrors'
 import logo from '../assets/images/shiori-logo.svg'
 
 type Mode = 'login' | 'register'
@@ -41,8 +42,7 @@ export const ProfileAuthPanel = ({
       }
       onSuccess?.()
     } catch (e) {
-      const message = e instanceof Error ? e.message : 'خطا در ورود'
-      setError(message.replace(/^API \d+: /, '').replace(/^"|"$/g, ''))
+      setError(formatUserFacingApiError(e))
     } finally {
       setLoading(false)
     }

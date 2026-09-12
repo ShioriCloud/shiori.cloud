@@ -9,7 +9,5 @@ export const canSyncUserAnimeList = (): boolean => {
 export const assertUserAnimeListAuth = (): void => {
   if (canSyncUserAnimeList()) return
 
-  throw new Error(
-    'Telegram initData یافت نشد — مینی‌اپ را از داخل Telegram ببندید و دوباره باز کنید.'
-  )
+  throw new Error('ورود تلگرام پیدا نشد. مینی‌اپ را از تلگرام باز کنید.')
 }

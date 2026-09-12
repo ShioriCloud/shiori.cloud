@@ -27,6 +27,14 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.19',
+    title: 'پایداری',
+    items: [
+      'اگر برنامه گیر کرد، می‌توانید دوباره تلاش کنید',
+      'پیام خطاها کوتاه و قابل‌فهم شد',
+    ],
+  },
+  {
     version: '0.2.18',
     title: 'لیست‌های من',
     items: [
