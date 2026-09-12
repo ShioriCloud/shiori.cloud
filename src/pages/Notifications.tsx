@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { AlarmClockIcon } from 'hugeicons-react'
 import { BidiText } from '../components/BidiText'
 import { RequireAppAuth } from '../components/RequireAppAuth'
+import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { useNotifications } from '../hooks/useNotifications'
 import { formatNotificationTime } from '../utils/notificationTime'
 import { hapticSelection } from '@/lib/telegramHaptics'
@@ -14,7 +15,8 @@ const unreadBadgeClass =
   'inline-flex shrink-0 items-center rounded-md border border-primary-400/40 bg-primary-400/15 px-1.5 py-0.5 text-[10px] font-medium text-primary-700 dark:border-primary-400/35 dark:bg-primary-500/20 dark:text-primary-200'
 
 const NotificationsPage = () => {
-  const { notifications, unreadCount, isLoading, markRead, markAllRead } = useNotifications()
+  const { notifications, unreadCount, isLoading, isError, refetch, markRead, markAllRead } =
+    useNotifications()
 
   return (
     <div className="pb-24">
@@ -53,6 +55,13 @@ const NotificationsPage = () => {
             </div>
           ))}
         </div>
+      ) : isError && notifications.length === 0 ? (
+        <ExploreEmptyState
+          title="خطا در بارگذاری اعلان‌ها"
+          subtitle="درخواست انجام نشد. دوباره تلاش کنید."
+          actionLabel="تلاش مجدد"
+          onAction={() => void refetch()}
+        />
       ) : notifications.length > 0 ? (
         <div className="space-y-3 p-4">
           {notifications.map((notification) => {

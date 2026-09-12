@@ -92,6 +92,7 @@ export const useNotifications = () => {
     unreadCount,
     preferences: preferencesQuery.data,
     isLoading: notificationsQuery.isLoading,
+    isError: notificationsQuery.isError,
     preferencesLoading: preferencesQuery.isLoading,
     refetch: notificationsQuery.refetch,
     markRead: markReadMutation.mutateAsync,
