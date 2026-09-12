@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import AnimePrefetchLink from '../components/AnimePrefetchLink'
 import { BidiText } from '../components/BidiText'
 import { UserIcon } from 'hugeicons-react'
-import * as catalog from '../services/catalogSource'
-import type { AnimeCard, GenreItem, TranslatorItem } from '../services/catalogSource'
+import type { AnimeCard, GenreItem } from '../services/catalogSource'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
+import { useTranslatorProfileQuery } from '@/hooks/queries/useAnimeQueries'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { Badge } from '@/components/ui/badge'
 
@@ -78,12 +78,11 @@ const AnimeGridCard = ({ anime }: { anime: AnimeCard }) => {
 
 const TranslatorProfile = () => {
   const { slug } = useParams<{ slug: string }>()
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [translator, setTranslator] = useState<TranslatorItem | null>(null)
-  const [animeList, setAnimeList] = useState<AnimeCard[]>([])
-
   const safeSlug = useMemo(() => String(slug || '').trim(), [slug])
+  const { data, isLoading, isError, refetch } = useTranslatorProfileQuery(safeSlug || undefined)
+
+  const translator = data?.translator ?? null
+  const animeList = data?.animeList ?? []
 
   const animeCount = useMemo(() => {
     const ids = new Set(animeList.map((a) => String(a.id)))
@@ -107,45 +106,22 @@ const TranslatorProfile = () => {
     )
   }, [translator?.cover_url, translator?.avatar_url, animeList])
 
-  const loadProfile = useCallback(async () => {
-    if (!safeSlug) return
-    try {
-      setLoading(true)
-      setError(null)
-      const [t, list] = await Promise.all([
-        catalog.getTranslatorBySlug(safeSlug),
-        catalog.getAnimeCardsByTranslatorSlug(safeSlug),
-      ])
-      setTranslator(t)
-      setAnimeList(list)
-    } catch (err) {
-      setError('خطا در بارگذاری پروفایل مترجم')
-      console.error('Failed to load translator profile:', err)
-    } finally {
-      setLoading(false)
-    }
-  }, [safeSlug])
-
-  useEffect(() => {
-    loadProfile()
-  }, [loadProfile])
-
   if (!safeSlug) {
     return (
       <div className="px-4 py-16 text-center text-muted-foreground pb-24">مترجم یافت نشد.</div>
     )
   }
 
-  if (loading) return <ProfileSkeleton />
+  if (isLoading) return <ProfileSkeleton />
 
-  if (error || !translator) {
+  if (isError || !translator) {
     return (
       <div className="pb-24">
         <ExploreEmptyState
           title="خطا در بارگذاری مترجم"
-          subtitle={error || 'مترجم یافت نشد.'}
+          subtitle={isError ? 'خطا در بارگذاری پروفایل مترجم' : 'مترجم یافت نشد.'}
           actionLabel="تلاش مجدد"
-          onAction={loadProfile}
+          onAction={() => void refetch()}
         />
       </div>
     )

@@ -12,6 +12,8 @@ export const queryKeys = {
   similarAnime: (id: string | number, slugs: string[]) =>
     ['anime', 'similar', String(id), slugs.join(',')] as const,
   translatorLinks: (animeId: string | number) => ['anime', 'translators', String(animeId)] as const,
+  studioPage: (slug: string) => ['studio', 'page', slug] as const,
+  translatorProfile: (slug: string) => ['translator', 'profile', slug] as const,
   userAnimeList: (telegramUserId: number) => ['user', 'anime-list', telegramUserId] as const,
   notifications: (telegramUserId: number) => ['notifications', telegramUserId] as const,
   notificationPreferences: (telegramUserId: number) =>

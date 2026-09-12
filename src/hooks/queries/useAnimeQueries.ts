@@ -3,6 +3,7 @@ import { animeCardMatchesRouteParam } from '../../lib/animePaths'
 import {
   buildAnimeDetailPlaceholder,
   fetchAnimeById,
+  fetchAnimeByStudioSlug,
   fetchAnimeSearch,
   fetchHomeFeaturedCards,
   fetchHomeFormatSectionCards,
@@ -19,7 +20,10 @@ import {
 } from '../../utils/api'
 import {
   getAnimeCardsByIds,
+  getAnimeCardsByTranslatorSlug,
   getHomeCustomBlocks,
+  getStudioBySlug,
+  getTranslatorBySlug,
   getTranslatorLinksByAnimeId,
   listGenres,
 } from '../../services/catalogSource'
@@ -337,6 +341,32 @@ export const useTranslatorLinksQuery = (
     queryKey: queryKeys.translatorLinks(animeId ?? ''),
     queryFn: () => getTranslatorLinksByAnimeId(animeId!),
     enabled: enabled && Boolean(animeId),
+  })
+
+export const useStudioPageQuery = (slug: string | undefined) =>
+  useQuery({
+    queryKey: queryKeys.studioPage(slug ?? ''),
+    queryFn: async () => {
+      const [studio, anime] = await Promise.all([
+        getStudioBySlug(slug!),
+        fetchAnimeByStudioSlug(slug!),
+      ])
+      return { studio, anime }
+    },
+    enabled: Boolean(slug),
+  })
+
+export const useTranslatorProfileQuery = (slug: string | undefined) =>
+  useQuery({
+    queryKey: queryKeys.translatorProfile(slug ?? ''),
+    queryFn: async () => {
+      const [translator, animeList] = await Promise.all([
+        getTranslatorBySlug(slug!),
+        getAnimeCardsByTranslatorSlug(slug!),
+      ])
+      return { translator, animeList }
+    },
+    enabled: Boolean(slug),
   })
 
 export type { UiAnimeCard }

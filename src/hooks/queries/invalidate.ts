@@ -6,6 +6,8 @@ export const invalidateAnimeQueries = () => {
   queryClient.invalidateQueries({ queryKey: queryKeys.schedule })
   queryClient.invalidateQueries({ queryKey: ['anime', 'detail'] })
   queryClient.invalidateQueries({ queryKey: ['anime', 'search'] })
+  queryClient.invalidateQueries({ queryKey: ['studio'] })
+  queryClient.invalidateQueries({ queryKey: ['translator'] })
 }
 
 /** Patch favorite-count caches for an anime (UUID + any slug/detail aliases). */
