@@ -389,8 +389,11 @@ const loadSchedulePayload = async (): Promise<catalog.SchedulePayload> => {
 }
 
 const SCHEDULE_CACHE_KEY = 'shiori_schedule_v6'
-/** Soft TTL for treating disk cache as fresh enough for initialData. */
-export const SCHEDULE_CACHE_TTL_MS = 30 * 60 * 1000
+/**
+ * React Query staleTime for the Shiori catalog schedule.
+ * Disk cache is only for instant paint + offline fallback — not treated as fresh.
+ */
+export const SCHEDULE_STALE_MS = 60_000
 /** Keep "on air now" cards briefly after airingAt. */
 const SCHEDULE_AIRING_GRACE_MS = 30 * 60 * 1000
 
@@ -422,7 +425,7 @@ const isUsableSchedulePayload = (data: unknown): data is catalog.SchedulePayload
   return countScheduleItems(payload) > 0
 }
 
-/** Read persisted schedule cache (for initialData / stale-if-error). */
+/** Last successful schedule (any age) — paint immediately, then refetch if stale. */
 export const peekScheduleCache = (opts?: {
   /** When set, ignore entries older than this. Omit to allow any age. */
   maxAgeMs?: number
@@ -462,9 +465,9 @@ const writeScheduleCache = (data: catalog.SchedulePayload): void => {
 }
 
 /**
- * Load weekly Shiori catalog schedule.
- * Always hits network when React Query invokes this (after staleTime).
- * Empty live payloads are valid. On failure, last-resort is stale Shiori cache only.
+ * Load weekly Shiori catalog schedule from Postgres-backed API.
+ * Network after staleTime. Empty live payloads are valid.
+ * On failure, last-resort is the last successful disk cache.
  */
 export const fetchSchedule = async (): Promise<catalog.SchedulePayload> => {
   const cached = peekScheduleCache()

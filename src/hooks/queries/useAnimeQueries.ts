@@ -13,7 +13,7 @@ import {
   fetchSchedule,
   fetchSimilarAnime,
   peekScheduleCache,
-  SCHEDULE_CACHE_TTL_MS,
+  SCHEDULE_STALE_MS,
   type AnimeSearchFilters,
   type HomeFeaturedTab,
   type UiAnimeCard,
@@ -230,11 +230,11 @@ export const useAnimeDetailQuery = (id: string | number | undefined) =>
   })
 
 export const useScheduleQuery = () => {
-  const cached = peekScheduleCache({ maxAgeMs: SCHEDULE_CACHE_TTL_MS })
+  const cached = peekScheduleCache()
   return useQuery({
     queryKey: queryKeys.schedule,
     queryFn: fetchSchedule,
-    staleTime: 15 * 60_000,
+    staleTime: SCHEDULE_STALE_MS,
     gcTime: 2 * 60 * 60_000,
     initialData: cached?.data,
     initialDataUpdatedAt: cached?.ts,

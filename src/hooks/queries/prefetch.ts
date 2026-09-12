@@ -1,5 +1,5 @@
 import { queryClient } from '../../lib/queryClient'
-import { fetchAnimeById, fetchSchedule, fetchSimilarAnime } from '../../utils/api'
+import { fetchAnimeById, fetchSchedule, fetchSimilarAnime, SCHEDULE_STALE_MS } from '../../utils/api'
 import { queryKeys } from './keys'
 
 /** پیش‌بارگذاری جزئیات انیمه (مثلاً قبل از کلیک روی کارت) */
@@ -15,7 +15,7 @@ export const prefetchSchedule = () => {
   void queryClient.prefetchQuery({
     queryKey: queryKeys.schedule,
     queryFn: fetchSchedule,
-    staleTime: 30 * 60_000,
+    staleTime: SCHEDULE_STALE_MS,
   })
 }
 
