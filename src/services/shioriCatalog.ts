@@ -150,11 +150,6 @@ const toCard = (row: ApiCard): AnimeCard => ({
       : 'x265_10bit',
 })
 
-export const getAllAnime = async (): Promise<AnimeCard[]> => {
-  const rows = await shioriFetch<ApiCard[]>('/anime-catalog/all')
-  return rows.map(toCard)
-}
-
 export const getFeaturedAnime = async (limit = 10): Promise<AnimeCard[]> => {
   const qs = `?limit=${encodeURIComponent(String(limit))}`
   const rows = await shioriFetch<ApiCard[]>(`/anime-catalog/featured${qs}`)

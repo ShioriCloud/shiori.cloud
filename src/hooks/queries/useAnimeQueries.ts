@@ -2,9 +2,7 @@ import { keepPreviousData, useInfiniteQuery, useQueries, useQuery } from '@tanst
 import { animeCardMatchesRouteParam } from '../../lib/animePaths'
 import {
   buildAnimeDetailPlaceholder,
-  fetchAllAnimeCards,
   fetchAnimeById,
-  fetchAnimeList,
   fetchAnimeSearch,
   fetchHomeFeaturedCards,
   fetchHomeFormatSectionCards,
@@ -66,12 +64,6 @@ export const buildAnimeSearchQueryKey = (filters: AnimeSearchBaseFilters) =>
     airingStatus: filters.airingStatus ?? null,
     hardsubLanguage: filters.hardsubLanguage ?? null,
     sortBy: filters.sortBy ?? 'created_at',
-  })
-
-export const useAnimeCardsQuery = () =>
-  useQuery({
-    queryKey: queryKeys.animeCards,
-    queryFn: fetchAllAnimeCards,
   })
 
 export const useHomeFeaturedQuery = (tab: HomeFeaturedTab, enabled = true) => {
@@ -204,12 +196,6 @@ export const useAnimeFavoriteCountQuery = (animeId: string | number | undefined)
 
 const findAnimeCardPlaceholder = (id: string | number): UiAnimeCard | undefined => {
   const route = String(id)
-  const cards = queryClient.getQueryData<UiAnimeCard[]>(queryKeys.animeCards)
-  const fromCards = cards?.find(
-    (c) => String(c.id) === route || animeCardMatchesRouteParam(c, route),
-  )
-  if (fromCards) return fromCards
-
   const searchQueries = queryClient.getQueriesData<{ items: UiAnimeCard[] }>({
     queryKey: ['anime', 'search'],
   })
@@ -237,12 +223,6 @@ export const useAnimeDetailQuery = (id: string | number | undefined) =>
       const card = findAnimeCardPlaceholder(id)
       return card ? buildAnimeDetailPlaceholder(card) : undefined
     },
-  })
-
-export const useAnimeListQuery = () =>
-  useQuery({
-    queryKey: queryKeys.animeList,
-    queryFn: () => fetchAnimeList(),
   })
 
 export const useScheduleQuery = () => {
@@ -358,8 +338,5 @@ export const useTranslatorLinksQuery = (
     queryFn: () => getTranslatorLinksByAnimeId(animeId!),
     enabled: enabled && Boolean(animeId),
   })
-
-/** فیلتر section روی لیست cache‌شده (بدون درخواست جدید) */
-export { filterAnimeCardsBySection } from '../../utils/api'
 
 export type { UiAnimeCard }

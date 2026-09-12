@@ -3,7 +3,6 @@ import * as catalog from '../services/catalogSource'
 import * as shiori from '../services/shioriCatalog'
 import { deriveAnimeSlug } from '../lib/animePaths'
 import { resolveCatalogAnimeRecordId } from '../lib/resolveCatalogAnimeId'
-import { fetchAllAnimeRowsCached, invalidateAllAnimeRowsCache } from '../lib/animeCatalogCache'
 
 // Lightweight card shape used across Home/Search UIs
 export type UiAnimeCard = {
@@ -28,8 +27,6 @@ export type UiStudioLink = {
   slug: string
   name: string
 }
-
-import type { AnimeListItem } from '../store/animeStore'
 
 const toGenreItem = (g: any): catalog.GenreItem | null => {
   if (!g) return null
@@ -87,35 +84,10 @@ const toCacheAnime = (c: any): UiAnimeCard => ({
     : [],
 })
 
-const toListItem = (c: any): AnimeListItem => ({
-  id: c.id,
-  title: c.title,
-  image: c.image,
-  description: c.description ?? '',
-  status: c.status ?? 'RELEASING',
-  genres: Array.isArray(c.genres) ? c.genres : [],
-  episodes: typeof c.episodes_count === 'number' ? c.episodes_count : 1,
-  isNew: Boolean(c.isNew || c.is_new),
-  episode: c.episode ?? 'قسمت ۱',
-})
-
-// Returns items shaped for AnimeList store (AnimeListItem[])
 export const normalizeAnimeFormat = (f: unknown) =>
   String(f ?? '')
     .trim()
     .toUpperCase()
-
-const getAllAnimeCached = fetchAllAnimeRowsCached
-
-/** پاک کردن cache (مثلاً بعد از edit در پنل ادمین) */
-export const invalidateAnimeCache = () => {
-  invalidateAllAnimeRowsCache()
-}
-
-export const fetchAllAnimeCards = async (): Promise<UiAnimeCard[]> => {
-  const data = await getAllAnimeCached()
-  return data.map(toCacheAnime)
-}
 
 export const fetchFeaturedAnimeCards = async (limit = 10): Promise<UiAnimeCard[]> => {
   const rows = await catalog.getFeaturedAnime(limit)
@@ -193,38 +165,6 @@ export const fetchHomeFormatSectionCards = async (
     sortBy: 'created_at',
   })
   return result.items.map(toCacheAnime)
-}
-
-export const filterAnimeCardsBySection = (
-  mapped: UiAnimeCard[],
-  section?: string
-): UiAnimeCard[] => {
-  if (section === 'movies') {
-    return mapped.filter((a) => normalizeAnimeFormat(a.format) === 'MOVIE')
-  }
-  if (section === 'donghua') {
-    return mapped.filter((a) => normalizeAnimeFormat(a.format) === 'ONA (CHINESE)')
-  }
-  if (section === 'popular') {
-    const allowed = new Set(['TV', 'ONA', 'SPECIAL', 'MOVIE'])
-    return mapped.filter((a) => allowed.has(normalizeAnimeFormat(a.format)))
-  }
-  if (section === 'latest') {
-    const allowed = new Set(['TV', 'ONA', 'OVA', 'SPECIAL'])
-    return mapped.filter((a) => allowed.has(normalizeAnimeFormat(a.format)))
-  }
-  return mapped
-}
-
-export const fetchAnimeList = async (_section?: string): Promise<AnimeListItem[]> => {
-  const data = await getAllAnimeCached()
-  return data.map(toListItem)
-}
-
-// Returns items shaped for cache cards on Home/Search (UiAnimeCard[])
-export const fetchAnimeCards = async (_section?: string): Promise<UiAnimeCard[]> => {
-  const mapped = await fetchAllAnimeCards()
-  return filterAnimeCardsBySection(mapped, _section)
 }
 
 export type AnimeSearchFilters = {

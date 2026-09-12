@@ -1,5 +1,4 @@
 export const queryKeys = {
-  animeCards: ['anime', 'cards'] as const,
   homeFeatured: (tab: string) => ['home', 'featured', tab] as const,
   homeLatest: (year: number, season: string) => ['home', 'latest', year, season] as const,
   homePopular: ['home', 'popular'] as const,
@@ -8,7 +7,6 @@ export const queryKeys = {
   homeMovies: ['home', 'movies'] as const,
   homeCustomBlocks: ['home', 'custom-blocks', 'v3'] as const,
   animeDetail: (id: string | number) => ['anime', 'detail', 'v2', String(id)] as const,
-  animeList: ['anime', 'list'] as const,
   schedule: ['schedule'] as const,
   animeSearch: (filters: Record<string, unknown>) => ['anime', 'search', filters] as const,
   similarAnime: (id: string | number, slugs: string[]) =>
