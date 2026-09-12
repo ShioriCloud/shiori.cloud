@@ -6,8 +6,14 @@ import { EXPLORE_CHIP_CLASS, SHIORI_PRIMARY_BUTTON_CLASS } from '@/components/ex
 import { cn } from '@/lib/utils'
 import emptyListImage from '@/assets/images/frieren-03.webp'
 
-export const CUSTOM_LISTS_DEVICE_NOTE =
-  'لیست‌های شخصی فقط روی همین دستگاه می‌مانند و بین تلگرام‌ها همگام نمی‌شوند.'
+export const CUSTOM_LISTS_SYNC_NOTE =
+  'لیست‌های شخصی با حساب تلگرام همگام می‌شوند.'
+
+export const CUSTOM_LISTS_OFFLINE_NOTE =
+  'الان آفلاین هستی؛ لیست‌ها وقتی آنلاین شوی با حساب تلگرام همگام می‌شوند.'
+
+/** @deprecated use CUSTOM_LISTS_SYNC_NOTE / CUSTOM_LISTS_OFFLINE_NOTE */
+export const CUSTOM_LISTS_DEVICE_NOTE = CUSTOM_LISTS_SYNC_NOTE
 
 export const MyListDeviceNote = ({ children = CUSTOM_LISTS_DEVICE_NOTE }: { children?: ReactNode }) => (
   <p

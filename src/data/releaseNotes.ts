@@ -27,6 +27,15 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.22',
+    title: 'لیست‌های شخصی',
+    showDialog: true,
+    items: [
+      'لیست‌های شخصی با حساب تلگرام همگام می‌شوند',
+      'لیست‌هایی که روی این دستگاه ساختی به حسابت منتقل می‌شوند',
+    ],
+  },
+  {
     version: '0.2.21',
     title: 'زمان پخش',
     items: ['شمارش معکوس قسمت بعد فقط از تقویم شیوری می‌آید'],

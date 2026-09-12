@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Delete02Icon, Edit02Icon } from 'hugeicons-react'
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
@@ -6,12 +6,13 @@ import { BidiText } from '@/components/BidiText'
 import { Button } from '@/components/ui/button'
 import { useFavoriteAnimeCardsQuery } from '@/hooks/queries/useAnimeQueries'
 import { useAppAuth } from '@/hooks/useAppAuth'
-import { useMyListStore } from '@/store/myListStore'
+import { useCustomLists } from '@/hooks/useCustomLists'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
 import { toPersianNumber } from '@/lib/myListUtils'
 import { getListIcon } from '@/components/my-list/listIcons'
 import { MyListAnimeRow, MyListBadge } from '@/components/my-list/MyListAnimeRow'
 import {
+  CUSTOM_LISTS_OFFLINE_NOTE,
   MyListDeleteChip,
   MyListDeviceNote,
   MyListEmptyState,
@@ -29,10 +30,16 @@ const ShioriListDetail = () => {
   const { listId } = useParams<{ listId: string }>()
   const navigate = useNavigate()
   const { showAlert, showConfirm } = useAppAuth()
-  const list = useMyListStore((s) => s.customLists.find((l) => l.id === listId))
-  const removeAnimeFromList = useMyListStore((s) => s.removeAnimeFromList)
-  const deleteList = useMyListStore((s) => s.deleteList)
+  const { customLists, removeAnimeFromList, deleteList, resolveListId, isOffline } =
+    useCustomLists({ syncRemote: false })
+  const resolvedId = resolveListId(listId) ?? listId
+  const list = customLists.find((l) => l.id === resolvedId || l.id === listId)
   const [editOpen, setEditOpen] = useState(false)
+
+  useEffect(() => {
+    if (!listId || !resolvedId || listId === resolvedId) return
+    navigate(`/my-list/lists/${resolvedId}`, { replace: true })
+  }, [listId, resolvedId, navigate])
 
   const animeIds = list?.animeIds ?? []
 
@@ -74,9 +81,13 @@ const ShioriListDetail = () => {
       destructive: true,
     })
     if (!confirmed) return
-    deleteList(list.id)
-    showAlert('لیست حذف شد')
-    navigate('/my-list?tab=lists', { replace: true })
+    try {
+      await deleteList(list.id)
+      showAlert('لیست حذف شد')
+      navigate('/my-list?tab=lists', { replace: true })
+    } catch {
+      showAlert('حذف لیست ناموفق بود')
+    }
   }
 
   return (
@@ -127,7 +138,9 @@ const ShioriListDetail = () => {
       </div>
 
       <div className="my-list-enter space-y-3 px-4 pt-3">
-        <MyListDeviceNote>این لیست فقط روی همین دستگاه می‌ماند و بین تلگرام‌ها همگام نیست.</MyListDeviceNote>
+        {isOffline ? (
+          <MyListDeviceNote>{CUSTOM_LISTS_OFFLINE_NOTE}</MyListDeviceNote>
+        ) : null}
         {animeIds.length === 0 ? (
           <MyListEmptyState
             title="این مجموعه خالیه"
@@ -194,7 +207,9 @@ const ShioriListDetail = () => {
                       trailing={
                         <MyListDeleteChip
                           aria-label="حذف از لیست"
-                          onClick={() => removeAnimeFromList(list.id, String(anime.id))}
+                          onClick={() => {
+                            void removeAnimeFromList(list.id, String(anime.id))
+                          }}
                         />
                       }
                     />

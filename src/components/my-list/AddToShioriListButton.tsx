@@ -12,7 +12,8 @@ import { Input } from '@/components/ui/input'
 import { SHIORI_PRIMARY_BUTTON_CLASS } from '@/components/explore/ExploreUi'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import { useFavoriteAnimeCardsQuery } from '@/hooks/queries/useAnimeQueries'
-import { useMyListStore, MAX_SHIORI_LISTS } from '@/store/myListStore'
+import { MAX_SHIORI_LISTS } from '@/store/myListStore'
+import { useCustomLists } from '@/hooks/useCustomLists'
 import { toPersianNumber } from '@/lib/myListUtils'
 import { hapticSelection } from '@/lib/telegramHaptics'
 import { cn } from '@/lib/utils'
@@ -51,9 +52,9 @@ const ListPosterGrid = ({ images }: { images: string[] }) => {
 
 export const AddToShioriListButton = ({ animeId, triggerClassName, iconOnly }: Props) => {
   const { showAlert } = useAppAuth()
-  const customLists = useMyListStore((s) => s.customLists)
-  const addAnimeToList = useMyListStore((s) => s.addAnimeToList)
-  const removeAnimeFromList = useMyListStore((s) => s.removeAnimeFromList)
+  const { customLists, addAnimeToList, removeAnimeFromList } = useCustomLists({
+    syncRemote: false,
+  })
   const [open, setOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
   const [query, setQuery] = useState('')
@@ -108,15 +109,19 @@ export const AddToShioriListButton = ({ animeId, triggerClassName, iconOnly }: P
     })
   }
 
-  const handleApply = () => {
-    for (const list of customLists) {
-      const want = draftSelected.has(list.id)
-      const has = memberListIds.has(list.id)
-      if (want && !has) addAnimeToList(list.id, key)
-      if (!want && has) removeAnimeFromList(list.id, key)
+  const handleApply = async () => {
+    try {
+      for (const list of customLists) {
+        const want = draftSelected.has(list.id)
+        const has = memberListIds.has(list.id)
+        if (want && !has) await addAnimeToList(list.id, key)
+        if (!want && has) await removeAnimeFromList(list.id, key)
+      }
+      setOpen(false)
+      showAlert(draftSelected.size > 0 ? 'لیست‌ها به‌روز شد' : 'از لیست‌ها حذف شد')
+    } catch {
+      showAlert('به‌روزرسانی لیست‌ها ناموفق بود')
     }
-    setOpen(false)
-    showAlert(draftSelected.size > 0 ? 'لیست‌ها به‌روز شد' : 'از لیست‌ها حذف شد')
   }
 
   const openCreate = () => {
@@ -193,7 +198,7 @@ export const AddToShioriListButton = ({ animeId, triggerClassName, iconOnly }: P
                 <img src={emptyListImage} alt="" className="mb-4 w-32 opacity-90" />
                 <p className="text-sm font-semibold text-foreground">هنوز لیستی نداری</p>
                 <p className="mt-1.5 max-w-xs text-xs leading-6 text-muted-foreground">
-                  یک لیست شخصی بساز تا این انیمه را به آن اضافه کنی. این لیست فقط روی همین دستگاه می‌ماند.
+                  یک لیست شخصی بساز تا این انیمه را به آن اضافه کنی. لیست با حساب تلگرام همگام می‌شود.
                 </p>
                 <Button
                   type="button"

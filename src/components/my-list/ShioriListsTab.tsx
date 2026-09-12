@@ -2,13 +2,15 @@ import type { ComponentType } from 'react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Add01Icon, ArrowLeft01Icon } from 'hugeicons-react'
-import { useMyListStore, MAX_SHIORI_LISTS, type ShioriListIcon } from '@/store/myListStore'
+import { MAX_SHIORI_LISTS, type ShioriListIcon } from '@/store/myListStore'
+import { useCustomLists } from '@/hooks/useCustomLists'
 import { useFavoriteAnimeCardsQuery } from '@/hooks/queries/useAnimeQueries'
 import { toPersianNumber } from '@/lib/myListUtils'
 import { cn } from '@/lib/utils'
 import { getListIcon } from './listIcons'
 import { CreateShioriListSheet } from './CreateShioriListSheet'
 import {
+  CUSTOM_LISTS_OFFLINE_NOTE,
   MyListCompactCard,
   MyListDeviceNote,
   MyListEmptyState,
@@ -119,7 +121,7 @@ const CreateListCta = ({ onClick }: { onClick: () => void }) => (
 )
 
 export const ShioriListsTab = () => {
-  const customLists = useMyListStore((s) => s.customLists)
+  const { customLists, isOffline } = useCustomLists({ syncRemote: false })
   const [createOpen, setCreateOpen] = useState(false)
 
   const allAnimeIds = useMemo(
@@ -141,7 +143,7 @@ export const ShioriListsTab = () => {
   if (customLists.length === 0) {
     return (
       <div className="space-y-3">
-        <MyListDeviceNote />
+        {isOffline ? <MyListDeviceNote>{CUSTOM_LISTS_OFFLINE_NOTE}</MyListDeviceNote> : null}
         <MyListEmptyState
           title="هنوز لیست شخصی نساختی"
           description={`تا ${toPersianNumber(MAX_SHIORI_LISTS)} لیست شخصی با نام و آیکون دلخواه بساز و انیمه‌هات رو دسته‌بندی کن.`}
@@ -164,7 +166,7 @@ export const ShioriListsTab = () => {
         }
       />
 
-      <MyListDeviceNote />
+      {isOffline ? <MyListDeviceNote>{CUSTOM_LISTS_OFFLINE_NOTE}</MyListDeviceNote> : null}
 
       <div className="space-y-2">
         {customLists.map((list) => (

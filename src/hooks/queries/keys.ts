@@ -15,6 +15,7 @@ export const queryKeys = {
   studioPage: (slug: string) => ['studio', 'page', slug] as const,
   translatorProfile: (slug: string) => ['translator', 'profile', slug] as const,
   userAnimeList: (telegramUserId: number) => ['user', 'anime-list', telegramUserId] as const,
+  userCustomLists: (telegramUserId: number) => ['user', 'custom-lists', telegramUserId] as const,
   notifications: (telegramUserId: number) => ['notifications', telegramUserId] as const,
   notificationPreferences: (telegramUserId: number) =>
     ['notification-preferences', telegramUserId] as const,

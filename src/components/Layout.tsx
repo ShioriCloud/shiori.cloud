@@ -12,6 +12,7 @@ import { useTelegramBackButton } from '@/hooks/useTelegramBackButton'
 import { useTelegramSafeArea } from '@/hooks/useTelegramSafeArea'
 import { useNotifications } from '@/hooks/useNotifications'
 import { useAiringReminders } from '@/hooks/useAiringReminders'
+import { useCustomLists } from '@/hooks/useCustomLists'
 import { hapticSelection } from '@/lib/telegramHaptics'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
@@ -25,6 +26,7 @@ const Layout = ({ children }: LayoutProps) => {
   const [isScrolled, setIsScrolled] = useState(false)
   const { unreadCount } = useNotifications()
   useAiringReminders()
+  useCustomLists()
 
   useTelegramBackButton()
   useTelegramSafeArea()

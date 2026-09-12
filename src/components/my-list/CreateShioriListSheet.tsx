@@ -9,7 +9,8 @@ import {
 } from '@/components/ui/sheet'
 import { Input } from '@/components/ui/input'
 import { useAppAuth } from '@/hooks/useAppAuth'
-import { useMyListStore, MAX_SHIORI_LISTS, type ShioriCustomList, type ShioriListIcon } from '@/store/myListStore'
+import { MAX_SHIORI_LISTS, type ShioriCustomList, type ShioriListIcon } from '@/store/myListStore'
+import { useCustomLists } from '@/hooks/useCustomLists'
 import { toPersianNumber } from '@/lib/myListUtils'
 import { cn } from '@/lib/utils'
 import { SHIORI_LIST_ICONS } from './listIcons'
@@ -27,8 +28,8 @@ export const CreateShioriListSheet = ({
   onCreated,
 }: CreateShioriListSheetProps) => {
   const { showAlert } = useAppAuth()
-  const createList = useMyListStore((s) => s.createList)
-  const listCount = useMyListStore((s) => s.customLists.length)
+  const { customLists, createList, isOffline } = useCustomLists({ syncRemote: false })
+  const listCount = customLists.length
   const [name, setName] = useState('')
   const [icon, setIcon] = useState<ShioriListIcon>('heart')
 
@@ -39,7 +40,7 @@ export const CreateShioriListSheet = ({
     setIcon('heart')
   }
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (atLimit) {
       showAlert(`حداکثر ${toPersianNumber(MAX_SHIORI_LISTS)} لیست می‌توانید بسازید`)
       return
@@ -49,15 +50,19 @@ export const CreateShioriListSheet = ({
       showAlert('نام لیست را وارد کنید')
       return
     }
-    const created = createList(trimmed, icon)
-    if (!created) {
+    try {
+      const created = await createList(trimmed, icon)
+      if (!created) {
+        showAlert('ساخت لیست ناموفق بود')
+        return
+      }
+      reset()
+      onOpenChange(false)
+      onCreated?.(created)
+      showAlert('لیست ساخته شد')
+    } catch {
       showAlert('ساخت لیست ناموفق بود')
-      return
     }
-    reset()
-    onOpenChange(false)
-    onCreated?.(created)
-    showAlert('لیست ساخته شد')
   }
 
   return (
@@ -89,7 +94,9 @@ export const CreateShioriListSheet = ({
               maxLength={48}
             />
             <p className="mt-2 text-[11px] leading-5 text-muted-foreground">
-              لیست‌های شخصی فقط روی همین دستگاه می‌مانند و بین تلگرام‌ها همگام نمی‌شوند.
+              {isOffline
+                ? 'الان آفلاین هستی؛ این لیست وقتی آنلاین شوی با حساب تلگرام همگام می‌شود.'
+                : 'این لیست با حساب تلگرام همگام می‌شود.'}
             </p>
           </div>
           <div>

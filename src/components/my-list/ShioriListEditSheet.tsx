@@ -9,7 +9,8 @@ import {
 } from '@/components/ui/sheet'
 import { Input } from '@/components/ui/input'
 import { useAppAuth } from '@/hooks/useAppAuth'
-import { useMyListStore, type ShioriListIcon } from '@/store/myListStore'
+import { type ShioriListIcon } from '@/store/myListStore'
+import { useCustomLists } from '@/hooks/useCustomLists'
 import { cn } from '@/lib/utils'
 import { SHIORI_LIST_ICONS } from './listIcons'
 
@@ -23,8 +24,9 @@ export const EditListSheet = ({
   onOpenChange: (open: boolean) => void
 }) => {
   const { showAlert } = useAppAuth()
-  const list = useMyListStore((s) => s.customLists.find((l) => l.id === listId))
-  const updateList = useMyListStore((s) => s.updateList)
+  const { customLists, updateList, resolveListId } = useCustomLists({ syncRemote: false })
+  const resolvedId = resolveListId(listId) ?? listId
+  const list = customLists.find((l) => l.id === resolvedId || l.id === listId)
   const [name, setName] = useState('')
   const [icon, setIcon] = useState<ShioriListIcon>('heart')
 
@@ -34,16 +36,20 @@ export const EditListSheet = ({
     setIcon(list.icon)
   }, [list, open])
 
-  const handleSave = () => {
-    if (!listId) return
+  const handleSave = async () => {
+    if (!resolvedId) return
     const trimmed = name.trim()
     if (!trimmed) {
       showAlert('نام لیست را وارد کنید')
       return
     }
-    updateList(listId, { name: trimmed, icon })
-    onOpenChange(false)
-    showAlert('لیست به‌روز شد')
+    try {
+      await updateList(resolvedId, { name: trimmed, icon })
+      onOpenChange(false)
+      showAlert('لیست به‌روز شد')
+    } catch {
+      showAlert('به‌روزرسانی لیست ناموفق بود')
+    }
   }
 
   if (!list) return null

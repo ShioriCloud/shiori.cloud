@@ -34,6 +34,8 @@ export type DownloadRecord = {
 
 type MyListState = {
   customLists: ShioriCustomList[]
+  /** Old local list id → server id after first-sync merge */
+  listIdAliases: Record<string, string>
   browseHistory: BrowseHistoryEntry[]
   downloads: DownloadRecord[]
 
@@ -42,6 +44,11 @@ type MyListState = {
   deleteList: (id: string) => void
   addAnimeToList: (listId: string, animeId: string | number) => void
   removeAnimeFromList: (listId: string, animeId: string | number) => void
+  replaceCustomLists: (
+    lists: ShioriCustomList[],
+    aliases?: Record<string, string>
+  ) => void
+  remapListId: (fromId: string, toId: string) => void
 
   recordBrowse: (animeId: string | number) => void
   removeHistoryEntry: (animeId: string | number) => void
@@ -58,10 +65,18 @@ const newId = () =>
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 
+export const isShioriListIcon = (value: string | null | undefined): value is ShioriListIcon =>
+  value === 'heart' ||
+  value === 'star' ||
+  value === 'fire' ||
+  value === 'bookmark' ||
+  value === 'sparkle'
+
 export const useMyListStore = create<MyListState>()(
   persist(
     (set, get) => ({
       customLists: [],
+      listIdAliases: {},
       browseHistory: [],
       downloads: [],
 
@@ -124,6 +139,24 @@ export const useMyListStore = create<MyListState>()(
         }))
       },
 
+      replaceCustomLists: (lists, aliases) =>
+        set((s) => ({
+          customLists: lists,
+          listIdAliases: aliases
+            ? { ...s.listIdAliases, ...aliases }
+            : s.listIdAliases,
+        })),
+
+      remapListId: (fromId, toId) => {
+        if (!fromId || !toId || fromId === toId) return
+        set((s) => ({
+          customLists: s.customLists.map((l) =>
+            l.id === fromId ? { ...l, id: toId } : l
+          ),
+          listIdAliases: { ...s.listIdAliases, [fromId]: toId },
+        }))
+      },
+
       recordBrowse: (animeId) => {
         const key = String(animeId)
         const now = new Date().toISOString()
@@ -170,6 +203,20 @@ export const useMyListStore = create<MyListState>()(
           ),
         })),
     }),
-    { name: 'shiori-my-list-extra', version: 1 }
+    {
+      name: 'shiori-my-list-extra',
+      version: 2,
+      migrate: (persisted) => {
+        const state = (persisted ?? {}) as Partial<MyListState>
+        return {
+          ...state,
+          customLists: Array.isArray(state.customLists) ? state.customLists : [],
+          listIdAliases:
+            state.listIdAliases && typeof state.listIdAliases === 'object'
+              ? state.listIdAliases
+              : {},
+        }
+      },
+    }
   )
 )

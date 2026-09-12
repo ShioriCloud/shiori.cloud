@@ -1,4 +1,5 @@
 export * from './shioriUserList'
+export * from './shioriCustomLists'
 export * from './shioriNotifications'
 export * from './shioriUsers'
 
