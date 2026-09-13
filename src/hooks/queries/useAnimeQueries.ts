@@ -36,6 +36,7 @@ import {
   homeLatestCacheKey,
   homePopularCacheKey,
   homeRecentCacheKey,
+  HOME_LATEST_RAIL_STALE_MS,
   HOME_RAIL_CACHE_TTL_MS,
   HOME_RAIL_STALE_MS,
   peekHomeCardRail,
@@ -92,8 +93,8 @@ export const useHomeLatestQuery = (year: number, season: string, enabled = true)
     queryFn: () =>
       fetchHomeCardRail(key, () => fetchHomeLatestSeasonCards(year, season, 20)),
     enabled,
-    staleTime: HOME_RAIL_STALE_MS,
-    gcTime: HOME_RAIL_STALE_MS * 6,
+    staleTime: HOME_LATEST_RAIL_STALE_MS,
+    gcTime: HOME_LATEST_RAIL_STALE_MS * 6,
     initialData: cached?.data,
     initialDataUpdatedAt: cached?.ts,
   })

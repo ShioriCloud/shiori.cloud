@@ -150,7 +150,7 @@ export const fetchHomeLatestSeasonCards = async (
     year,
     season: season.toUpperCase(),
     limit,
-    sortBy: 'created_at',
+    sortBy: 'last_episode_at',
   })
   return result.items.map(toCacheAnime)
 }
@@ -176,7 +176,7 @@ export type AnimeSearchFilters = {
   format?: string | null
   airingStatus?: string | null
   hardsubLanguage?: 'fa' | 'en' | null
-  sortBy?: 'created_at' | 'popular' | 'title' | 'score'
+  sortBy?: 'created_at' | 'last_episode_at' | 'popular' | 'title' | 'score'
   limit?: number
   offset?: number
 }
