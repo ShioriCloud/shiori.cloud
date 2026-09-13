@@ -1,21 +1,24 @@
 import { useLayoutEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigationType } from 'react-router-dom'
 import { resetWindowScroll } from '../utils/resetWindowScroll'
 
 /**
- * Scroll to top on route change. Without this, SPA navigation keeps the previous
- * page scroll position (often visible as landing mid-page in Telegram Mini App).
+ * Scroll to top on forward navigations. Back/forward (POP) is left to each
+ * page's scroll restoration so returning to Home/Explore keeps position.
  */
 const ScrollToTop = () => {
   const { pathname } = useLocation()
+  const navigationType = useNavigationType()
 
   useLayoutEffect(() => {
+    if (navigationType === 'POP') return
+
     resetWindowScroll()
     const raf = requestAnimationFrame(() => {
       resetWindowScroll()
     })
     return () => cancelAnimationFrame(raf)
-  }, [pathname])
+  }, [pathname, navigationType])
 
   return null
 }

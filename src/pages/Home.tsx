@@ -30,6 +30,7 @@ import {
   useHomeRecentQuery,
   type UiAnimeCard,
 } from '../hooks/queries/useAnimeQueries'
+import { useTabScrollRestoration } from '@/hooks/useTabScrollRestoration'
 import type { HomeCustomBlock, HomeSystemRailId } from '@/types/home'
 
 type ContentType = 'anime' | 'movie' | 'donghua'
@@ -161,6 +162,7 @@ const renderCustomBlock = (block: Exclude<HomeCustomBlock, { type: 'system_rail'
 
 const Home = () => {
   const [selectedType, setSelectedType] = useState<ContentType>('anime')
+  useTabScrollRestoration('home')
 
   const { season: currentSeasonKey, year: currentYearNumber } = useMemo(
     () => getTehranSeasonYear(),

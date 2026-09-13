@@ -12,17 +12,34 @@ export const useTabScrollRestoration = (storageKey: string) => {
       sessionStorage.setItem(`${STORAGE_PREFIX}${prevKey}`, String(window.scrollY))
     }
 
-    const saved = sessionStorage.getItem(`${STORAGE_PREFIX}${storageKey}`)
-    if (saved) {
-      const y = Number.parseInt(saved, 10)
-      if (Number.isFinite(y)) {
-        requestAnimationFrame(() => window.scrollTo({ top: y, behavior: 'auto' }))
+    const restore = () => {
+      const saved = sessionStorage.getItem(`${STORAGE_PREFIX}${storageKey}`)
+      if (!saved) {
+        window.scrollTo({ top: 0, behavior: 'auto' })
+        return
       }
-    } else {
-      window.scrollTo({ top: 0, behavior: 'auto' })
+      const y = Number.parseInt(saved, 10)
+      if (!Number.isFinite(y)) return
+      window.scrollTo({ top: y, behavior: 'auto' })
     }
 
+    restore()
+
+    // Rails often paint after first layout — retry while height catches up.
+    const rafIds: number[] = []
+    rafIds.push(
+      requestAnimationFrame(() => {
+        restore()
+        rafIds.push(requestAnimationFrame(restore))
+      })
+    )
+    const retry = window.setTimeout(restore, 120)
+
     prevKeyRef.current = storageKey
+    return () => {
+      for (const id of rafIds) cancelAnimationFrame(id)
+      window.clearTimeout(retry)
+    }
   }, [storageKey])
 
   useEffect(() => {
