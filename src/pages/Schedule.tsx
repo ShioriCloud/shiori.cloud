@@ -13,7 +13,6 @@ import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { hapticSelection } from '../lib/telegramHaptics'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { showAppToast } from '@/store/appFeedbackStore'
-import shioriLogo from '../assets/images/shiori.svg'
 
 type Anime = {
   id: number
@@ -284,16 +283,6 @@ const Schedule = () => {
                               decoding="async"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-
-                            {anime.localId ? (
-                              <span
-                                className="absolute top-1.5 start-1.5 flex h-6 w-6 items-center justify-center rounded-md bg-rose-500 shadow-sm"
-                                title="ترجمه شیوری"
-                                aria-label="موجود در کاتالوگ شیوری"
-                              >
-                                <img src={shioriLogo} alt="" className="h-3.5 w-3.5 object-contain" />
-                              </span>
-                            ) : null}
 
                             <div className="absolute bottom-0 left-0 p-2 pt-10">
                               <BidiText

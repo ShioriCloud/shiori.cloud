@@ -27,6 +27,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.23',
+    items: ['لوگوی تکراری از کارت‌های برنامه پخش برداشته شد'],
+  },
+  {
     version: '0.2.22',
     title: 'لیست‌های شخصی',
     showDialog: true,
