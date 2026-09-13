@@ -469,11 +469,18 @@ export const mapShioriDetailParts = (detail: ApiDetail): ShioriAnimeDetailParts 
 }
 
 export const getHomeCustomBlocks = async (): Promise<
-  import('../types/home').HomeCustomBlock[]
+  import('../types/home').HomeLayoutPayload
 > => {
   const res = await shioriFetch<import('../types/home').HomeCustomBlocksResponse | undefined>(
     '/home/custom-blocks',
     { cache: 'no-store' }
   )
-  return res?.blocks ?? []
+  const blocks = res?.blocks ?? []
+  const layout_mode =
+    res?.layout_mode === 'unified' || res?.layout_mode === 'legacy'
+      ? res.layout_mode
+      : blocks.some((b) => b.type === 'system_rail')
+        ? 'unified'
+        : 'legacy'
+  return { blocks, layout_mode }
 }

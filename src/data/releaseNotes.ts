@@ -27,6 +27,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.25',
+    items: ['ترتیب لیست‌های صفحه اصلی از پنل قابل تنظیم شد'],
+  },
+  {
     version: '0.2.24',
     items: ['انیمه‌های فصل جاری با قسمت تازه، اول لیست می‌آیند'],
   },

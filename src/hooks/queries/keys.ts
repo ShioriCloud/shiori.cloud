@@ -5,7 +5,7 @@ export const queryKeys = {
   homeRecent: ['home', 'recent'] as const,
   homeDonghua: ['home', 'donghua'] as const,
   homeMovies: ['home', 'movies'] as const,
-  homeCustomBlocks: ['home', 'custom-blocks', 'v3'] as const,
+  homeCustomBlocks: ['home', 'custom-blocks', 'v4'] as const,
   animeDetail: (id: string | number) => ['anime', 'detail', 'v2', String(id)] as const,
   schedule: ['schedule'] as const,
   animeSearch: (filters: Record<string, unknown>) => ['anime', 'search', filters] as const,

@@ -9,6 +9,9 @@ import type { GenreItem } from '../types/catalog'
 import { BidiText } from '@/components/BidiText'
 import { AnimeViewCountBadge } from '@/components/anime/AnimeViewCountBadge'
 import { AppHeader } from '@/components/AppHeader'
+import { CuratedSliderBlock } from '@/components/home/CuratedSliderBlock'
+import { CtaBannerBlock } from '@/components/home/CtaBannerBlock'
+import { CtaCardBlock } from '@/components/home/CtaCardBlock'
 import { HomeCustomBlocksSection } from '@/components/home/HomeCustomBlocksSection'
 import { HomeFeaturedCarousel } from '@/components/home/HomeFeaturedCarousel'
 import { HomeRailScroller, HomeRailSlide } from '@/components/home/HomeRailScroller'
@@ -18,6 +21,7 @@ import { exploreAllHref } from '@/lib/exploreParams'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { hapticSelection } from '@/lib/telegramHaptics'
 import {
+  useHomeCustomBlocksQuery,
   useHomeDonghuaQuery,
   useHomeFeaturedQuery,
   useHomeLatestQuery,
@@ -26,12 +30,21 @@ import {
   useHomeRecentQuery,
   type UiAnimeCard,
 } from '../hooks/queries/useAnimeQueries'
+import type { HomeCustomBlock, HomeSystemRailId } from '@/types/home'
 
 type ContentType = 'anime' | 'movie' | 'donghua'
 
 type Anime = UiAnimeCard
 
-type SectionId = 'recent' | 'latest' | 'popular' | 'donghua' | 'movies'
+type SectionId = HomeSystemRailId
+
+const DEFAULT_SECTION_ORDER: SectionId[] = [
+  'recent',
+  'latest',
+  'popular',
+  'donghua',
+  'movies',
+]
 
 const TYPE_TABS: { id: ContentType; label: string }[] = [
   { id: 'anime', label: 'انیمه' },
@@ -136,6 +149,16 @@ const SectionSkeleton = () => (
   </div>
 )
 
+const renderCustomBlock = (block: Exclude<HomeCustomBlock, { type: 'system_rail' }>) => {
+  if (block.type === 'curated_slider') {
+    return <CuratedSliderBlock key={block.id} block={block} />
+  }
+  if (block.type === 'cta_banner') {
+    return <CtaBannerBlock key={block.id} block={block} />
+  }
+  return <CtaCardBlock key={block.id} block={block} />
+}
+
 const Home = () => {
   const [selectedType, setSelectedType] = useState<ContentType>('anime')
 
@@ -150,6 +173,7 @@ const Home = () => {
   const featuredQuery = useHomeFeaturedQuery(selectedType, true)
   const recentQuery = useHomeRecentQuery(true)
   const latestQuery = useHomeLatestQuery(currentYearNumber, currentSeasonKey, true)
+  const layoutQuery = useHomeCustomBlocksQuery(true)
 
   const p0Ready =
     !featuredQuery.isLoading && !recentQuery.isLoading && !latestQuery.isLoading
@@ -168,6 +192,8 @@ const Home = () => {
   }
 
   const featuredAnime = featuredQuery.data ?? []
+  const layoutMode = layoutQuery.data?.layout_mode ?? 'legacy'
+  const layoutBlocks = layoutQuery.data?.blocks ?? []
 
   const sectionMeta = useMemo(
     (): Record<SectionId, { title: string; seeAll: string }> => ({
@@ -189,10 +215,16 @@ const Home = () => {
     [currentSeasonFa, currentSeasonKey, currentYearNumber]
   )
 
-  const renderSection = (id: SectionId) => {
+  const renderSection = (id: SectionId, titleOverride?: string | null) => {
     const query = sectionQueries[id]
     const list = query.data ?? []
     const meta = sectionMeta[id]
+    const title =
+      id === 'latest'
+        ? titleOverride?.trim() && titleOverride.trim() !== 'فصل جاری'
+          ? titleOverride.trim()
+          : meta.title
+        : titleOverride?.trim() || meta.title
     const deferred = !query.isFetched && query.fetchStatus === 'idle' && list.length === 0
     const loading = (query.isLoading || deferred) && list.length === 0
     const loadError = query.isError
@@ -204,7 +236,7 @@ const Home = () => {
     return (
       <section key={id} className="space-y-3">
         <div className="px-4 flex items-center justify-between gap-3">
-          <h2 className="text-base font-semibold text-foreground">{meta.title}</h2>
+          <h2 className="text-base font-semibold text-foreground">{title}</h2>
           <Link
             to={meta.seeAll}
             className="flex items-center gap-1 text-xs text-primary-400 font-medium shrink-0"
@@ -246,6 +278,39 @@ const Home = () => {
       ? featuredQuery.error.message
       : 'خطا در بارگذاری'
     : null
+
+  const renderUnifiedLayout = () => {
+    if (layoutQuery.isLoading && layoutBlocks.length === 0) {
+      return <>{DEFAULT_SECTION_ORDER.map((id) => renderSection(id))}</>
+    }
+
+    if (layoutQuery.isError && layoutBlocks.length === 0) {
+      return (
+        <>
+          {DEFAULT_SECTION_ORDER.map((id) => renderSection(id))}
+          <ExploreEmptyState
+            title="خطا در بارگذاری چیدمان"
+            subtitle={
+              layoutQuery.error instanceof Error
+                ? layoutQuery.error.message
+                : 'خطا در بارگذاری'
+            }
+            showImage={false}
+            compact
+            actionLabel="تلاش مجدد"
+            onAction={() => void layoutQuery.refetch()}
+          />
+        </>
+      )
+    }
+
+    return layoutBlocks.map((block) => {
+      if (block.type === 'system_rail') {
+        return renderSection(block.rail_id, block.title)
+      }
+      return renderCustomBlock(block)
+    })
+  }
 
   return (
     <div className="pb-24 overflow-x-hidden">
@@ -352,12 +417,14 @@ const Home = () => {
       </div>
 
       <div className="space-y-8 pt-6">
-        {renderSection('recent')}
-        {renderSection('latest')}
-        {renderSection('popular')}
-        {renderSection('donghua')}
-        {renderSection('movies')}
-        <HomeCustomBlocksSection enabled={p0Ready} />
+        {layoutMode === 'unified' ? (
+          renderUnifiedLayout()
+        ) : (
+          <>
+            {DEFAULT_SECTION_ORDER.map((id) => renderSection(id))}
+            <HomeCustomBlocksSection enabled={p0Ready} />
+          </>
+        )}
       </div>
     </div>
   )

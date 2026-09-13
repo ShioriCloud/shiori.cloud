@@ -11,6 +11,7 @@ import { CtaBannerBlock } from './CtaBannerBlock'
 import { CtaCardBlock } from './CtaCardBlock'
 
 const renderBlock = (block: HomeCustomBlock) => {
+  if (block.type === 'system_rail') return null
   if (block.type === 'curated_slider') {
     return <CuratedSliderBlock key={block.id} block={block} />
   }
@@ -24,9 +25,10 @@ const renderBlock = (block: HomeCustomBlock) => {
 }
 
 export const HomeCustomBlocks = memo(({ blocks }: { blocks: HomeCustomBlock[] }) => {
-  if (blocks.length === 0) return null
+  const customOnly = blocks.filter((block) => block.type !== 'system_rail')
+  if (customOnly.length === 0) return null
 
-  const blocksKey = blocks
+  const blocksKey = customOnly
     .map((block) => {
       if (block.type === 'curated_slider') {
         return `${block.id}:${block.items.map((item) => item.id).join(',')}`
@@ -37,7 +39,7 @@ export const HomeCustomBlocks = memo(({ blocks }: { blocks: HomeCustomBlock[] })
 
   return (
     <div key={blocksKey} className="space-y-8">
-      {blocks.map(renderBlock)}
+      {customOnly.map(renderBlock)}
     </div>
   )
 })

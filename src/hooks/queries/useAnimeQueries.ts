@@ -53,7 +53,7 @@ import {
   writeExploreSearchPage,
   peekExploreGenres,
 } from '../../lib/exploreSearchCache'
-import type { HomeCustomBlock } from '../../types/home'
+import type { HomeLayoutPayload } from '../../types/home'
 import { queryClient } from '../../lib/queryClient'
 import { queryKeys } from './keys'
 
@@ -158,12 +158,12 @@ export const useHomeMoviesQuery = (enabled = true) => {
   })
 }
 
-const isUsableCustomBlocks = (rows: HomeCustomBlock[]): boolean =>
-  Array.isArray(rows) && rows.length > 0
+const isUsableCustomBlocks = (payload: HomeLayoutPayload): boolean =>
+  Boolean(payload) && Array.isArray(payload.blocks)
 
 export const useHomeCustomBlocksQuery = (enabled = true) => {
   const key = homeCustomBlocksCacheKey()
-  const cached = peekHomeRailCache<HomeCustomBlock[]>(key, {
+  const cached = peekHomeRailCache<HomeLayoutPayload>(key, {
     maxAgeMs: HOME_RAIL_CACHE_TTL_MS,
     isUsable: isUsableCustomBlocks,
   })

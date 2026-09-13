@@ -19,9 +19,10 @@ const CustomBlocksSkeleton = () => (
   </div>
 )
 
+/** Legacy path: custom blocks only, after hardcoded system rails. */
 export const HomeCustomBlocksSection = memo(({ enabled = true }: { enabled?: boolean }) => {
   const query = useHomeCustomBlocksQuery(enabled)
-  const blocks = query.data ?? []
+  const blocks = (query.data?.blocks ?? []).filter((b) => b.type !== 'system_rail')
 
   const deferred = enabled === false && blocks.length === 0
   if ((query.isLoading || deferred) && blocks.length === 0) {

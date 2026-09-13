@@ -1,5 +1,12 @@
 import type { AnimeCard } from '@/types/catalog'
 
+export type HomeSystemRailId =
+  | 'recent'
+  | 'latest'
+  | 'popular'
+  | 'donghua'
+  | 'movies'
+
 export type HomeCuratedSliderBlock = {
   type: 'curated_slider'
   id: string
@@ -33,11 +40,27 @@ export type HomeCtaCardBlock = {
   video_encode?: 'x264' | 'x265' | 'x265_10bit' | 'bluray'
 }
 
+export type HomeSystemRailBlock = {
+  type: 'system_rail'
+  id: string
+  rail_id: HomeSystemRailId
+  title: string | null
+}
+
 export type HomeCustomBlock =
   | HomeCuratedSliderBlock
   | HomeCtaBannerBlock
   | HomeCtaCardBlock
+  | HomeSystemRailBlock
+
+export type HomeLayoutMode = 'unified' | 'legacy'
 
 export type HomeCustomBlocksResponse = {
   blocks: HomeCustomBlock[]
+  layout_mode?: HomeLayoutMode
+}
+
+export type HomeLayoutPayload = {
+  blocks: HomeCustomBlock[]
+  layout_mode: HomeLayoutMode
 }
