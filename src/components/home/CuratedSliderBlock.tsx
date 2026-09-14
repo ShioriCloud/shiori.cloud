@@ -11,7 +11,7 @@ export const CuratedSliderBlock = ({ block }: { block: HomeCuratedSliderBlock })
       <div className="px-4">
         <h2 className="text-base font-semibold text-foreground text-right">{block.title}</h2>
       </div>
-      <HomeRailScroller>
+      <HomeRailScroller restoreKey={`home-rail:curated:${block.id}`}>
         {block.items.map((anime) => (
           <HomeRailSlide key={anime.id}>
             <AnimePosterCard anime={anime as UiAnimeCard} />

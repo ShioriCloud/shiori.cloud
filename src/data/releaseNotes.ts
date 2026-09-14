@@ -27,6 +27,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.28',
+    items: ['جای اسکرول افقی اسلایدرهای صفحه اصلی هم حفظ می‌شود'],
+  },
+  {
     version: '0.2.27',
     items: ['جای اسکرول صفحه اصلی بعد از برگشت درست حفظ می‌شود'],
   },

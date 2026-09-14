@@ -262,7 +262,7 @@ const Home = () => {
         ) : list.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-6 px-4">فعلاً موردی نیست.</p>
         ) : (
-          <HomeRailScroller>
+          <HomeRailScroller restoreKey={`home-rail:${id}`}>
             {list.map((anime) => (
               <HomeRailSlide key={anime.id}>
                 <PosterCardContent anime={anime} />
