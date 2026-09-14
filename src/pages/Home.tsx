@@ -367,7 +367,7 @@ const Home = () => {
             onAction={() => void featuredQuery.refetch()}
           />
         ) : featuredAnime.length > 0 ? (
-          <HomeFeaturedCarousel>
+          <HomeFeaturedCarousel restoreKey={`home-featured:${selectedType}`}>
             {featuredAnime.map((anime) => (
               <AnimePrefetchLink
                 key={anime.id}

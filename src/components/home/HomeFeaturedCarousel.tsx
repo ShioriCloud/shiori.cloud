@@ -11,10 +11,24 @@ import { cn } from '@/lib/utils'
 
 const AUTOPLAY_MS = 5000
 const RESUME_MS = 4000
+const STORAGE_PREFIX = 'shiori-featured-slide:'
 
 type HomeFeaturedCarouselProps = {
   children: ReactNode
   className?: string
+  /** Persist active slide across navigations (e.g. home featured per content tab). */
+  restoreKey?: string
+}
+
+const readSavedIndex = (key: string): number | null => {
+  const raw = sessionStorage.getItem(`${STORAGE_PREFIX}${key}`)
+  if (raw == null) return null
+  const index = Number.parseInt(raw, 10)
+  return Number.isFinite(index) ? index : null
+}
+
+const writeSavedIndex = (key: string, index: number) => {
+  sessionStorage.setItem(`${STORAGE_PREFIX}${key}`, String(index))
 }
 
 /** Center a slide in the scroller — works with direction:ltr track in RTL pages. */
@@ -32,7 +46,11 @@ const centerSlide = (
 }
 
 /** Featured carousel — CSS scroll-snap + dots + soft autoplay (no Swiper). */
-export const HomeFeaturedCarousel = ({ children, className }: HomeFeaturedCarouselProps) => {
+export const HomeFeaturedCarousel = ({
+  children,
+  className,
+  restoreKey,
+}: HomeFeaturedCarouselProps) => {
   const scrollerRef = useRef<HTMLDivElement>(null)
   const slideRefs = useRef<(HTMLDivElement | null)[]>([])
   const resumeTimerRef = useRef<number | null>(null)
@@ -46,10 +64,14 @@ export const HomeFeaturedCarousel = ({ children, className }: HomeFeaturedCarous
   const slides = Children.toArray(children)
   const count = slides.length
 
-  const setIndex = useCallback((index: number) => {
-    activeIndexRef.current = index
-    setActiveIndex(index)
-  }, [])
+  const setIndex = useCallback(
+    (index: number) => {
+      activeIndexRef.current = index
+      setActiveIndex(index)
+      if (restoreKey) writeSavedIndex(restoreKey, index)
+    },
+    [restoreKey]
+  )
 
   const releaseScrollLock = useCallback(() => {
     const root = scrollerRef.current
@@ -121,11 +143,23 @@ export const HomeFeaturedCarousel = ({ children, className }: HomeFeaturedCarous
     [count, releaseScrollLock, setIndex]
   )
 
-  // RTL pages may init horizontal scroll at the far edge — always land on slide 0.
+  // RTL pages may init at the far edge — land on restored slide (or 0).
   useEffect(() => {
     if (count === 0) return
-    scrollToIndex(0, 'auto')
-  }, [count, scrollToIndex])
+    const saved = restoreKey ? readSavedIndex(restoreKey) : null
+    const initial =
+      saved != null && saved >= 0 && saved < count ? saved : 0
+    activeIndexRef.current = initial
+    setActiveIndex(initial)
+    scrollToIndex(initial, 'auto')
+  }, [count, restoreKey, scrollToIndex])
+
+  useEffect(() => {
+    if (!restoreKey) return
+    return () => {
+      writeSavedIndex(restoreKey, activeIndexRef.current)
+    }
+  }, [restoreKey])
 
   useEffect(() => {
     const root = scrollerRef.current
