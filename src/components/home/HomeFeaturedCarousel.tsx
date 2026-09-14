@@ -5,7 +5,6 @@ import {
   useEffect,
   useRef,
   useState,
-  type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from 'react'
 import { cn } from '@/lib/utils'
@@ -13,8 +12,6 @@ import { cn } from '@/lib/utils'
 const AUTOPLAY_MS = 5000
 const RESUME_MS = 4000
 const STORAGE_PREFIX = 'shiori-featured-slide:'
-/** Ignore tiny finger jitter; treat as tap / stay on current slide. */
-const SWIPE_DEADZONE_PX = 12
 
 type HomeFeaturedCarouselProps = {
   children: ReactNode
@@ -48,36 +45,11 @@ const centerSlide = (
   root.scrollBy({ left: delta, behavior })
 }
 
-/** Closest among current ± 1 so a fast flick never skips slides. */
-const pickAdjacentIndex = (
-  root: HTMLElement,
-  slides: Array<HTMLElement | null>,
-  startIndex: number,
-  count: number
-): number => {
-  const candidates = [startIndex]
-  if (startIndex > 0) candidates.push(startIndex - 1)
-  if (startIndex < count - 1) candidates.push(startIndex + 1)
-
-  const rootCenter = root.getBoundingClientRect().left + root.clientWidth / 2
-  let best = startIndex
-  let bestDist = Number.POSITIVE_INFINITY
-
-  for (const index of candidates) {
-    const slide = slides[index]
-    if (!slide) continue
-    const rect = slide.getBoundingClientRect()
-    const dist = Math.abs(rect.left + rect.width / 2 - rootCenter)
-    if (dist < bestDist) {
-      bestDist = dist
-      best = index
-    }
-  }
-
-  return best
-}
-
-/** Featured carousel — CSS scroll-snap + dots + soft autoplay (no Swiper). */
+/**
+ * Featured carousel — CSS scroll-snap + dots + soft autoplay.
+ * One-slide flicks come from `scroll-snap-stop: always` (see index.css),
+ * not from JS settle which fought native snap and caused jumps.
+ */
 export const HomeFeaturedCarousel = ({
   children,
   className,
@@ -91,12 +63,6 @@ export const HomeFeaturedCarousel = ({
   /** Ignore IntersectionObserver while we drive scroll programmatically. */
   const scrollLockRef = useRef(false)
   const unlockTimerRef = useRef<number | null>(null)
-  const gestureRef = useRef<{
-    pointerId: number | null
-    startX: number
-    startIndex: number
-    dragged: boolean
-  }>({ pointerId: null, startX: 0, startIndex: 0, dragged: false })
   const [activeIndex, setActiveIndex] = useState(0)
 
   const slides = Children.toArray(children)
@@ -205,8 +171,6 @@ export const HomeFeaturedCarousel = ({
     const observer = new IntersectionObserver(
       (entries) => {
         if (scrollLockRef.current) return
-        // While the user is dragging, index is settled on pointer up (±1 only).
-        if (gestureRef.current.pointerId != null) return
 
         let best: { index: number; ratio: number } | null = null
         for (const entry of entries) {
@@ -243,73 +207,6 @@ export const HomeFeaturedCarousel = ({
     }, RESUME_MS)
   }, [])
 
-  const settleGestureToAdjacent = useCallback(() => {
-    const root = scrollerRef.current
-    const gesture = gestureRef.current
-    if (!root || gesture.pointerId == null) return
-
-    const startIndex = gesture.startIndex
-    gesture.pointerId = null
-
-    if (!gesture.dragged || count <= 1) {
-      scrollToIndex(startIndex, 'smooth')
-      scheduleResume()
-      return
-    }
-
-    const next = pickAdjacentIndex(root, slideRefs.current, startIndex, count)
-    scrollToIndex(next, 'smooth')
-    scheduleResume()
-  }, [count, scheduleResume, scrollToIndex])
-
-  const onPointerDown = useCallback(
-    (event: ReactPointerEvent<HTMLDivElement>) => {
-      if (event.pointerType === 'mouse' && event.button !== 0) return
-      pauseAutoplay()
-      gestureRef.current = {
-        pointerId: event.pointerId,
-        startX: event.clientX,
-        startIndex: activeIndexRef.current,
-        dragged: false,
-      }
-      try {
-        event.currentTarget.setPointerCapture(event.pointerId)
-      } catch {
-        // Some WebViews reject capture mid-gesture — settle still runs on up.
-      }
-    },
-    [pauseAutoplay]
-  )
-
-  const onPointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
-    const gesture = gestureRef.current
-    if (gesture.pointerId !== event.pointerId) return
-    if (Math.abs(event.clientX - gesture.startX) >= SWIPE_DEADZONE_PX) {
-      gesture.dragged = true
-    }
-  }, [])
-
-  const onPointerUp = useCallback(
-    (event: ReactPointerEvent<HTMLDivElement>) => {
-      if (gestureRef.current.pointerId !== event.pointerId) return
-      try {
-        event.currentTarget.releasePointerCapture(event.pointerId)
-      } catch {
-        // ignore
-      }
-      settleGestureToAdjacent()
-    },
-    [settleGestureToAdjacent]
-  )
-
-  const onPointerCancel = useCallback(
-    (event: ReactPointerEvent<HTMLDivElement>) => {
-      if (gestureRef.current.pointerId !== event.pointerId) return
-      settleGestureToAdjacent()
-    },
-    [settleGestureToAdjacent]
-  )
-
   useEffect(() => {
     if (count <= 1) return
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -324,14 +221,7 @@ export const HomeFeaturedCarousel = ({
     const start = () => {
       if (id != null || motionQuery.matches) return
       id = window.setInterval(() => {
-        if (
-          pausedRef.current ||
-          scrollLockRef.current ||
-          gestureRef.current.pointerId != null ||
-          motionQuery.matches
-        ) {
-          return
-        }
+        if (pausedRef.current || scrollLockRef.current || motionQuery.matches) return
         const next = (activeIndexRef.current + 1) % count
         scrollToIndex(next)
       }, AUTOPLAY_MS)
@@ -366,10 +256,11 @@ export const HomeFeaturedCarousel = ({
       <div
         ref={scrollerRef}
         className="home-featured-scroller scrollbar-none"
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerCancel}
+        onPointerDown={pauseAutoplay}
+        onPointerUp={scheduleResume}
+        onPointerCancel={scheduleResume}
+        onTouchStart={pauseAutoplay}
+        onTouchEnd={scheduleResume}
       >
         {slides.map((slide, index) => (
           <div

@@ -27,6 +27,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.31',
+    items: ['اسکرول پیشنهاد ویژه روان‌تر شد'],
+  },
+  {
     version: '0.2.30',
     items: ['کشیدن سریع پیشنهاد ویژه دیگر چند اسلاید یک‌جا رد نمی‌کند'],
   },
