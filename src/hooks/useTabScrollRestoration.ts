@@ -1,64 +1,89 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 
 const STORAGE_PREFIX = 'shiori-scroll:'
 
-/** Persist and restore window scroll per logical tab key within a route. */
+const readSaved = (storageKey: string): number | null => {
+  const raw = sessionStorage.getItem(`${STORAGE_PREFIX}${storageKey}`)
+  if (raw == null) return null
+  const y = Number.parseInt(raw, 10)
+  return Number.isFinite(y) ? y : null
+}
+
+const writeSaved = (storageKey: string, y: number) => {
+  sessionStorage.setItem(`${STORAGE_PREFIX}${storageKey}`, String(Math.max(0, Math.round(y))))
+}
+
+const currentScrollY = () =>
+  window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0
+
+const applyScrollTop = (y: number) => {
+  window.scrollTo({ top: y, behavior: 'auto' })
+  document.documentElement.scrollTop = y
+  document.body.scrollTop = y
+}
+
+/**
+ * Persist and restore window scroll per logical tab key.
+ *
+ * Save in useLayoutEffect cleanup (before ScrollToTop runs on the next route).
+ * Saving in useEffect cleanup is too late — scroll is already 0 and overwrites
+ * a good position.
+ */
 export const useTabScrollRestoration = (storageKey: string) => {
   const prevKeyRef = useRef<string | null>(null)
+  const lastYRef = useRef(0)
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useLayoutEffect(() => {
     const prevKey = prevKeyRef.current
     if (prevKey && prevKey !== storageKey) {
-      sessionStorage.setItem(`${STORAGE_PREFIX}${prevKey}`, String(window.scrollY))
+      writeSaved(prevKey, lastYRef.current)
     }
 
-    const restore = () => {
-      const saved = sessionStorage.getItem(`${STORAGE_PREFIX}${storageKey}`)
-      if (!saved) {
-        window.scrollTo({ top: 0, behavior: 'auto' })
-        return
+    const saved = readSaved(storageKey)
+    let rafId = 0
+
+    if (saved != null && saved > 0) {
+      lastYRef.current = saved
+      applyScrollTop(saved)
+
+      // Rails / Suspense often grow height after first paint — keep retrying.
+      let attempts = 0
+      const retry = () => {
+        applyScrollTop(saved)
+        attempts += 1
+        const maxScroll = Math.max(
+          document.documentElement.scrollHeight - window.innerHeight,
+          document.body.scrollHeight - window.innerHeight,
+          0
+        )
+        if (attempts < 30 && maxScroll + 4 < saved) {
+          rafId = requestAnimationFrame(retry)
+        }
       }
-      const y = Number.parseInt(saved, 10)
-      if (!Number.isFinite(y)) return
-      window.scrollTo({ top: y, behavior: 'auto' })
-    }
-
-    restore()
-
-    // Rails often paint after first layout — retry while height catches up.
-    const rafIds: number[] = []
-    rafIds.push(
-      requestAnimationFrame(() => {
-        restore()
-        rafIds.push(requestAnimationFrame(restore))
-      })
-    )
-    const retry = window.setTimeout(restore, 120)
-
-    prevKeyRef.current = storageKey
-    return () => {
-      for (const id of rafIds) cancelAnimationFrame(id)
-      window.clearTimeout(retry)
-    }
-  }, [storageKey])
-
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout> | null = null
-
-    const save = () => {
-      sessionStorage.setItem(`${STORAGE_PREFIX}${storageKey}`, String(window.scrollY))
+      rafId = requestAnimationFrame(retry)
+    } else {
+      lastYRef.current = currentScrollY()
     }
 
     const onScroll = () => {
-      if (timer) clearTimeout(timer)
-      timer = setTimeout(save, 120)
+      lastYRef.current = currentScrollY()
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+      saveTimerRef.current = setTimeout(() => {
+        writeSaved(storageKey, lastYRef.current)
+      }, 100)
     }
 
     window.addEventListener('scroll', onScroll, { passive: true })
+    prevKeyRef.current = storageKey
+
     return () => {
+      // Remove listener before sibling ScrollToTop zeroes the window on PUSH,
+      // so a scroll event cannot overwrite lastYRef with 0.
       window.removeEventListener('scroll', onScroll)
-      if (timer) clearTimeout(timer)
-      save()
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+      cancelAnimationFrame(rafId)
+      writeSaved(storageKey, lastYRef.current)
     }
   }, [storageKey])
 }
