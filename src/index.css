@@ -441,6 +441,8 @@
     flex: 0 0 92%;
     width: 92%;
     scroll-snap-align: center;
+    /* Stop at every slide — fast flicks must not skip past neighbors. */
+    scroll-snap-stop: always;
     direction: rtl;
   }
 
