@@ -1,8 +1,27 @@
 /** Anime / manga lines shown on the branded boot splash. */
 export type BootQuote = {
   text: string
-  /** Character or source, shown after an em dash */
+  /** Character or source — usually `شخصیت · اثر` */
   attribution: string
+}
+
+export type BootQuoteParts = {
+  character: string
+  series: string | null
+}
+
+/** Split `سورو · وان پیس` / `اوسامو دازای | Bungo Stray Dogs` into display parts. */
+export function splitBootAttribution(attribution: string): BootQuoteParts {
+  const raw = attribution.trim()
+  if (!raw) return { character: '', series: null }
+  const parts = raw
+    .split(/\s*[·|｜]\s*/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+  if (parts.length >= 2) {
+    return { character: parts[0]!, series: parts.slice(1).join(' · ') }
+  }
+  return { character: raw, series: null }
 }
 
 /** Built-in fallback when API/cache has no active quotes.

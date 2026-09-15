@@ -17,7 +17,7 @@
         body {
             margin: 0;
             min-height: 100%;
-            background: #08040f;
+            background: #05030a;
             color: #f4f0ff;
             font-family: 'Vazirmatn', system-ui, sans-serif;
         }
@@ -37,191 +37,225 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            background: #08040f;
+            background: #05030a;
             box-sizing: border-box;
             color: #f4f0ff;
         }
 
-        #boot-splash .boot-aurora {
-            position: absolute;
-            inset: -18%;
-            pointer-events: none;
-            background:
-                radial-gradient(ellipse 72% 58% at 18% 22%, rgba(139, 92, 246, 0.38), transparent 58%),
-                radial-gradient(ellipse 64% 52% at 82% 68%, rgba(91, 33, 182, 0.32), transparent 56%),
-                radial-gradient(ellipse 55% 48% at 50% 100%, rgba(59, 7, 100, 0.42), transparent 62%),
-                radial-gradient(ellipse 40% 35% at 70% 18%, rgba(196, 181, 253, 0.12), transparent 55%);
-            animation: boot-splash-aurora 16s ease-in-out infinite alternate;
-        }
-
-        #boot-splash .boot-vignette {
+        #boot-splash .boot-scene {
             position: absolute;
             inset: 0;
             pointer-events: none;
-            background:
-                radial-gradient(ellipse 88% 72% at 50% 46%, transparent 28%, rgba(8, 4, 15, 0.5) 100%),
-                linear-gradient(to bottom, rgba(8, 4, 15, 0.15), transparent 35%, rgba(8, 4, 15, 0.35) 100%);
+            overflow: hidden;
         }
 
-        #boot-splash .boot-grain {
+        #boot-splash .boot-hero-img {
+            position: absolute;
+            inset-inline: 0;
+            top: -4%;
+            width: 100%;
+            height: 58%;
+            object-fit: cover;
+            object-position: center 28%;
+            opacity: 0.95;
+            mask-image: linear-gradient(to bottom, #000 42%, transparent 96%);
+            -webkit-mask-image: linear-gradient(to bottom, #000 42%, transparent 96%);
+        }
+
+        #boot-splash .boot-scene-veil {
             position: absolute;
             inset: 0;
-            pointer-events: none;
-            opacity: 0.12;
-            mix-blend-mode: overlay;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background:
+                radial-gradient(ellipse 70% 45% at 50% 18%, rgba(139, 92, 246, 0.22), transparent 60%),
+                linear-gradient(to bottom, rgba(5, 3, 10, 0.15) 0%, rgba(5, 3, 10, 0.55) 42%, #05030a 68%);
         }
 
-        #boot-splash .boot-main {
+        #boot-splash .boot-content {
             position: relative;
             z-index: 1;
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            gap: 1.5rem;
-            padding: 2rem 1.25rem 2.5rem;
+            padding: 1.25rem 1.5rem;
             box-sizing: border-box;
         }
 
-        #boot-splash .boot-logo {
-            height: 1.25rem;
-            width: auto;
-            max-width: 6rem;
-            opacity: 0.92;
-            filter: drop-shadow(0 2px 12px rgba(139, 92, 246, 0.35));
+        #boot-splash .boot-hero-spacer {
+            flex: 0 0 clamp(7.5rem, 26vh, 12rem);
         }
 
-        #boot-splash .boot-card {
-            position: relative;
+        #boot-splash .boot-copy {
             width: 100%;
             max-width: 22rem;
-            margin: 0;
-            padding: 1.15rem 1.2rem 0.95rem;
-            border-radius: 0.2rem 0.9rem 0.2rem 0.9rem;
-            background: linear-gradient(145deg, rgba(28, 16, 48, 0.88), rgba(12, 6, 22, 0.78));
-            border: 1px solid rgba(196, 181, 253, 0.34);
-            box-shadow:
-                0 0 0 1px rgba(139, 92, 246, 0.1),
-                0 18px 48px rgba(0, 0, 0, 0.5),
-                inset 0 1px 0 rgba(255, 255, 255, 0.07);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            animation:
-                boot-quote-in 0.65s cubic-bezier(0.16, 1, 0.3, 1) both,
-                boot-dialog-breathe 3.6s ease-in-out 0.65s infinite;
-            box-sizing: border-box;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.25rem;
+            animation: boot-quote-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+            text-align: center;
         }
 
-        #boot-splash .boot-card-edge {
-            position: absolute;
-            inset-inline-start: 0;
-            top: 0.85rem;
-            bottom: 0.85rem;
-            width: 2px;
+        #boot-splash .boot-character {
+            margin: 0;
+            font-size: clamp(1.35rem, 5.2vw, 1.7rem);
+            font-weight: 700;
+            color: #f8f5ff;
+            text-shadow: 0 2px 24px rgba(91, 33, 182, 0.45);
+        }
+
+        #boot-splash .boot-rule-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.55rem;
+            margin-top: 0.65rem;
+        }
+
+        #boot-splash .boot-rule {
+            display: block;
+            width: 2.4rem;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(196, 181, 253, 0.7), transparent);
+        }
+
+        #boot-splash .boot-rule-dot {
+            width: 0.28rem;
+            height: 0.28rem;
             border-radius: 9999px;
+            background: #c4b5fd;
+            box-shadow: 0 0 8px rgba(196, 181, 253, 0.8);
+        }
+
+        #boot-splash .boot-quote-line {
+            height: 1px;
+            width: 100%;
             background: linear-gradient(
-                to bottom,
+                90deg,
                 transparent,
-                rgba(196, 181, 253, 0.85) 20%,
-                rgba(139, 92, 246, 0.95) 50%,
-                rgba(196, 181, 253, 0.85) 80%,
+                rgba(167, 139, 250, 0.55) 18%,
+                rgba(196, 181, 253, 0.85) 50%,
+                rgba(167, 139, 250, 0.55) 82%,
                 transparent
             );
-            opacity: 0.9;
         }
 
         #boot-splash .boot-quote {
-            margin: 0;
-            padding-inline-start: 0.55rem;
+            margin: 0.95rem 0;
             font-family: 'ShioriDialogue', 'Vazirmatn', serif;
-            font-size: 1.05rem;
+            font-size: clamp(0.98rem, 3.8vw, 1.12rem);
             font-weight: 500;
-            line-height: 2rem;
-            text-align: start;
+            line-height: 2;
             color: #f4f0ff;
-            text-shadow: 0 2px 18px rgba(10, 6, 18, 0.85);
+            text-shadow: 0 2px 16px rgba(5, 3, 10, 0.9);
         }
 
         #boot-splash .boot-quote .q {
+            color: #a78bfa;
+            font-size: 1.15em;
+            margin-inline: 0.1rem;
+        }
+
+        #boot-splash .boot-star {
             color: #c4b5fd;
+            font-size: 0.85rem;
+            text-shadow: 0 0 12px rgba(167, 139, 250, 0.9);
         }
 
-        #boot-splash .boot-attr {
-            margin: 0.85rem 0 0;
-            padding: 0.7rem 0 0 0;
-            padding-inline-start: 0.55rem;
-            border-top: 1px solid rgba(196, 181, 253, 0.14);
-            font-size: 0.72rem;
+        #boot-splash .boot-credit {
+            margin: 0.65rem 0 0;
+            font-size: 0.78rem;
             font-weight: 500;
-            letter-spacing: 0.02em;
-            text-align: start;
-            color: rgba(196, 181, 253, 0.72);
-            text-shadow: 0 1px 12px rgba(10, 6, 18, 0.8);
-            font-family: 'Vazirmatn', system-ui, sans-serif;
+            color: rgba(196, 181, 253, 0.78);
         }
 
-        #boot-splash .boot-progress {
-            margin-top: 1rem;
-            height: 2px;
+        #boot-splash .boot-footer {
+            margin-top: auto;
             width: 100%;
-            overflow: hidden;
+            max-width: 22rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            padding-top: 1.5rem;
+        }
+
+        #boot-splash .boot-segments {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+        }
+
+        #boot-splash .boot-segments span {
+            display: block;
+            width: 1.35rem;
+            height: 0.38rem;
             border-radius: 9999px;
-            background: rgba(139, 92, 246, 0.2);
+            background: rgba(76, 50, 120, 0.55);
+            opacity: 0.35;
+            animation: boot-seg-on 0.35s ease-out forwards;
         }
 
-        #boot-splash .boot-bar {
-            height: 100%;
-            width: 100%;
-            border-radius: inherit;
-            background: linear-gradient(90deg, #7c3aed, #c4b5fd);
-            transform-origin: right center;
-            animation: boot-progress-grow 3.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        #boot-splash .boot-segments span:nth-child(1) { animation-delay: 0.15s; }
+        #boot-splash .boot-segments span:nth-child(2) { animation-delay: 0.57s; }
+        #boot-splash .boot-segments span:nth-child(3) { animation-delay: 0.99s; }
+        #boot-splash .boot-segments span:nth-child(4) { animation-delay: 1.41s; }
+        #boot-splash .boot-segments span:nth-child(5) { animation-delay: 1.83s; }
+        #boot-splash .boot-segments span:nth-child(6) { animation-delay: 2.25s; }
+
+        #boot-splash .boot-status {
+            margin: 0;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: rgba(196, 181, 253, 0.72);
+        }
+
+        #boot-splash .boot-tagline {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.55rem;
+            margin: 0.15rem 0 0;
+            font-size: 0.68rem;
+            letter-spacing: 0.04em;
+            color: rgba(167, 139, 250, 0.45);
+        }
+
+        #boot-splash .boot-tagline-rule {
+            display: block;
+            width: 1.6rem;
+            height: 1px;
+            background: rgba(167, 139, 250, 0.28);
         }
 
         @keyframes boot-quote-in {
-            from { opacity: 0; transform: translateY(16px) scale(0.985); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes boot-progress-grow {
-            from { transform: scaleX(0); }
-            to { transform: scaleX(1); }
-        }
-
-        @keyframes boot-dialog-breathe {
-            0%, 100% {
-                border-color: rgba(196, 181, 253, 0.3);
-                box-shadow:
-                    0 0 0 1px rgba(139, 92, 246, 0.08),
-                    0 18px 48px rgba(0, 0, 0, 0.5),
-                    0 0 18px rgba(139, 92, 246, 0.12),
-                    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        @keyframes boot-seg-on {
+            from {
+                opacity: 0.35;
+                background: rgba(76, 50, 120, 0.55);
             }
-            50% {
-                border-color: rgba(196, 181, 253, 0.5);
-                box-shadow:
-                    0 0 0 1px rgba(139, 92, 246, 0.18),
-                    0 18px 48px rgba(0, 0, 0, 0.5),
-                    0 0 28px rgba(139, 92, 246, 0.28),
-                    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            to {
+                opacity: 1;
+                background: linear-gradient(90deg, #7c3aed, #a78bfa);
+                box-shadow: 0 0 10px rgba(139, 92, 246, 0.65);
             }
-        }
-
-        @keyframes boot-splash-aurora {
-            0% { transform: scale(1) translate3d(0, 0, 0); opacity: 0.88; }
-            100% { transform: scale(1.06) translate3d(-1.5%, -1%, 0); opacity: 1; }
         }
 
         @media (prefers-reduced-motion: reduce) {
-            #boot-splash .boot-card,
-            #boot-splash .boot-aurora {
+            #boot-splash .boot-copy,
+            #boot-splash .boot-segments span {
                 animation: none !important;
             }
-            #boot-splash .boot-bar {
-                animation: none !important;
-                transform: scaleX(1);
+            #boot-splash .boot-segments span {
+                opacity: 1 !important;
+                background: linear-gradient(90deg, #7c3aed, #a78bfa) !important;
             }
         }
     </style>
@@ -253,26 +287,49 @@
 </head>
 
 <body>
-    <div id="tg-gate" style="display:none;position:fixed;inset:0;z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:1.25rem;background:#08040f;color:#f4f0ff;font-family:'Vazirmatn',system-ui,sans-serif;text-align:center;padding:2rem;">
+    <div id="tg-gate" style="display:none;position:fixed;inset:0;z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:1.25rem;background:#05030a;color:#f4f0ff;font-family:'Vazirmatn',system-ui,sans-serif;text-align:center;padding:2rem;">
         <p style="margin:0;font-size:1.05rem;line-height:1.9;color:rgba(244,240,255,0.85);">
             برای استفاده از مینی‌اپ، لطفاً از <strong style="font-weight:600;color:#f4f0ff;">آخرین نسخهٔ رسمی تلگرام</strong> استفاده کنید.
         </p>
     </div>
     <div id="root">
         <div id="boot-splash" role="status" aria-live="polite" aria-busy="true">
-            <div class="boot-aurora" aria-hidden="true"></div>
-            <div class="boot-vignette" aria-hidden="true"></div>
-            <div class="boot-grain" aria-hidden="true"></div>
-            <div class="boot-main">
-                <img class="boot-logo" src="/boot-logo.svg" alt="" />
-                <blockquote class="boot-card">
-                    <div class="boot-card-edge" aria-hidden="true"></div>
-                    <p class="boot-quote" id="boot-quote-text"></p>
-                    <footer class="boot-attr" id="boot-quote-attr"></footer>
-                    <div class="boot-progress" role="progressbar" aria-label="در حال بارگذاری">
-                        <div class="boot-bar"></div>
+            <div class="boot-scene" aria-hidden="true">
+                <img class="boot-hero-img" src="/boot-splash-hero.png" alt="" />
+                <div class="boot-scene-veil"></div>
+            </div>
+            <div class="boot-content">
+                <div class="boot-hero-spacer" aria-hidden="true"></div>
+                <div class="boot-copy">
+                    <header>
+                        <h1 class="boot-character" id="boot-character"></h1>
+                        <div class="boot-rule-row" aria-hidden="true">
+                            <span class="boot-rule"></span>
+                            <span class="boot-rule-dot"></span>
+                            <span class="boot-rule"></span>
+                        </div>
+                    </header>
+                    <blockquote style="margin:0;width:100%;">
+                        <div class="boot-quote-line" aria-hidden="true"></div>
+                        <p class="boot-quote" id="boot-quote-text"></p>
+                        <div class="boot-quote-line" aria-hidden="true"></div>
+                    </blockquote>
+                    <div>
+                        <div class="boot-star" aria-hidden="true">✦</div>
+                        <p class="boot-credit" id="boot-credit"></p>
                     </div>
-                </blockquote>
+                </div>
+                <div class="boot-footer">
+                    <div class="boot-segments" role="progressbar" aria-label="در حال بارگذاری">
+                        <span></span><span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                    <p class="boot-status">در حال آماده‌سازی کتابخانه انیمه...</p>
+                    <p class="boot-tagline" lang="ja">
+                        <span class="boot-tagline-rule" aria-hidden="true"></span>
+                        アニメの力で、もっと先へ
+                        <span class="boot-tagline-rule" aria-hidden="true"></span>
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -289,6 +346,15 @@
                 { text: 'اگر بتونی بخندی، هنوز نشکستی.', attribution: 'سایتاما · وان پانچ من' },
                 { text: 'عشق یعنی وقتی برای یکی دیگه، خودت رو فراموش می‌کنی.', attribution: 'ویولت · ویولت اورگاردن' }
             ]
+            function splitAttr(attribution) {
+                var parts = String(attribution || '').split(/\s*[·|｜]\s*/).map(function (p) {
+                    return p.trim()
+                }).filter(Boolean)
+                if (parts.length >= 2) {
+                    return { character: parts[0], series: parts.slice(1).join(' · ') }
+                }
+                return { character: String(attribution || '').trim(), series: null }
+            }
             var quotes = fallback
             try {
                 var cached = JSON.parse(localStorage.getItem('shiori_boot_quotes_v2') || 'null')
@@ -299,10 +365,13 @@
             try {
                 sessionStorage.setItem('shiori_boot_quote_display', JSON.stringify(q))
             } catch (e) { /* ignore */ }
+            var parts = splitAttr(q.attribution)
             var textEl = document.getElementById('boot-quote-text')
-            var attrEl = document.getElementById('boot-quote-attr')
+            var characterEl = document.getElementById('boot-character')
+            var creditEl = document.getElementById('boot-credit')
             if (textEl) textEl.innerHTML = '<span class="q" aria-hidden="true">«</span>' + q.text + '<span class="q" aria-hidden="true">»</span>'
-            if (attrEl) attrEl.textContent = q.attribution
+            if (characterEl) characterEl.textContent = parts.character
+            if (creditEl) creditEl.textContent = parts.series ? (parts.character + ' | ' + parts.series) : parts.character
         })()
     </script>
     <script type="module" src="/src/main.tsx"></script>
