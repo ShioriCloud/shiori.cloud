@@ -16,7 +16,7 @@ type BrandBootScreenProps = {
 
 const STATUS = 'در حال آماده‌سازی…'
 
-/** Cold-start splash — quiet library backdrop, quote-first. */
+/** Cold-start splash — cinematic top hero, quote-first below. */
 export const BrandBootScreen = ({
   className,
   exiting = false,

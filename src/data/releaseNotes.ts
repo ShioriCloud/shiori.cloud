@@ -27,6 +27,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.36',
+    items: ['پس‌زمینهٔ صفحهٔ شروع دوباره روشن و سینمایی شد'],
+  },
+  {
     version: '0.2.35',
     items: ['صفحهٔ شروع خلوت‌تر و خواناتر شد'],
   },
