@@ -96,17 +96,11 @@
         #boot-splash .boot-quote {
             margin: 0;
             font-family: 'ShioriDialogue', 'Vazirmatn', serif;
-            font-size: clamp(1.05rem, 4.2vw, 1.2rem);
+            font-size: clamp(1.15rem, 4.6vw, 1.32rem);
             font-weight: 500;
             line-height: 2.05;
             color: #f4f0ff;
             text-shadow: 0 2px 18px rgba(5, 3, 10, 0.95);
-        }
-
-        #boot-splash .boot-quote .q {
-            color: rgba(167, 139, 250, 0.9);
-            font-size: 1.1em;
-            margin-inline: 0.08rem;
         }
 
         #boot-splash .boot-credit {
@@ -132,14 +126,14 @@
             height: 2px;
             overflow: hidden;
             border-radius: 9999px;
-            background: rgba(76, 50, 120, 0.45);
+            background: rgba(76, 50, 120, 0.22);
         }
 
         #boot-splash .boot-bar-fill {
             height: 100%;
             width: 18%;
             border-radius: inherit;
-            background: linear-gradient(90deg, #7c3aed, #a78bfa);
+            background: linear-gradient(90deg, rgba(124, 58, 237, 0.45), rgba(167, 139, 250, 0.55));
             animation: boot-bar-pulse 1.6s ease-in-out infinite;
         }
 
@@ -156,8 +150,8 @@
         }
 
         @keyframes boot-bar-pulse {
-            0%, 100% { opacity: 0.55; }
-            50% { opacity: 1; }
+            0%, 100% { opacity: 0.35; }
+            50% { opacity: 0.65; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -257,7 +251,7 @@
             var parts = splitAttr(q.attribution)
             var textEl = document.getElementById('boot-quote-text')
             var creditEl = document.getElementById('boot-credit')
-            if (textEl) textEl.innerHTML = '<span class="q" aria-hidden="true">«</span>' + q.text + '<span class="q" aria-hidden="true">»</span>'
+            if (textEl) textEl.textContent = q.text
             if (creditEl) creditEl.textContent = parts.series ? (parts.character + ' · ' + parts.series) : parts.character
         })()
     </script>

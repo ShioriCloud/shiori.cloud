@@ -1,8 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { AlarmClockIcon, CustomerServiceIcon, UserIcon } from 'hugeicons-react'
-import { ChevronLeft, Crown, Moon, Sparkles, Sun } from 'lucide-react'
-import { ReleaseNotesArchiveDialog } from '@/components/ReleaseNotesArchiveDialog'
+import { ChevronLeft, Crown, Moon, Sun } from 'lucide-react'
 import { useAppAuth } from '../hooks/useAppAuth'
 import { useUserAnimeList } from '../hooks/useUserAnimeList'
 import { useNotifications } from '../hooks/useNotifications'
@@ -93,23 +92,6 @@ const MenuItem = ({ to, ...row }: MenuItemProps) => (
   </Link>
 )
 
-type MenuButtonProps = MenuRowProps & {
-  onClick: () => void
-}
-
-const MenuButton = ({ onClick, ...row }: MenuButtonProps) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={cn(
-      'flex w-full items-center gap-3 px-3 py-3 text-right',
-      'transition-colors hover:bg-muted/40 active:bg-muted/55'
-    )}
-  >
-    <MenuRowContent {...row} />
-  </button>
-)
-
 const StatCell = ({
   value,
   label,
@@ -172,7 +154,6 @@ const Profile = () => {
     updatingNotifyTelegramDm,
   } = useNotifications()
   const [avatarFailed, setAvatarFailed] = useState(false)
-  const [releaseNotesOpen, setReleaseNotesOpen] = useState(false)
   const { preference, setPreference, isDarkMode } = useTheme()
 
   const displayName = user?.displayName ?? 'کاربر'
@@ -317,15 +298,6 @@ const Profile = () => {
             label="تیکت پشتیبانی"
             hint="گزارش خطا، پیشنهاد و درخواست قابلیت"
           />
-          <MenuButton
-            onClick={() => {
-              hapticSelection()
-              setReleaseNotesOpen(true)
-            }}
-            icon={<Sparkles className="h-4 w-4" />}
-            label="چی جدید شده؟"
-            hint="خلاصهٔ آپدیت‌های مینی‌اپ"
-          />
         </MyListCompactCard>
       </div>
 
@@ -445,8 +417,6 @@ const Profile = () => {
           </a>
         </p>
       </footer>
-
-      <ReleaseNotesArchiveDialog open={releaseNotesOpen} onOpenChange={setReleaseNotesOpen} />
     </div>
   )
 }

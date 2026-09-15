@@ -17,7 +17,6 @@ export type ReleaseNote = {
   items: string[]
   /**
    * When true, eligible for the post-splash dialog.
-   * Archive in Profile always lists every entry ≤ current version.
    */
   showDialog?: boolean
 }
@@ -26,6 +25,10 @@ export type ReleaseNote = {
  * Newest first. Only versions ≤ current package.json version are considered.
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
+  {
+    version: '0.2.37',
+    items: ['دیالوگ صفحهٔ شروع خواناتر شد'],
+  },
   {
     version: '0.2.36',
     items: ['پس‌زمینهٔ صفحهٔ شروع دوباره روشن و سینمایی شد'],
@@ -288,7 +291,8 @@ const notesInRange = (
 
 /**
  * Releases the user has not acknowledged yet (all entries, for diagnostics).
- * Prefer {@link getDialogReleaseNote} for the popup and {@link getReleaseNotesArchive} for Profile.
+ * Prefer {@link getDialogReleaseNote} for the popup.
+ * Profile archive UI is temporarily removed pending a redesign.
  */
 export const getUnseenReleaseNotes = (
   currentVersion = getAppVersion(),
