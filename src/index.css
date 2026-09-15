@@ -667,7 +667,7 @@
     }
   }
 
-  /* Cold-start splash — animated Shiori gradient, centered dialogue */
+  /* Cold-start splash — anime dialogue frame on Shiori gradient */
   .boot-splash {
     background: #08040f;
   }
@@ -704,27 +704,63 @@
 
   .boot-splash-logo {
     opacity: 0.92;
+    filter: drop-shadow(0 2px 12px rgba(139, 92, 246, 0.35));
   }
 
   .boot-splash-card {
     position: relative;
-    padding: 0.15rem 0.25rem 0;
-    animation: boot-quote-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    margin: 0;
+    padding: 1.15rem 1.2rem 0.95rem;
+    border-radius: 0.2rem 0.9rem 0.2rem 0.9rem;
+    background:
+      linear-gradient(145deg, rgba(28, 16, 48, 0.88), rgba(12, 6, 22, 0.78));
+    border: 1px solid rgba(196, 181, 253, 0.34);
+    box-shadow:
+      0 0 0 1px rgba(139, 92, 246, 0.1),
+      0 18px 48px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    animation: boot-quote-in 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .boot-splash-card-edge {
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0.85rem;
+    bottom: 0.85rem;
+    width: 2px;
+    border-radius: 9999px;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      rgba(196, 181, 253, 0.85) 20%,
+      rgba(139, 92, 246, 0.95) 50%,
+      rgba(196, 181, 253, 0.85) 80%,
+      transparent
+    );
+    opacity: 0.9;
+  }
+
+  .boot-splash-card-glow {
+    animation:
+      boot-quote-in 0.65s cubic-bezier(0.16, 1, 0.3, 1) both,
+      boot-dialog-breathe 3.6s ease-in-out 0.65s infinite;
   }
 
   .boot-splash-progress {
     height: 2px;
-    width: 7rem;
+    width: 100%;
     overflow: hidden;
     border-radius: 9999px;
-    background: rgba(139, 92, 246, 0.22);
+    background: rgba(139, 92, 246, 0.2);
   }
 
   .boot-splash-progress-fill {
     height: 100%;
     width: 100%;
     border-radius: inherit;
-    background: #8b5cf6;
+    background: linear-gradient(90deg, #7c3aed, #c4b5fd);
     transform-origin: right center;
     animation: boot-progress-grow 3.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
@@ -734,6 +770,7 @@
     font-weight: 500;
     color: #f4f0ff;
     text-shadow: 0 2px 18px rgba(10, 6, 18, 0.85);
+    padding-inline-start: 0.55rem;
   }
 
   .boot-splash-q {
@@ -741,17 +778,58 @@
   }
 
   .boot-splash-attr {
-    color: rgba(196, 181, 253, 0.78);
+    color: rgba(196, 181, 253, 0.72);
     text-shadow: 0 1px 12px rgba(10, 6, 18, 0.8);
+    padding-inline-start: 0.55rem;
+    border-top: 1px solid rgba(196, 181, 253, 0.14);
+    padding-top: 0.7rem;
+    margin-top: 0.85rem;
+    font-family: 'Vazirmatn', system-ui, sans-serif;
+    font-weight: 500;
   }
 
   .duration-280 {
     transition-duration: 280ms;
   }
 
+  @keyframes boot-quote-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
   @keyframes boot-progress-grow {
-    from { transform: scaleX(0); }
-    to { transform: scaleX(1); }
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  @keyframes boot-dialog-breathe {
+    0%,
+    100% {
+      border-color: rgba(196, 181, 253, 0.3);
+      box-shadow:
+        0 0 0 1px rgba(139, 92, 246, 0.08),
+        0 18px 48px rgba(0, 0, 0, 0.5),
+        0 0 18px rgba(139, 92, 246, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+    50% {
+      border-color: rgba(196, 181, 253, 0.5);
+      box-shadow:
+        0 0 0 1px rgba(139, 92, 246, 0.18),
+        0 18px 48px rgba(0, 0, 0, 0.5),
+        0 0 28px rgba(139, 92, 246, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
   }
 
   @keyframes boot-splash-aurora {
@@ -807,6 +885,7 @@
     .episode-pack-card-wrap,
     .my-list-enter,
     .boot-splash-card,
+    .boot-splash-card-glow,
     .boot-splash-aurora,
     ::view-transition-old(root),
     ::view-transition-new(root) {

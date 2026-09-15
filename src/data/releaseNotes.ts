@@ -27,6 +27,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.32',
+    items: ['صفحهٔ شروع با کادر دیالوگ انیمه‌ای تازه شد'],
+  },
+  {
     version: '0.2.31',
     items: ['اسکرول پیشنهاد ویژه روان‌تر شد'],
   },

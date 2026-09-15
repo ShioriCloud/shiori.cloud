@@ -9,7 +9,7 @@ type BrandBootScreenProps = {
   exiting?: boolean
 }
 
-/** Cold-start splash — centered dialogue on animated Shiori gradient. */
+/** Cold-start splash — anime-style dialogue frame on Shiori gradient. */
 export const BrandBootScreen = ({ className, exiting = false }: BrandBootScreenProps = {}) => {
   const [quote] = useState<BootQuote>(() => resolveDisplayBootQuote(getBootQuotePool()))
 
@@ -28,29 +28,31 @@ export const BrandBootScreen = ({ className, exiting = false }: BrandBootScreenP
       <div className="boot-splash-vignette" aria-hidden />
       <div className="boot-splash-grain" aria-hidden />
 
-      <div className="relative z-[1] flex min-h-0 flex-1 flex-col items-center justify-center gap-8 px-6 pb-16 pt-[max(2rem,var(--app-tg-top-inset))]">
+      <div className="relative z-[1] flex min-h-0 flex-1 flex-col items-center justify-center gap-6 px-5 pb-10 pt-[max(2rem,var(--app-tg-top-inset))]">
         <img src={logo} alt="" className="boot-splash-logo h-5 w-auto max-w-[6rem]" />
 
-        <blockquote className="boot-splash-card w-full max-w-sm">
-          <p className="boot-splash-quote-text text-center text-[1.05rem] leading-8 sm:text-lg sm:leading-9">
-            <span className="boot-splash-q" aria-hidden>«</span>
+        <blockquote className="boot-splash-card boot-splash-card-glow w-full max-w-[22rem]">
+          <div className="boot-splash-card-edge" aria-hidden />
+          <p className="boot-splash-quote-text text-start text-[1.05rem] leading-8 sm:text-lg sm:leading-9">
+            <span className="boot-splash-q" aria-hidden>
+              «
+            </span>
             {quote.text}
-            <span className="boot-splash-q" aria-hidden>»</span>
+            <span className="boot-splash-q" aria-hidden>
+              »
+            </span>
           </p>
-          <footer className="boot-splash-attr mt-3 text-center text-[0.8rem]">
-            — {quote.attribution}
+          <footer className="boot-splash-attr text-start text-[0.72rem] tracking-wide">
+            {quote.attribution}
           </footer>
+          <div
+            className="boot-splash-progress mt-4"
+            role="progressbar"
+            aria-label="در حال بارگذاری"
+          >
+            <div className="boot-splash-progress-fill" />
+          </div>
         </blockquote>
-      </div>
-
-      <div className="relative z-[1] px-8 pb-[max(1.5rem,var(--app-tg-bottom-inset))]">
-        <div
-          className="boot-splash-progress mx-auto"
-          role="progressbar"
-          aria-label="در حال بارگذاری"
-        >
-          <div className="boot-splash-progress-fill" />
-        </div>
       </div>
     </div>
   )
