@@ -1,11 +1,6 @@
 import type { GenreAdminItem } from '@/types/catalog'
 import type { UiAnimeCard } from '@/utils/api'
 import {
-  homeFormatCacheKey,
-  homeLatestCacheKey,
-  homePopularCacheKey,
-  homeRecentCacheKey,
-  peekHomeCardRail,
   peekHomeRailCache,
   writeHomeRailCache,
   type HomeRailCacheEntry,
@@ -52,7 +47,8 @@ export const exploreSearchCacheKey = (
   pageSize: number
 ): string => {
   const parts = [
-    'shiori_explore_search_v1',
+    // v2: stop seeding short Home rails into infinite pages (offset overlap).
+    'shiori_explore_search_v2',
     String(filters.query ?? '').trim().toLowerCase(),
     filters.format ?? '',
     filters.hardsubLanguage ?? '',
@@ -127,70 +123,17 @@ export const toInfiniteInitialData = (
 })
 
 /**
- * Seed page-1 from a Home rail. Always hasMore:true so a short rail (20)
- * does not stop Explore pagination at pageSize 36.
+ * Only hydrate from a prior Explore page-1 disk cache (full `pageSize`).
+ * Never seed from short Home rails — a 20-item rail + warm page-2 at
+ * offset 20 races with page-0 refetch (limit 36) and duplicates rows.
  */
-export const seedExplorePageFromHomeRail = (
-  cards: UiAnimeCard[],
-  pageSize: number
-): ExploreSearchPage => {
-  const items = cards.slice(0, pageSize)
-  return {
-    items,
-    total: Math.max(items.length + 1, pageSize + 1),
-    hasMore: true,
-  }
-}
-
-/** Match Home disk rails to Explore filter shapes (see-all / defaults). */
-export const peekHomeRailSeedForExplore = (
-  filters: ExploreSearchFilters,
-  pageSize: number
-): HomeRailCacheEntry<ExploreSearchPage> | null => {
-  if (String(filters.query ?? '').trim()) return null
-  if (filters.hardsubLanguage || filters.airingStatus) return null
-  if ((filters.genreSlugs?.length ?? 0) > 0) return null
-
-  const sort = normalizeSort(filters.sortBy)
-  const hasSeason = Boolean(filters.season) && filters.year != null
-  const format = filters.format
-
-  let railKey: string | null = null
-
-  // Only seed when Home rail sort matches Explore sort — otherwise offset
-  // pagination overlaps and the same anime can appear twice.
-  if (hasSeason && !format && sort === 'last_episode_at') {
-    railKey = homeLatestCacheKey(Number(filters.year), String(filters.season))
-  } else if (!hasSeason && !format && sort === 'popular') {
-    railKey = homePopularCacheKey(20)
-  } else if (!hasSeason && !format && sort === 'created_at') {
-    railKey = homeRecentCacheKey(20)
-  } else if (!hasSeason && (format === 'MOVIE' || format === 'DONGHUA') && sort === 'created_at') {
-    railKey = homeFormatCacheKey(format, 20)
-  }
-
-  if (!railKey) return null
-  const rail = peekHomeCardRail(railKey)
-  if (!rail) return null
-  return {
-    ts: rail.ts,
-    data: seedExplorePageFromHomeRail(rail.data, pageSize),
-  }
-}
-
 export const resolveExploreSearchInitial = (
   filters: ExploreSearchFilters,
   pageSize: number
 ): { data: ExploreInfiniteInitialData; updatedAt: number } | undefined => {
-  const key = exploreSearchCacheKey(filters, pageSize)
+  if (!isPersistableExploreSearch(filters)) return undefined
 
-  if (isPersistableExploreSearch(filters)) {
-    const disk = peekExploreSearchPage(key)
-    if (disk) return toInfiniteInitialData(disk.data, disk.ts)
-  }
-
-  const seeded = peekHomeRailSeedForExplore(filters, pageSize)
-  if (seeded) return toInfiniteInitialData(seeded.data, seeded.ts)
-
-  return undefined
+  const disk = peekExploreSearchPage(exploreSearchCacheKey(filters, pageSize))
+  if (!disk) return undefined
+  return toInfiniteInitialData(disk.data, disk.ts)
 }

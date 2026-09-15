@@ -15,6 +15,8 @@ if (!isTelegramMiniApp()) {
   document.documentElement.classList.add('outside-telegram')
   throw new Error('Not inside Telegram — app blocked.')
 }
+// Clear any early boot gate (e.g. CDN race) once the bundled SDK confirms Mini App.
+document.documentElement.classList.remove('outside-telegram')
 
 // Before first paint of React — reinforces index.html early ready() after SDK init.
 ensureTelegramWebAppReady()

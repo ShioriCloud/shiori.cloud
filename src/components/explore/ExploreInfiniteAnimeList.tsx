@@ -56,8 +56,9 @@ export const ExploreInfiniteAnimeList = ({
       return
     }
     if (!hasNextPage || !onLoadMore || isLoading || isFetchingNextPage || isRefreshing) return
-    // Only auto-fetch the immediate next page after the first screenful (~1 page).
-    if (items.length > 40) return
+    // Only auto-fetch after a full first page — short seeds used to warm at
+    // offset 20 while page-0 later grew to 36 and duplicated rows.
+    if (items.length < 36 || items.length > 40) return
     if (warmedForLenRef.current === items.length) return
     warmedForLenRef.current = items.length
 
