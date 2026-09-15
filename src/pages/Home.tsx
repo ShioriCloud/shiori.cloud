@@ -17,7 +17,7 @@ import { HomeFeaturedCarousel } from '@/components/home/HomeFeaturedCarousel'
 import { HomeRailScroller, HomeRailSlide } from '@/components/home/HomeRailScroller'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
-import { exploreAllHref } from '@/lib/exploreParams'
+import { exploreAllHref, exploreSeasonalHref } from '@/lib/exploreParams'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { hapticSelection } from '@/lib/telegramHaptics'
 import {
@@ -205,14 +205,17 @@ const Home = () => {
       },
       latest: {
         title: `فصل ${currentSeasonFa} ${toPersianDigits(currentYearNumber)}`,
-        seeAll: exploreAllHref({
-          listYear: currentYearNumber,
-          listSeason: currentSeasonKey,
-        }),
+        seeAll: exploreSeasonalHref(currentSeasonKey, currentYearNumber),
       },
       popular: { title: 'محبوب‌ترین‌ها', seeAll: exploreAllHref({ sortBy: 'popular' }) },
-      donghua: { title: 'دونگهوا', seeAll: exploreAllHref({ format: 'DONGHUA' }) },
-      movies: { title: 'انیمه سینمایی', seeAll: exploreAllHref({ format: 'MOVIE' }) },
+      donghua: {
+        title: 'دونگهوا',
+        seeAll: exploreAllHref({ format: 'DONGHUA', sortBy: 'created_at' }),
+      },
+      movies: {
+        title: 'انیمه سینمایی',
+        seeAll: exploreAllHref({ format: 'MOVIE', sortBy: 'created_at' }),
+      },
     }),
     [currentSeasonFa, currentSeasonKey, currentYearNumber]
   )

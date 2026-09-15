@@ -36,6 +36,7 @@ import {
   homeLatestCacheKey,
   homePopularCacheKey,
   homeRecentCacheKey,
+  HOME_CUSTOM_BLOCKS_CACHE_TTL_MS,
   HOME_LATEST_RAIL_STALE_MS,
   HOME_RAIL_CACHE_TTL_MS,
   HOME_RAIL_STALE_MS,
@@ -164,7 +165,7 @@ const isUsableCustomBlocks = (payload: HomeLayoutPayload): boolean =>
 export const useHomeCustomBlocksQuery = (enabled = true) => {
   const key = homeCustomBlocksCacheKey()
   const cached = peekHomeRailCache<HomeLayoutPayload>(key, {
-    maxAgeMs: HOME_RAIL_CACHE_TTL_MS,
+    maxAgeMs: HOME_CUSTOM_BLOCKS_CACHE_TTL_MS,
     isUsable: isUsableCustomBlocks,
   })
   return useQuery({

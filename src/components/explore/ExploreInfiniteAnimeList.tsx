@@ -119,4 +119,13 @@ export const ExploreInfiniteAnimeList = ({
 export const useExploreAnimeItems = (
   pages: { items: UiAnimeCard[] }[] | undefined
 ): UiAnimeCard[] =>
-  useMemo(() => pages?.flatMap((p) => p.items) ?? [], [pages])
+  useMemo(() => {
+    const flat = pages?.flatMap((p) => p.items) ?? []
+    const seen = new Set<string>()
+    return flat.filter((item) => {
+      const id = String(item.id ?? '')
+      if (!id || seen.has(id)) return false
+      seen.add(id)
+      return true
+    })
+  }, [pages])

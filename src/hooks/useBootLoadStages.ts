@@ -6,6 +6,7 @@ import {
   homeFeaturedCacheKey,
   homeLatestCacheKey,
   homeRecentCacheKey,
+  HOME_CUSTOM_BLOCKS_CACHE_TTL_MS,
   HOME_LATEST_RAIL_STALE_MS,
   HOME_RAIL_CACHE_TTL_MS,
   HOME_RAIL_STALE_MS,
@@ -50,7 +51,7 @@ export function useBootLoadStages(enabled: boolean) {
   const recentCached = peekHomeCardRail(recentKey)
   const latestCached = peekHomeCardRail(latestKey)
   const layoutCached = peekHomeRailCache<HomeLayoutPayload>(layoutKey, {
-    maxAgeMs: HOME_RAIL_CACHE_TTL_MS,
+    maxAgeMs: HOME_CUSTOM_BLOCKS_CACHE_TTL_MS,
     isUsable: isUsableCustomBlocks,
   })
 

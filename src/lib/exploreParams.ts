@@ -321,6 +321,15 @@ export const exploreAllHref = (partial: Partial<ExploreState> = {}): string => {
   return `/explore?${params.toString()}`
 }
 
+/** Home season rail → seasonal tab (same `last_episode_at` order as the rail). */
+export const exploreSeasonalHref = (
+  season: SearchSeasonKey,
+  year: number
+): string => {
+  const params = buildExploreParams({ tab: 'seasonal', season, year })
+  return `/explore?${params.toString()}`
+}
+
 type GenreLike = { slug: string; name_fa?: string | null; name_en?: string | null }
 
 const genreLabel = (g: GenreLike) => g.name_fa || g.name_en || g.slug

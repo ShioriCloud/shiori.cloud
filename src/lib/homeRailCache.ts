@@ -19,7 +19,9 @@ export const homePopularCacheKey = (limit = 20) => `shiori_home_popular_v2:${lim
 export const homeRecentCacheKey = (limit = 20) => `shiori_home_recent_v2:${limit}`
 export const homeFormatCacheKey = (format: string, limit = 20) =>
   `shiori_home_format_v2:${format}:${limit}`
-export const homeCustomBlocksCacheKey = () => 'shiori_home_custom_blocks_v3'
+export const homeCustomBlocksCacheKey = () => 'shiori_home_custom_blocks_v4'
+/** Custom blocks change from admin — keep disk seed short to avoid stale CTA art. */
+export const HOME_CUSTOM_BLOCKS_CACHE_TTL_MS = 5 * 60 * 1000
 
 const isUsableCardList = (rows: unknown): rows is UiAnimeCard[] =>
   Array.isArray(rows) && rows.length > 0

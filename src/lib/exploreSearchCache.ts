@@ -79,14 +79,16 @@ export const isPersistableExploreSearch = (filters: ExploreSearchFilters): boole
   const hasSeason = Boolean(filters.season) && filters.year != null
   const format = filters.format
 
-  // Seasonal / list season
-  if (hasSeason && !format && (sort === 'created_at' || sort === 'popular')) return true
+  // Seasonal tab / season rail (same order as Home latest)
+  if (hasSeason && !format && sort === 'last_episode_at') return true
 
   // Default all + popular / recent
   if (!hasSeason && !format && (sort === 'popular' || sort === 'created_at')) return true
 
-  // Format see-all (movie / donghua)
-  if (!hasSeason && (format === 'MOVIE' || format === 'DONGHUA')) return true
+  // Format see-all (movie / donghua) — Home rails use created_at
+  if (!hasSeason && (format === 'MOVIE' || format === 'DONGHUA') && sort === 'created_at') {
+    return true
+  }
 
   return false
 }
@@ -155,13 +157,15 @@ export const peekHomeRailSeedForExplore = (
 
   let railKey: string | null = null
 
-  if (hasSeason && !format && (sort === 'created_at' || sort === 'popular')) {
+  // Only seed when Home rail sort matches Explore sort — otherwise offset
+  // pagination overlaps and the same anime can appear twice.
+  if (hasSeason && !format && sort === 'last_episode_at') {
     railKey = homeLatestCacheKey(Number(filters.year), String(filters.season))
   } else if (!hasSeason && !format && sort === 'popular') {
     railKey = homePopularCacheKey(20)
   } else if (!hasSeason && !format && sort === 'created_at') {
     railKey = homeRecentCacheKey(20)
-  } else if (!hasSeason && (format === 'MOVIE' || format === 'DONGHUA')) {
+  } else if (!hasSeason && (format === 'MOVIE' || format === 'DONGHUA') && sort === 'created_at') {
     railKey = homeFormatCacheKey(format, 20)
   }
 
