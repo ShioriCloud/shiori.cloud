@@ -8,6 +8,7 @@ import { AppFeedbackHost } from './components/AppFeedbackHost'
 import { ReleaseNotesDialog } from './components/ReleaseNotesDialog'
 import { useTheme } from './utils/theme'
 import { useAppAuth } from './hooks/useAppAuth'
+import { BOOT_SPLASH_MAX_MS, useBootLoadStages } from './hooks/useBootLoadStages'
 import { useBootSplashHold } from './hooks/useBootSplashHold'
 import { useTelegramStartNavigation } from './hooks/useTelegramStartNavigation'
 import { useTelegramUserSync } from './hooks/useTelegramUserSync'
@@ -32,7 +33,11 @@ const Subscribe = lazy(() => import('./pages/Subscribe'))
 
 function App() {
   const { isReady } = useAppAuth()
-  const { visible: showBootSplash, exiting: bootExiting } = useBootSplashHold(isReady)
+  const bootLoad = useBootLoadStages(isReady)
+  const { visible: showBootSplash, exiting: bootExiting } = useBootSplashHold(isReady, {
+    maxMs: BOOT_SPLASH_MAX_MS,
+    dataReady: bootLoad.dataReady,
+  })
   const { applyTheme } = useTheme()
   useTelegramStartNavigation(isReady)
   useTelegramUserSync(isReady)
@@ -94,7 +99,14 @@ function App() {
       </Layout>
       <AppFeedbackHost />
       <ReleaseNotesDialog enabled={!showBootSplash} />
-      {showBootSplash ? <BrandBootScreen exiting={bootExiting} /> : null}
+      {showBootSplash ? (
+        <BrandBootScreen
+          exiting={bootExiting}
+          statusLabel={bootLoad.statusLabel}
+          litSegmentCount={bootLoad.litSegmentCount}
+          segmentCount={bootLoad.segmentCount}
+        />
+      ) : null}
     </>
   )
 }
