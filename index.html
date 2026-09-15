@@ -101,6 +101,7 @@
             line-height: 2.05;
             color: #f4f0ff;
             text-shadow: 0 2px 18px rgba(5, 3, 10, 0.95);
+            text-wrap: balance;
         }
 
         #boot-splash .boot-credit {
@@ -251,7 +252,14 @@
             var parts = splitAttr(q.attribution)
             var textEl = document.getElementById('boot-quote-text')
             var creditEl = document.getElementById('boot-credit')
-            if (textEl) textEl.textContent = q.text
+            var quoteText = String(q.text || '')
+            var words = quoteText.trim().split(/\s+/).filter(Boolean)
+            if (words.length >= 2) {
+                var head = words.slice(0, -2).join(' ')
+                var tail = words[words.length - 2] + '\u00A0' + words[words.length - 1]
+                quoteText = head ? (head + ' ' + tail) : tail
+            }
+            if (textEl) textEl.textContent = quoteText
             if (creditEl) creditEl.textContent = parts.series ? (parts.character + ' · ' + parts.series) : parts.character
         })()
     </script>

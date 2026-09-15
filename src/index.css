@@ -717,6 +717,7 @@
     line-height: 2.05;
     color: #f4f0ff;
     text-shadow: 0 2px 18px rgba(5, 3, 10, 0.95);
+    text-wrap: balance;
   }
 
   .boot-splash-credit {

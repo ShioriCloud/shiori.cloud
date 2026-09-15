@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.38',
+    items: ['دیالوگ صفحهٔ شروع بدون افتادن یک کلمهٔ تکی پایین شد'],
+  },
+  {
     version: '0.2.37',
     items: ['دیالوگ صفحهٔ شروع خواناتر شد'],
   },

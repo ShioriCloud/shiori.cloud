@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import {
+  preventTrailingOrphan,
   resolveDisplayBootQuote,
   splitBootAttribution,
   type BootQuote,
@@ -50,7 +51,7 @@ export const BrandBootScreen = ({
       <div className="boot-splash-content relative z-[1] flex min-h-0 flex-1 flex-col items-center px-6 pt-[max(1.25rem,var(--app-tg-top-inset))] pb-[max(1.25rem,var(--app-tg-bottom-inset))]">
         <div className="boot-splash-copy flex w-full max-w-[20rem] flex-1 flex-col items-center justify-center">
           <blockquote className="boot-splash-quote-block w-full text-center">
-            <p className="boot-splash-quote-text">{quote.text}</p>
+            <p className="boot-splash-quote-text">{preventTrailingOrphan(quote.text)}</p>
             <footer className="boot-splash-credit">
               {parts.series ? `${parts.character} · ${parts.series}` : parts.character}
             </footer>

@@ -24,6 +24,20 @@ export function splitBootAttribution(attribution: string): BootQuoteParts {
   return { character: raw, series: null }
 }
 
+/**
+ * Keep the last two words on the same line (NBSP) so a single trailing
+ * word does not orphan under the quote — common on narrow splash widths.
+ */
+export function preventTrailingOrphan(text: string): string {
+  const trimmed = text.trim()
+  if (!trimmed) return trimmed
+  const words = trimmed.split(/\s+/).filter(Boolean)
+  if (words.length < 2) return trimmed
+  const head = words.slice(0, -2).join(' ')
+  const tail = `${words[words.length - 2]}\u00A0${words[words.length - 1]}`
+  return head ? `${head} ${tail}` : tail
+}
+
 /** Built-in fallback when API/cache has no active quotes.
  *  Quote typeface: put `dialogue.woff2` in `public/fonts/`.
  */
