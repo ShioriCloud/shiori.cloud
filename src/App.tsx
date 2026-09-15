@@ -100,12 +100,7 @@ function App() {
       <AppFeedbackHost />
       <ReleaseNotesDialog enabled={!showBootSplash} />
       {showBootSplash ? (
-        <BrandBootScreen
-          exiting={bootExiting}
-          statusLabel={bootLoad.statusLabel}
-          litSegmentCount={bootLoad.litSegmentCount}
-          segmentCount={bootLoad.segmentCount}
-        />
+        <BrandBootScreen exiting={bootExiting} progress={bootLoad.progress} />
       ) : null}
     </>
   )

@@ -24,33 +24,9 @@ import {
 } from '@/utils/api'
 
 export const BOOT_SPLASH_MAX_MS = 7500
-export const BOOT_SPLASH_SEGMENT_COUNT = 6
-
-export type BootLoadStageId =
-  | 'shell'
-  | 'featured'
-  | 'recent'
-  | 'latest'
-  | 'layout'
-  | 'ready'
-
-type BootLoadStage = {
-  id: BootLoadStageId
-  label: string
-  done: boolean
-}
 
 const isUsableCustomBlocks = (payload: HomeLayoutPayload): boolean =>
   Boolean(payload) && Array.isArray(payload.blocks)
-
-const STAGE_LABELS: Record<BootLoadStageId, string> = {
-  shell: 'در حال باز کردن شیوری…',
-  featured: 'پیشنهادهای ویژه را می‌چینیم…',
-  recent: 'تازه‌ترین‌ها را می‌گیریم…',
-  latest: 'فصل جاری را آماده می‌کنیم…',
-  layout: 'چیدمان صفحهٔ اصلی…',
-  ready: 'آماده‌ایم — بزن بریم!',
-}
 
 /**
  * Prefetch + track Home P0 queries while the boot splash is visible.
@@ -124,32 +100,13 @@ export function useBootLoadStages(enabled: boolean) {
     ],
   })
 
-  const [featured, recent, latest, layout] = results
-
-  const shellDone = enabled
-  const featuredDone = !featured.isLoading
-  const recentDone = !recent.isLoading
-  const latestDone = !latest.isLoading
-  const layoutDone = !layout.isLoading
-  const readyDone = shellDone && featuredDone && recentDone && latestDone && layoutDone
-
-  const stages: BootLoadStage[] = [
-    { id: 'shell', label: STAGE_LABELS.shell, done: shellDone },
-    { id: 'featured', label: STAGE_LABELS.featured, done: featuredDone },
-    { id: 'recent', label: STAGE_LABELS.recent, done: recentDone },
-    { id: 'latest', label: STAGE_LABELS.latest, done: latestDone },
-    { id: 'layout', label: STAGE_LABELS.layout, done: layoutDone },
-    { id: 'ready', label: STAGE_LABELS.ready, done: readyDone },
-  ]
-
-  const activeStage = stages.find((stage) => !stage.done) ?? stages[stages.length - 1]!
-  const doneCount = stages.filter((stage) => stage.done).length
-  const dataReady = readyDone
+  const doneCount = results.filter((query) => !query.isLoading).length
+  const total = results.length
+  const dataReady = enabled && doneCount >= total
+  const progress = enabled ? doneCount / total : 0
 
   return {
-    statusLabel: enabled ? activeStage.label : STAGE_LABELS.shell,
-    litSegmentCount: enabled ? Math.min(BOOT_SPLASH_SEGMENT_COUNT, doneCount) : 0,
+    progress,
     dataReady,
-    segmentCount: BOOT_SPLASH_SEGMENT_COUNT,
   }
 }
