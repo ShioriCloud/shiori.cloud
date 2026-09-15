@@ -10,14 +10,25 @@ import { cn } from '@/lib/utils'
 type BrandBootScreenProps = {
   className?: string
   exiting?: boolean
+  statusLabel?: string
+  litSegmentCount?: number
+  segmentCount?: number
 }
 
-const SEGMENT_COUNT = 6
+const DEFAULT_STATUS = 'در حال آماده‌سازی کتابخانه انیمه…'
+const DEFAULT_SEGMENTS = 6
 
 /** Cold-start splash — cinematic library scene with centered quote. */
-export const BrandBootScreen = ({ className, exiting = false }: BrandBootScreenProps = {}) => {
+export const BrandBootScreen = ({
+  className,
+  exiting = false,
+  statusLabel = DEFAULT_STATUS,
+  litSegmentCount = 0,
+  segmentCount = DEFAULT_SEGMENTS,
+}: BrandBootScreenProps = {}) => {
   const [quote] = useState<BootQuote>(() => resolveDisplayBootQuote(getBootQuotePool()))
   const parts = splitBootAttribution(quote.attribution)
+  const lit = Math.max(0, Math.min(segmentCount, litSegmentCount))
 
   return (
     <div
@@ -89,13 +100,16 @@ export const BrandBootScreen = ({ className, exiting = false }: BrandBootScreenP
           <div
             className="boot-splash-segments"
             role="progressbar"
-            aria-label="در حال بارگذاری"
+            aria-valuemin={0}
+            aria-valuemax={segmentCount}
+            aria-valuenow={lit}
+            aria-label={statusLabel}
           >
-            {Array.from({ length: SEGMENT_COUNT }, (_, index) => (
-              <span key={index} style={{ animationDelay: `${0.15 + index * 0.42}s` }} />
+            {Array.from({ length: segmentCount }, (_, index) => (
+              <span key={index} className={cn(index < lit && 'is-on')} />
             ))}
           </div>
-          <p className="boot-splash-status">در حال آماده‌سازی کتابخانه انیمه...</p>
+          <p className="boot-splash-status">{statusLabel}</p>
           <p className="boot-splash-tagline" lang="ja">
             <span className="boot-splash-tagline-rule" aria-hidden />
             アニメの力で、もっと先へ

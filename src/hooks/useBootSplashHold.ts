@@ -3,12 +3,24 @@ import { BOOT_SPLASH_MIN_MS } from '@/data/bootQuotes'
 
 const BOOT_SPLASH_FADE_MS = 280
 
+type UseBootSplashHoldOptions = {
+  minMs?: number
+  /** Hard cap so a slow/failed network cannot pin the splash forever. */
+  maxMs?: number
+  /** Home P0 (or equivalent) settled — success or error. */
+  dataReady?: boolean
+}
+
 /**
- * Cold-start splash only: hold for min read time + auth ready, then a short fade-out
- * so the handoff to Layout does not jump.
+ * Cold-start splash: hold for min read time + auth ready + (dataReady | max),
+ * then a short fade-out so the handoff to Layout does not jump.
  */
-export function useBootSplashHold(isReady: boolean, minMs = BOOT_SPLASH_MIN_MS) {
+export function useBootSplashHold(
+  isReady: boolean,
+  { minMs = BOOT_SPLASH_MIN_MS, maxMs = 7500, dataReady = false }: UseBootSplashHoldOptions = {}
+) {
   const [minElapsed, setMinElapsed] = useState(minMs <= 0)
+  const [maxElapsed, setMaxElapsed] = useState(false)
   const [fadeDone, setFadeDone] = useState(false)
 
   useEffect(() => {
@@ -21,7 +33,17 @@ export function useBootSplashHold(isReady: boolean, minMs = BOOT_SPLASH_MIN_MS) 
     return () => window.clearTimeout(timer)
   }, [minMs])
 
-  const canRelease = isReady && minElapsed
+  useEffect(() => {
+    if (maxMs <= 0) {
+      setMaxElapsed(true)
+      return
+    }
+    setMaxElapsed(false)
+    const timer = window.setTimeout(() => setMaxElapsed(true), maxMs)
+    return () => window.clearTimeout(timer)
+  }, [maxMs])
+
+  const canRelease = isReady && minElapsed && (dataReady || maxElapsed)
 
   useEffect(() => {
     if (!canRelease) {

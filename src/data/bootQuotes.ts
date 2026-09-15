@@ -127,7 +127,7 @@ export const BOOT_QUOTES: readonly BootQuote[] = [
 ]
 
 /** Minimum time to keep the cold-start splash so the dialogue is readable. */
-export const BOOT_SPLASH_MIN_MS = 3200
+export const BOOT_SPLASH_MIN_MS = 2200
 
 const CACHE_KEY = 'shiori_boot_quotes_v2'
 
