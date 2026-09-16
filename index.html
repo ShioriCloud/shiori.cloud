@@ -175,10 +175,33 @@
                         return false
                     }
                 }
+                function hasStoredTelegramParams() {
+                    try {
+                        var raw = sessionStorage.getItem('__telegram__initParams')
+                        return !!(raw && /tgWebApp(?:Data|Platform|Version)/.test(raw))
+                    } catch (e) {
+                        return false
+                    }
+                }
+                function isLikelyTelegram() {
+                    if (window.TelegramWebviewProxy) return true
+                    if (hasTelegramLaunchParams()) return true
+                    if (hasStoredTelegramParams()) return true
+                    if (/Telegram/i.test(String(navigator.userAgent || ''))) return true
+                    var wa = window.Telegram && window.Telegram.WebApp
+                    if (!wa) return false
+                    if (String(wa.initData || '').trim()) return true
+                    var platform = String(wa.platform || '').toLowerCase()
+                    var known = {
+                        android: 1, android_x: 1, ios: 1, macos: 1, tdesktop: 1,
+                        web: 1, weba: 1, webk: 1, unigram: 1, windows: 1, linux: 1
+                    }
+                    return !!(platform && known[platform])
+                }
                 var wa = window.Telegram && window.Telegram.WebApp
-                var initData = wa && String(wa.initData || '').trim()
-                // Inside Telegram Mini App even when initData is briefly empty / script race.
-                if (!initData && !hasTelegramLaunchParams()) {
+                // Do NOT hard-gate on empty initData — proxy WebViews often populate it late.
+                // Only show the official-Telegram screen when we have no Telegram signals at all.
+                if (!isLikelyTelegram()) {
                     document.documentElement.classList.add('outside-telegram')
                     return
                 }
@@ -189,7 +212,7 @@
                     wa.exitFullscreen()
                 }
             } catch (e) {
-                // Do not hard-gate on boot errors — React + bundled SDK may still recover.
+                // Leave boot to the app bundle — do not force the error gate.
             }
         })()
     </script>

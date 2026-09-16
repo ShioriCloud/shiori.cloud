@@ -2,4 +2,5 @@
 export {
   hasTelegramSignedInitData,
   isTelegramMiniApp,
+  waitForTelegramMiniApp,
 } from './platform'

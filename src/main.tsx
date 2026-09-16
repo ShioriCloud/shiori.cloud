@@ -6,36 +6,38 @@ import App from './App'
 import { AppErrorBoundary } from './components/AppErrorBoundary'
 import { queryClient } from './lib/queryClient'
 import { ensureTelegramWebAppReady } from './lib/telegramReady'
-import { isTelegramMiniApp } from './lib/platform'
+import { waitForTelegramMiniApp } from './lib/platform'
 import { refreshBootQuotesCache } from './services/bootQuotes'
 import './index.css'
 
-// Block the entire app when opened outside Telegram.
-if (!isTelegramMiniApp()) {
-  document.documentElement.classList.add('outside-telegram')
-  throw new Error('Not inside Telegram — app blocked.')
+const mountApp = () => {
+  document.documentElement.classList.remove('outside-telegram')
+  ensureTelegramWebAppReady()
+  void refreshBootQuotesCache()
+
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual'
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <AppErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </QueryClientProvider>
+      </AppErrorBoundary>
+    </React.StrictMode>,
+  )
 }
-// Clear any early boot gate (e.g. CDN race) once the bundled SDK confirms Mini App.
-document.documentElement.classList.remove('outside-telegram')
 
-// Before first paint of React — reinforces index.html early ready() after SDK init.
-ensureTelegramWebAppReady()
-
-// Warm splash quote cache for the next boot (current paint already picked from cache/fallback).
-void refreshBootQuotesCache()
-
-if ('scrollRestoration' in history) {
-  history.scrollRestoration = 'manual'
-}
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <AppErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </QueryClientProvider>
-    </AppErrorBoundary>
-  </React.StrictMode>,
-) 
+void (async () => {
+  // Built-in Telegram proxy / slow WebViews often lack initData+hash on first tick.
+  const inside = await waitForTelegramMiniApp(2500)
+  if (!inside) {
+    document.documentElement.classList.add('outside-telegram')
+    return
+  }
+  mountApp()
+})()
