@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.43',
+    items: ['باز شدن مینی‌اپ روی آیفون و با پروکسی پایدارتر شد'],
+  },
+  {
     version: '0.2.42',
     items: ['باز شدن مینی‌اپ با پروکسی داخلی تلگرام پایدارتر شد'],
   },

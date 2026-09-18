@@ -162,63 +162,40 @@
             }
         }
     </style>
+    <!-- Capture launch hash before any router/SDK can drop it (critical on iOS). -->
+    <script>
+        (function () {
+            try {
+                var hash = String(location.hash || '')
+                if (/tgWebApp(?:Data|Platform|Version)=/.test(hash)) {
+                    sessionStorage.setItem('__telegram__launch_hash', hash)
+                }
+            } catch (e) { /* ignore */ }
+        })()
+    </script>
     <!-- Self-hosted WebApp script — telegram.org CDN often fails behind Telegram's built-in proxy. -->
     <script src="/telegram-web-app.js"></script>
     <script>
         (function () {
             try {
-                function hasTelegramLaunchParams() {
-                    try {
-                        var href = String(location.href || '')
-                        return /(?:^|[?#&])tgWebApp(?:Data|Platform|Version)=/.test(href)
-                    } catch (e) {
-                        return false
-                    }
-                }
-                function hasStoredTelegramParams() {
-                    try {
-                        var raw = sessionStorage.getItem('__telegram__initParams')
-                        return !!(raw && /tgWebApp(?:Data|Platform|Version)/.test(raw))
-                    } catch (e) {
-                        return false
-                    }
-                }
-                function isLikelyTelegram() {
-                    if (window.TelegramWebviewProxy) return true
-                    if (hasTelegramLaunchParams()) return true
-                    if (hasStoredTelegramParams()) return true
-                    if (/Telegram/i.test(String(navigator.userAgent || ''))) return true
-                    var wa = window.Telegram && window.Telegram.WebApp
-                    if (!wa) return false
-                    if (String(wa.initData || '').trim()) return true
-                    var platform = String(wa.platform || '').toLowerCase()
-                    var known = {
-                        android: 1, android_x: 1, ios: 1, macos: 1, tdesktop: 1,
-                        web: 1, weba: 1, webk: 1, unigram: 1, windows: 1, linux: 1
-                    }
-                    return !!(platform && known[platform])
-                }
                 var wa = window.Telegram && window.Telegram.WebApp
-                // Do NOT hard-gate on empty initData — proxy WebViews often populate it late.
-                // Only show the official-Telegram screen when we have no Telegram signals at all.
-                if (!isLikelyTelegram()) {
-                    document.documentElement.classList.add('outside-telegram')
-                    return
-                }
                 if (wa && typeof wa.ready === 'function') wa.ready()
                 var platform = String((wa && wa.platform) || '').toLowerCase()
                 var isDesktop = ['tdesktop', 'macos', 'web', 'weba', 'webk', 'unigram'].indexOf(platform) >= 0
                 if (isDesktop && wa && wa.isFullscreen && typeof wa.exitFullscreen === 'function') {
                     wa.exitFullscreen()
                 }
-            } catch (e) {
-                // Leave boot to the app bundle — do not force the error gate.
-            }
+            } catch (e) { /* ignore */ }
+            // Do not set outside-telegram here — client detection is unreliable on iOS/proxy.
+            try {
+                document.documentElement.classList.remove('outside-telegram')
+            } catch (e) { /* ignore */ }
         })()
     </script>
     <style>
-        .outside-telegram #root { display: none !important; }
+        /* Kept for emergency CSS toggles; app no longer hard-gates on boot. */
         .outside-telegram #tg-gate { display: flex !important; }
+        .outside-telegram #root { display: none !important; }
     </style>
 </head>
 

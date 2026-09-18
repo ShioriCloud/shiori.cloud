@@ -3,4 +3,5 @@ export {
   hasTelegramSignedInitData,
   isTelegramMiniApp,
   waitForTelegramMiniApp,
+  persistTelegramLaunchHash,
 } from './platform'

@@ -28,19 +28,51 @@ export const useTelegramApp = () => {
   const [isReady, setIsReady] = useState(false)
 
   useEffect(() => {
-    if (!isTelegramMiniApp()) {
-      setIsReady(true)
-      setUser(null)
-      return
+    let cancelled = false
+
+    const readUser = (): TelegramUserPayload | null => {
+      try {
+        ensureTelegramWebAppReady()
+        return buildTelegramUserPayload(WebApp.initDataUnsafe.user, WebApp.initData)
+      } catch (error) {
+        console.error('Failed to initialize Telegram Web App:', error)
+        return null
+      }
     }
 
-    try {
-      // ready() already fired from index.html / main.tsx; ensure + read user sync.
-      ensureTelegramWebAppReady()
-      setUser(buildTelegramUserPayload(WebApp.initDataUnsafe.user, WebApp.initData))
-      setIsReady(true)
-    } catch (error) {
-      console.error('Failed to initialize Telegram Web App:', error)
+    const apply = (): boolean => {
+      if (cancelled) return true
+      const next = readUser()
+      if (next) {
+        setUser(next)
+        setIsReady(true)
+        return true
+      }
+      return false
+    }
+
+    if (apply()) {
+      return () => {
+        cancelled = true
+      }
+    }
+
+    // iOS / proxy: initData can arrive after first paint even when heuristics fail.
+    let tries = 0
+    const timer = window.setInterval(() => {
+      tries += 1
+      if (apply() || tries >= 30) {
+        window.clearInterval(timer)
+        if (!cancelled) {
+          if (!isTelegramMiniApp()) setUser(null)
+          setIsReady(true)
+        }
+      }
+    }, 100)
+
+    return () => {
+      cancelled = true
+      window.clearInterval(timer)
     }
   }, [])
 
