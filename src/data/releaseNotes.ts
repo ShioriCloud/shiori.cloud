@@ -26,6 +26,13 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.45',
+    items: [
+      'موجودی توکن در پروفایل',
+      'شارژ توکن با انتخاب بسته و راهنمای پرداخت',
+    ],
+  },
+  {
     version: '0.2.44',
     items: ['دانلود با توکن و امکان شارژ از دارمت اضافه شد'],
   },

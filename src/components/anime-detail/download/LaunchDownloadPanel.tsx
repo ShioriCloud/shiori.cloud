@@ -1,6 +1,10 @@
+import { useState } from 'react'
 import { ExploreTabBar } from '@/components/explore/ExploreUi'
+import { TokenRechargeSheet } from '@/components/download-tokens/TokenRechargeSheet'
 import { buildTelegramFileDownloadLink } from '../../../utils/externalLinks'
 import { trackEpisodeDownload } from '../../../lib/myListTracking'
+import { useAppAuth } from '../../../hooks/useAppAuth'
+import { useRefreshDownloadTokenWallet } from '../../../hooks/useDownloadTokens'
 import { EmptyBlock } from '../AnimeDetailChrome'
 import {
   EpisodeDownloadCard,
@@ -31,6 +35,9 @@ export const LaunchDownloadPanel = ({
   openTelegramLink: (url: string) => void
   openLink: (url: string) => void
 }) => {
+  const { user } = useAppAuth()
+  const refreshMutation = useRefreshDownloadTokenWallet()
+  const [rechargeOpen, setRechargeOpen] = useState(false)
   const {
     launchDownloadTab,
     setLaunchDownloadTab,
@@ -77,6 +84,7 @@ export const LaunchDownloadPanel = ({
         }
         if (result.code === 'insufficient_tokens') {
           setShowDonatePrompt(true)
+          setRechargeOpen(true)
           showAlert('توکن‌های دانلود شما تمام شده')
           return
         }
@@ -161,8 +169,7 @@ export const LaunchDownloadPanel = ({
               balance={displayTokenBalance}
               pending={tokenBalancePending}
               exhausted={tokensExhausted}
-              rechargeTiers={rechargeTiers}
-              onRecharge={(url) => openLink(url)}
+              onOpenRecharge={() => setRechargeOpen(true)}
             />
           ) : null}
 
@@ -229,6 +236,40 @@ export const LaunchDownloadPanel = ({
           )}
         </>
       )}
+
+      {tokenWalletEnabled ? (
+        <TokenRechargeSheet
+          open={rechargeOpen}
+          onOpenChange={setRechargeOpen}
+          balance={displayTokenBalance}
+          telegramUserId={user?.id}
+          tiers={rechargeTiers}
+          onConfirm={(tier) => {
+            if (!tier.recharge_url) {
+              showAlert('لینک پرداخت در دسترس نیست')
+              return
+            }
+            setRechargeOpen(false)
+            openLink(tier.recharge_url)
+          }}
+          checkingPayment={refreshMutation.isPending}
+          onCheckPayment={async () => {
+            try {
+              const result = await refreshMutation.mutateAsync()
+              if (result.credited > 0) {
+                showAlert(`شارژ انجام شد · موجودی ${result.wallet.balance} توکن`)
+                setRechargeOpen(false)
+                return
+              }
+              showAlert(
+                'پرداخت جدیدی پیدا نشد. اگر همین الان پرداخت کردید، چند لحظه صبر کنید و دوباره بزنید.'
+              )
+            } catch (e) {
+              showAlert(e instanceof Error ? e.message : 'خطا در بررسی پرداخت')
+            }
+          }}
+        />
+      ) : null}
     </>
   )
 }

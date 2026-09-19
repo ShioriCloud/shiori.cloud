@@ -45,6 +45,16 @@ export const fetchDownloadTokenBalance = async (): Promise<DownloadTokenBalance>
 export const fetchDownloadTokenWallet = async (): Promise<DownloadTokenWalletStatus> =>
   shioriFetch<DownloadTokenWalletStatus>('/download-tokens/wallet')
 
+/** Poll Daramet and return updated wallet (for “I paid” button). */
+export const refreshDownloadTokenWallet = async (): Promise<{
+  wallet: DownloadTokenWalletStatus
+  credited: number
+}> =>
+  shioriFetch<{ wallet: DownloadTokenWalletStatus; credited: number }>(
+    '/download-tokens/wallet/refresh',
+    { method: 'POST' }
+  )
+
 export const fetchDonationTokenTiers = async (): Promise<DonationTokenTier[]> => {
   const res = await shioriFetch<{ tiers: DonationTokenTier[] }>('/download-tokens/tiers')
   return Array.isArray(res?.tiers) ? res.tiers : []

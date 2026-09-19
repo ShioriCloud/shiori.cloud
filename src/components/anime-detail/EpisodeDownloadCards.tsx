@@ -311,15 +311,13 @@ export const FreeTokenWalletCard = ({
   pending,
   exhausted,
   isMock,
-  rechargeTiers,
-  onRecharge,
+  onOpenRecharge,
 }: {
   balance: number
   pending: boolean
   exhausted: boolean
   isMock?: boolean
-  rechargeTiers?: Array<{ amount_irr: number; tokens: number; recharge_url: string | null }>
-  onRecharge?: (url: string) => void
+  onOpenRecharge?: () => void
 }) => (
   <div
     className={cn(
@@ -353,47 +351,23 @@ export const FreeTokenWalletCard = ({
     {exhausted ? (
       <div className="mt-3 space-y-2 border-t border-border/50 pt-3">
         <p className="text-xs text-muted-foreground leading-relaxed">
-          توکن‌ها تمام شده. برای ادامه دانلود یکی از بسته‌های زیر را شارژ کنید.
+          توکن‌ها تمام شده. برای ادامه دانلود، بستهٔ جدید شارژ کنید.
         </p>
-        {rechargeTiers && rechargeTiers.length > 0 ? (
-          <div className="grid gap-2">
-            {rechargeTiers.map((tier) => (
-              <Button
-                key={tier.amount_irr}
-                type="button"
-                size="sm"
-                className="w-full justify-between gap-2"
-                disabled={!tier.recharge_url || !onRecharge}
-                onClick={() => {
-                  if (tier.recharge_url && onRecharge) onRecharge(tier.recharge_url)
-                }}
-              >
-                <span>{toPersianNumber(tier.tokens)} توکن</span>
-                <span className="tabular-nums text-[11px] opacity-90">
-                  {toPersianNumber(Math.round(tier.amount_irr / 10))} تومان
-                </span>
-              </Button>
-            ))}
-          </div>
+        {onOpenRecharge ? (
+          <Button type="button" size="sm" className="w-full" onClick={onOpenRecharge}>
+            انتخاب بسته و شارژ
+          </Button>
         ) : (
           <Button asChild size="sm" className="w-full gap-1">
             <Link to="/subscribe">خرید اشتراک ماهانه</Link>
           </Button>
         )}
       </div>
-    ) : rechargeTiers && rechargeTiers.some((t) => t.recharge_url) ? (
+    ) : onOpenRecharge ? (
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/50 pt-3">
         <p className="text-[11px] text-muted-foreground">نیاز به توکن بیشتر؟</p>
-        <Button
-          type="button"
-          size="sm"
-          variant="secondary"
-          onClick={() => {
-            const tier = rechargeTiers.find((t) => t.recharge_url)
-            if (tier?.recharge_url && onRecharge) onRecharge(tier.recharge_url)
-          }}
-        >
-          شارژ توکن
+        <Button type="button" size="sm" variant="secondary" onClick={onOpenRecharge}>
+          توکن بیشتر
         </Button>
       </div>
     ) : (

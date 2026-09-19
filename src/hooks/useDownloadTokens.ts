@@ -5,6 +5,7 @@ import {
   fetchDonationTokenTiers,
   fetchDownloadTokenBalance,
   fetchDownloadTokenWallet,
+  refreshDownloadTokenWallet,
   type ClaimFreeDownloadResult,
 } from '../services/downloadTokens'
 import { ensureDevAppAuth, hasAppUserAuth } from '../lib/ensureDevAppAuth'
@@ -62,6 +63,23 @@ export function useDonationTokenTiers(enabled = true) {
     queryFn: fetchDonationTokenTiers,
     enabled,
     staleTime: 5 * 60_000,
+  })
+}
+
+export function useRefreshDownloadTokenWallet() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async () => {
+      await ensureDevAppAuth()
+      return refreshDownloadTokenWallet()
+    },
+    onSuccess: (result) => {
+      queryClient.setQueryData(queryKeys.downloadTokenWallet, result.wallet)
+      queryClient.setQueryData(queryKeys.downloadTokenBalance, {
+        balance: result.wallet.balance,
+      })
+    },
   })
 }
 

@@ -6,10 +6,13 @@ import { useAppAuth } from '../hooks/useAppAuth'
 import { useUserAnimeList } from '../hooks/useUserAnimeList'
 import { useNotifications } from '../hooks/useNotifications'
 import { useSubscriptionMe } from '../hooks/useSubscription'
+import { useTokenRechargeUi } from '../hooks/useTokenRechargeUi'
 import { ENABLE_SUBSCRIPTION_DOWNLOAD_GATE } from '../config/monetizationFlags'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { MyListCompactCard } from '@/components/my-list/MyListUi'
+import { ProfileTokenWalletCard } from '@/components/download-tokens/ProfileTokenWalletCard'
+import { TokenRechargeSheet } from '@/components/download-tokens/TokenRechargeSheet'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/utils/theme'
 import { hapticSelection } from '@/lib/telegramHaptics'
@@ -155,6 +158,7 @@ const Profile = () => {
   } = useNotifications()
   const [avatarFailed, setAvatarFailed] = useState(false)
   const { preference, setPreference, isDarkMode } = useTheme()
+  const tokenRecharge = useTokenRechargeUi(Boolean(user))
 
   const displayName = user?.displayName ?? 'کاربر'
 
@@ -267,6 +271,17 @@ const Profile = () => {
           <StatCell value={avgRatingLabel} label="میانگین امتیاز" />
         </div>
       </div>
+
+      {tokenRecharge.walletEnabled ? (
+        <div className="mx-4 mt-6">
+          <SectionTitle>کیف توکن</SectionTitle>
+          <ProfileTokenWalletCard
+            balance={tokenRecharge.balance}
+            pending={tokenRecharge.walletPending}
+            onRecharge={tokenRecharge.openRechargeSheet}
+          />
+        </div>
+      ) : null}
 
       <div className="mx-4 mt-6">
         <SectionTitle>دسترسی سریع</SectionTitle>
@@ -417,6 +432,19 @@ const Profile = () => {
           </a>
         </p>
       </footer>
+
+      {tokenRecharge.walletEnabled ? (
+        <TokenRechargeSheet
+          open={tokenRecharge.sheetOpen}
+          onOpenChange={tokenRecharge.setSheetOpen}
+          balance={tokenRecharge.balance}
+          telegramUserId={tokenRecharge.telegramUserId}
+          tiers={tokenRecharge.tiers}
+          onConfirm={tokenRecharge.confirmTier}
+          onCheckPayment={tokenRecharge.checkPayment}
+          checkingPayment={tokenRecharge.checkingPayment}
+        />
+      ) : null}
     </div>
   )
 }
