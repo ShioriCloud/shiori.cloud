@@ -12,6 +12,7 @@ export const AnimeDetailDownloadTab = ({
   statusKey,
   showAlert,
   openTelegramLink,
+  openLink,
 }: {
   anime: Anime
   downloads: AnimeDetailDownloads
@@ -19,6 +20,7 @@ export const AnimeDetailDownloadTab = ({
   statusKey: string
   showAlert: (message: string) => void
   openTelegramLink: (url: string) => void
+  openLink: (url: string) => void
 }) => {
   const { allEpisodesCount, episodePackAvailable, hasSubtitlePacks } = downloads
 
@@ -48,6 +50,7 @@ export const AnimeDetailDownloadTab = ({
           mediaTags={mediaTags}
           showAlert={showAlert}
           openTelegramLink={openTelegramLink}
+          openLink={openLink}
         />
       ) : (
         <GatedDownloadPanel
@@ -56,6 +59,7 @@ export const AnimeDetailDownloadTab = ({
           mediaTags={mediaTags}
           showAlert={showAlert}
           openTelegramLink={openTelegramLink}
+          openLink={openLink}
         />
       )}
     </div>

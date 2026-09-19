@@ -4,6 +4,7 @@ import {
   claimFreeDownload,
   fetchDonationTokenTiers,
   fetchDownloadTokenBalance,
+  fetchDownloadTokenWallet,
   type ClaimFreeDownloadResult,
 } from '../services/downloadTokens'
 import { ensureDevAppAuth, hasAppUserAuth } from '../lib/ensureDevAppAuth'
@@ -32,6 +33,29 @@ export function useDownloadTokenBalance(enabled = true) {
   })
 }
 
+export function useDownloadTokenWallet(enabled = true) {
+  const [authReady, setAuthReady] = useState(() => hasAppUserAuth())
+
+  useEffect(() => {
+    if (!enabled) return
+    let cancelled = false
+    void ensureDevAppAuth().then((ok) => {
+      if (!cancelled) setAuthReady(ok)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [enabled])
+
+  return useQuery({
+    queryKey: queryKeys.downloadTokenWallet,
+    queryFn: fetchDownloadTokenWallet,
+    enabled: enabled && authReady,
+    staleTime: 30_000,
+    retry: false,
+  })
+}
+
 export function useDonationTokenTiers(enabled = true) {
   return useQuery({
     queryKey: queryKeys.donationTokenTiers,
@@ -54,11 +78,19 @@ export function useClaimFreeDownload() {
         queryClient.setQueryData(queryKeys.downloadTokenBalance, {
           balance: result.balance,
         })
+        queryClient.setQueryData(queryKeys.downloadTokenWallet, (prev: unknown) => {
+          if (!prev || typeof prev !== 'object') return prev
+          return { ...(prev as Record<string, unknown>), balance: result.balance }
+        })
         return
       }
       if (result.code === 'insufficient_tokens') {
         queryClient.setQueryData(queryKeys.downloadTokenBalance, {
           balance: result.balance,
+        })
+        queryClient.setQueryData(queryKeys.downloadTokenWallet, (prev: unknown) => {
+          if (!prev || typeof prev !== 'object') return prev
+          return { ...(prev as Record<string, unknown>), balance: result.balance }
         })
       }
     },

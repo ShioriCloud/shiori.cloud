@@ -11,6 +11,18 @@ export type DownloadTokenBalance = {
   balance: number
 }
 
+export type DownloadTokenWalletStatus = {
+  wallet_enabled: boolean
+  mode: 'off' | 'allowlist' | 'on'
+  balance: number
+  tiers: Array<{
+    amount_irr: number
+    tokens: number
+    recharge_url: string | null
+  }>
+  daramet_configured: boolean
+}
+
 export type ClaimFreeDownloadResult =
   | { ok: true; balance: number; download_link: string }
   | { ok: false; code: 'insufficient_tokens'; balance: number }
@@ -29,6 +41,9 @@ const buildAuthHeaders = (): Headers => {
 
 export const fetchDownloadTokenBalance = async (): Promise<DownloadTokenBalance> =>
   shioriFetch<DownloadTokenBalance>('/download-tokens/balance')
+
+export const fetchDownloadTokenWallet = async (): Promise<DownloadTokenWalletStatus> =>
+  shioriFetch<DownloadTokenWalletStatus>('/download-tokens/wallet')
 
 export const fetchDonationTokenTiers = async (): Promise<DonationTokenTier[]> => {
   const res = await shioriFetch<{ tiers: DonationTokenTier[] }>('/download-tokens/tiers')

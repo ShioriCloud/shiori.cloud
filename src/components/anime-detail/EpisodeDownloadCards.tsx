@@ -311,11 +311,15 @@ export const FreeTokenWalletCard = ({
   pending,
   exhausted,
   isMock,
+  rechargeTiers,
+  onRecharge,
 }: {
   balance: number
   pending: boolean
   exhausted: boolean
   isMock?: boolean
+  rechargeTiers?: Array<{ amount_irr: number; tokens: number; recharge_url: string | null }>
+  onRecharge?: (url: string) => void
 }) => (
   <div
     className={cn(
@@ -328,7 +332,7 @@ export const FreeTokenWalletCard = ({
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0 space-y-1">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="text-sm font-semibold text-foreground">کیف توکن رایگان</p>
+          <p className="text-sm font-semibold text-foreground">کیف توکن دانلود</p>
           {isMock ? (
             <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
               نمونه
@@ -336,7 +340,7 @@ export const FreeTokenWalletCard = ({
           ) : null}
         </div>
         <p className="text-[11px] leading-relaxed text-muted-foreground">
-          هر دانلود رایگان ۱ توکن · کیفیت ثابت {FREE_QUALITY_LABEL}
+          هر دانلود ۱ توکن کم می‌شود · کیفیت ثابت {FREE_QUALITY_LABEL}
         </p>
       </div>
       <div className="shrink-0 rounded-xl border border-black/[0.08] bg-background/50 px-3 py-2 text-center dark:border-border">
@@ -349,10 +353,47 @@ export const FreeTokenWalletCard = ({
     {exhausted ? (
       <div className="mt-3 space-y-2 border-t border-border/50 pt-3">
         <p className="text-xs text-muted-foreground leading-relaxed">
-          توکن‌ها تمام شده. با اشتراک ماهانه به سافت‌ساب و هاردساب بدون محدودیت دسترسی دارید.
+          توکن‌ها تمام شده. برای ادامه دانلود یکی از بسته‌های زیر را شارژ کنید.
         </p>
-        <Button asChild size="sm" className="w-full gap-1">
-          <Link to="/subscribe">خرید اشتراک ماهانه</Link>
+        {rechargeTiers && rechargeTiers.length > 0 ? (
+          <div className="grid gap-2">
+            {rechargeTiers.map((tier) => (
+              <Button
+                key={tier.amount_irr}
+                type="button"
+                size="sm"
+                className="w-full justify-between gap-2"
+                disabled={!tier.recharge_url || !onRecharge}
+                onClick={() => {
+                  if (tier.recharge_url && onRecharge) onRecharge(tier.recharge_url)
+                }}
+              >
+                <span>{toPersianNumber(tier.tokens)} توکن</span>
+                <span className="tabular-nums text-[11px] opacity-90">
+                  {toPersianNumber(Math.round(tier.amount_irr / 10))} تومان
+                </span>
+              </Button>
+            ))}
+          </div>
+        ) : (
+          <Button asChild size="sm" className="w-full gap-1">
+            <Link to="/subscribe">خرید اشتراک ماهانه</Link>
+          </Button>
+        )}
+      </div>
+    ) : rechargeTiers && rechargeTiers.some((t) => t.recharge_url) ? (
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/50 pt-3">
+        <p className="text-[11px] text-muted-foreground">نیاز به توکن بیشتر؟</p>
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          onClick={() => {
+            const tier = rechargeTiers.find((t) => t.recharge_url)
+            if (tier?.recharge_url && onRecharge) onRecharge(tier.recharge_url)
+          }}
+        >
+          شارژ توکن
         </Button>
       </div>
     ) : (

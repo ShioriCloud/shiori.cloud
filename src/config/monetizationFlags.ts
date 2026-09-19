@@ -4,6 +4,11 @@
  * For initial launch we keep the pre-subscription / pre-token download UX.
  * Set these to `true` later to re-enable the gated funnel without restoring from git.
  *
+ * Per-user token wallet (allowlist/on) is controlled by the API via
+ * DOWNLOAD_TOKEN_WALLET_MODE + DOWNLOAD_TOKEN_WALLET_ALLOWLIST — the launch
+ * panel probes GET /download-tokens/wallet and switches to claim/recharge
+ * automatically for enabled users without flipping these flags.
+ *
  * Related API masking lives in anime-catalog.service.ts (same flag name commented there).
  */
 export const ENABLE_SUBSCRIPTION_DOWNLOAD_GATE = false

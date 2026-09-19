@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.44',
+    items: ['دانلود با توکن و امکان شارژ از دارمت اضافه شد'],
+  },
+  {
     version: '0.2.43',
     items: ['باز شدن مینی‌اپ روی آیفون و با پروکسی پایدارتر شد'],
   },

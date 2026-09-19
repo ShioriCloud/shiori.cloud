@@ -35,12 +35,14 @@ export const GatedDownloadPanel = ({
   mediaTags,
   showAlert,
   openTelegramLink,
+  openLink,
 }: {
   anime: Anime
   downloads: AnimeDetailDownloads
   mediaTags: AnimeMediaTags
   showAlert: (message: string) => void
   openTelegramLink: (url: string) => void
+  openLink: (url: string) => void
 }) => {
   const {
     episodeKindTab,
@@ -57,6 +59,7 @@ export const GatedDownloadPanel = ({
     episodesForList,
     displayTokenBalance,
     tokensExhausted,
+    rechargeTiers,
     claimFreeDownloadMutation,
     claimPaidEpisodeMutation,
     claimEpisodePackMutation,
@@ -164,6 +167,8 @@ export const GatedDownloadPanel = ({
             pending={!usingMockFreeEpisodes && tokenBalancePending}
             exhausted={tokensExhausted}
             isMock={usingMockFreeEpisodes}
+            rechargeTiers={rechargeTiers}
+            onRecharge={(url) => openLink(url)}
           />
           {usingMockFreeEpisodes ? (
             <p className="text-[11px] text-muted-foreground text-center px-1">

@@ -3,14 +3,24 @@ import {
   ENABLE_FREE_TOKEN_WALLET_UI,
   ENABLE_SUBSCRIPTION_DOWNLOAD_GATE,
 } from '../../config/monetizationFlags'
-import { useClaimFreeDownload, useDownloadTokenBalance } from '../../hooks/useDownloadTokens'
+import {
+  useClaimFreeDownload,
+  useDownloadTokenBalance,
+  useDownloadTokenWallet,
+} from '../../hooks/useDownloadTokens'
 import {
   useClaimEpisodePackDownload,
   useClaimPaidEpisodeDownload,
   useSubscriptionMe,
 } from '../../hooks/useSubscription'
 import { MOCK_FREE_EPISODES } from './EpisodeDownloadCards'
-import { useLaunchDownloadTabs, type Anime, type EpisodeKindTab, type LaunchDownloadTab, type TabType } from './types'
+import {
+  useLaunchDownloadTabs,
+  type Anime,
+  type EpisodeKindTab,
+  type LaunchDownloadTab,
+  type TabType,
+} from './types'
 
 export function useAnimeDetailDownloads({
   anime,
@@ -30,22 +40,34 @@ export function useAnimeDetailDownloads({
   const claimFreeDownloadMutation = useClaimFreeDownload()
   const claimPaidEpisodeMutation = useClaimPaidEpisodeDownload()
   const claimEpisodePackMutation = useClaimEpisodePackDownload()
-  // Subscription + token funnel (disabled for initial launch — flip flags in monetizationFlags.ts)
+
   const { data: subscriptionMe } = useSubscriptionMe(
     ENABLE_SUBSCRIPTION_DOWNLOAD_GATE && activeTab === 'episodes'
   )
   const hasActiveSubscription = ENABLE_SUBSCRIPTION_DOWNLOAD_GATE
     ? Boolean(subscriptionMe?.active)
     : true
+
+  // Server-driven allowlist/on: always probe wallet on download tab.
+  const {
+    data: walletStatus,
+    isPending: walletPending,
+  } = useDownloadTokenWallet(activeTab === 'episodes')
+
+  const tokenWalletEnabled = walletStatus?.wallet_enabled === true
+
   const {
     data: tokenBalanceData,
-    isPending: tokenBalancePending,
+    isPending: legacyBalancePending,
   } = useDownloadTokenBalance(
-    ENABLE_FREE_TOKEN_WALLET_UI &&
+    !tokenWalletEnabled &&
+      ENABLE_FREE_TOKEN_WALLET_UI &&
       activeTab === 'episodes' &&
       episodeKindTab === 'free' &&
       !hasActiveSubscription
   )
+
+  const tokenBalancePending = tokenWalletEnabled ? walletPending : legacyBalancePending
 
   useEffect(() => {
     if (
@@ -104,10 +126,7 @@ export function useAnimeDetailDownloads({
 
   const episodesForList = useMemo(() => {
     if (!anime) return []
-    // Launch UX: only free episodes in mini-app; softsub/hardsub stay admin-only until gates reopen.
-    const kindFilter: EpisodeKindTab = useLaunchDownloadTabs
-      ? 'free'
-      : episodeKindTab
+    const kindFilter: EpisodeKindTab = useLaunchDownloadTabs ? 'free' : episodeKindTab
     return (anime.episodes || [])
       .filter((e) => (e.video_file_type ?? 'softsub') === kindFilter)
       .slice()
@@ -120,6 +139,7 @@ export function useAnimeDetailDownloads({
   }, [anime, episodeKindTab])
 
   const usingMockFreeEpisodes =
+    !tokenWalletEnabled &&
     ENABLE_FREE_TOKEN_WALLET_UI &&
     import.meta.env.DEV &&
     episodeKindTab === 'free' &&
@@ -129,14 +149,20 @@ export function useAnimeDetailDownloads({
 
   const tokenBalance = usingMockFreeEpisodes
     ? mockTokenBalance
-    : (tokenBalanceData?.balance ?? null)
+    : tokenWalletEnabled
+      ? (walletStatus?.balance ?? null)
+      : (tokenBalanceData?.balance ?? null)
+
   const displayTokenBalance =
     typeof tokenBalance === 'number' ? tokenBalance : usingMockFreeEpisodes ? mockTokenBalance : 0
+
   const tokensExhausted =
     showDonatePrompt ||
     (usingMockFreeEpisodes
       ? mockTokenBalance < 1
       : typeof tokenBalance === 'number' && tokenBalance < 1)
+
+  const rechargeTiers = tokenWalletEnabled ? (walletStatus?.tiers ?? []) : []
 
   useEffect(() => {
     if (typeof tokenBalance === 'number' && tokenBalance > 0) {
@@ -158,6 +184,7 @@ export function useAnimeDetailDownloads({
     launchDownloadTab,
     setLaunchDownloadTab,
     hasActiveSubscription,
+    tokenWalletEnabled,
     tokenBalancePending,
     claimingEpisodeId,
     setClaimingEpisodeId,
@@ -170,6 +197,7 @@ export function useAnimeDetailDownloads({
     episodesForList,
     displayTokenBalance,
     tokensExhausted,
+    rechargeTiers,
     claimFreeDownloadMutation,
     claimPaidEpisodeMutation,
     claimEpisodePackMutation,

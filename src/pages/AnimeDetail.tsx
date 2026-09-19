@@ -186,6 +186,7 @@ const AnimeDetail = () => {
             statusKey={statusKey}
             showAlert={showAlert}
             openTelegramLink={openTelegramLink}
+            openLink={openLink}
           />
         )}
 

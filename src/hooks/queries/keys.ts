@@ -28,6 +28,7 @@ export const queryKeys = {
   favoriteAnimeCards: (ids: Array<string | number>) =>
     ['anime', 'favorite-cards', ids.map(String).sort().join(',')] as const,
   downloadTokenBalance: ['download-tokens', 'balance'] as const,
+  downloadTokenWallet: ['download-tokens', 'wallet'] as const,
   donationTokenTiers: ['download-tokens', 'tiers'] as const,
   subscriptionMe: ['subscriptions', 'me'] as const,
   subscriptionPlans: ['subscriptions', 'plans'] as const,

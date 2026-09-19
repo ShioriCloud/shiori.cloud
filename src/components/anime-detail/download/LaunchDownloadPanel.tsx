@@ -6,6 +6,8 @@ import {
   EpisodeDownloadCard,
   EpisodePackDownloadCard,
   EpisodeQualityNote,
+  FreeEpisodeDownloadCard,
+  FreeTokenWalletCard,
   SubtitleDownloadCard,
   SubtitlePackDownloadCard,
   type Episode,
@@ -20,12 +22,14 @@ export const LaunchDownloadPanel = ({
   mediaTags,
   showAlert,
   openTelegramLink,
+  openLink,
 }: {
   anime: Anime
   downloads: AnimeDetailDownloads
   mediaTags: AnimeMediaTags
   showAlert: (message: string) => void
   openTelegramLink: (url: string) => void
+  openLink: (url: string) => void
 }) => {
   const {
     launchDownloadTab,
@@ -37,6 +41,15 @@ export const LaunchDownloadPanel = ({
     episodeSubtitlesList,
     episodePackAvailable,
     episodesForList,
+    tokenWalletEnabled,
+    tokenBalancePending,
+    claimingEpisodeId,
+    setClaimingEpisodeId,
+    setShowDonatePrompt,
+    displayTokenBalance,
+    tokensExhausted,
+    rechargeTiers,
+    claimFreeDownloadMutation,
   } = downloads
   const { videoResolution, videoEncode, averageEpisodeSizeLabel } = mediaTags
 
@@ -49,6 +62,31 @@ export const LaunchDownloadPanel = ({
       episodeTitle: episode.title,
       quality: videoResolution,
     })
+  }
+
+  const claimEpisode = (episode: Episode) => {
+    const episodeId = String(episode.id)
+    void (async () => {
+      setClaimingEpisodeId(episodeId)
+      try {
+        const result = await claimFreeDownloadMutation.mutateAsync(episodeId)
+        if (result.ok) {
+          recordEpisodeDownload(episode)
+          openTelegramLink(result.download_link)
+          return
+        }
+        if (result.code === 'insufficient_tokens') {
+          setShowDonatePrompt(true)
+          showAlert('توکن‌های دانلود شما تمام شده')
+          return
+        }
+        showAlert(result.message || 'خطا در دانلود')
+      } catch (e) {
+        showAlert(e instanceof Error ? e.message : 'خطا در دانلود')
+      } finally {
+        setClaimingEpisodeId(null)
+      }
+    })()
   }
 
   return (
@@ -117,7 +155,18 @@ export const LaunchDownloadPanel = ({
             encode={videoEncode}
             averageSizeLabel={averageEpisodeSizeLabel}
           />
-          {episodePackAvailable && anime.episode_pack ? (
+
+          {tokenWalletEnabled ? (
+            <FreeTokenWalletCard
+              balance={displayTokenBalance}
+              pending={tokenBalancePending}
+              exhausted={tokensExhausted}
+              rechargeTiers={rechargeTiers}
+              onRecharge={(url) => openLink(url)}
+            />
+          ) : null}
+
+          {episodePackAvailable && anime.episode_pack && !tokenWalletEnabled ? (
             <EpisodePackDownloadCard
               pack={anime.episode_pack}
               locked={false}
@@ -131,10 +180,28 @@ export const LaunchDownloadPanel = ({
               }}
             />
           ) : null}
+
           {episodesForList.length === 0 ? (
             <p className="text-xs text-muted-foreground text-center py-6">
               قسمت رایگانی برای دانلود ثبت نشده
             </p>
+          ) : tokenWalletEnabled ? (
+            !tokensExhausted ? (
+              <div className="space-y-2">
+                {episodesForList.map((episode) => {
+                  const episodeId = String(episode.id)
+                  return (
+                    <FreeEpisodeDownloadCard
+                      key={episodeId}
+                      episode={episode}
+                      claiming={claimingEpisodeId === episodeId}
+                      disabled={tokensExhausted || claimFreeDownloadMutation.isPending}
+                      onClaim={() => claimEpisode(episode)}
+                    />
+                  )
+                })}
+              </div>
+            ) : null
           ) : (
             <div className="space-y-2">
               {episodesForList.map((episode) => (
