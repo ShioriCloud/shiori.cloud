@@ -38,7 +38,6 @@ import {
   homeRecentCacheKey,
   HOME_CUSTOM_BLOCKS_CACHE_TTL_MS,
   HOME_LATEST_RAIL_STALE_MS,
-  HOME_RAIL_CACHE_TTL_MS,
   HOME_RAIL_STALE_MS,
   peekHomeCardRail,
   peekHomeRailCache,
