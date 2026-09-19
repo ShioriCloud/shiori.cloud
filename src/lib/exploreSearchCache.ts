@@ -75,8 +75,8 @@ export const isPersistableExploreSearch = (filters: ExploreSearchFilters): boole
   const hasSeason = Boolean(filters.season) && filters.year != null
   const format = filters.format
 
-  // Seasonal tab / season rail (same order as Home latest)
-  if (hasSeason && !format && sort === 'last_episode_at') return true
+  // Seasonal tab / season rail (same order as Home latest — by popularity)
+  if (hasSeason && !format && sort === 'popular') return true
 
   // Default all + popular / recent / new episodes
   if (

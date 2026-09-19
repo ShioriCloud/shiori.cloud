@@ -4,7 +4,7 @@ import type { UiAnimeCard } from '@/utils/api'
 export const HOME_RAIL_CACHE_TTL_MS = 4 * 60 * 60 * 1000
 /** React Query staleTime for most Home rails. */
 export const HOME_RAIL_STALE_MS = 10 * 60_000
-/** Season rail refreshes sooner so new episodes bubble up. */
+/** New-episodes rail refreshes sooner so fresh uploads show up. */
 export const HOME_LATEST_RAIL_STALE_MS = 2 * 60_000
 
 export type HomeRailCacheEntry<T> = {
@@ -14,7 +14,7 @@ export type HomeRailCacheEntry<T> = {
 
 export const homeFeaturedCacheKey = (tab: string) => `shiori_home_featured_v2:${tab}`
 export const homeLatestCacheKey = (year: number, season: string) =>
-  `shiori_home_latest_v3:${year}:${String(season).toUpperCase()}`
+  `shiori_home_latest_v4:${year}:${String(season).toUpperCase()}`
 export const homePopularCacheKey = (limit = 20) => `shiori_home_popular_v2:${limit}`
 export const homeRecentCacheKey = (limit = 20) => `shiori_home_recent_v2:${limit}`
 export const homeNewEpisodesCacheKey = (limit = 20) => `shiori_home_new_episodes_v1:${limit}`

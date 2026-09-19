@@ -166,7 +166,7 @@ export const fetchHomeLatestSeasonCards = async (
     year,
     season: season.toUpperCase(),
     limit,
-    sortBy: 'last_episode_at',
+    sortBy: 'popular',
   })
   return result.items.map(toCacheAnime)
 }

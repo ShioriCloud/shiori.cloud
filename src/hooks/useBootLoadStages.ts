@@ -7,7 +7,6 @@ import {
   homeLatestCacheKey,
   homeRecentCacheKey,
   HOME_CUSTOM_BLOCKS_CACHE_TTL_MS,
-  HOME_LATEST_RAIL_STALE_MS,
   HOME_RAIL_STALE_MS,
   peekHomeCardRail,
   peekHomeRailCache,
@@ -79,8 +78,8 @@ export function useBootLoadStages(enabled: boolean) {
         queryFn: () =>
           fetchHomeCardRail(latestKey, () => fetchHomeLatestSeasonCards(year, season, 20)),
         enabled,
-        staleTime: HOME_LATEST_RAIL_STALE_MS,
-        gcTime: HOME_LATEST_RAIL_STALE_MS * 6,
+        staleTime: HOME_RAIL_STALE_MS,
+        gcTime: HOME_RAIL_STALE_MS * 6,
         initialData: latestCached?.data,
         initialDataUpdatedAt: latestCached?.ts,
       },

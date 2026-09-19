@@ -321,7 +321,7 @@ export const exploreAllHref = (partial: Partial<ExploreState> = {}): string => {
   return `/explore?${params.toString()}`
 }
 
-/** Home season rail → seasonal tab (same `last_episode_at` order as the rail). */
+/** Home season rail → seasonal tab (same popularity order as the rail). */
 export const exploreSeasonalHref = (
   season: SearchSeasonKey,
   year: number

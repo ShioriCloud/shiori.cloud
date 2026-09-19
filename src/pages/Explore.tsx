@@ -165,7 +165,7 @@ const Explore = () => {
     () => ({
       season: state.season,
       year: state.year,
-      sortBy: 'last_episode_at' as const,
+      sortBy: 'popular' as const,
     }),
     [state.season, state.year]
   )
