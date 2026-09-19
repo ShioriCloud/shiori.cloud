@@ -114,7 +114,8 @@ const PosterCardContent = ({ anime }: { anime: Anime }) => {
           <AnimeViewCountBadge count={anime.viewCount} />
           {typeof anime.latestEpisodeNumber === 'number' && anime.latestEpisodeNumber > 0 && (
             <span
-              className="absolute top-2 left-2 z-[1] inline-flex items-center rounded-md border border-emerald-300/35 bg-emerald-500/85 backdrop-blur-sm px-1 py-0.5 text-[9px] font-medium tabular-nums leading-none text-white"
+              dir="ltr"
+              className="absolute top-2 left-2 z-[1] inline-flex items-center rounded-sm border border-emerald-300/35 bg-emerald-500/85 backdrop-blur-sm px-1.5 py-1 text-[11px] font-semibold tabular-nums leading-none tracking-tight text-white font-['Geist_Variable',ui-sans-serif,system-ui,sans-serif]"
               aria-label={`قسمت ${toPersianDigits(anime.latestEpisodeNumber)}`}
             >
               {`E${anime.latestEpisodeNumber}`}
