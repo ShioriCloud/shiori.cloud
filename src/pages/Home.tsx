@@ -113,7 +113,7 @@ const PosterCardContent = ({ anime }: { anime: Anime }) => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent" />
           <AnimeViewCountBadge count={anime.viewCount} />
           {typeof anime.latestEpisodeNumber === 'number' && anime.latestEpisodeNumber > 0 && (
-            <span className="absolute top-2 start-2 text-[10px] font-semibold bg-black/55 text-white px-1.5 py-0.5 rounded-md backdrop-blur-sm">
+            <span className="absolute top-2 left-2 z-[1] text-[10px] font-semibold bg-emerald-500/90 text-white px-1.5 py-0.5 rounded-md shadow-sm shadow-black/20">
               قسمت {toPersianDigits(anime.latestEpisodeNumber)}
             </span>
           )}
