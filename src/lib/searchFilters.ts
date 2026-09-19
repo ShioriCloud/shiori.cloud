@@ -31,6 +31,7 @@ export const SEARCH_AIRING_STATUSES = [
 
 export const SEARCH_SORT_OPTIONS = [
   { key: 'created_at', label: 'جدیدترین' },
+  { key: 'last_episode_at', label: 'قسمت‌های تازه' },
   { key: 'popular', label: 'محبوب‌ترین' },
   { key: 'title', label: 'نام (الفبا)' },
   { key: 'score', label: 'امتیاز' },
@@ -45,6 +46,7 @@ export const SEARCH_HARDSUB_LANGUAGES = [
 export const EXPLORE_SORT_OPTIONS = [
   { key: 'popular', label: 'محبوب‌ترین‌ها' },
   { key: 'created_at', label: 'جدیدترین‌ها' },
+  { key: 'last_episode_at', label: 'قسمت‌های تازه' },
   { key: 'title', label: 'حروف الفبا' },
 ] as const
 

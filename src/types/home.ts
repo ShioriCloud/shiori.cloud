@@ -2,6 +2,7 @@ import type { AnimeCard } from '@/types/catalog'
 
 export type HomeSystemRailId =
   | 'recent'
+  | 'new_episodes'
   | 'latest'
   | 'popular'
   | 'donghua'

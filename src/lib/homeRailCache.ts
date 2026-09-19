@@ -17,6 +17,7 @@ export const homeLatestCacheKey = (year: number, season: string) =>
   `shiori_home_latest_v3:${year}:${String(season).toUpperCase()}`
 export const homePopularCacheKey = (limit = 20) => `shiori_home_popular_v2:${limit}`
 export const homeRecentCacheKey = (limit = 20) => `shiori_home_recent_v2:${limit}`
+export const homeNewEpisodesCacheKey = (limit = 20) => `shiori_home_new_episodes_v1:${limit}`
 export const homeFormatCacheKey = (format: string, limit = 20) =>
   `shiori_home_format_v2:${format}:${limit}`
 export const homeCustomBlocksCacheKey = () => 'shiori_home_custom_blocks_v4'

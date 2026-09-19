@@ -27,6 +27,8 @@ export type AnimeCard = {
   favoriteCount?: number
   viewCount?: number
   episode?: string
+  /** Highest published episode (e.g. home new-episodes rail). */
+  latest_episode_number?: number
   averageScore?: number
   malScore?: number
   shioriScore?: number

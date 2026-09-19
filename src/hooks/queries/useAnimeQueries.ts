@@ -8,6 +8,7 @@ import {
   fetchHomeFeaturedCards,
   fetchHomeFormatSectionCards,
   fetchHomeLatestSeasonCards,
+  fetchNewEpisodesAnimeCards,
   fetchPopularAnimeCards,
   fetchRecentAnimeCards,
   fetchSchedule,
@@ -34,6 +35,7 @@ import {
   homeFeaturedCacheKey,
   homeFormatCacheKey,
   homeLatestCacheKey,
+  homeNewEpisodesCacheKey,
   homePopularCacheKey,
   homeRecentCacheKey,
   HOME_CUSTOM_BLOCKS_CACHE_TTL_MS,
@@ -123,6 +125,20 @@ export const useHomeRecentQuery = (enabled = true) => {
     enabled,
     staleTime: HOME_RAIL_STALE_MS,
     gcTime: HOME_RAIL_STALE_MS * 6,
+    initialData: cached?.data,
+    initialDataUpdatedAt: cached?.ts,
+  })
+}
+
+export const useHomeNewEpisodesQuery = (enabled = true) => {
+  const key = homeNewEpisodesCacheKey(20)
+  const cached = peekHomeCardRail(key)
+  return useQuery({
+    queryKey: queryKeys.homeNewEpisodes,
+    queryFn: () => fetchHomeCardRail(key, () => fetchNewEpisodesAnimeCards(20)),
+    enabled,
+    staleTime: HOME_LATEST_RAIL_STALE_MS,
+    gcTime: HOME_LATEST_RAIL_STALE_MS * 6,
     initialData: cached?.data,
     initialDataUpdatedAt: cached?.ts,
   })

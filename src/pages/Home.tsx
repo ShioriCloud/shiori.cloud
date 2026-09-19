@@ -26,6 +26,7 @@ import {
   useHomeFeaturedQuery,
   useHomeLatestQuery,
   useHomeMoviesQuery,
+  useHomeNewEpisodesQuery,
   useHomePopularQuery,
   useHomeRecentQuery,
   type UiAnimeCard,
@@ -41,6 +42,7 @@ type SectionId = HomeSystemRailId
 
 const DEFAULT_SECTION_ORDER: SectionId[] = [
   'recent',
+  'new_episodes',
   'latest',
   'popular',
   'donghua',
@@ -110,6 +112,11 @@ const PosterCardContent = ({ anime }: { anime: Anime }) => {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent" />
           <AnimeViewCountBadge count={anime.viewCount} />
+          {typeof anime.latestEpisodeNumber === 'number' && anime.latestEpisodeNumber > 0 && (
+            <span className="absolute top-2 start-2 text-[10px] font-semibold bg-black/55 text-white px-1.5 py-0.5 rounded-md backdrop-blur-sm">
+              قسمت {toPersianDigits(anime.latestEpisodeNumber)}
+            </span>
+          )}
           {anime.isNew && (
             <span className="absolute top-2 end-2 text-[10px] font-semibold bg-primary-400 text-white px-1.5 py-0.5 rounded-md">
               جدید
@@ -174,11 +181,15 @@ const Home = () => {
   // P0: above-the-fold — always enabled
   const featuredQuery = useHomeFeaturedQuery(selectedType, true)
   const recentQuery = useHomeRecentQuery(true)
+  const newEpisodesQuery = useHomeNewEpisodesQuery(true)
   const latestQuery = useHomeLatestQuery(currentYearNumber, currentSeasonKey, true)
   const layoutQuery = useHomeCustomBlocksQuery(true)
 
   const p0Ready =
-    !featuredQuery.isLoading && !recentQuery.isLoading && !latestQuery.isLoading
+    !featuredQuery.isLoading &&
+    !recentQuery.isLoading &&
+    !newEpisodesQuery.isLoading &&
+    !latestQuery.isLoading
 
   // P1/P2: wait until P0 painted (cache hit → immediate; cold → after fetch)
   const popularQuery = useHomePopularQuery(p0Ready)
@@ -187,6 +198,7 @@ const Home = () => {
 
   const sectionQueries: Record<SectionId, typeof latestQuery> = {
     recent: recentQuery,
+    new_episodes: newEpisodesQuery,
     latest: latestQuery,
     popular: popularQuery,
     donghua: donghuaQuery,
@@ -202,6 +214,10 @@ const Home = () => {
       recent: {
         title: 'تازه‌اضافه‌شده',
         seeAll: exploreAllHref({ sortBy: 'created_at' }),
+      },
+      new_episodes: {
+        title: 'قسمت‌های تازه',
+        seeAll: exploreAllHref({ sortBy: 'last_episode_at' }),
       },
       latest: {
         title: `فصل ${currentSeasonFa} ${toPersianDigits(currentYearNumber)}`,

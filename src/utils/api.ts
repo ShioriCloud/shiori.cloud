@@ -21,6 +21,7 @@ export type UiAnimeCard = {
   viewCount?: number
   description?: string
   genres?: catalog.GenreItem[]
+  latestEpisodeNumber?: number
 }
 
 export type UiStudioLink = {
@@ -53,7 +54,11 @@ const toCacheAnime = (c: any): UiAnimeCard => ({
   title: c.title,
   image: c.image,
   featuredImage: c.featuredImage ?? undefined,
-  episode: c.episode ?? 'قسمت ۱',
+  episode:
+    c.episode ??
+    (typeof c.latest_episode_number === 'number' && c.latest_episode_number > 0
+      ? `قسمت ${c.latest_episode_number}`
+      : 'قسمت ۱'),
   format: c.format ?? undefined,
   season: c.season ?? undefined,
   year: typeof c.year === 'number' ? c.year : undefined,
@@ -82,6 +87,12 @@ const toCacheAnime = (c: any): UiAnimeCard => ({
         .map(toGenreItem)
         .filter((v: any) => v && typeof v.slug === 'string' && v.slug.trim().length > 0)
     : [],
+  latestEpisodeNumber:
+    typeof c.latestEpisodeNumber === 'number' && c.latestEpisodeNumber > 0
+      ? c.latestEpisodeNumber
+      : typeof c.latest_episode_number === 'number' && c.latest_episode_number > 0
+        ? c.latest_episode_number
+        : undefined,
 })
 
 export const normalizeAnimeFormat = (f: unknown) =>
@@ -101,6 +112,11 @@ export const fetchPopularAnimeCards = async (limit = 20): Promise<UiAnimeCard[]>
 
 export const fetchRecentAnimeCards = async (limit = 20): Promise<UiAnimeCard[]> => {
   const rows = await catalog.getRecentAnime(limit)
+  return rows.map(toCacheAnime)
+}
+
+export const fetchNewEpisodesAnimeCards = async (limit = 20): Promise<UiAnimeCard[]> => {
+  const rows = await catalog.getNewEpisodesAnime(limit)
   return rows.map(toCacheAnime)
 }
 

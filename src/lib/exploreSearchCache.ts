@@ -78,8 +78,14 @@ export const isPersistableExploreSearch = (filters: ExploreSearchFilters): boole
   // Seasonal tab / season rail (same order as Home latest)
   if (hasSeason && !format && sort === 'last_episode_at') return true
 
-  // Default all + popular / recent
-  if (!hasSeason && !format && (sort === 'popular' || sort === 'created_at')) return true
+  // Default all + popular / recent / new episodes
+  if (
+    !hasSeason &&
+    !format &&
+    (sort === 'popular' || sort === 'created_at' || sort === 'last_episode_at')
+  ) {
+    return true
+  }
 
   // Format see-all (movie / donghua) — Home rails use created_at
   if (!hasSeason && (format === 'MOVIE' || format === 'DONGHUA') && sort === 'created_at') {

@@ -43,6 +43,7 @@ type ApiCard = {
   video_file_type?: 'softsub' | 'hardsub'
   video_resolution?: '480p' | '720p' | '1080p'
   video_encode?: 'x264' | 'x265' | 'x265_10bit' | 'bluray'
+  latest_episode_number?: number
 }
 
 type ApiDetail = ApiCard & {
@@ -148,6 +149,14 @@ const toCard = (row: ApiCard): AnimeCard => ({
     row.video_encode === 'bluray'
       ? row.video_encode
       : 'x265_10bit',
+  latest_episode_number:
+    typeof row.latest_episode_number === 'number' && row.latest_episode_number > 0
+      ? row.latest_episode_number
+      : undefined,
+  episode:
+    typeof row.latest_episode_number === 'number' && row.latest_episode_number > 0
+      ? `قسمت ${row.latest_episode_number}`
+      : undefined,
 })
 
 export const getFeaturedAnime = async (limit = 10): Promise<AnimeCard[]> => {
@@ -165,6 +174,12 @@ export const getPopularAnime = async (limit = 20): Promise<AnimeCard[]> => {
 export const getRecentAnime = async (limit = 20): Promise<AnimeCard[]> => {
   const qs = limit > 0 ? `?limit=${encodeURIComponent(String(limit))}` : ''
   const rows = await shioriFetch<ApiCard[]>(`/anime-catalog/recent${qs}`)
+  return rows.map(toCard)
+}
+
+export const getNewEpisodesAnime = async (limit = 20): Promise<AnimeCard[]> => {
+  const qs = limit > 0 ? `?limit=${encodeURIComponent(String(limit))}` : ''
+  const rows = await shioriFetch<ApiCard[]>(`/anime-catalog/new-episodes${qs}`)
   return rows.map(toCard)
 }
 
