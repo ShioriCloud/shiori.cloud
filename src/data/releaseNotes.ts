@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.48',
+    items: ['نشان قسمت‌های تازه جمع‌وجورتر شد'],
+  },
+  {
     version: '0.2.47',
     items: ['نشان شماره قسمت در «قسمت‌های تازه» واضح‌تر شد'],
   },
