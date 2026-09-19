@@ -115,7 +115,8 @@ const PosterCardContent = ({ anime }: { anime: Anime }) => {
           {typeof anime.latestEpisodeNumber === 'number' && anime.latestEpisodeNumber > 0 && (
             <span
               dir="ltr"
-              className="absolute top-2 left-2 z-[1] inline-flex items-center rounded-sm border border-emerald-300/35 bg-emerald-500/85 backdrop-blur-sm px-1.5 py-1 text-[11px] font-semibold tabular-nums leading-none tracking-tight text-white font-['Geist_Variable',ui-sans-serif,system-ui,sans-serif]"
+              className="absolute top-2 left-2 z-[1] inline-flex items-center border border-emerald-300/35 bg-emerald-500/85 backdrop-blur-sm text-[11px] font-semibold tabular-nums leading-none tracking-tight text-white font-['Geist_Variable',ui-sans-serif,system-ui,sans-serif]"
+              style={{ padding: '2px 3px', borderRadius: 4 }}
               aria-label={`قسمت ${toPersianDigits(anime.latestEpisodeNumber)}`}
             >
               {`E${anime.latestEpisodeNumber}`}
