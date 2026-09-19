@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.51',
+    items: ['نسبت بنرهای صفحه اصلی با طراحی جدید هماهنگ شد'],
+  },
+  {
     version: '0.2.50',
     items: ['اندازه نشان قسمت روی کارت‌ها تنظیم شد'],
   },
