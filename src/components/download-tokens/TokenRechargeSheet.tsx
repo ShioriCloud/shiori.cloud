@@ -28,8 +28,8 @@ type TokenRechargeSheetProps = {
   checkingPayment?: boolean
 }
 
-const formatToman = (amountIrr: number): string =>
-  `${toPersianDigits(Math.round(amountIrr / 10).toLocaleString('en-US'))} تومان`
+const formatToman = (amountToman: number): string =>
+  `${toPersianDigits(Math.round(amountToman).toLocaleString('en-US'))} تومان`
 
 export const TokenRechargeSheet = ({
   open,
