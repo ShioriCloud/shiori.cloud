@@ -18,7 +18,7 @@ export const CtaBannerBlock = ({ block }: { block: HomeCtaBannerBlock }) => {
           <img
             src={imageSrc}
             alt={block.title ?? ''}
-            className={`aspect-[21/9] w-full object-cover ${
+            className={`aspect-[3/1] w-full object-cover ${
               linked ? 'transition-transform duration-500 group-hover:scale-[1.02]' : ''
             }`}
             loading="lazy"
