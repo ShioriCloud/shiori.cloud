@@ -19,6 +19,8 @@ export type HomeCtaBannerBlock = {
   type: 'cta_banner'
   id: string
   title: string | null
+  anime_id?: string | null
+  slug?: string | null
   image_url: string
   link_url: string | null
   open_in_new_tab: boolean

@@ -1,17 +1,27 @@
 import { resolveMediaServeUrl } from '@/lib/shioriApi'
 import { hasUsableHref } from '@/lib/homeBlockLinks'
+import { animeDetailPath } from '@/lib/animePaths'
 import type { HomeCtaBannerBlock } from '@/types/home'
 import { HomeCustomBlockLink } from './HomeCustomBlocks'
 
 export const CtaBannerBlock = ({ block }: { block: HomeCtaBannerBlock }) => {
   const imageSrc = resolveMediaServeUrl(block.image_url)
-  const linked = hasUsableHref(block.link_url)
+  const animeHref =
+    block.link_url?.trim() ||
+    (block.anime_id
+      ? animeDetailPath({
+          id: block.anime_id,
+          slug: block.slug ?? undefined,
+          title: block.title ?? undefined,
+        })
+      : null)
+  const linked = hasUsableHref(animeHref)
 
   return (
     <section className="px-4">
       <HomeCustomBlockLink
-        href={block.link_url}
-        openInNewTab={block.open_in_new_tab}
+        href={animeHref}
+        openInNewTab={false}
         className={linked ? 'group block active:scale-[0.99] transition-transform' : 'block'}
       >
         <div className="relative overflow-hidden rounded-2xl border border-border bg-muted shadow-sm">

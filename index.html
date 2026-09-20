@@ -186,14 +186,48 @@
                     wa.exitFullscreen()
                 }
             } catch (e) { /* ignore */ }
-            // Do not set outside-telegram here — client detection is unreliable on iOS/proxy.
-            try {
-                document.documentElement.classList.remove('outside-telegram')
-            } catch (e) { /* ignore */ }
+            // Soft Telegram-only gate: wait briefly for iOS/proxy WebViews, then lock browsers.
+            (function () {
+                function hasTelegramSignal() {
+                    try {
+                        var wa = window.Telegram && window.Telegram.WebApp
+                        if (wa && String(wa.initData || '').trim()) return true
+                        var platform = String((wa && wa.platform) || '').toLowerCase()
+                        if (platform && platform !== 'unknown') return true
+                        var href = String(location.href || '')
+                        if (/tgWebApp(?:Data|Platform|Version)=/.test(href)) return true
+                        var stored = ''
+                        try { stored = String(sessionStorage.getItem('__telegram__launch_hash') || '') } catch (e) {}
+                        if (/tgWebApp(?:Data|Platform|Version)=/.test(stored)) return true
+                        if (window.TelegramWebviewProxy || window.TelegramWebview) return true
+                        if (/Telegram/i.test(String(navigator.userAgent || ''))) return true
+                        return false
+                    } catch (e) {
+                        return false
+                    }
+                }
+                if (hasTelegramSignal()) {
+                    document.documentElement.classList.remove('outside-telegram')
+                    return
+                }
+                var tries = 0
+                var timer = setInterval(function () {
+                    tries += 1
+                    if (hasTelegramSignal()) {
+                        clearInterval(timer)
+                        document.documentElement.classList.remove('outside-telegram')
+                        return
+                    }
+                    if (tries >= 30) {
+                        clearInterval(timer)
+                        document.documentElement.classList.add('outside-telegram')
+                    }
+                }, 100)
+            })()
         })()
     </script>
     <style>
-        /* Kept for emergency CSS toggles; app no longer hard-gates on boot. */
+        /* Telegram-only: browsers without Mini App signals see #tg-gate. */
         .outside-telegram #tg-gate { display: flex !important; }
         .outside-telegram #root { display: none !important; }
     </style>
