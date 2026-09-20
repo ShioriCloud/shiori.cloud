@@ -6,7 +6,12 @@ import App from './App'
 import { AppErrorBoundary } from './components/AppErrorBoundary'
 import { queryClient } from './lib/queryClient'
 import { ensureTelegramWebAppReady } from './lib/telegramReady'
-import { persistTelegramLaunchHash, waitForTelegramMiniApp } from './lib/platform'
+import {
+  isClearlyOutsideTelegram,
+  isTelegramMiniApp,
+  persistTelegramLaunchHash,
+  waitForTelegramMiniApp,
+} from './lib/platform'
 import { refreshBootQuotesCache } from './services/bootQuotes'
 import './index.css'
 
@@ -18,18 +23,7 @@ const markInsideTelegram = () => {
   document.documentElement.classList.remove('outside-telegram')
 }
 
-const boot = async () => {
-  persistTelegramLaunchHash()
-  ensureTelegramWebAppReady()
-  void refreshBootQuotesCache()
-
-  // Wait for slow iOS / proxy WebViews before locking out browsers.
-  const inTelegram = await waitForTelegramMiniApp(3000)
-  if (!inTelegram) {
-    markOutsideTelegram()
-    return
-  }
-
+const renderApp = () => {
   markInsideTelegram()
 
   if ('scrollRestoration' in history) {
@@ -47,6 +41,32 @@ const boot = async () => {
       </AppErrorBoundary>
     </React.StrictMode>,
   )
+}
+
+const boot = async () => {
+  persistTelegramLaunchHash()
+  ensureTelegramWebAppReady()
+  void refreshBootQuotesCache()
+
+  if (isTelegramMiniApp()) {
+    renderApp()
+    return
+  }
+
+  // Desktop Chrome/Firefox/etc. — show Telegram gate immediately (no splash wait).
+  if (isClearlyOutsideTelegram()) {
+    markOutsideTelegram()
+    return
+  }
+
+  // Mobile / ambiguous WebView — wait briefly for delayed initData (iOS/proxy).
+  const inTelegram = await waitForTelegramMiniApp(3000)
+  if (!inTelegram) {
+    markOutsideTelegram()
+    return
+  }
+
+  renderApp()
 }
 
 void boot()

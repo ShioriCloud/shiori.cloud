@@ -186,7 +186,9 @@
                     wa.exitFullscreen()
                 }
             } catch (e) { /* ignore */ }
-            // Soft Telegram-only gate: wait briefly for iOS/proxy WebViews, then lock browsers.
+            // Telegram-only gate:
+            // - clear desktop browsers → lock immediately (no splash flash)
+            // - mobile / ambiguous WebViews → wait briefly for delayed initData
             (function () {
                 function hasTelegramSignal() {
                     try {
@@ -206,8 +208,19 @@
                         return false
                     }
                 }
+                function isClearlyOutside() {
+                    if (hasTelegramSignal()) return false
+                    var ua = String(navigator.userAgent || '')
+                    if (/iPhone|iPad|iPod/i.test(ua)) return false
+                    if (/Android/i.test(ua)) return false
+                    return true
+                }
                 if (hasTelegramSignal()) {
                     document.documentElement.classList.remove('outside-telegram')
+                    return
+                }
+                if (isClearlyOutside()) {
+                    document.documentElement.classList.add('outside-telegram')
                     return
                 }
                 var tries = 0

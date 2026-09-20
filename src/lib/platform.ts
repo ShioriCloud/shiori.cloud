@@ -122,6 +122,24 @@ export const isTelegramMiniApp = (): boolean => {
   return false
 }
 
+/**
+ * Plain desktop browsers with zero Telegram signals — lock immediately
+ * (no splash wait). Mobile / WebView stays ambiguous because iOS Telegram
+ * often looks like Safari until initData arrives.
+ */
+export const isClearlyOutsideTelegram = (): boolean => {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false
+  if (isTelegramMiniApp()) return false
+
+  const ua = String(navigator.userAgent || '')
+  // iOS Telegram Mini Apps often report a plain Safari UA.
+  if (/iPhone|iPad|iPod/i.test(ua)) return false
+  // Android Telegram WebViews can populate bridges/initData a moment later.
+  if (/Android/i.test(ua)) return false
+
+  return true
+}
+
 /** Poll briefly — proxy/slow WebViews often populate initData a moment later. */
 export const waitForTelegramMiniApp = async (
   timeoutMs = 2500,
