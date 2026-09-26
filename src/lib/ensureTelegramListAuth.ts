@@ -9,11 +9,18 @@ let bootstrapPromise: Promise<void> | null = null
 /** Ensures a server session exists before protected list API calls (Telegram mini-app). */
 export const ensureTelegramListAuth = async (): Promise<void> => {
   if (!isTelegramMiniApp()) return
-  if (readTelegramMiniAppSession()?.token?.trim()) return
   if (!hasTelegramSignedInitData()) return
 
   const user = buildTelegramUserPayload(WebApp.initDataUnsafe.user, WebApp.initData)
   if (typeof user?.id !== 'number') return
+
+  const session = readTelegramMiniAppSession()
+  if (
+    session?.token?.trim() &&
+    (session.telegramUserId == null || session.telegramUserId === user.id)
+  ) {
+    return
+  }
 
   if (!bootstrapPromise) {
     bootstrapPromise = registerTelegramUserVisit(user)

@@ -31,6 +31,7 @@ export const registerTelegramUserVisit = async (user: TelegramUserPayload): Prom
     writeTelegramMiniAppSession({
       token: result.session_token,
       expiresAt: result.expires_at,
+      telegramUserId: user.id,
     })
   }
 }
