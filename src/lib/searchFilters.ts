@@ -80,27 +80,55 @@ export const DEFAULT_SEARCH_FILTERS: SearchUrlFilters = {
   sortBy: 'created_at',
 }
 
-export const getCurrentSeasonKey = (): SearchSeasonKey => {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Asia/Tehran',
-    month: 'numeric',
-  }).formatToParts(new Date())
-  const month = Number(parts.find((p) => p.type === 'month')?.value)
-  const m = Number.isFinite(month) ? month : new Date().getMonth() + 1
-  if (m >= 1 && m <= 3) return 'WINTER'
-  if (m >= 4 && m <= 6) return 'SPRING'
-  if (m >= 7 && m <= 9) return 'SUMMER'
-  return 'FALL'
+/** Tehran wall-clock season (Jalali months) + Gregorian catalog/label year. */
+export type TehranAiringSeason = {
+  season: SearchSeasonKey
+  /** Gregorian year for labels and catalog / AniList seasonYear filters */
+  year: number
 }
 
-export const getCurrentSeasonYear = (): number => {
-  const parts = new Intl.DateTimeFormat('en-US', {
+/**
+ * Season follows Jalali calendar in Asia/Tehran:
+ * Far–Khor spring, Tir–Sha summer, Mehr–Aza fall, Dey–Esf winter.
+ * Year stays Gregorian (e.g. پاییز ۲۰۲۶) so labels match what users know.
+ */
+export const getTehranAiringSeason = (now = new Date()): TehranAiringSeason => {
+  const jalaliParts = new Intl.DateTimeFormat('en-US-u-ca-persian', {
     timeZone: 'Asia/Tehran',
     year: 'numeric',
-  }).formatToParts(new Date())
-  const year = Number(parts.find((p) => p.type === 'year')?.value)
-  return Number.isFinite(year) ? year : new Date().getFullYear()
+    month: 'numeric',
+  }).formatToParts(now)
+  const gregorianParts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Tehran',
+    year: 'numeric',
+    month: 'numeric',
+  }).formatToParts(now)
+
+  const jalaliMonth = Number(jalaliParts.find((p) => p.type === 'month')?.value)
+  const gYear = Number(gregorianParts.find((p) => p.type === 'year')?.value)
+  const gMonth = Number(gregorianParts.find((p) => p.type === 'month')?.value)
+
+  const jm = Number.isFinite(jalaliMonth) ? jalaliMonth : 1
+  const gy = Number.isFinite(gYear) ? gYear : now.getFullYear()
+  const gm = Number.isFinite(gMonth) ? gMonth : now.getMonth() + 1
+
+  let season: SearchSeasonKey
+  if (jm >= 1 && jm <= 3) season = 'SPRING'
+  else if (jm >= 4 && jm <= 6) season = 'SUMMER'
+  else if (jm >= 7 && jm <= 9) season = 'FALL'
+  else season = 'WINTER'
+
+  // AniList/catalog winter year is the January year of that winter.
+  const year = season === 'WINTER' && gm === 12 ? gy + 1 : gy
+
+  return { season, year }
 }
+
+export const getCurrentSeasonKey = (): SearchSeasonKey =>
+  getTehranAiringSeason().season
+
+export const getCurrentSeasonYear = (): number => getTehranAiringSeason().year
+
 export const buildSearchYearOptions = (span = 12): number[] => {
   const current = getCurrentSeasonYear()
   return Array.from({ length: span }, (_, i) => current + 1 - i)

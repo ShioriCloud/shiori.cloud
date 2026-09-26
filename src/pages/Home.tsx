@@ -19,6 +19,7 @@ import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { exploreAllHref, exploreSeasonalHref } from '@/lib/exploreParams'
 import { toPersianDigits } from '@/lib/persianDigits'
+import { getTehranAiringSeason, translateSeason } from '@/lib/searchFilters'
 import { hapticSelection } from '@/lib/telegramHaptics'
 import {
   useHomeCustomBlocksQuery,
@@ -54,41 +55,6 @@ const TYPE_TABS: { id: ContentType; label: string }[] = [
   { id: 'movie', label: 'سینمایی' },
   { id: 'donghua', label: 'دونگهوا' },
 ]
-
-const translateSeason = (season: string): string => {
-  switch (season) {
-    case 'WINTER':
-      return 'زمستان'
-    case 'SPRING':
-      return 'بهار'
-    case 'SUMMER':
-      return 'تابستان'
-    case 'FALL':
-      return 'پاییز'
-    default:
-      return season
-  }
-}
-
-/** Season + year in Asia/Tehran (matches Schedule / API). */
-const getTehranSeasonYear = (): {
-  season: 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL'
-  year: number
-} => {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Asia/Tehran',
-    year: 'numeric',
-    month: 'numeric',
-  }).formatToParts(new Date())
-  const year = Number(parts.find((p) => p.type === 'year')?.value)
-  const month = Number(parts.find((p) => p.type === 'month')?.value)
-  const y = Number.isFinite(year) ? year : new Date().getFullYear()
-  const m = Number.isFinite(month) ? month : new Date().getMonth() + 1
-  if (m >= 1 && m <= 3) return { season: 'WINTER', year: y }
-  if (m >= 4 && m <= 6) return { season: 'SPRING', year: y }
-  if (m >= 7 && m <= 9) return { season: 'SUMMER', year: y }
-  return { season: 'FALL', year: y }
-}
 
 const genreLabel = (g: GenreItem) => g.name_fa || g.name_en || g.slug
 
@@ -177,7 +143,7 @@ const Home = () => {
   useTabScrollRestoration('home')
 
   const { season: currentSeasonKey, year: currentYearNumber } = useMemo(
-    () => getTehranSeasonYear(),
+    () => getTehranAiringSeason(),
     []
   )
   const currentSeasonFa = translateSeason(currentSeasonKey)
