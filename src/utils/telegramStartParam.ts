@@ -43,6 +43,10 @@ export const parseTelegramStartParam = (raw: string): TelegramStartRoute | null 
     }
   }
 
+  // Channel CTA shortcuts (custom posts)
+  if (param === 'schedule') return { path: '/schedule' }
+  if (param === 'subscribe') return { path: '/subscribe' }
+
   const match = param.match(/^anime_([^_]+)(?:_(info|episodes|similar|translators))?$/)
   if (!match) return null
 
