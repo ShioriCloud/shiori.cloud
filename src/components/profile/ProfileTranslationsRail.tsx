@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom'
+import { ChevronLeft, Languages } from 'lucide-react'
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
 import { BidiText } from '@/components/BidiText'
 import { HomeRailScroller, HomeRailSlide } from '@/components/home/HomeRailScroller'
-import { MyListCompactCard } from '@/components/my-list/MyListUi'
 import type { SocialProfileMe } from '@/services/socialProfile'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
+import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
 
 const DEFAULT_VISIBLE = 5
@@ -51,28 +52,64 @@ export const ProfileTranslationsRail = ({
 
   return (
     <div className="mx-4 mt-6">
-      <MyListCompactCard className="overflow-hidden">
-        <div className="flex items-start gap-3 px-3 pt-3 pb-2">
+      <section
+        className={cn(
+          'relative overflow-hidden rounded-2xl border border-border/50',
+          'bg-gradient-to-br from-sky-400/[0.10] via-background to-primary-400/[0.08]',
+          'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]'
+        )}
+      >
+        <div
+          className="pointer-events-none absolute -right-10 top-0 h-32 w-32 rounded-full bg-sky-400/15 blur-3xl"
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute -left-8 bottom-0 h-28 w-28 rounded-full bg-primary-400/12 blur-3xl"
+          aria-hidden
+        />
+
+        <div className="relative flex items-center gap-2.5 px-3.5 pt-3.5 pb-2.5">
+          <span
+            className={cn(
+              'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl',
+              'border border-sky-400/25 bg-sky-400/15 text-sky-600 dark:text-sky-300'
+            )}
+          >
+            <Languages className="h-4 w-4" aria-hidden />
+          </span>
+
           <div className="min-w-0 flex-1 text-right">
             <h2 className="text-sm font-semibold text-foreground">ترجمه‌هاش</h2>
-            <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
-              {roleLine}
-              <span className="mx-1 text-border">·</span>
-              {toPersianDigits(total)} اثر
+            <p className="mt-0.5 flex flex-wrap items-center justify-end gap-x-2 gap-y-0.5 text-xs leading-5 text-muted-foreground">
+              <span>
+                {roleLine} شیوری
+              </span>
+              <span
+                className="inline-block h-3 w-px shrink-0 bg-border/80"
+                aria-hidden
+              />
+              <span className="tabular-nums">{toPersianDigits(total)} اثر</span>
             </p>
           </div>
+
           <Link
             to={allPath}
-            className="shrink-0 rounded-lg px-2 py-1 text-[11px] font-semibold text-primary-400 hover:bg-primary-400/10 active:bg-primary-400/15"
+            className={cn(
+              'inline-flex shrink-0 items-center gap-0.5 rounded-xl px-2 py-1.5',
+              'text-[11px] font-semibold text-primary-700 dark:text-primary-200',
+              'border border-primary-400/25 bg-primary-400/10',
+              'transition-colors hover:bg-primary-400/15 active:bg-primary-400/20'
+            )}
           >
             مشاهده همه
+            <ChevronLeft className="h-3.5 w-3.5 opacity-80" aria-hidden />
           </Link>
         </div>
 
-        <div className="pb-3">
+        <div className="relative pb-3.5">
           <HomeRailScroller
             restoreKey={`profile-translations:${profileUserId}`}
-            className="px-3"
+            className="px-3.5"
           >
             {visible.map((item) => {
               const routeRef = { id: item.anime_id, slug: item.slug, title: item.title }
@@ -115,7 +152,7 @@ export const ProfileTranslationsRail = ({
             })}
           </HomeRailScroller>
         </div>
-      </MyListCompactCard>
+      </section>
     </div>
   )
 }

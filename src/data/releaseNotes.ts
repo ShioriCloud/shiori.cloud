@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.69',
+    items: ['باکس ترجمه‌ها جذاب‌تر شد؛ نقش شیوری و مشاهدهٔ همه واضح‌تر'],
+  },
+  {
     version: '0.2.68',
     items: [
       'جای دکمهٔ تنظیمات مثل جزئیات انیمه کنار آواتار',
