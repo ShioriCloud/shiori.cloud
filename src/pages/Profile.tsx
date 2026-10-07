@@ -1,33 +1,22 @@
-import { useMemo, useState, type ReactNode } from 'react'
-import { Link } from 'react-router-dom'
-import { AlarmClockIcon, CustomerServiceIcon, UserIcon } from 'hugeicons-react'
-import { ChevronLeft, Crown, Moon, Sun, BarChart3 } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { UserIcon } from 'hugeicons-react'
+import { Settings } from 'lucide-react'
 import { useAppAuth } from '../hooks/useAppAuth'
 import { useUserAnimeList } from '../hooks/useUserAnimeList'
-import { useNotifications } from '../hooks/useNotifications'
-import { useSubscriptionMe } from '../hooks/useSubscription'
-import { useTokenRechargeUi } from '../hooks/useTokenRechargeUi'
 import { useSocialProfileMe } from '../hooks/useSocialProfile'
-import { ENABLE_SUBSCRIPTION_DOWNLOAD_GATE } from '../config/monetizationFlags'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
-import { MyListCompactCard } from '@/components/my-list/MyListUi'
-import { ProfileTokenWalletCard } from '@/components/download-tokens/ProfileTokenWalletCard'
-import { TokenRechargeSheet } from '@/components/download-tokens/TokenRechargeSheet'
-import { cn } from '@/lib/utils'
-import { useTheme } from '@/utils/theme'
-import { hapticSelection } from '@/lib/telegramHaptics'
-import type { ThemePreference } from '@/store/themeStore'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
-import { Button } from '@/components/ui/button'
-import {
-  buildTelegramBotLink,
-  getMiniAppBotUsername,
-} from '@/utils/externalLinks'
+import { ProfileFeedPanel } from '@/components/profile/ProfileFeedPanel'
+import { ProfileOverviewStrip } from '@/components/profile/ProfileOverviewStrip'
+import { ProfilePersonalPanel } from '@/components/profile/ProfilePersonalPanel'
+import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
+import { ProfileStatsPanel } from '@/components/profile/ProfileStatsPanel'
+import { ProfileWatchingRail } from '@/components/profile/ProfileWatchingRail'
+import { PROFILE_TABS, parseProfileTab, type ProfileTabId } from '@/components/profile/profileTabs'
+import { MyListCompactCard } from '@/components/my-list/MyListUi'
+import { cn } from '@/lib/utils'
+import { hapticSelection } from '@/lib/telegramHaptics'
 import { toPersianDigits } from '@/lib/persianDigits'
-
-/** Semver from package.json at build time (see vite.config.ts). */
-const APP_VERSION = String(import.meta.env.VITE_APP_VERSION ?? '0.1.0').trim() || '0.1.0'
 
 const getInitials = (name: string): string => {
   const trimmed = name.trim()
@@ -39,91 +28,6 @@ const getInitials = (name: string): string => {
   return trimmed.charAt(0)
 }
 
-const SectionTitle = ({ children }: { children: ReactNode }) => (
-  <h2 className="mb-3 text-sm font-semibold text-foreground">{children}</h2>
-)
-
-type MenuRowProps = {
-  icon: ReactNode
-  label: string
-  hint?: string
-  badge?: number
-}
-
-const MenuRowContent = ({ icon, label, hint, badge }: MenuRowProps) => (
-  <>
-    <span
-      className={cn(
-        'flex h-9 w-9 shrink-0 items-center justify-center rounded-md border',
-        'border-border/50 bg-muted/35 text-muted-foreground'
-      )}
-    >
-      {icon}
-    </span>
-    <span className="min-w-0 flex-1 text-right">
-      <span className="block text-sm font-medium text-foreground">{label}</span>
-      {hint ? (
-        <span className="mt-0.5 block text-xs text-muted-foreground">{hint}</span>
-      ) : null}
-    </span>
-    {typeof badge === 'number' && badge > 0 ? (
-      <span
-        className={cn(
-          'flex h-6 min-w-6 items-center justify-center rounded-md border px-1.5',
-          'border-border/50 bg-muted/50 text-[11px] font-medium tabular-nums text-foreground'
-        )}
-      >
-        {badge > 99 ? '۹۹+' : toPersianDigits(badge)}
-      </span>
-    ) : null}
-    <ChevronLeft className="h-4 w-4 shrink-0 text-muted-foreground/60" aria-hidden />
-  </>
-)
-
-type MenuItemProps = MenuRowProps & {
-  to: string
-}
-
-const MenuItem = ({ to, ...row }: MenuItemProps) => (
-  <Link
-    to={to}
-    className={cn(
-      'flex items-center gap-3 px-3 py-3',
-      'transition-colors hover:bg-muted/40 active:bg-muted/55'
-    )}
-  >
-    <MenuRowContent {...row} />
-  </Link>
-)
-
-const StatCell = ({
-  value,
-  label,
-  to,
-}: {
-  value: string
-  label: string
-  to?: string
-}) => {
-  const className = cn(
-    'surface-skeuo rounded-lg px-2 py-3 text-center',
-    to && 'active:scale-[0.98] transition-transform'
-  )
-  const body = (
-    <>
-      <p className="text-base font-bold tabular-nums text-foreground">{value}</p>
-      <p className="mt-0.5 text-[10px] leading-4 text-muted-foreground">{label}</p>
-    </>
-  )
-  return to ? (
-    <Link to={to} className={className}>
-      {body}
-    </Link>
-  ) : (
-    <div className={className}>{body}</div>
-  )
-}
-
 const ProfileSkeleton = () => (
   <div className="animate-pulse pb-24">
     <div className="relative h-44">
@@ -133,7 +37,6 @@ const ProfileSkeleton = () => (
           <div className="media-card-skeuo-face bg-muted" />
         </div>
         <div className="mt-4 h-6 w-36 rounded-md bg-muted" />
-        <div className="mt-2 h-4 w-24 rounded-md bg-muted" />
       </div>
     </div>
     <div className="mx-4 mt-6 grid grid-cols-3 gap-2">
@@ -141,38 +44,64 @@ const ProfileSkeleton = () => (
       <div className="h-16 rounded-lg bg-muted/70" />
       <div className="h-16 rounded-lg bg-muted/70" />
     </div>
-    <div className="mx-4 mt-6 h-32 rounded-lg bg-muted/70" />
   </div>
 )
 
 const Profile = () => {
-  const { user, isReady, inTelegram, login, register, logout } = useAppAuth()
+  const { user, isReady, inTelegram, login, register } = useAppAuth()
   const { stats } = useUserAnimeList()
-  const { data: subscriptionMe } = useSubscriptionMe(ENABLE_SUBSCRIPTION_DOWNLOAD_GATE)
-  const {
-    unreadCount,
-    preferences,
-    preferencesLoading,
-    updatePreferences,
-    updatingNotifyNewEpisode,
-    updatingNotifyTelegramDm,
-  } = useNotifications()
-  const [avatarFailed, setAvatarFailed] = useState(false)
-  const { preference, setPreference, isDarkMode } = useTheme()
-  const tokenRecharge = useTokenRechargeUi(Boolean(user))
   const { data: socialProfile } = useSocialProfileMe(Boolean(user))
-  const socialProfileEnabled = socialProfile?.enabled === true
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [avatarFailed, setAvatarFailed] = useState(false)
+
+  const activeTab = parseProfileTab(searchParams.get('tab'))
+
+  const setActiveTab = (tab: ProfileTabId) => {
+    hapticSelection()
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        if (tab === 'stats') next.delete('tab')
+        else next.set('tab', tab)
+        return next
+      },
+      { replace: true }
+    )
+  }
 
   const displayName = user?.displayName ?? 'کاربر'
-
   const initials = useMemo(() => getInitials(displayName), [displayName])
   const username = user?.username ? `@${user.username}` : null
   const avatarUrl = user?.photoUrl && !avatarFailed ? user.photoUrl : null
-  const favoritesCount = stats.animeCount
-  const avgRatingLabel =
-    stats.averageRating != null ? toPersianDigits(stats.averageRating.toFixed(1)) : '—'
-  const showNotificationSettings = inTelegram && user != null
   const showWebAuth = !inTelegram && !user
+
+  const followers = socialProfile?.profile?.followers_count ?? 0
+  const following = socialProfile?.profile?.following_count ?? 0
+  const animeWatched =
+    socialProfile?.enabled && socialProfile.summary
+      ? socialProfile.summary.anime_count
+      : stats.animeCount
+
+  const overview = useMemo(() => {
+    if (socialProfile?.enabled && socialProfile.summary) {
+      const s = socialProfile.summary
+      return {
+        episodesWatched: s.episodes_watched,
+        averageRating: s.average_rating,
+        activeDays: s.active_days,
+        watchHours: s.estimated_watch_hours,
+        watchHoursHint: s.estimated_watch_label,
+      }
+    }
+    const estimatedHours = Math.round((stats.episodesWatched * 24) / 60)
+    return {
+      episodesWatched: stats.episodesWatched,
+      averageRating: stats.averageRating,
+      activeDays: null,
+      watchHours: estimatedHours > 0 ? estimatedHours : null,
+      watchHoursHint: estimatedHours > 0 ? 'تقریبی (۲۴ دقیقه برای هر قسمت)' : null,
+    }
+  }, [socialProfile, stats])
 
   if (!isReady) {
     return <ProfileSkeleton />
@@ -207,6 +136,18 @@ const Profile = () => {
             </>
           )}
         </div>
+
+        <Link
+          to="/profile/settings"
+          className={cn(
+            'absolute left-4 top-4 z-20 flex h-10 w-10 items-center justify-center rounded-xl',
+            'border border-border/50 bg-background/70 text-muted-foreground backdrop-blur-sm',
+            'active:scale-95 transition-transform'
+          )}
+          aria-label="تنظیمات"
+        >
+          <Settings className="h-5 w-5" />
+        </Link>
 
         <div className="relative z-10 flex flex-col items-center px-4 pb-2 pt-24">
           <div className="media-card-skeuo h-24 w-24 rounded-2xl">
@@ -247,221 +188,61 @@ const Profile = () => {
               Telegram Premium
             </span>
           ) : null}
-
-          {!inTelegram && user?.source === 'web' ? (
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              className="mt-3"
-              onClick={() => void logout()}
-            >
-              خروج از حساب
-            </Button>
-          ) : null}
         </div>
       </div>
 
-      <div className="mx-4 mt-5">
-        <SectionTitle>فعالیت تماشا</SectionTitle>
-        <div className="grid grid-cols-3 gap-2">
-          <StatCell
-            to="/my-list"
-            value={toPersianDigits(favoritesCount)}
-            label="انیمه"
-          />
-          <StatCell value={toPersianDigits(stats.episodesWatched)} label="قسمت دیده" />
-          <StatCell value={avgRatingLabel} label="میانگین امتیاز" />
-        </div>
-      </div>
-
-      {tokenRecharge.walletEnabled ? (
-        <div className="mx-4 mt-6">
-          <SectionTitle>کیف توکن</SectionTitle>
-          <ProfileTokenWalletCard
-            balance={tokenRecharge.balance}
-            pending={tokenRecharge.walletPending}
-            onRecharge={tokenRecharge.openRechargeSheet}
-          />
-        </div>
-      ) : null}
-
-      {socialProfileEnabled ? (
-        <div className="mx-4 mt-6">
-          <SectionTitle>پروفایل تماشا</SectionTitle>
-          <MyListCompactCard className="overflow-hidden">
-            <MenuItem
-              to="/profile/social"
-              icon={<BarChart3 className="h-4 w-4" />}
-              label="آمار و دیده‌شده‌ها"
-              hint="نسخه آزمایشی"
-            />
-          </MyListCompactCard>
-        </div>
-      ) : null}
-
-      <div className="mx-4 mt-6">
-        <SectionTitle>دسترسی سریع</SectionTitle>
-        <MyListCompactCard className="overflow-hidden divide-y divide-border/40">
-          {ENABLE_SUBSCRIPTION_DOWNLOAD_GATE ? (
-            <MenuItem
-              to="/subscribe"
-              icon={<Crown className="h-4 w-4" />}
-              label="اشتراک ماهانه"
-              hint={
-                subscriptionMe?.active && subscriptionMe.expires_at
-                  ? `فعال تا ${new Date(subscriptionMe.expires_at).toLocaleDateString('fa-IR')}`
-                  : subscriptionMe?.status === 'expired'
-                    ? 'منقضی شده — تمدید کنید'
-                    : 'دسترسی سافت‌ساب و هاردساب'
-              }
-            />
-          ) : null}
-          <MenuItem
-            to="/notifications"
-            icon={<AlarmClockIcon className="h-4 w-4" />}
-            label="اعلان‌ها"
-            hint={unreadCount > 0 ? `${toPersianDigits(unreadCount)} پیام جدید` : 'همه خوانده شده'}
-            badge={unreadCount}
-          />
-          <MenuItem
-            to="/support"
-            icon={<CustomerServiceIcon className="h-4 w-4" />}
-            label="تیکت پشتیبانی"
-            hint="گزارش خطا، پیشنهاد و درخواست قابلیت"
-          />
-        </MyListCompactCard>
-      </div>
-
-      {showNotificationSettings ? (
-        <div className="mx-4 mt-6">
-          <SectionTitle>تنظیمات اعلان</SectionTitle>
-          <MyListCompactCard className="overflow-hidden divide-y divide-border/40">
-            <div className="flex items-center justify-between gap-3 px-3 py-3">
-              <div className="min-w-0 text-right">
-                <Label htmlFor="notify-new-episode" className="text-sm font-medium text-foreground">
-                  اعلان قسمت جدید
-                </Label>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  اینباکس مینی‌اپ برای انیمه‌هایی که یادآوری کرده‌ای
-                </p>
-              </div>
-              <Switch
-                id="notify-new-episode"
-                checked={preferences?.notify_new_episode ?? true}
-                disabled={preferencesLoading || updatingNotifyNewEpisode}
-                onCheckedChange={(checked) => {
-                  hapticSelection()
-                  void updatePreferences({ notify_new_episode: checked })
-                }}
-              />
-            </div>
-            <div className="flex items-center justify-between gap-3 px-3 py-3">
-              <div className="min-w-0 text-right">
-                <Label htmlFor="notify-telegram-dm" className="text-sm font-medium text-foreground">
-                  پیام Telegram
-                </Label>
-                <p className="mt-0.5 text-xs text-muted-foreground">وقتی مینی‌اپ بسته است</p>
-              </div>
-              <Switch
-                id="notify-telegram-dm"
-                checked={preferences?.notify_telegram_dm ?? true}
-                disabled={preferencesLoading || updatingNotifyTelegramDm}
-                onCheckedChange={(checked) => {
-                  hapticSelection()
-                  void updatePreferences({ notify_telegram_dm: checked })
-                }}
-              />
-            </div>
-          </MyListCompactCard>
-        </div>
-      ) : null}
-
-      <div className="mx-4 mt-6">
-        <SectionTitle>ظاهر</SectionTitle>
-        <MyListCompactCard className="overflow-hidden p-3 space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0 text-right">
-              <p className="text-sm font-medium text-foreground">تم</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {preference === 'auto'
-                  ? inTelegram
-                    ? 'همگام با تم تلگرام'
-                    : 'همگام با سیستم'
-                  : isDarkMode
-                    ? 'تم تیره'
-                    : 'تم روشن'}
-              </p>
-            </div>
-            {isDarkMode ? (
-              <Moon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-            ) : (
-              <Sun className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-            )}
-          </div>
-          <div className="grid grid-cols-3 gap-1.5">
-            {(
-              [
-                { id: 'auto', label: 'خودکار' },
-                { id: 'light', label: 'روشن' },
-                { id: 'dark', label: 'تیره' },
-              ] as const satisfies ReadonlyArray<{ id: ThemePreference; label: string }>
-            ).map((opt) => (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={() => {
-                  hapticSelection()
-                  setPreference(opt.id)
-                }}
-                className={cn(
-                  'ui-elevated rounded-md px-2 py-2 text-[11px] font-medium transition-colors',
-                  preference === opt.id
-                    ? 'border-primary-400/45 bg-primary-400/15 font-semibold text-primary-700 dark:border-primary-400/25 dark:bg-primary-500/15 dark:text-primary-200'
-                    : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
-                )}
-                aria-pressed={preference === opt.id}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </MyListCompactCard>
-      </div>
-
-      <footer className="mx-4 mt-8 mb-2 space-y-2 text-center">
-        <p className="text-xs leading-relaxed text-muted-foreground">
-          مینی‌شیوری | آرشیو جمع‌و‌جور دانلود انیمه
-        </p>
-        <p className="text-[11px] text-muted-foreground/80">
-          نسخه {toPersianDigits(APP_VERSION)}
-          <span className="mx-1.5 text-border" aria-hidden>
-            ·
-          </span>
-          <a
-            href={buildTelegramBotLink()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary-400/90 underline-offset-2 hover:underline"
-            dir="ltr"
-          >
-            @{getMiniAppBotUsername()}
-          </a>
-        </p>
-      </footer>
-
-      {tokenRecharge.walletEnabled ? (
-        <TokenRechargeSheet
-          open={tokenRecharge.sheetOpen}
-          onOpenChange={tokenRecharge.setSheetOpen}
-          balance={tokenRecharge.balance}
-          telegramUserId={tokenRecharge.telegramUserId}
-          tiers={tokenRecharge.tiers}
-          onConfirm={tokenRecharge.confirmTier}
-          onCheckPayment={tokenRecharge.checkPayment}
-          checkingPayment={tokenRecharge.checkingPayment}
+      <div className="mx-4 mt-4 grid grid-cols-3 gap-2">
+        <ProfileStatCell value={toPersianDigits(followers)} label="دنبال‌کننده" />
+        <ProfileStatCell value={toPersianDigits(following)} label="دنبال‌شده" />
+        <ProfileStatCell
+          to="/my-list"
+          value={toPersianDigits(animeWatched)}
+          label="انیمه دیده"
         />
-      ) : null}
+      </div>
+
+      <ProfileOverviewStrip data={overview} />
+      <ProfileWatchingRail />
+
+      <div className="mx-4 mt-6">
+        <MyListCompactCard
+          className="flex min-h-[4.5rem] items-center justify-center px-4 py-5 text-xs text-muted-foreground"
+          aria-hidden
+        >
+          نشان‌ها — به‌زودی
+        </MyListCompactCard>
+      </div>
+
+      <div className="mx-4 mt-6 flex rounded-xl border border-border/50 bg-muted/20 p-1">
+        {PROFILE_TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            className={cn(
+              'flex-1 rounded-lg py-2 text-sm font-medium transition-colors',
+              activeTab === t.id
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground'
+            )}
+            onClick={() => setActiveTab(t.id)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="mx-4 mt-4">
+        {activeTab === 'stats' ? (
+          <ProfileStatsPanel
+            social={socialProfile}
+            localAnimeCount={stats.animeCount}
+            localEpisodesWatched={stats.episodesWatched}
+            localAverageRating={stats.averageRating}
+          />
+        ) : null}
+        {activeTab === 'feed' ? <ProfileFeedPanel /> : null}
+        {activeTab === 'personal' ? <ProfilePersonalPanel /> : null}
+      </div>
     </div>
   )
 }

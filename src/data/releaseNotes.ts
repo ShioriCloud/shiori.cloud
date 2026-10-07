@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.58',
+    items: ['پروفایل با آمار خلاصه، در حال تماشا و تب‌های آمار و شخصی'],
+  },
+  {
     version: '0.2.57',
     items: ['پروفایل تماشا با آمار و لیست دیده‌شده‌ها (آزمایشی)'],
   },

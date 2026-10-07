@@ -24,6 +24,7 @@ const MyList = lazy(() => import('./pages/MyList'))
 const ShioriListDetail = lazy(() => import('./pages/ShioriListDetail'))
 const Profile = lazy(() => import('./pages/Profile'))
 const SocialProfile = lazy(() => import('./pages/SocialProfile'))
+const ProfileSettings = lazy(() => import('./pages/ProfileSettings'))
 const Notifications = lazy(() => import('./pages/Notifications'))
 const Support = lazy(() => import('./pages/Support'))
 const SupportTicketDetail = lazy(() => import('./pages/SupportTicketDetail'))
@@ -90,6 +91,7 @@ function App() {
             <Route path="/my-list/lists/:listId" element={<ShioriListDetail />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/social" element={<SocialProfile />} />
+            <Route path="/profile/settings" element={<ProfileSettings />} />
             {/* Monetization routes kept; UI entry points gated by ENABLE_SUBSCRIPTION_DOWNLOAD_GATE */}
             <Route path="/donate" element={<Navigate to="/subscribe" replace />} />
             <Route path="/subscribe" element={<Subscribe />} />
