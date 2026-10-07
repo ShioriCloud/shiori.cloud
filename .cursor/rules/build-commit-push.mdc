@@ -1,0 +1,14 @@
+---
+description: After shipping code changes, run build then commit and push when green
+alwaysApply: true
+---
+
+# Build, commit, and push
+
+When you finish implementing requested code changes in this repo:
+
+1. Run the relevant build (`npm run build` for the mini-app) and fix errors until it passes.
+2. Commit all related changes (never commit `.env` or other secrets unless the user explicitly asks).
+3. Push to `origin` on the current branch without waiting for the user to ask.
+
+Skip commit/push only when the user explicitly says not to, or when the task was question-only / no code changes.
