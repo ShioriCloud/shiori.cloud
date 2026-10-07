@@ -240,7 +240,9 @@ const Profile = () => {
       <div className="mx-4 mt-4">
         {activeTab === 'stats' ? <ProfileStatsPanel /> : null}
         {activeTab === 'feed' ? <ProfileFeedPanel /> : null}
-        {activeTab === 'personal' ? <ProfilePersonalPanel /> : null}
+        {activeTab === 'personal' ? (
+          <ProfilePersonalPanel translator={socialProfile?.translator ?? null} />
+        ) : null}
       </div>
     </div>
   )

@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.63',
+    items: ['بج و فعالیت ترجمه روی پروفایل برای مترجم‌های متصل'],
+  },
+  {
     version: '0.2.62',
     items: ['دنبال کردن در پروفایل، تب‌های یکدست، و مخفی‌کردن آیدی تلگرام'],
   },

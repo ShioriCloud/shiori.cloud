@@ -39,6 +39,22 @@ export type SocialProfileMe = {
     page: number
     limit: number
   }
+  translator?: {
+    id: string
+    slug: string
+    name: string
+    bio: string | null
+    experience: string | null
+    is_active: boolean
+    anime_count: number
+    anime: Array<{
+      anime_id: string
+      slug: string | null
+      title: string
+      image: string
+      role: string | null
+    }>
+  } | null
 }
 
 export const fetchSocialProfileMe = async (page = 1, limit = 60): Promise<SocialProfileMe> =>
