@@ -140,37 +140,39 @@ const Profile = () => {
           )}
         </div>
 
-        <Button
-          asChild
-          type="button"
-          variant="outline"
-          size="icon-sm"
-          className="absolute left-4 top-4 z-20 surface-skeuo border-border/60 text-muted-foreground hover:text-foreground"
-        >
-          <Link to="/profile/settings" aria-label="تنظیمات">
-            <Settings className="h-4 w-4" />
-          </Link>
-        </Button>
-
         <div className="relative z-10 flex flex-col items-center px-4 pb-2 pt-24">
-          <div className="media-card-skeuo h-24 w-24 rounded-2xl">
-            <div className="media-card-skeuo-face bg-muted">
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt={displayName}
-                  className="h-full w-full object-cover"
-                  onError={() => setAvatarFailed(true)}
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-primary-400/15">
-                  {initials ? (
-                    <span className="text-2xl font-bold text-primary-400">{initials}</span>
-                  ) : (
-                    <UserIcon className="h-10 w-10 text-muted-foreground/50" />
-                  )}
-                </div>
-              )}
+          <div className="relative flex w-full justify-center">
+            <Button
+              asChild
+              type="button"
+              variant="outline"
+              size="icon-sm"
+              className="absolute left-0 top-0 z-20 surface-skeuo border-border/60 text-muted-foreground hover:text-foreground"
+            >
+              <Link to="/profile/settings" aria-label="تنظیمات">
+                <Settings className="h-4 w-4" />
+              </Link>
+            </Button>
+
+            <div className="media-card-skeuo h-24 w-24 rounded-2xl">
+              <div className="media-card-skeuo-face bg-muted">
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt={displayName}
+                    className="h-full w-full object-cover"
+                    onError={() => setAvatarFailed(true)}
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-primary-400/15">
+                    {initials ? (
+                      <span className="text-2xl font-bold text-primary-400">{initials}</span>
+                    ) : (
+                      <UserIcon className="h-10 w-10 text-muted-foreground/50" />
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

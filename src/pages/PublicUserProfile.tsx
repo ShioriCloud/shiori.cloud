@@ -167,31 +167,33 @@ const PublicUserProfile = () => {
           )}
         </div>
 
-        <ProfileShareButton
-          telegramUserId={telegramUserId}
-          displayName={displayName}
-          className="absolute right-4 top-4 z-20"
-        />
-
         <div className="relative z-10 flex flex-col items-center px-4 pb-2 pt-24">
-          <div className="media-card-skeuo h-24 w-24 rounded-2xl">
-            <div className="media-card-skeuo-face bg-muted">
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt={displayName}
-                  className="h-full w-full object-cover"
-                  onError={() => setAvatarFailed(true)}
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-primary-400/15">
-                  {initials ? (
-                    <span className="text-2xl font-bold text-primary-400">{initials}</span>
-                  ) : (
-                    <UserIcon className="h-10 w-10 text-muted-foreground/50" />
-                  )}
-                </div>
-              )}
+          <div className="relative flex w-full justify-center">
+            <ProfileShareButton
+              telegramUserId={telegramUserId}
+              displayName={displayName}
+              className="absolute left-0 top-0 z-20"
+            />
+
+            <div className="media-card-skeuo h-24 w-24 rounded-2xl">
+              <div className="media-card-skeuo-face bg-muted">
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt={displayName}
+                    className="h-full w-full object-cover"
+                    onError={() => setAvatarFailed(true)}
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-primary-400/15">
+                    {initials ? (
+                      <span className="text-2xl font-bold text-primary-400">{initials}</span>
+                    ) : (
+                      <UserIcon className="h-10 w-10 text-muted-foreground/50" />
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
