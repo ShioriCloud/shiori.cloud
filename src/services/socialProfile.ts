@@ -57,6 +57,47 @@ export type SocialProfileMe = {
       role: string | null
     }>
   } | null
+  relationship?: {
+    is_following: boolean
+  }
+}
+
+export type SocialProfileUserListItem = {
+  telegram_user_id: string
+  display_name: string
+  username: string | null
+  photo_url: string | null
+  role_badges?: Array<{ id: string; title: string }>
+}
+
+export type SocialProfileUserList = {
+  enabled: boolean
+  mode: 'off' | 'allowlist' | 'on'
+  items: SocialProfileUserListItem[]
+  total: number
+  page: number
+  limit: number
+}
+
+export type SocialProfileFeedItem = {
+  type: 'watch_progress'
+  actor: SocialProfileUserListItem
+  anime_id: string
+  slug: string | null
+  title: string
+  image: string
+  episodes_watched: number
+  episodes_total: number | null
+  updated_at: string
+}
+
+export type SocialProfileFeed = {
+  enabled: boolean
+  mode: 'off' | 'allowlist' | 'on'
+  items: SocialProfileFeedItem[]
+  total: number
+  page: number
+  limit: number
 }
 
 export const fetchSocialProfileMe = async (page = 1, limit = 60): Promise<SocialProfileMe> =>
@@ -71,4 +112,39 @@ export const fetchSocialProfileUser = async (
 ): Promise<SocialProfileMe> =>
   shioriFetch<SocialProfileMe>(
     `/user-social-profile/users/${encodeURIComponent(telegramUserId)}?page=${encodeURIComponent(String(page))}&limit=${encodeURIComponent(String(limit))}`
+  )
+
+export const followSocialUser = async (targetTelegramUserId: string) =>
+  shioriFetch<{ ok: boolean; is_following: boolean }>(
+    `/user-social-profile/follow/${encodeURIComponent(targetTelegramUserId)}`,
+    { method: 'POST' }
+  )
+
+export const unfollowSocialUser = async (targetTelegramUserId: string) =>
+  shioriFetch<{ ok: boolean; is_following: boolean }>(
+    `/user-social-profile/follow/${encodeURIComponent(targetTelegramUserId)}`,
+    { method: 'DELETE' }
+  )
+
+export const fetchSocialFollowers = async (
+  telegramUserId: string,
+  page = 1,
+  limit = 30
+): Promise<SocialProfileUserList> =>
+  shioriFetch<SocialProfileUserList>(
+    `/user-social-profile/users/${encodeURIComponent(telegramUserId)}/followers?page=${encodeURIComponent(String(page))}&limit=${encodeURIComponent(String(limit))}`
+  )
+
+export const fetchSocialFollowing = async (
+  telegramUserId: string,
+  page = 1,
+  limit = 30
+): Promise<SocialProfileUserList> =>
+  shioriFetch<SocialProfileUserList>(
+    `/user-social-profile/users/${encodeURIComponent(telegramUserId)}/following?page=${encodeURIComponent(String(page))}&limit=${encodeURIComponent(String(limit))}`
+  )
+
+export const fetchSocialFeed = async (page = 1, limit = 30): Promise<SocialProfileFeed> =>
+  shioriFetch<SocialProfileFeed>(
+    `/user-social-profile/feed?page=${encodeURIComponent(String(page))}&limit=${encodeURIComponent(String(limit))}`
   )

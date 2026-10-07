@@ -16,8 +16,12 @@ import { AnimeDetailTranslatorsTab } from '@/components/anime-detail/AnimeDetail
 import { SeriesSeasonSwitcher } from '@/components/anime-detail/SeriesSeasonSwitcher'
 import { useAnimeDetailPage } from '@/components/anime-detail/useAnimeDetailPage'
 import { MAIN_TABS } from '@/components/anime-detail/types'
+import { useAppAuth } from '@/hooks/useAppAuth'
+import { useSocialProfileMe } from '@/hooks/useSocialProfile'
 
 const AnimeDetail = () => {
+  const { user } = useAppAuth()
+  const { data: socialMe } = useSocialProfileMe(Boolean(user))
   const page = useAnimeDetailPage()
   const {
     navigate,
@@ -202,6 +206,7 @@ const AnimeDetail = () => {
           <AnimeDetailTranslatorsTab
             links={translatorLinks}
             pending={translatorLinksPending}
+            socialProfileEnabled={socialMe?.enabled === true}
           />
         )}
       </div>

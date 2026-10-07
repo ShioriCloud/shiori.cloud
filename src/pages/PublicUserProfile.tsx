@@ -212,7 +212,12 @@ const PublicUserProfile = () => {
       </div>
 
       <div className="mx-4">
-        <ProfileFollowButton viewerId={user?.id} targetId={telegramUserId} />
+        <ProfileFollowButton
+          viewerId={user?.id}
+          targetId={telegramUserId}
+          apiEnabled={data?.enabled === true}
+          isFollowing={data?.relationship?.is_following === true}
+        />
       </div>
 
       {!isLoading && data?.enabled ? (
@@ -237,7 +242,7 @@ const PublicUserProfile = () => {
                 <ProfileSocialWatchedRail items={watchedItems} />
               </div>
             ) : null}
-            {activeTab === 'feed' ? <ProfileFeedPanel /> : null}
+            {activeTab === 'feed' ? <ProfileFeedPanel enabled={data.enabled} /> : null}
             {activeTab === 'personal' ? (
               <ProfilePersonalPanel translator={translator} variant="public" />
             ) : null}

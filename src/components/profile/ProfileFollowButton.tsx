@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { SHIORI_PRIMARY_BUTTON_CLASS } from '@/components/explore/ExploreUi'
+import { useSocialFollowMutation } from '@/hooks/useSocialProfile'
 import { hapticSelection } from '@/lib/telegramHaptics'
 import { cn } from '@/lib/utils'
 
@@ -20,18 +21,29 @@ type ProfileFollowButtonProps = {
   viewerId: number | string | null | undefined
   targetId: number | string | null | undefined
   className?: string
+  /** When true, sync follow state with API (social rollout). */
+  apiEnabled?: boolean
+  isFollowing?: boolean
 }
 
-/** Local follow UX until server-side follows ship. */
 export const ProfileFollowButton = ({
   viewerId,
   targetId,
   className,
+  apiEnabled = false,
+  isFollowing: isFollowingProp = false,
 }: ProfileFollowButtonProps) => {
-  const [following, setFollowing] = useState(false)
+  const [following, setFollowing] = useState(isFollowingProp)
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const { follow, unfollow, isPending } = useSocialFollowMutation(
+    apiEnabled ? String(targetId ?? '') : undefined
+  )
 
   useEffect(() => {
+    if (apiEnabled) {
+      setFollowing(isFollowingProp)
+      return
+    }
     if (viewerId == null || targetId == null) {
       setFollowing(false)
       return
@@ -41,9 +53,9 @@ export const ProfileFollowButton = ({
     } catch {
       setFollowing(false)
     }
-  }, [viewerId, targetId])
+  }, [apiEnabled, isFollowingProp, viewerId, targetId])
 
-  const persist = (next: boolean) => {
+  const persistLocal = (next: boolean) => {
     if (viewerId == null || targetId == null) return
     try {
       const key = storageKey(viewerId, targetId)
@@ -57,8 +69,19 @@ export const ProfileFollowButton = ({
 
   const onPrimaryClick = () => {
     hapticSelection()
+    if (targetId == null) return
+
+    if (apiEnabled) {
+      if (!following) {
+        void follow.mutateAsync().then(() => setFollowing(true))
+      } else {
+        setConfirmOpen(true)
+      }
+      return
+    }
+
     if (!following) {
-      persist(true)
+      persistLocal(true)
       return
     }
     setConfirmOpen(true)
@@ -66,7 +89,14 @@ export const ProfileFollowButton = ({
 
   const onUnfollow = () => {
     hapticSelection()
-    persist(false)
+    if (apiEnabled && targetId != null) {
+      void unfollow.mutateAsync().then(() => {
+        setFollowing(false)
+        setConfirmOpen(false)
+      })
+      return
+    }
+    persistLocal(false)
     setConfirmOpen(false)
   }
 
@@ -82,12 +112,14 @@ export const ProfileFollowButton = ({
     <>
       <button
         type="button"
+        disabled={apiEnabled && isPending}
         onClick={onPrimaryClick}
         className={cn(
           'mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-colors',
           following
             ? 'border border-border/70 bg-card text-foreground hover:bg-muted/50'
             : cn('border border-transparent text-white', SHIORI_PRIMARY_BUTTON_CLASS),
+          (apiEnabled && isPending) && 'opacity-70',
           className
         )}
       >
@@ -121,6 +153,7 @@ export const ProfileFollowButton = ({
               variant="destructive"
               className="h-11 w-full font-semibold"
               onClick={onUnfollow}
+              disabled={apiEnabled && isPending}
             >
               آنفالو کردن
             </Button>

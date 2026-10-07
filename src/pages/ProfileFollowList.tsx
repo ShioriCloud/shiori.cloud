@@ -1,16 +1,31 @@
 import { Link, useLocation, useParams } from 'react-router-dom'
-import { ChevronRight, Users } from 'lucide-react'
-import { MyListCompactCard } from '@/components/my-list/MyListUi'
+import { ChevronRight } from 'lucide-react'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
+import { ProfileUserListRow } from '@/components/profile/ProfileUserListRow'
+import { MyListCompactCard } from '@/components/my-list/MyListUi'
+import { useAppAuth } from '@/hooks/useAppAuth'
+import { useSocialFollowList, useSocialProfileMe } from '@/hooks/useSocialProfile'
 
 const ProfileFollowList = () => {
   const { pathname } = useLocation()
-  const { telegramUserId } = useParams<{ telegramUserId?: string }>()
+  const { telegramUserId: routeUserId } = useParams<{ telegramUserId?: string }>()
+  const { user } = useAppAuth()
+  const { data: socialMe } = useSocialProfileMe(Boolean(user))
+
   const isFollowing = pathname.endsWith('/following')
   const title = isFollowing ? 'دنبال‌شده‌ها' : 'دنبال‌کننده‌ها'
-  const profileBack = telegramUserId
-    ? `/u/${encodeURIComponent(telegramUserId)}`
+
+  const subjectId = routeUserId?.trim() || (user?.id != null ? String(user.id) : '')
+  const profileBack = routeUserId
+    ? `/u/${encodeURIComponent(routeUserId)}`
     : '/profile'
+
+  const socialEnabled = socialMe?.enabled === true
+  const { data, isLoading } = useSocialFollowList(
+    subjectId,
+    isFollowing ? 'following' : 'followers',
+    Boolean(user) && socialEnabled && subjectId.length > 0
+  )
 
   return (
     <div className="bg-background pb-24 text-foreground">
@@ -28,20 +43,34 @@ const ProfileFollowList = () => {
         </div>
       </div>
 
-      <div className="px-4 pt-6">
-        <MyListCompactCard className="overflow-hidden">
+      <div className="px-4 pt-4">
+        {!socialEnabled ? (
           <ExploreEmptyState
             compact
             showImage={false}
-            title={
-              isFollowing ? 'هنوز کسی را دنبال نکرده‌ای' : 'هنوز دنبال‌کننده‌ای نیست'
-            }
-            subtitle="شبکه اجتماعی شیوری به‌زودی فعال می‌شود."
+            title="به‌زودی"
+            subtitle="شبکه اجتماعی شیوری برای حساب تو هنوز فعال نشده."
           />
-          <div className="flex justify-center pb-4 text-muted-foreground">
-            <Users className="h-5 w-5 opacity-50" aria-hidden />
+        ) : isLoading ? (
+          <div className="space-y-2 animate-pulse">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-16 rounded-xl bg-muted/70" />
+            ))}
           </div>
-        </MyListCompactCard>
+        ) : data?.items.length ? (
+          <MyListCompactCard className="overflow-hidden divide-y divide-border/40">
+            {data.items.map((row) => (
+              <ProfileUserListRow key={row.telegram_user_id} user={row} />
+            ))}
+          </MyListCompactCard>
+        ) : (
+          <ExploreEmptyState
+            compact
+            showImage={false}
+            title={isFollowing ? 'هنوز کسی را دنبال نکرده' : 'هنوز دنبال‌کننده‌ای نیست'}
+            subtitle="اولین نفر باش یا دوستانت را دعوت کن."
+          />
+        )}
       </div>
     </div>
   )

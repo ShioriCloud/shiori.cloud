@@ -2,15 +2,18 @@ import { Link } from 'react-router-dom'
 import { UserIcon } from 'hugeicons-react'
 import { ExternalLink } from 'lucide-react'
 import type { TranslatorAnimeLink } from '../../types/catalog'
+import { translatorProfilePath } from '@/lib/translatorProfilePath'
 import { TranslatorsTabSkeleton } from './AnimeDetailSkeletons'
 import { EmptyBlock } from './AnimeDetailChrome'
 
 export const AnimeDetailTranslatorsTab = ({
   links,
   pending,
+  socialProfileEnabled = false,
 }: {
   links: TranslatorAnimeLink[]
   pending: boolean
+  socialProfileEnabled?: boolean
 }) =>
   pending ? (
     <TranslatorsTabSkeleton />
@@ -21,7 +24,7 @@ export const AnimeDetailTranslatorsTab = ({
       {links.map((l) => (
         <Link
           key={String(l.id)}
-          to={`/translators/${encodeURIComponent(String(l.translator.slug))}`}
+          to={translatorProfilePath(l.translator, socialProfileEnabled)}
           className="surface-skeuo flex items-center justify-between gap-3 rounded-xl p-3 hover:bg-muted/30 transition-colors"
         >
           <div className="flex items-center gap-3 min-w-0">

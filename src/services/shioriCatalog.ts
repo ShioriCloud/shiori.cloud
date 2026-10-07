@@ -85,6 +85,8 @@ type ApiDetail = ApiCard & {
       bio?: string | null
       experience?: string | null
       is_active?: boolean
+      telegram_user_id?: string | null
+      linked_telegram_user_id?: string | null
     }
   }>
   studio_links?: Array<{ slug: string; name: string }>
@@ -400,6 +402,8 @@ export const getTranslatorLinksByAnimeId = async (
       bio: row.translator.bio ?? null,
       experience: row.translator.experience ?? null,
       is_active: row.translator.is_active,
+      telegram_user_id: row.translator.telegram_user_id ?? null,
+      linked_telegram_user_id: row.translator.linked_telegram_user_id ?? null,
     },
   }))
 }
