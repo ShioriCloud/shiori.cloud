@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { UserIcon } from 'hugeicons-react'
 import { Settings } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { useAppAuth } from '../hooks/useAppAuth'
 import { useUserAnimeList } from '../hooks/useUserAnimeList'
 import { useSocialProfileMe } from '../hooks/useSocialProfile'
@@ -17,7 +18,6 @@ import { ProfileBadgesStrip } from '@/components/profile/ProfileBadgesStrip'
 import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import { PROFILE_TABS, parseProfileTab, type ProfileTabId } from '@/components/profile/profileTabs'
 import { ExploreTabBar } from '@/components/explore/ExploreUi'
-import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
 
 const getInitials = (name: string): string => {
@@ -140,17 +140,17 @@ const Profile = () => {
           )}
         </div>
 
-        <Link
-          to="/profile/settings"
-          className={cn(
-            'absolute left-4 top-4 z-20 flex h-10 w-10 items-center justify-center rounded-xl',
-            'border border-border/50 bg-background/70 text-muted-foreground backdrop-blur-sm',
-            'active:scale-95 transition-transform'
-          )}
-          aria-label="تنظیمات"
+        <Button
+          asChild
+          type="button"
+          variant="outline"
+          size="icon-sm"
+          className="absolute left-4 top-4 z-20 surface-skeuo border-border/60 text-muted-foreground hover:text-foreground"
         >
-          <Settings className="h-5 w-5" />
-        </Link>
+          <Link to="/profile/settings" aria-label="تنظیمات">
+            <Settings className="h-4 w-4" />
+          </Link>
+        </Button>
 
         <div className="relative z-10 flex flex-col items-center px-4 pb-2 pt-24">
           <div className="media-card-skeuo h-24 w-24 rounded-2xl">

@@ -28,6 +28,25 @@ const getInitials = (name: string): string => {
   return trimmed.charAt(0)
 }
 
+const PublicProfileSkeleton = () => (
+  <div className="animate-pulse pb-24">
+    <div className="relative h-44">
+      <div className="absolute inset-x-0 top-0 h-full bg-muted/60" />
+      <div className="relative z-10 flex flex-col items-center pt-24">
+        <div className="media-card-skeuo h-24 w-24 rounded-2xl">
+          <div className="media-card-skeuo-face bg-muted" />
+        </div>
+        <div className="mt-4 h-6 w-36 rounded-md bg-muted" />
+      </div>
+    </div>
+    <div className="mx-4 mt-6 grid grid-cols-3 gap-2">
+      <div className="h-16 rounded-lg bg-muted/70" />
+      <div className="h-16 rounded-lg bg-muted/70" />
+      <div className="h-16 rounded-lg bg-muted/70" />
+    </div>
+  </div>
+)
+
 const PublicUserProfile = () => {
   const { telegramUserId: rawId } = useParams<{ telegramUserId: string }>()
   const telegramUserId = rawId?.trim() ?? ''
@@ -69,8 +88,8 @@ const PublicUserProfile = () => {
     return { watchHours: 0, byFormat: [] as Array<{ format: string; count: number; episodes_watched: number }> }
   }, [data])
 
-  if (!isReady) {
-    return null
+  if (!isReady || (Boolean(user) && isLoading && !data)) {
+    return <PublicProfileSkeleton />
   }
 
   if (showWebAuth) {
@@ -101,7 +120,7 @@ const PublicUserProfile = () => {
     )
   }
 
-  if (!isLoading && data && !data.enabled) {
+  if (data && !data.enabled) {
     return (
       <div className="px-4 pt-10 pb-24">
         <ExploreEmptyState
@@ -115,12 +134,16 @@ const PublicUserProfile = () => {
     )
   }
 
-  const followers = data?.profile?.followers_count ?? 0
-  const following = data?.profile?.following_count ?? 0
-  const animeWatched = data?.summary?.anime_count ?? 0
-  const roleBadges = data?.profile?.role_badges ?? []
-  const translator = data?.translator ?? null
-  const watchedItems = data?.watched?.items ?? []
+  if (!data?.enabled || !data.profile) {
+    return <PublicProfileSkeleton />
+  }
+
+  const followers = data.profile.followers_count ?? 0
+  const following = data.profile.following_count ?? 0
+  const animeWatched = data.summary?.anime_count ?? 0
+  const roleBadges = data.profile.role_badges ?? []
+  const translator = data.translator ?? null
+  const watchedItems = data.watched?.items ?? []
 
   return (
     <div className="bg-background pb-24 text-foreground">
@@ -173,7 +196,7 @@ const PublicUserProfile = () => {
           </div>
 
           <h1 className="mt-3 line-clamp-2 px-2 text-center text-lg font-bold text-foreground">
-            {isLoading ? '…' : displayName}
+            {displayName}
           </h1>
 
           {username ? (
@@ -215,40 +238,36 @@ const PublicUserProfile = () => {
         <ProfileFollowButton
           viewerId={user?.id}
           targetId={telegramUserId}
-          apiEnabled={data?.enabled === true}
-          isFollowing={data?.relationship?.is_following === true}
+          apiEnabled
+          isFollowing={data.relationship?.is_following === true}
         />
       </div>
 
-      {!isLoading && data?.enabled ? (
-        <>
-          <ProfileOverviewStrip data={overview} fullStatsTo={null} />
+      <ProfileOverviewStrip data={overview} fullStatsTo={null} />
 
-          {translator ? (
-            <ProfileTranslationsRail translator={translator} profileUserId={telegramUserId} />
-          ) : null}
-
-          <div className="mx-4 mt-6">
-            <ProfileBadgesStrip badges={data.badges} />
-          </div>
-
-          <div className="mx-4 mt-6">
-            <ExploreTabBar tabs={[...PROFILE_TABS]} active={activeTab} onChange={setActiveTab} />
-          </div>
-
-          <div className="mx-4 mt-4">
-            {activeTab === 'stats' ? (
-              <div className="-mx-4">
-                <ProfileSocialWatchedRail items={watchedItems} />
-              </div>
-            ) : null}
-            {activeTab === 'feed' ? <ProfileFeedPanel enabled={data.enabled} /> : null}
-            {activeTab === 'personal' ? (
-              <ProfilePersonalPanel translator={translator} variant="public" />
-            ) : null}
-          </div>
-        </>
+      {translator ? (
+        <ProfileTranslationsRail translator={translator} profileUserId={telegramUserId} />
       ) : null}
+
+      <div className="mx-4 mt-6">
+        <ProfileBadgesStrip badges={data.badges} />
+      </div>
+
+      <div className="mx-4 mt-6">
+        <ExploreTabBar tabs={[...PROFILE_TABS]} active={activeTab} onChange={setActiveTab} />
+      </div>
+
+      <div className="mx-4 mt-4">
+        {activeTab === 'stats' ? (
+          <div className="-mx-4">
+            <ProfileSocialWatchedRail items={watchedItems} />
+          </div>
+        ) : null}
+        {activeTab === 'feed' ? <ProfileFeedPanel enabled /> : null}
+        {activeTab === 'personal' ? (
+          <ProfilePersonalPanel translator={translator} variant="public" />
+        ) : null}
+      </div>
     </div>
   )
 }

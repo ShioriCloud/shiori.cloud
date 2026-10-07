@@ -9,11 +9,9 @@ import { EmptyBlock } from './AnimeDetailChrome'
 export const AnimeDetailTranslatorsTab = ({
   links,
   pending,
-  socialProfileEnabled = false,
 }: {
   links: TranslatorAnimeLink[]
   pending: boolean
-  socialProfileEnabled?: boolean
 }) =>
   pending ? (
     <TranslatorsTabSkeleton />
@@ -24,7 +22,7 @@ export const AnimeDetailTranslatorsTab = ({
       {links.map((l) => (
         <Link
           key={String(l.id)}
-          to={translatorProfilePath(l.translator, socialProfileEnabled)}
+          to={translatorProfilePath(l.translator)}
           className="surface-skeuo flex items-center justify-between gap-3 rounded-xl p-3 hover:bg-muted/30 transition-colors"
         >
           <div className="flex items-center gap-3 min-w-0">

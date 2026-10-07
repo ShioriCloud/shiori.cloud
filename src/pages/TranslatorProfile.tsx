@@ -1,7 +1,5 @@
 import { useMemo } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
-import { useAppAuth } from '../hooks/useAppAuth'
-import { useSocialProfileMe } from '../hooks/useSocialProfile'
 import AnimePrefetchLink from '../components/AnimePrefetchLink'
 import { BidiText } from '../components/BidiText'
 import { UserIcon } from 'hugeicons-react'
@@ -77,13 +75,14 @@ const AnimeGridCard = ({ anime }: { anime: AnimeCard }) => {
 const TranslatorProfile = () => {
   const { slug } = useParams<{ slug: string }>()
   const safeSlug = useMemo(() => String(slug || '').trim(), [slug])
-  const { user } = useAppAuth()
-  const { data: socialRollout } = useSocialProfileMe(Boolean(user))
   const { data, isLoading, isError, refetch } = useTranslatorProfileQuery(safeSlug || undefined)
 
   const translator = data?.translator ?? null
   const animeList = data?.animeList ?? []
-  const linkedUserId = translator?.linked_telegram_user_id?.trim() || null
+  const linkedUserId =
+    translator?.linked_telegram_user_id?.trim() ||
+    translator?.telegram_user_id?.trim() ||
+    null
 
   const animeCount = useMemo(() => {
     const ids = new Set(animeList.map((a) => String(a.id)))
@@ -128,7 +127,8 @@ const TranslatorProfile = () => {
     )
   }
 
-  if (linkedUserId && socialRollout?.enabled) {
+  // Linked translators share the same social profile as any user (role badge there).
+  if (linkedUserId) {
     return <Navigate to={`/u/${encodeURIComponent(linkedUserId)}`} replace />
   }
 

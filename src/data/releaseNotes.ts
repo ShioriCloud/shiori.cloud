@@ -26,6 +26,13 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.67',
+    items: [
+      'پروفایل مترجم بدون صفحهٔ خالی وسط راه باز می‌شود',
+      'دکمهٔ تنظیمات هم‌سبک با جزئیات انیمه',
+    ],
+  },
+  {
     version: '0.2.66',
     items: [
       'دنبال کردن واقعی کاربران و لیست دنبال‌کننده‌ها',
