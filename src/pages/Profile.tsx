@@ -11,7 +11,6 @@ import { ProfileOverviewStrip } from '@/components/profile/ProfileOverviewStrip'
 import { ProfilePersonalPanel } from '@/components/profile/ProfilePersonalPanel'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
 import { ProfileStatsPanel } from '@/components/profile/ProfileStatsPanel'
-import { ProfileWatchingRail } from '@/components/profile/ProfileWatchingRail'
 import { PROFILE_TABS, parseProfileTab, type ProfileTabId } from '@/components/profile/profileTabs'
 import { MyListCompactCard } from '@/components/my-list/MyListUi'
 import { cn } from '@/lib/utils'
@@ -84,22 +83,18 @@ const Profile = () => {
 
   const overview = useMemo(() => {
     if (socialProfile?.enabled && socialProfile.summary) {
-      const s = socialProfile.summary
       return {
-        episodesWatched: s.episodes_watched,
-        averageRating: s.average_rating,
-        activeDays: s.active_days,
-        watchHours: s.estimated_watch_hours,
-        watchHoursHint: s.estimated_watch_label,
+        watchHours: socialProfile.summary.estimated_watch_hours,
+        watchHoursHint: socialProfile.summary.estimated_watch_label,
+        byFormat: socialProfile.by_format ?? [],
       }
     }
     const estimatedHours = Math.round((stats.episodesWatched * 24) / 60)
     return {
-      episodesWatched: stats.episodesWatched,
-      averageRating: stats.averageRating,
-      activeDays: null,
-      watchHours: estimatedHours > 0 ? estimatedHours : null,
-      watchHoursHint: estimatedHours > 0 ? 'تقریبی (۲۴ دقیقه برای هر قسمت)' : null,
+      watchHours: estimatedHours,
+      watchHoursHint:
+        estimatedHours > 0 ? 'تقریبی (۲۴ دقیقه برای هر قسمت)' : null,
+      byFormat: [] as Array<{ format: string; count: number; episodes_watched: number }>,
     }
   }, [socialProfile, stats])
 
@@ -202,7 +197,6 @@ const Profile = () => {
       </div>
 
       <ProfileOverviewStrip data={overview} />
-      <ProfileWatchingRail />
 
       <div className="mx-4 mt-6">
         <MyListCompactCard
@@ -232,14 +226,7 @@ const Profile = () => {
       </div>
 
       <div className="mx-4 mt-4">
-        {activeTab === 'stats' ? (
-          <ProfileStatsPanel
-            social={socialProfile}
-            localAnimeCount={stats.animeCount}
-            localEpisodesWatched={stats.episodesWatched}
-            localAverageRating={stats.averageRating}
-          />
-        ) : null}
+        {activeTab === 'stats' ? <ProfileStatsPanel /> : null}
         {activeTab === 'feed' ? <ProfileFeedPanel /> : null}
         {activeTab === 'personal' ? <ProfilePersonalPanel /> : null}
       </div>

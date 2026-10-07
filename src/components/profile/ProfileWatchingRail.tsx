@@ -50,7 +50,7 @@ export const ProfileWatchingRail = () => {
   if (!isLoading && watching.length === 0) return null
 
   return (
-    <div className="mt-6">
+    <div>
       <h2 className="mb-3 px-4 text-sm font-semibold text-foreground">در حال تماشا</h2>
       {isLoading && watching.length === 0 ? (
         <div className="mx-4 flex gap-2 overflow-hidden">
