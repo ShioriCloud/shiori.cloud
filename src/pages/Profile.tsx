@@ -1,12 +1,13 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { AlarmClockIcon, CustomerServiceIcon, UserIcon } from 'hugeicons-react'
-import { ChevronLeft, Crown, Moon, Sun } from 'lucide-react'
+import { ChevronLeft, Crown, Moon, Sun, BarChart3 } from 'lucide-react'
 import { useAppAuth } from '../hooks/useAppAuth'
 import { useUserAnimeList } from '../hooks/useUserAnimeList'
 import { useNotifications } from '../hooks/useNotifications'
 import { useSubscriptionMe } from '../hooks/useSubscription'
 import { useTokenRechargeUi } from '../hooks/useTokenRechargeUi'
+import { useSocialProfileMe } from '../hooks/useSocialProfile'
 import { ENABLE_SUBSCRIPTION_DOWNLOAD_GATE } from '../config/monetizationFlags'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
@@ -159,6 +160,8 @@ const Profile = () => {
   const [avatarFailed, setAvatarFailed] = useState(false)
   const { preference, setPreference, isDarkMode } = useTheme()
   const tokenRecharge = useTokenRechargeUi(Boolean(user))
+  const { data: socialProfile } = useSocialProfileMe(Boolean(user))
+  const socialProfileEnabled = socialProfile?.enabled === true
 
   const displayName = user?.displayName ?? 'کاربر'
 
@@ -280,6 +283,20 @@ const Profile = () => {
             pending={tokenRecharge.walletPending}
             onRecharge={tokenRecharge.openRechargeSheet}
           />
+        </div>
+      ) : null}
+
+      {socialProfileEnabled ? (
+        <div className="mx-4 mt-6">
+          <SectionTitle>پروفایل تماشا</SectionTitle>
+          <MyListCompactCard className="overflow-hidden">
+            <MenuItem
+              to="/profile/social"
+              icon={<BarChart3 className="h-4 w-4" />}
+              label="آمار و دیده‌شده‌ها"
+              hint="نسخه آزمایشی"
+            />
+          </MyListCompactCard>
         </div>
       ) : null}
 

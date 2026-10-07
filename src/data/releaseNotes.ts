@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.57',
+    items: ['پروفایل تماشا با آمار و لیست دیده‌شده‌ها (آزمایشی)'],
+  },
+  {
     version: '0.2.56',
     items: ['فصل جاری از ابتدای مهر به‌عنوان پاییز شناخته می‌شود'],
   },
