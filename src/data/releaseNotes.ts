@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.62',
+    items: ['دنبال کردن در پروفایل، تب‌های یکدست، و مخفی‌کردن آیدی تلگرام'],
+  },
+  {
     version: '0.2.61',
     items: ['نمودار ساعت تماشا به‌صورت پیشرفت تک‌رنگ و کارت‌های واضح‌تر'],
   },

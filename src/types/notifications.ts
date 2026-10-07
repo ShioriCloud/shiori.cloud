@@ -14,4 +14,5 @@ export type UserNotificationRow = {
 export type NotificationPreferences = {
   notify_new_episode: boolean
   notify_telegram_dm: boolean
+  hide_telegram_username: boolean
 }

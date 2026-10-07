@@ -5,16 +5,18 @@ import { Settings } from 'lucide-react'
 import { useAppAuth } from '../hooks/useAppAuth'
 import { useUserAnimeList } from '../hooks/useUserAnimeList'
 import { useSocialProfileMe } from '../hooks/useSocialProfile'
+import { useNotifications } from '../hooks/useNotifications'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
 import { ProfileFeedPanel } from '@/components/profile/ProfileFeedPanel'
+import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
 import { ProfileOverviewStrip } from '@/components/profile/ProfileOverviewStrip'
 import { ProfilePersonalPanel } from '@/components/profile/ProfilePersonalPanel'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
 import { ProfileStatsPanel } from '@/components/profile/ProfileStatsPanel'
 import { PROFILE_TABS, parseProfileTab, type ProfileTabId } from '@/components/profile/profileTabs'
+import { ExploreTabBar } from '@/components/explore/ExploreUi'
 import { MyListCompactCard } from '@/components/my-list/MyListUi'
 import { cn } from '@/lib/utils'
-import { hapticSelection } from '@/lib/telegramHaptics'
 import { toPersianDigits } from '@/lib/persianDigits'
 
 const getInitials = (name: string): string => {
@@ -50,13 +52,13 @@ const Profile = () => {
   const { user, isReady, inTelegram, login, register } = useAppAuth()
   const { stats } = useUserAnimeList()
   const { data: socialProfile } = useSocialProfileMe(Boolean(user))
+  const { preferences } = useNotifications()
   const [searchParams, setSearchParams] = useSearchParams()
   const [avatarFailed, setAvatarFailed] = useState(false)
 
   const activeTab = parseProfileTab(searchParams.get('tab'))
 
   const setActiveTab = (tab: ProfileTabId) => {
-    hapticSelection()
     setSearchParams(
       (prev) => {
         const next = new URLSearchParams(prev)
@@ -70,7 +72,9 @@ const Profile = () => {
 
   const displayName = user?.displayName ?? 'کاربر'
   const initials = useMemo(() => getInitials(displayName), [displayName])
-  const username = user?.username ? `@${user.username}` : null
+  const hideUsername = preferences?.hide_telegram_username === true
+  const username =
+    !hideUsername && user?.username ? `@${user.username}` : null
   const avatarUrl = user?.photoUrl && !avatarFailed ? user.photoUrl : null
   const showWebAuth = !inTelegram && !user
 
@@ -80,6 +84,8 @@ const Profile = () => {
     socialProfile?.enabled && socialProfile.summary
       ? socialProfile.summary.anime_count
       : stats.animeCount
+
+  const roleBadges = socialProfile?.profile?.role_badges ?? []
 
   const overview = useMemo(() => {
     if (socialProfile?.enabled && socialProfile.summary) {
@@ -173,28 +179,47 @@ const Profile = () => {
 
           {username ? (
             <p className="mt-1 text-left text-sm text-muted-foreground">{username}</p>
-          ) : user?.email ? (
+          ) : !hideUsername && user?.email ? (
             <p className="mt-1 text-left text-sm text-muted-foreground" dir="ltr">
               {user.email}
             </p>
           ) : null}
 
-          {user?.isPremium ? (
-            <span className="mt-2 inline-flex items-center rounded-full border border-primary-400/30 bg-primary-400/10 px-2.5 py-0.5 text-[11px] font-medium text-primary-400">
-              Telegram Premium
-            </span>
+          {roleBadges.length > 0 ? (
+            <div className="mt-2 flex flex-wrap justify-center gap-1.5">
+              {roleBadges.map((badge) => (
+                <span
+                  key={badge.id}
+                  className="inline-flex items-center rounded-full border border-primary-400/30 bg-primary-400/10 px-2.5 py-0.5 text-[11px] font-medium text-primary-400"
+                >
+                  {badge.title}
+                </span>
+              ))}
+            </div>
           ) : null}
         </div>
       </div>
 
       <div className="mx-4 mt-4 grid grid-cols-3 gap-2">
-        <ProfileStatCell value={toPersianDigits(followers)} label="دنبال‌کننده" />
-        <ProfileStatCell value={toPersianDigits(following)} label="دنبال‌شده" />
+        <ProfileStatCell
+          to="/profile/followers"
+          value={toPersianDigits(followers)}
+          label="دنبال‌کننده"
+        />
+        <ProfileStatCell
+          to="/profile/following"
+          value={toPersianDigits(following)}
+          label="دنبال‌شده"
+        />
         <ProfileStatCell
           to="/my-list"
           value={toPersianDigits(animeWatched)}
           label="انیمه دیده"
         />
+      </div>
+
+      <div className="mx-4">
+        <ProfileFollowButton viewerId={user?.id} targetId={user?.id} />
       </div>
 
       <ProfileOverviewStrip data={overview} />
@@ -208,22 +233,8 @@ const Profile = () => {
         </MyListCompactCard>
       </div>
 
-      <div className="mx-4 mt-6 flex rounded-xl border border-border/50 bg-muted/20 p-1">
-        {PROFILE_TABS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            className={cn(
-              'flex-1 rounded-lg py-2 text-sm font-medium transition-colors',
-              activeTab === t.id
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground'
-            )}
-            onClick={() => setActiveTab(t.id)}
-          >
-            {t.label}
-          </button>
-        ))}
+      <div className="mx-4 mt-6">
+        <ExploreTabBar tabs={[...PROFILE_TABS]} active={activeTab} onChange={setActiveTab} />
       </div>
 
       <div className="mx-4 mt-4">

@@ -10,6 +10,7 @@ export type SocialProfileMe = {
     member_since: string
     followers_count: number
     following_count: number
+    role_badges?: Array<{ id: string; title: string }>
   }
   summary?: {
     anime_count: number

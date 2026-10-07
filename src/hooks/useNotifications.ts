@@ -64,6 +64,7 @@ export const useNotifications = () => {
       const base: NotificationPreferences = previous ?? {
         notify_new_episode: true,
         notify_telegram_dm: true,
+        hide_telegram_username: false,
       }
       queryClient.setQueryData<NotificationPreferences>(prefsKey, {
         ...base,
@@ -78,6 +79,7 @@ export const useNotifications = () => {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(prefsKey, data)
+      void queryClient.invalidateQueries({ queryKey: queryKeys.socialProfileMe })
     },
   })
 
@@ -104,6 +106,9 @@ export const useNotifications = () => {
     ),
     updatingNotifyTelegramDm: Boolean(
       pendingPrefs && Object.prototype.hasOwnProperty.call(pendingPrefs, 'notify_telegram_dm')
+    ),
+    updatingHideTelegramUsername: Boolean(
+      pendingPrefs && Object.prototype.hasOwnProperty.call(pendingPrefs, 'hide_telegram_username')
     ),
   }
 }

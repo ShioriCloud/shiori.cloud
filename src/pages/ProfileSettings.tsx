@@ -88,10 +88,12 @@ const ProfileSettings = () => {
     updatePreferences,
     updatingNotifyNewEpisode,
     updatingNotifyTelegramDm,
+    updatingHideTelegramUsername,
   } = useNotifications()
   const { preference, setPreference, isDarkMode } = useTheme()
   const tokenRecharge = useTokenRechargeUi(Boolean(user))
   const showNotificationSettings = inTelegram && user != null
+  const showPrivacySettings = inTelegram && user != null
 
   return (
     <div className="bg-background pb-24 text-foreground">
@@ -157,6 +159,36 @@ const ProfileSettings = () => {
             />
           </MyListCompactCard>
         </div>
+
+        {showPrivacySettings ? (
+          <div className="mt-6">
+            <SectionTitle>حریم خصوصی</SectionTitle>
+            <MyListCompactCard className="overflow-hidden divide-y divide-border/40">
+              <div className="flex items-center justify-between gap-3 px-3 py-3">
+                <div className="min-w-0 text-right">
+                  <Label
+                    htmlFor="hide-telegram-username"
+                    className="text-sm font-medium text-foreground"
+                  >
+                    مخفی کردن آیدی تلگرام
+                  </Label>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    آیدی @ در پروفایل عمومی نمایش داده نمی‌شود
+                  </p>
+                </div>
+                <Switch
+                  id="hide-telegram-username"
+                  checked={preferences?.hide_telegram_username ?? false}
+                  disabled={preferencesLoading || updatingHideTelegramUsername}
+                  onCheckedChange={(checked) => {
+                    hapticSelection()
+                    void updatePreferences({ hide_telegram_username: checked })
+                  }}
+                />
+              </div>
+            </MyListCompactCard>
+          </div>
+        ) : null}
 
         {showNotificationSettings ? (
           <div className="mt-6">
