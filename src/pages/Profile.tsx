@@ -85,16 +85,17 @@ const Profile = () => {
     if (socialProfile?.enabled && socialProfile.summary) {
       return {
         watchHours: socialProfile.summary.estimated_watch_hours,
-        watchHoursHint: socialProfile.summary.estimated_watch_label,
         byFormat: socialProfile.by_format ?? [],
       }
     }
     const estimatedHours = Math.round((stats.episodesWatched * 24) / 60)
     return {
       watchHours: estimatedHours,
-      watchHoursHint:
-        estimatedHours > 0 ? 'تقریبی (۲۴ دقیقه برای هر قسمت)' : null,
-      byFormat: [] as Array<{ format: string; count: number; episodes_watched: number }>,
+      byFormat: [] as Array<{
+        format: string
+        count: number
+        episodes_watched: number
+      }>,
     }
   }, [socialProfile, stats])
 

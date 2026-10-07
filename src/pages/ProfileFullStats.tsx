@@ -98,10 +98,6 @@ const ProfileFullStats = () => {
                       <ProfileStatCell key={cell.l} value={cell.v} label={cell.l} />
                     ))}
                   </div>
-                  <p className="text-center text-[10px] text-muted-foreground">
-                    {summary.estimated_watch_label}
-                  </p>
-
                   {topGenres.length > 0 ? (
                     <div>
                       <h2 className="mb-3 text-sm font-semibold">ژانرهای پرتکرار</h2>
