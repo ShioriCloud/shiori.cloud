@@ -1,19 +1,23 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import { ChevronRight, Users } from 'lucide-react'
 import { MyListCompactCard } from '@/components/my-list/MyListUi'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 
 const ProfileFollowList = () => {
   const { pathname } = useLocation()
+  const { telegramUserId } = useParams<{ telegramUserId?: string }>()
   const isFollowing = pathname.endsWith('/following')
   const title = isFollowing ? 'دنبال‌شده‌ها' : 'دنبال‌کننده‌ها'
+  const profileBack = telegramUserId
+    ? `/u/${encodeURIComponent(telegramUserId)}`
+    : '/profile'
 
   return (
     <div className="bg-background pb-24 text-foreground">
       <div className="sticky top-[var(--app-header-offset)] z-10 border-b border-border/60 bg-background/95 backdrop-blur-sm">
         <div className="flex items-center gap-2 px-4 py-3.5">
           <Link
-            to="/profile"
+            to={profileBack}
             className="inline-flex items-center gap-1 text-sm text-muted-foreground active:opacity-80"
           >
             <ChevronRight className="h-4 w-4" aria-hidden />

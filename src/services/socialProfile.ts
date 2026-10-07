@@ -3,6 +3,8 @@ import { shioriFetch } from '../lib/shioriApi'
 export type SocialProfileMe = {
   enabled: boolean
   mode: 'off' | 'allowlist' | 'on'
+  is_self?: boolean
+  telegram_user_id?: string
   profile?: {
     display_name: string
     username: string | null
@@ -60,4 +62,13 @@ export type SocialProfileMe = {
 export const fetchSocialProfileMe = async (page = 1, limit = 60): Promise<SocialProfileMe> =>
   shioriFetch<SocialProfileMe>(
     `/user-social-profile/me?page=${encodeURIComponent(String(page))}&limit=${encodeURIComponent(String(limit))}`
+  )
+
+export const fetchSocialProfileUser = async (
+  telegramUserId: string,
+  page = 1,
+  limit = 60
+): Promise<SocialProfileMe> =>
+  shioriFetch<SocialProfileMe>(
+    `/user-social-profile/users/${encodeURIComponent(telegramUserId)}?page=${encodeURIComponent(String(page))}&limit=${encodeURIComponent(String(limit))}`
   )

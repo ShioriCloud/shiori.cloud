@@ -113,7 +113,11 @@ export const RouteFallback = () => {
   if (pathname.startsWith('/explore')) return <ExplorePageSkeleton />
   if (pathname.startsWith('/schedule')) return <SchedulePageSkeleton />
   if (pathname.startsWith('/my-list')) return <MyListPageSkeleton />
-  if (pathname.startsWith('/profile') || pathname.startsWith('/translators/')) {
+  if (
+    pathname.startsWith('/profile') ||
+    pathname.startsWith('/translators/') ||
+    pathname.startsWith('/u/')
+  ) {
     return <ProfilePageSkeleton />
   }
   if (pathname.startsWith('/studios/')) return <DetailSkeleton />

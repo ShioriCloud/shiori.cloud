@@ -31,6 +31,8 @@ export const queryKeys = {
   downloadTokenBalance: ['download-tokens', 'balance'] as const,
   downloadTokenWallet: ['download-tokens', 'wallet'] as const,
   socialProfileMe: ['user-social-profile', 'me'] as const,
+  socialProfileUser: (telegramUserId: string) =>
+    ['user-social-profile', 'user', telegramUserId] as const,
   donationTokenTiers: ['download-tokens', 'tiers'] as const,
   subscriptionMe: ['subscriptions', 'me'] as const,
   subscriptionPlans: ['subscriptions', 'plans'] as const,

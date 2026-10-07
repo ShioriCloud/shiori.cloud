@@ -48,6 +48,16 @@ export const fallbackBackPath = (pathname: string): string => {
   if (pathname.startsWith('/anime/')) return '/'
   if (pathname.startsWith('/studios/')) return '/'
   if (pathname.startsWith('/translators/')) return '/'
+  if (pathname.startsWith('/u/')) {
+    const parts = pathname.split('/').filter(Boolean)
+    if (parts.length >= 2 && parts[0] === 'u') {
+      const base = `/u/${parts[1]}`
+      if (pathname.includes('/translations') || pathname.endsWith('/followers') || pathname.endsWith('/following')) {
+        return base
+      }
+    }
+    return '/profile'
+  }
   if (pathname.startsWith('/search') || pathname.startsWith('/explore')) return '/'
   return '/'
 }

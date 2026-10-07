@@ -1,21 +1,18 @@
 import { useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
 import { UserIcon } from 'hugeicons-react'
-import { Settings } from 'lucide-react'
 import { useAppAuth } from '../hooks/useAppAuth'
-import { useUserAnimeList } from '../hooks/useUserAnimeList'
-import { useSocialProfileMe } from '../hooks/useSocialProfile'
-import { useNotifications } from '../hooks/useNotifications'
+import { useSocialProfileUser } from '../hooks/useSocialProfile'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
 import { ProfileFeedPanel } from '@/components/profile/ProfileFeedPanel'
 import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
 import { ProfileOverviewStrip } from '@/components/profile/ProfileOverviewStrip'
 import { ProfilePersonalPanel } from '@/components/profile/ProfilePersonalPanel'
+import { ProfileSocialWatchedRail } from '@/components/profile/ProfileSocialWatchedRail'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
-import { ProfileStatsPanel } from '@/components/profile/ProfileStatsPanel'
 import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import { PROFILE_TABS, parseProfileTab, type ProfileTabId } from '@/components/profile/profileTabs'
-import { ExploreTabBar } from '@/components/explore/ExploreUi'
+import { ExploreEmptyState, ExploreTabBar } from '@/components/explore/ExploreUi'
 import { MyListCompactCard } from '@/components/my-list/MyListUi'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
@@ -30,30 +27,11 @@ const getInitials = (name: string): string => {
   return trimmed.charAt(0)
 }
 
-const ProfileSkeleton = () => (
-  <div className="animate-pulse pb-24">
-    <div className="relative h-44">
-      <div className="absolute inset-x-0 top-0 h-full bg-muted/60" />
-      <div className="relative z-10 flex flex-col items-center pt-24">
-        <div className="media-card-skeuo h-24 w-24 rounded-2xl">
-          <div className="media-card-skeuo-face bg-muted" />
-        </div>
-        <div className="mt-4 h-6 w-36 rounded-md bg-muted" />
-      </div>
-    </div>
-    <div className="mx-4 mt-6 grid grid-cols-3 gap-2">
-      <div className="h-16 rounded-lg bg-muted/70" />
-      <div className="h-16 rounded-lg bg-muted/70" />
-      <div className="h-16 rounded-lg bg-muted/70" />
-    </div>
-  </div>
-)
-
-const Profile = () => {
+const PublicUserProfile = () => {
+  const { telegramUserId: rawId } = useParams<{ telegramUserId: string }>()
+  const telegramUserId = rawId?.trim() ?? ''
   const { user, isReady, inTelegram, login, register } = useAppAuth()
-  const { stats } = useUserAnimeList()
-  const { data: socialProfile } = useSocialProfileMe(Boolean(user))
-  const { preferences } = useNotifications()
+  const { data, isLoading, isError } = useSocialProfileUser(telegramUserId, Boolean(user))
   const [searchParams, setSearchParams] = useSearchParams()
   const [avatarFailed, setAvatarFailed] = useState(false)
 
@@ -71,43 +49,27 @@ const Profile = () => {
     )
   }
 
-  const displayName = user?.displayName ?? 'کاربر'
+  const profileBase = `/u/${encodeURIComponent(telegramUserId)}`
+
+  const displayName = data?.profile?.display_name ?? 'کاربر'
   const initials = useMemo(() => getInitials(displayName), [displayName])
-  const hideUsername = preferences?.hide_telegram_username === true
-  const username =
-    !hideUsername && user?.username ? `@${user.username}` : null
-  const avatarUrl = user?.photoUrl && !avatarFailed ? user.photoUrl : null
+  const username = data?.profile?.username ? `@${data.profile.username}` : null
+  const avatarUrl =
+    data?.profile?.photo_url && !avatarFailed ? data.profile.photo_url : null
   const showWebAuth = !inTelegram && !user
 
-  const followers = socialProfile?.profile?.followers_count ?? 0
-  const following = socialProfile?.profile?.following_count ?? 0
-  const animeWatched =
-    socialProfile?.enabled && socialProfile.summary
-      ? socialProfile.summary.anime_count
-      : stats.animeCount
-
-  const roleBadges = socialProfile?.profile?.role_badges ?? []
-
   const overview = useMemo(() => {
-    if (socialProfile?.enabled && socialProfile.summary) {
+    if (data?.enabled && data.summary) {
       return {
-        watchHours: socialProfile.summary.estimated_watch_hours,
-        byFormat: socialProfile.by_format ?? [],
+        watchHours: data.summary.estimated_watch_hours,
+        byFormat: data.by_format ?? [],
       }
     }
-    const estimatedHours = Math.round((stats.episodesWatched * 24) / 60)
-    return {
-      watchHours: estimatedHours,
-      byFormat: [] as Array<{
-        format: string
-        count: number
-        episodes_watched: number
-      }>,
-    }
-  }, [socialProfile, stats])
+    return { watchHours: 0, byFormat: [] as Array<{ format: string; count: number; episodes_watched: number }> }
+  }, [data])
 
   if (!isReady) {
-    return <ProfileSkeleton />
+    return null
   }
 
   if (showWebAuth) {
@@ -117,6 +79,47 @@ const Profile = () => {
       </div>
     )
   }
+
+  if (!telegramUserId) {
+    return (
+      <div className="px-4 pt-10 pb-24">
+        <ExploreEmptyState title="پروفایل پیدا نشد" subtitle="شناسه کاربر نامعتبر است." />
+      </div>
+    )
+  }
+
+  if (data?.enabled && data.is_self) {
+    return <Navigate to="/profile" replace />
+  }
+
+  if (isError) {
+    return (
+      <div className="px-4 pt-10 pb-24">
+        <ExploreEmptyState title="پروفایل پیدا نشد" subtitle="این کاربر در شیوری ثبت نشده." />
+      </div>
+    )
+  }
+
+  if (!isLoading && data && !data.enabled) {
+    return (
+      <div className="px-4 pt-10 pb-24">
+        <ExploreEmptyState
+          title="پروفایل اجتماعی فعال نیست"
+          subtitle="این بخش هنوز برای حساب تو باز نشده. بعداً دوباره سر بزن."
+        />
+        <Link to="/profile" className="mt-6 block text-center text-sm font-medium text-primary-400">
+          برگشت به پروفایل من
+        </Link>
+      </div>
+    )
+  }
+
+  const followers = data?.profile?.followers_count ?? 0
+  const following = data?.profile?.following_count ?? 0
+  const animeWatched = data?.summary?.anime_count ?? 0
+  const roleBadges = data?.profile?.role_badges ?? []
+  const translator = data?.translator ?? null
+  const watchedItems = data?.watched?.items ?? []
 
   return (
     <div className="bg-background pb-24 text-foreground">
@@ -139,18 +142,6 @@ const Profile = () => {
             </>
           )}
         </div>
-
-        <Link
-          to="/profile/settings"
-          className={cn(
-            'absolute left-4 top-4 z-20 flex h-10 w-10 items-center justify-center rounded-xl',
-            'border border-border/50 bg-background/70 text-muted-foreground backdrop-blur-sm',
-            'active:scale-95 transition-transform'
-          )}
-          aria-label="تنظیمات"
-        >
-          <Settings className="h-5 w-5" />
-        </Link>
 
         <div className="relative z-10 flex flex-col items-center px-4 pb-2 pt-24">
           <div className="media-card-skeuo h-24 w-24 rounded-2xl">
@@ -175,15 +166,11 @@ const Profile = () => {
           </div>
 
           <h1 className="mt-3 line-clamp-2 px-2 text-center text-lg font-bold text-foreground">
-            {displayName}
+            {isLoading ? '…' : displayName}
           </h1>
 
           {username ? (
             <p className="mt-1 text-left text-sm text-muted-foreground">{username}</p>
-          ) : !hideUsername && user?.email ? (
-            <p className="mt-1 text-left text-sm text-muted-foreground" dir="ltr">
-              {user.email}
-            </p>
           ) : null}
 
           {roleBadges.length > 0 ? (
@@ -191,7 +178,9 @@ const Profile = () => {
               {roleBadges.map((badge) => (
                 <span
                   key={badge.id}
-                  className="inline-flex items-center rounded-full border border-primary-400/30 bg-primary-400/10 px-2.5 py-0.5 text-[11px] font-medium text-primary-400"
+                  className={cn(
+                    'inline-flex items-center rounded-full border border-primary-400/30 bg-primary-400/10 px-2.5 py-0.5 text-[11px] font-medium text-primary-400'
+                  )}
                 >
                   {badge.title}
                 </span>
@@ -203,57 +192,58 @@ const Profile = () => {
 
       <div className="mx-4 mt-4 grid grid-cols-3 gap-2">
         <ProfileStatCell
-          to="/profile/followers"
+          to={`${profileBase}/followers`}
           value={toPersianDigits(followers)}
           label="دنبال‌کننده"
         />
         <ProfileStatCell
-          to="/profile/following"
+          to={`${profileBase}/following`}
           value={toPersianDigits(following)}
           label="دنبال‌شده"
         />
-        <ProfileStatCell
-          to="/my-list"
-          value={toPersianDigits(animeWatched)}
-          label="انیمه دیده"
-        />
+        <ProfileStatCell value={toPersianDigits(animeWatched)} label="انیمه دیده" />
       </div>
 
       <div className="mx-4">
-        <ProfileFollowButton viewerId={user?.id} targetId={user?.id} />
+        <ProfileFollowButton viewerId={user?.id} targetId={telegramUserId} />
       </div>
 
-      <ProfileOverviewStrip data={overview} />
+      {!isLoading && data?.enabled ? (
+        <>
+          <ProfileOverviewStrip data={overview} fullStatsTo={null} />
 
-      {socialProfile?.translator && user?.id != null ? (
-        <ProfileTranslationsRail
-          translator={socialProfile.translator}
-          profileUserId={String(user.id)}
-        />
+          {translator ? (
+            <ProfileTranslationsRail translator={translator} profileUserId={telegramUserId} />
+          ) : null}
+
+          <div className="mx-4 mt-6">
+            <MyListCompactCard
+              className="flex min-h-[4.5rem] items-center justify-center px-4 py-5 text-xs text-muted-foreground"
+              aria-hidden
+            >
+              نشان‌ها — به‌زودی
+            </MyListCompactCard>
+          </div>
+
+          <div className="mx-4 mt-6">
+            <ExploreTabBar tabs={[...PROFILE_TABS]} active={activeTab} onChange={setActiveTab} />
+          </div>
+
+          <div className="mx-4 mt-4">
+            {activeTab === 'stats' ? (
+              <div className="-mx-4">
+                <ProfileSocialWatchedRail items={watchedItems} />
+              </div>
+            ) : null}
+            {activeTab === 'feed' ? <ProfileFeedPanel /> : null}
+            {activeTab === 'personal' ? (
+              <ProfilePersonalPanel translator={translator} variant="public" />
+            ) : null}
+          </div>
+        </>
       ) : null}
-
-      <div className="mx-4 mt-6">
-        <MyListCompactCard
-          className="flex min-h-[4.5rem] items-center justify-center px-4 py-5 text-xs text-muted-foreground"
-          aria-hidden
-        >
-          نشان‌ها — به‌زودی
-        </MyListCompactCard>
-      </div>
-
-      <div className="mx-4 mt-6">
-        <ExploreTabBar tabs={[...PROFILE_TABS]} active={activeTab} onChange={setActiveTab} />
-      </div>
-
-      <div className="mx-4 mt-4">
-        {activeTab === 'stats' ? <ProfileStatsPanel /> : null}
-        {activeTab === 'feed' ? <ProfileFeedPanel /> : null}
-        {activeTab === 'personal' ? (
-          <ProfilePersonalPanel translator={socialProfile?.translator ?? null} />
-        ) : null}
-      </div>
     </div>
   )
 }
 
-export default Profile
+export default PublicUserProfile

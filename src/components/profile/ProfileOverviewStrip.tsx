@@ -15,7 +15,14 @@ type OverviewModel = {
   byFormat: FormatBreakdownRow[]
 }
 
-export const ProfileOverviewStrip = ({ data }: { data: OverviewModel }) => {
+export const ProfileOverviewStrip = ({
+  data,
+  fullStatsTo = '/profile/stats',
+}: {
+  data: OverviewModel
+  /** Pass `null` to hide the full-stats link (e.g. public profiles). */
+  fullStatsTo?: string | null
+}) => {
   const formats = sortFormats(data.byFormat).slice(0, 6)
   const hours = Math.max(0, Math.round(data.watchHours))
 
@@ -88,18 +95,20 @@ export const ProfileOverviewStrip = ({ data }: { data: OverviewModel }) => {
             </div>
           </div>
 
-          <Link
-            to="/profile/stats"
-            className={cn(
-              'mt-4 flex w-full items-center justify-center gap-1 rounded-xl',
-              'border border-primary-400/25 bg-primary-400/10 px-3 py-2.5',
-              'text-sm font-semibold text-primary-700 dark:text-primary-200',
-              'transition-colors hover:bg-primary-400/15 active:bg-primary-400/20'
-            )}
-          >
-            مشاهده آمار کامل
-            <ChevronLeft className="h-4 w-4 opacity-80" aria-hidden />
-          </Link>
+          {fullStatsTo ? (
+            <Link
+              to={fullStatsTo}
+              className={cn(
+                'mt-4 flex w-full items-center justify-center gap-1 rounded-xl',
+                'border border-primary-400/25 bg-primary-400/10 px-3 py-2.5',
+                'text-sm font-semibold text-primary-700 dark:text-primary-200',
+                'transition-colors hover:bg-primary-400/15 active:bg-primary-400/20'
+              )}
+            >
+              مشاهده آمار کامل
+              <ChevronLeft className="h-4 w-4 opacity-80" aria-hidden />
+            </Link>
+          ) : null}
         </div>
       </section>
     </div>

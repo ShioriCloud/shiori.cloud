@@ -27,6 +27,8 @@ const SocialProfile = lazy(() => import('./pages/SocialProfile'))
 const ProfileSettings = lazy(() => import('./pages/ProfileSettings'))
 const ProfileFullStats = lazy(() => import('./pages/ProfileFullStats'))
 const ProfileFollowList = lazy(() => import('./pages/ProfileFollowList'))
+const PublicUserProfile = lazy(() => import('./pages/PublicUserProfile'))
+const UserTranslationsPage = lazy(() => import('./pages/UserTranslationsPage'))
 const Notifications = lazy(() => import('./pages/Notifications'))
 const Support = lazy(() => import('./pages/Support'))
 const SupportTicketDetail = lazy(() => import('./pages/SupportTicketDetail'))
@@ -97,6 +99,10 @@ function App() {
             <Route path="/profile/stats" element={<ProfileFullStats />} />
             <Route path="/profile/followers" element={<ProfileFollowList />} />
             <Route path="/profile/following" element={<ProfileFollowList />} />
+            <Route path="/u/:telegramUserId" element={<PublicUserProfile />} />
+            <Route path="/u/:telegramUserId/translations" element={<UserTranslationsPage />} />
+            <Route path="/u/:telegramUserId/followers" element={<ProfileFollowList />} />
+            <Route path="/u/:telegramUserId/following" element={<ProfileFollowList />} />
             {/* Monetization routes kept; UI entry points gated by ENABLE_SUBSCRIPTION_DOWNLOAD_GATE */}
             <Route path="/donate" element={<Navigate to="/subscribe" replace />} />
             <Route path="/subscribe" element={<Subscribe />} />
