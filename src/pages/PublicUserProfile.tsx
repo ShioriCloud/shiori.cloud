@@ -10,10 +10,11 @@ import { ProfileOverviewStrip } from '@/components/profile/ProfileOverviewStrip'
 import { ProfilePersonalPanel } from '@/components/profile/ProfilePersonalPanel'
 import { ProfileSocialWatchedRail } from '@/components/profile/ProfileSocialWatchedRail'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
+import { ProfileBadgesStrip } from '@/components/profile/ProfileBadgesStrip'
+import { ProfileShareButton } from '@/components/profile/ProfileShareButton'
 import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import { PROFILE_TABS, parseProfileTab, type ProfileTabId } from '@/components/profile/profileTabs'
 import { ExploreEmptyState, ExploreTabBar } from '@/components/explore/ExploreUi'
-import { MyListCompactCard } from '@/components/my-list/MyListUi'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
 
@@ -143,6 +144,12 @@ const PublicUserProfile = () => {
           )}
         </div>
 
+        <ProfileShareButton
+          telegramUserId={telegramUserId}
+          displayName={displayName}
+          className="absolute right-4 top-4 z-20"
+        />
+
         <div className="relative z-10 flex flex-col items-center px-4 pb-2 pt-24">
           <div className="media-card-skeuo h-24 w-24 rounded-2xl">
             <div className="media-card-skeuo-face bg-muted">
@@ -217,12 +224,7 @@ const PublicUserProfile = () => {
           ) : null}
 
           <div className="mx-4 mt-6">
-            <MyListCompactCard
-              className="flex min-h-[4.5rem] items-center justify-center px-4 py-5 text-xs text-muted-foreground"
-              aria-hidden
-            >
-              نشان‌ها — به‌زودی
-            </MyListCompactCard>
+            <ProfileBadgesStrip badges={data.badges} />
           </div>
 
           <div className="mx-4 mt-6">

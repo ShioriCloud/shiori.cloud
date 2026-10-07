@@ -348,10 +348,16 @@ export const getTranslatorBySlug = async (slug: string): Promise<TranslatorItem 
         bio?: string | null
         experience?: string | null
         isActive?: boolean
+        telegramUserId?: string | null
       }
+      linkedTelegramUserId?: string | null
     }>(`/anime-catalog/translators/${encodeURIComponent(slug)}`)
 
     const t = result.translator
+    const linked =
+      result.linkedTelegramUserId?.trim() ||
+      t.telegramUserId?.trim() ||
+      null
     return {
       id: t.id,
       slug: t.slug,
@@ -361,6 +367,8 @@ export const getTranslatorBySlug = async (slug: string): Promise<TranslatorItem 
       bio: t.bio ?? null,
       experience: t.experience ?? null,
       is_active: t.isActive,
+      telegram_user_id: t.telegramUserId ?? null,
+      linked_telegram_user_id: linked,
     }
   } catch {
     return null

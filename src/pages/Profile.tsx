@@ -13,10 +13,10 @@ import { ProfileOverviewStrip } from '@/components/profile/ProfileOverviewStrip'
 import { ProfilePersonalPanel } from '@/components/profile/ProfilePersonalPanel'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
 import { ProfileStatsPanel } from '@/components/profile/ProfileStatsPanel'
+import { ProfileBadgesStrip } from '@/components/profile/ProfileBadgesStrip'
 import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import { PROFILE_TABS, parseProfileTab, type ProfileTabId } from '@/components/profile/profileTabs'
 import { ExploreTabBar } from '@/components/explore/ExploreUi'
-import { MyListCompactCard } from '@/components/my-list/MyListUi'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
 
@@ -233,12 +233,7 @@ const Profile = () => {
       ) : null}
 
       <div className="mx-4 mt-6">
-        <MyListCompactCard
-          className="flex min-h-[4.5rem] items-center justify-center px-4 py-5 text-xs text-muted-foreground"
-          aria-hidden
-        >
-          نشان‌ها — به‌زودی
-        </MyListCompactCard>
+        <ProfileBadgesStrip badges={socialProfile?.badges} />
       </div>
 
       <div className="mx-4 mt-6">

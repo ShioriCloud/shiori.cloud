@@ -70,6 +70,14 @@ export const ProfileFollowButton = ({
     setConfirmOpen(false)
   }
 
+  if (
+    viewerId != null &&
+    targetId != null &&
+    String(viewerId) === String(targetId)
+  ) {
+    return null
+  }
+
   return (
     <>
       <button

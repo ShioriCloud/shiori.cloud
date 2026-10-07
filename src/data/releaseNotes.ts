@@ -26,6 +26,13 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.65',
+    items: [
+      'صفحه مترجم به پروفایل اجتماعی وصل می‌شود',
+      'نشان‌های تماشا روی پروفایل و لینک اشتراک user_…',
+    ],
+  },
+  {
     version: '0.2.64',
     items: [
       'پروفایل عمومی کاربران با آمار و دنبال‌کردن',

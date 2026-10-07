@@ -47,6 +47,11 @@ export const parseTelegramStartParam = (raw: string): TelegramStartRoute | null 
   if (param === 'schedule') return { path: '/schedule' }
   if (param === 'subscribe') return { path: '/subscribe' }
 
+  const userMatch = param.match(/^user_(\d+)$/)
+  if (userMatch?.[1]) {
+    return { path: `/u/${encodeURIComponent(userMatch[1])}` }
+  }
+
   const match = param.match(/^anime_([^_]+)(?:_(info|episodes|similar|translators))?$/)
   if (!match) return null
 

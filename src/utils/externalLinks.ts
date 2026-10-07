@@ -27,6 +27,14 @@ export const buildAnimeMiniAppLink = (id: string | number, tab?: AnimeDetailTab)
   return `https://t.me/${bot}?startapp=${encodeURIComponent(buildTelegramStartParam(id, tab))}`
 }
 
+export const buildUserProfileStartParam = (telegramUserId: string | number) =>
+  `user_${String(telegramUserId).trim()}`
+
+export const buildUserProfileMiniAppLink = (telegramUserId: string | number) => {
+  const bot = getMiniAppBotUsername()
+  return `https://t.me/${bot}?startapp=${encodeURIComponent(buildUserProfileStartParam(telegramUserId))}`
+}
+
 /** لینک مستقیم دانلود فایل در بات (همان key جدول files) */
 export const buildTelegramFileDownloadLink = (fileKey: string) => {
   const bot = getTelegramBotUsername()

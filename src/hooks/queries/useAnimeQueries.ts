@@ -377,10 +377,11 @@ export const useTranslatorProfileQuery = (slug: string | undefined) =>
   useQuery({
     queryKey: queryKeys.translatorProfile(slug ?? ''),
     queryFn: async () => {
-      const [translator, animeList] = await Promise.all([
-        getTranslatorBySlug(slug!),
-        getAnimeCardsByTranslatorSlug(slug!),
-      ])
+      const translator = await getTranslatorBySlug(slug!)
+      if (!translator) {
+        return { translator: null, animeList: [] as Awaited<ReturnType<typeof getAnimeCardsByTranslatorSlug>> }
+      }
+      const animeList = await getAnimeCardsByTranslatorSlug(slug!)
       return { translator, animeList }
     },
     enabled: Boolean(slug),

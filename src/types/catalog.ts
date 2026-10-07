@@ -97,6 +97,8 @@ export type TranslatorItem = {
   bio?: string | null
   experience?: string | null
   is_active?: boolean
+  telegram_user_id?: string | null
+  linked_telegram_user_id?: string | null
 }
 
 export type TranslatorAnimeLink = {

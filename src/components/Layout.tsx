@@ -70,7 +70,9 @@ const Layout = ({ children }: LayoutProps) => {
   const usesInPageHeader = isHomePage || isExplorePage
   const isAnimeDetailPage = location.pathname.startsWith('/anime/')
   const isProfileHeroPage =
-    location.pathname === '/profile' || location.pathname.startsWith('/translators/')
+    location.pathname === '/profile' ||
+    location.pathname.startsWith('/translators/') ||
+    location.pathname.startsWith('/u/')
   const isTransparentHeaderPage = isAnimeDetailPage || isProfileHeroPage
   const showFixedHeader = !usesInPageHeader
 
