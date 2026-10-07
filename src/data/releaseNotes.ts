@@ -26,6 +26,14 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.70',
+    items: [
+      'اعلان دنبال‌کننده جدید و جست‌وجوی کاربران',
+      'فید غنی‌تر و حریم خصوصی فعالیت تماشا',
+    ],
+    showDialog: true,
+  },
+  {
     version: '0.2.69',
     items: ['باکس ترجمه‌ها جذاب‌تر شد؛ نقش شیوری و مشاهدهٔ همه واضح‌تر'],
   },

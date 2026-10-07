@@ -24,6 +24,7 @@ type ProfileFollowButtonProps = {
   /** When true, sync follow state with API (social rollout). */
   apiEnabled?: boolean
   isFollowing?: boolean
+  followsYou?: boolean
 }
 
 export const ProfileFollowButton = ({
@@ -32,6 +33,7 @@ export const ProfileFollowButton = ({
   className,
   apiEnabled = false,
   isFollowing: isFollowingProp = false,
+  followsYou = false,
 }: ProfileFollowButtonProps) => {
   const [following, setFollowing] = useState(isFollowingProp)
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -108,30 +110,37 @@ export const ProfileFollowButton = ({
     return null
   }
 
+  const followLabel =
+    followsYou && !following ? 'دنبال کردن متقابل' : following ? 'دنبال می‌کنی' : 'دنبال کردن'
+
   return (
     <>
+      {followsYou ? (
+        <p className="mt-3 text-center text-[11px] text-muted-foreground">دنبال‌ات می‌کند</p>
+      ) : null}
       <button
         type="button"
         disabled={apiEnabled && isPending}
         onClick={onPrimaryClick}
         className={cn(
-          'mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-colors',
+          'flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-colors',
+          followsYou ? 'mt-2' : 'mt-4',
           following
             ? 'border border-border/70 bg-card text-foreground hover:bg-muted/50'
             : cn('border border-transparent text-white', SHIORI_PRIMARY_BUTTON_CLASS),
-          (apiEnabled && isPending) && 'opacity-70',
+          apiEnabled && isPending && 'opacity-70',
           className
         )}
       >
         {following ? (
           <>
             <UserMinus className="h-4 w-4 opacity-80" aria-hidden />
-            دنبال می‌کنی
+            {followLabel}
           </>
         ) : (
           <>
             <UserPlus className="h-4 w-4 opacity-90" aria-hidden />
-            دنبال کردن
+            {followLabel}
           </>
         )}
       </button>

@@ -59,6 +59,10 @@ export type SocialProfileMe = {
   } | null
   relationship?: {
     is_following: boolean
+    follows_you?: boolean
+  }
+  privacy?: {
+    watch_activity_hidden: boolean
   }
 }
 
@@ -80,7 +84,7 @@ export type SocialProfileUserList = {
 }
 
 export type SocialProfileFeedItem = {
-  type: 'watch_progress'
+  type: 'watch_progress' | 'rating' | 'list_add'
   actor: SocialProfileUserListItem
   anime_id: string
   slug: string | null
@@ -88,6 +92,7 @@ export type SocialProfileFeedItem = {
   image: string
   episodes_watched: number
   episodes_total: number | null
+  user_rating?: number | null
   updated_at: string
 }
 
@@ -147,4 +152,12 @@ export const fetchSocialFollowing = async (
 export const fetchSocialFeed = async (page = 1, limit = 30): Promise<SocialProfileFeed> =>
   shioriFetch<SocialProfileFeed>(
     `/user-social-profile/feed?page=${encodeURIComponent(String(page))}&limit=${encodeURIComponent(String(limit))}`
+  )
+
+export const searchSocialUsers = async (
+  query: string,
+  limit = 20
+): Promise<SocialProfileUserList> =>
+  shioriFetch<SocialProfileUserList>(
+    `/user-social-profile/search?q=${encodeURIComponent(query)}&limit=${encodeURIComponent(String(limit))}`
   )

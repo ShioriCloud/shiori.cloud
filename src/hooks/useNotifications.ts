@@ -65,6 +65,7 @@ export const useNotifications = () => {
         notify_new_episode: true,
         notify_telegram_dm: true,
         hide_telegram_username: false,
+        hide_watch_activity: false,
       }
       queryClient.setQueryData<NotificationPreferences>(prefsKey, {
         ...base,
@@ -109,6 +110,9 @@ export const useNotifications = () => {
     ),
     updatingHideTelegramUsername: Boolean(
       pendingPrefs && Object.prototype.hasOwnProperty.call(pendingPrefs, 'hide_telegram_username')
+    ),
+    updatingHideWatchActivity: Boolean(
+      pendingPrefs && Object.prototype.hasOwnProperty.call(pendingPrefs, 'hide_watch_activity')
     ),
   }
 }

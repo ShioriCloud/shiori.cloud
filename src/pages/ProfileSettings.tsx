@@ -89,6 +89,7 @@ const ProfileSettings = () => {
     updatingNotifyNewEpisode,
     updatingNotifyTelegramDm,
     updatingHideTelegramUsername,
+    updatingHideWatchActivity,
   } = useNotifications()
   const { preference, setPreference, isDarkMode } = useTheme()
   const tokenRecharge = useTokenRechargeUi(Boolean(user))
@@ -183,6 +184,28 @@ const ProfileSettings = () => {
                   onCheckedChange={(checked) => {
                     hapticSelection()
                     void updatePreferences({ hide_telegram_username: checked })
+                  }}
+                />
+              </div>
+              <div className="flex items-center justify-between gap-3 px-3 py-3">
+                <div className="min-w-0 text-right">
+                  <Label
+                    htmlFor="hide-watch-activity"
+                    className="text-sm font-medium text-foreground"
+                  >
+                    مخفی کردن فعالیت تماشا
+                  </Label>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    لیست و آمار تماشا برای دیگران و فیدشان دیده نمی‌شود
+                  </p>
+                </div>
+                <Switch
+                  id="hide-watch-activity"
+                  checked={preferences?.hide_watch_activity ?? false}
+                  disabled={preferencesLoading || updatingHideWatchActivity}
+                  onCheckedChange={(checked) => {
+                    hapticSelection()
+                    void updatePreferences({ hide_watch_activity: checked })
                   }}
                 />
               </div>

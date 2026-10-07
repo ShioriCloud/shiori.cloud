@@ -39,6 +39,8 @@ export const queryKeys = {
     ['user-social-profile', 'following', telegramUserId, page, limit] as const,
   socialProfileFeed: (page: number, limit: number) =>
     ['user-social-profile', 'feed', page, limit] as const,
+  socialProfileSearch: (query: string) =>
+    ['user-social-profile', 'search', query] as const,
   donationTokenTiers: ['download-tokens', 'tiers'] as const,
   subscriptionMe: ['subscriptions', 'me'] as const,
   subscriptionPlans: ['subscriptions', 'plans'] as const,

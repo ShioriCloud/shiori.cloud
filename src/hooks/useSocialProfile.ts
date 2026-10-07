@@ -8,6 +8,7 @@ import {
   fetchSocialProfileMe,
   fetchSocialProfileUser,
   followSocialUser,
+  searchSocialUsers,
   unfollowSocialUser,
 } from '../services/socialProfile'
 import { queryKeys } from './queries/keys'
@@ -92,6 +93,19 @@ export function useSocialFollowList(
         : fetchSocialFollowing(id, page, limit),
     enabled: enabled && authReady && id.length > 0,
     staleTime: 30_000,
+    retry: false,
+  })
+}
+
+export function useSocialUserSearch(query: string, enabled = true) {
+  const authReady = useSocialAuthReady(enabled)
+  const q = query.trim()
+
+  return useQuery({
+    queryKey: queryKeys.socialProfileSearch(q),
+    queryFn: () => searchSocialUsers(q),
+    enabled: enabled && authReady && q.length >= 2,
+    staleTime: 20_000,
     retry: false,
   })
 }

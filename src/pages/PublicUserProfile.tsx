@@ -15,6 +15,7 @@ import { ProfileShareButton } from '@/components/profile/ProfileShareButton'
 import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import { PROFILE_TABS, parseProfileTab, type ProfileTabId } from '@/components/profile/profileTabs'
 import { ExploreEmptyState, ExploreTabBar } from '@/components/explore/ExploreUi'
+import { MyListCompactCard } from '@/components/my-list/MyListUi'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
 
@@ -242,18 +243,27 @@ const PublicUserProfile = () => {
           targetId={telegramUserId}
           apiEnabled
           isFollowing={data.relationship?.is_following === true}
+          followsYou={data.relationship?.follows_you === true}
         />
       </div>
 
-      <ProfileOverviewStrip data={overview} fullStatsTo={null} />
+      {data.privacy?.watch_activity_hidden ? (
+        <div className="mx-4 mt-5 rounded-2xl border border-border/50 bg-muted/30 px-4 py-5 text-center text-sm leading-7 text-muted-foreground">
+          فعالیت تماشای این کاربر خصوصی است.
+        </div>
+      ) : (
+        <ProfileOverviewStrip data={overview} fullStatsTo={null} />
+      )}
 
       {translator ? (
         <ProfileTranslationsRail translator={translator} profileUserId={telegramUserId} />
       ) : null}
 
-      <div className="mx-4 mt-6">
-        <ProfileBadgesStrip badges={data.badges} />
-      </div>
+      {!data.privacy?.watch_activity_hidden ? (
+        <div className="mx-4 mt-6">
+          <ProfileBadgesStrip badges={data.badges} />
+        </div>
+      ) : null}
 
       <div className="mx-4 mt-6">
         <ExploreTabBar tabs={[...PROFILE_TABS]} active={activeTab} onChange={setActiveTab} />
@@ -261,9 +271,15 @@ const PublicUserProfile = () => {
 
       <div className="mx-4 mt-4">
         {activeTab === 'stats' ? (
-          <div className="-mx-4">
-            <ProfileSocialWatchedRail items={watchedItems} />
-          </div>
+          data.privacy?.watch_activity_hidden ? (
+            <MyListCompactCard className="p-4 text-center text-sm text-muted-foreground">
+              لیست تماشا خصوصی است.
+            </MyListCompactCard>
+          ) : (
+            <div className="-mx-4">
+              <ProfileSocialWatchedRail items={watchedItems} />
+            </div>
+          )
         ) : null}
         {activeTab === 'feed' ? <ProfileFeedPanel enabled /> : null}
         {activeTab === 'personal' ? (
