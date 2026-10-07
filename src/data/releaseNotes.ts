@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.61',
+    items: ['نمودار ساعت تماشا به‌صورت پیشرفت تک‌رنگ و کارت‌های واضح‌تر'],
+  },
+  {
     version: '0.2.60',
     items: ['خلاصه آمار تماشا با ظاهر تازه و محاسبه دقیق‌تر زمان'],
   },

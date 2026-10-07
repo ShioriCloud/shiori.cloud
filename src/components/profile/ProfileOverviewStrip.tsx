@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils'
 import {
   FORMAT_ACCENT,
   formatLabel,
-  minutesForFormatRow,
   sortFormats,
   type FormatBreakdownRow,
 } from './profileFormats'
@@ -19,11 +18,6 @@ type OverviewModel = {
 export const ProfileOverviewStrip = ({ data }: { data: OverviewModel }) => {
   const formats = sortFormats(data.byFormat).slice(0, 6)
   const hours = Math.max(0, Math.round(data.watchHours))
-
-  const segments = formats.map((row) => ({
-    key: row.format,
-    value: minutesForFormatRow(row) || row.count,
-  }))
 
   return (
     <div className="mx-4 mt-5">
@@ -39,7 +33,7 @@ export const ProfileOverviewStrip = ({ data }: { data: OverviewModel }) => {
           aria-hidden
         />
         <div
-          className="pointer-events-none absolute -right-8 bottom-0 h-28 w-28 rounded-full bg-sky-400/10 blur-3xl"
+          className="pointer-events-none absolute -right-8 bottom-0 h-28 w-28 rounded-full bg-primary-500/10 blur-3xl"
           aria-hidden
         />
 
@@ -57,7 +51,7 @@ export const ProfileOverviewStrip = ({ data }: { data: OverviewModel }) => {
           </div>
 
           <div className="flex items-center gap-4">
-            <WatchHoursDonut hours={hours} segments={segments} />
+            <WatchHoursDonut hours={hours} />
 
             <div className="min-w-0 flex-1">
               {formats.length > 0 ? (
@@ -66,8 +60,8 @@ export const ProfileOverviewStrip = ({ data }: { data: OverviewModel }) => {
                     <div
                       key={row.format}
                       className={cn(
-                        'rounded-xl border border-border/40 bg-background/55 px-2.5 py-2.5',
-                        'backdrop-blur-[2px] text-center'
+                        'rounded-xl border border-border/70 px-2.5 py-2.5 text-center',
+                        'bg-card shadow-sm dark:border-border/60 dark:bg-muted/70'
                       )}
                     >
                       <p className="text-xl font-bold tabular-nums leading-none text-foreground">
