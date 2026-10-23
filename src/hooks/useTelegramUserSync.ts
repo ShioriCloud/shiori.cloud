@@ -3,7 +3,7 @@ import { isTelegramMiniApp } from '../lib/platform'
 import { useTelegramApp } from './useTelegramApp'
 import { registerTelegramUserVisit } from '../services/userDataSource'
 
-/** ثبت ورود کاربر به مینی‌اپ (یک بار در هر session) — فقط داخل Telegram */
+/** ثبت ورود کاربر به مینی‌اپ (یک بار در هر بارگذاری) — فقط داخل Telegram */
 export const useTelegramUserSync = (enabled: boolean) => {
   const inTelegram = isTelegramMiniApp()
   const { user } = useTelegramApp()
