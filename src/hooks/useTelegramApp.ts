@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { buildTelegramUserPayload } from '@/utils/telegramUser'
 import type { TelegramUserPayload } from '@/types/telegramUser'
-import { isTelegramMiniApp } from '@/lib/platform'
+import { isTelegramMiniApp, persistTelegramLaunchHash } from '@/lib/platform'
+import { getTelegramInitData } from '@/lib/telegramRequestHeaders'
 import { ensureTelegramWebAppReady } from '@/lib/telegramReady'
 import { openTelegramDeepLink } from '@/lib/telegramOpenLink'
 import { showAppConfirm, showAppToast } from '@/store/appFeedbackStore'
@@ -32,8 +33,12 @@ export const useTelegramApp = () => {
 
     const readUser = (): TelegramUserPayload | null => {
       try {
+        persistTelegramLaunchHash()
         ensureTelegramWebAppReady()
-        return buildTelegramUserPayload(WebApp.initDataUnsafe.user, WebApp.initData)
+        return buildTelegramUserPayload(
+          WebApp.initDataUnsafe?.user,
+          getTelegramInitData(),
+        )
       } catch (error) {
         console.error('Failed to initialize Telegram Web App:', error)
         return null
@@ -58,14 +63,24 @@ export const useTelegramApp = () => {
     }
 
     // iOS / proxy: initData can arrive after first paint even when heuristics fail.
+    const timers: { slow: number | null } = { slow: null }
     let tries = 0
     const timer = window.setInterval(() => {
       tries += 1
-      if (apply() || tries >= 30) {
+      const found = apply()
+      if (found || tries >= 30) {
         window.clearInterval(timer)
-        if (!cancelled) {
-          if (!isTelegramMiniApp()) setUser(null)
-          setIsReady(true)
+        if (cancelled) return
+        if (!found && !isTelegramMiniApp()) setUser(null)
+        setIsReady(true)
+        if (!found && isTelegramMiniApp()) {
+          let slowTries = 0
+          timers.slow = window.setInterval(() => {
+            slowTries += 1
+            if (apply() || slowTries >= 20) {
+              if (timers.slow != null) window.clearInterval(timers.slow)
+            }
+          }, 500)
         }
       }
     }, 100)
@@ -73,6 +88,7 @@ export const useTelegramApp = () => {
     return () => {
       cancelled = true
       window.clearInterval(timer)
+      if (timers.slow != null) window.clearInterval(timers.slow)
     }
   }, [])
 

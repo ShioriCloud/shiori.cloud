@@ -16,38 +16,40 @@ const normalizeUsername = (value: unknown): string | undefined => {
   return trimmed.length > 0 ? trimmed : undefined
 }
 
-const parseUsernameFromInitData = (initData: string): string | undefined => {
-  if (!initData.trim()) return undefined
+const parseUserFromInitData = (initData?: string): UnsafeTelegramUser | null => {
+  if (!initData?.trim()) return null
 
   try {
-    const params = new URLSearchParams(initData)
-    const raw = params.get('user')
-    if (!raw) return undefined
-    const parsed = JSON.parse(raw) as { username?: string }
-    return normalizeUsername(parsed.username)
+    const raw = new URLSearchParams(initData).get('user')
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as UnsafeTelegramUser
+    return typeof parsed?.id === 'number' ? parsed : null
   } catch {
-    return undefined
+    return null
   }
 }
 
-/** Telegram user with username fallback from signed initData string */
+/** Telegram user with fallback from the signed initData query string. */
 export const buildTelegramUserPayload = (
   unsafeUser: UnsafeTelegramUser | null | undefined,
   initData?: string
 ): TelegramUserPayload | null => {
-  if (!unsafeUser || typeof unsafeUser.id !== 'number') return null
+  const fromUnsafe =
+    unsafeUser && typeof unsafeUser.id === 'number' ? unsafeUser : null
+  const user = fromUnsafe ?? parseUserFromInitData(initData)
+  if (!user || typeof user.id !== 'number') return null
 
   const username =
-    normalizeUsername(unsafeUser.username) ??
-    (initData ? parseUsernameFromInitData(initData) : undefined)
+    normalizeUsername(user.username) ??
+    normalizeUsername(parseUserFromInitData(initData)?.username)
 
   return {
-    id: unsafeUser.id,
-    first_name: unsafeUser.first_name ?? '',
-    last_name: unsafeUser.last_name,
+    id: user.id,
+    first_name: user.first_name ?? '',
+    last_name: user.last_name,
     username,
-    language_code: unsafeUser.language_code,
-    photo_url: unsafeUser.photo_url,
-    is_premium: unsafeUser.is_premium,
+    language_code: user.language_code,
+    photo_url: user.photo_url,
+    is_premium: user.is_premium,
   }
 }
