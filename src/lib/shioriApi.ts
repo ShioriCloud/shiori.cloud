@@ -43,6 +43,11 @@ const buildHeaders = (extra?: HeadersInit): HeadersInit => {
     headers.set(key, value)
   }
 
+  const sessionToken = sessionHeaders['x-app-session-token']?.trim()
+  if (sessionToken && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${sessionToken}`)
+  }
+
   return headers
 }
 

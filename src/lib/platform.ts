@@ -22,15 +22,55 @@ const TELEGRAM_PLATFORMS = new Set([
 ])
 
 const LAUNCH_HASH_KEY = '__telegram__launch_hash'
+const INIT_DATA_KEY = '__telegram__init_data'
+
+const extractTgWebAppData = (source: string): string => {
+  const raw = String(source ?? '').trim()
+  if (!raw || !/tgWebAppData=/.test(raw)) return ''
+  try {
+    const withoutHash = raw.replace(/^#/, '')
+    const query = withoutHash.includes('?')
+      ? withoutHash.slice(withoutHash.indexOf('?') + 1)
+      : withoutHash
+    return String(new URLSearchParams(query).get('tgWebAppData') ?? '').trim()
+  } catch {
+    return ''
+  }
+}
+
+export const persistTelegramInitData = (initData: string): void => {
+  const value = String(initData ?? '').trim()
+  if (!value || typeof window === 'undefined') return
+  try {
+    sessionStorage.setItem(INIT_DATA_KEY, value)
+  } catch {
+    // private mode / blocked storage
+  }
+}
+
+const readPersistedInitData = (): string => {
+  if (typeof window === 'undefined') return ''
+  try {
+    return String(sessionStorage.getItem(INIT_DATA_KEY) || '').trim()
+  } catch {
+    return ''
+  }
+}
 
 /** Persist tgWebApp* hash ASAP — iOS/WebView can lose it on navigation/refresh. */
 export const persistTelegramLaunchHash = (): void => {
   if (typeof window === 'undefined') return
   try {
     const hash = String(window.location.hash || '')
+    const search = String(window.location.search || '')
     if (/tgWebApp(?:Data|Platform|Version)=/.test(hash)) {
       sessionStorage.setItem(LAUNCH_HASH_KEY, hash)
+    } else if (/tgWebApp(?:Data|Platform|Version)=/.test(search)) {
+      sessionStorage.setItem(LAUNCH_HASH_KEY, search)
     }
+
+    const fromUrl = extractTgWebAppData(hash) || extractTgWebAppData(search)
+    if (fromUrl) persistTelegramInitData(fromUrl)
   } catch {
     // private mode / blocked storage
   }
@@ -43,6 +83,20 @@ const readPersistedLaunchHash = (): string => {
   } catch {
     return ''
   }
+}
+
+/** Signed initData from sessionStorage / launch hash when WebApp.initData is empty. */
+export const getStoredTelegramInitData = (): string => {
+  persistTelegramLaunchHash()
+  const stored = readPersistedInitData()
+  if (stored) return stored
+
+  const fromLaunch = extractTgWebAppData(readPersistedLaunchHash())
+  if (fromLaunch) {
+    persistTelegramInitData(fromLaunch)
+    return fromLaunch
+  }
+  return ''
 }
 
 /** Telegram injects these into the Mini App URL hash / query (or a persisted copy). */
@@ -88,7 +142,8 @@ export const hasTelegramUserAgent = (): boolean => {
 /** True when running inside Telegram with signed initData. */
 export const hasTelegramSignedInitData = (): boolean => {
   if (typeof window === 'undefined') return false
-  return String(WebApp.initData ?? '').trim().length > 0
+  if (String(WebApp.initData ?? '').trim().length > 0) return true
+  return getStoredTelegramInitData().length > 0
 }
 
 const telegramPlatform = (): string => {

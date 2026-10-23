@@ -1,6 +1,9 @@
 import { shioriFetch } from '../lib/shioriApi'
 import { getTelegramInitData } from '../lib/telegramRequestHeaders'
-import { writeTelegramMiniAppSession } from '../lib/telegramSessionStorage'
+import {
+  readTelegramMiniAppSession,
+  writeTelegramMiniAppSession,
+} from '../lib/telegramSessionStorage'
 import type { TelegramUserPayload } from '../types/telegramUser'
 
 type RegisterTelegramUserResponse = {
@@ -24,6 +27,7 @@ export const registerTelegramUserVisit = async (user: TelegramUserPayload): Prom
       photo_url: user.photo_url ?? null,
       is_premium: user.is_premium ?? false,
       telegram_init_data: getTelegramInitData() || undefined,
+      app_session_token: readTelegramMiniAppSession()?.token?.trim() || undefined,
     }),
   })
 
