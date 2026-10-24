@@ -31,7 +31,6 @@ export function useAnimeDetailPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const {
     toggleFavorite,
-    isFavorite,
     getProgress,
     saveProgress,
     clearListTracking,
@@ -180,6 +179,7 @@ export function useAnimeDetailPage() {
     .trim()
     .toUpperCase()
 
+  const favoriteAnimeIds = useAnimeStore((s) => s.favoriteAnime)
   const favoriteProgressMap = useAnimeStore((s) => s.favoriteProgress)
   const trackingActive = useMemo(() => {
     if (!anime) return false
@@ -196,16 +196,20 @@ export function useAnimeDetailPage() {
     shareUrl(link, `${anime.title} — شیوری`)
   }
 
-  const handleFavorite = async () => {
+  const favoriteActive = useMemo(() => {
+    if (!anime) return false
+    return favoriteAnimeIds.some((id) => String(id) === String(anime.id))
+  }, [anime, favoriteAnimeIds])
+
+  const handleFavorite = () => {
     if (!anime) return
-    try {
-      hapticImpact('medium')
-      await toggleFavorite(anime.id)
-      hapticNotification('success')
-    } catch (e) {
-      hapticNotification('error')
-      showAlert(formatUserListSaveError(e))
-    }
+    hapticImpact('medium')
+    void toggleFavorite(anime.id)
+      .then(() => hapticNotification('success'))
+      .catch((e) => {
+        hapticNotification('error')
+        showAlert(formatUserListSaveError(e))
+      })
   }
 
   const handleOpenTracking = () => {
@@ -283,7 +287,7 @@ export function useAnimeDetailPage() {
     scores,
     mediaTags,
     statusKey,
-    favoriteActive: anime ? isFavorite(anime.id) : false,
+    favoriteActive,
     trackingActive,
     reminderActive: anime ? isReminderOn(anime.id) : false,
     reminderBusy,

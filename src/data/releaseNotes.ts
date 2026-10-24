@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.94',
+    items: ['قلب علاقه‌مندی و لیست پروفایل سریع‌تر با هم هماهنگ می‌شوند'],
+  },
+  {
     version: '0.2.93',
     items: ['حذف پیشرفت تماشا از صفحه انیمه دوباره درست کار می‌کند'],
   },

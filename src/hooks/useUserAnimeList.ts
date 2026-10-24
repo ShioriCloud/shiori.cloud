@@ -98,7 +98,8 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
     const localProgressSnapshot = { ...favoriteProgress }
     const remoteIdSet = new Set(remoteRows.map((r) => String(r.anime_id)))
 
-    const shouldHydrateFromRemote = remoteRows.length > 0 || localIds.length === 0
+    // Only seed from server when local store is empty — never wipe optimistic heart toggles.
+    const shouldHydrateFromRemote = localIds.length === 0 && remoteRows.length > 0
     if (shouldHydrateFromRemote) {
       hydrateFavoritesFromRemote(
         remoteRows.map((row) => ({
@@ -119,6 +120,7 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
           await upsertUserAnimeListEntry(telegramUserId, id, {
             episodes_watched: progress.episodesWatched,
             user_rating: progress.userRating,
+            is_favorite: true,
           })
         } catch (e) {
           if (import.meta.env.DEV) console.warn('sync local favorite:', e)
@@ -173,6 +175,10 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
     []
   )
 
+  const refreshSocialProfileCaches = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: queryKeys.socialProfileMe })
+  }, [queryClient])
+
   const saveMutation = useMutation({
     mutationFn: async ({
       animeId,
@@ -211,11 +217,7 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
       }
     },
     onSuccess: (data, variables) => {
-      if (typeof telegramUserId === 'number') {
-        void queryClient.invalidateQueries({
-          queryKey: queryKeys.userAnimeList(telegramUserId),
-        })
-      }
+      refreshSocialProfileCaches()
       applyMutationResult(variables.animeId, data.result)
       if (data.result?.shiori_score === undefined && typeof data.progress.userRating === 'number') {
         patchAnimeDetailShioriScore(variables.animeId, data.progress.userRating)
@@ -251,11 +253,7 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
       removeFromFavorites(animeId)
     },
     onSuccess: (_result, _animeId) => {
-      if (typeof telegramUserId === 'number') {
-        void queryClient.invalidateQueries({
-          queryKey: queryKeys.userAnimeList(telegramUserId),
-        })
-      }
+      refreshSocialProfileCaches()
     },
   })
 
@@ -295,13 +293,8 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
       }
     },
     onSuccess: (result, animeId) => {
-      if (typeof telegramUserId === 'number') {
-        void queryClient.invalidateQueries({
-          queryKey: queryKeys.userAnimeList(telegramUserId),
-        })
-      }
       applyMutationResult(animeId, result)
-      invalidateAnimeDetailQuery(animeId)
+      refreshSocialProfileCaches()
     },
   })
 
@@ -373,12 +366,8 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
       }
     },
     onSuccess: (data) => {
-      if (typeof telegramUserId === 'number') {
-        void queryClient.invalidateQueries({
-          queryKey: queryKeys.userAnimeList(telegramUserId),
-        })
-      }
       applyMutationResult(data.animeId, data.result)
+      refreshSocialProfileCaches()
       invalidateAnimeDetailQuery(data.animeId)
     },
   })

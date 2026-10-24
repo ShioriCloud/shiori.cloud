@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { useAppAuth } from '../hooks/useAppAuth'
 import { useUserAnimeList } from '../hooks/useUserAnimeList'
 import { useSocialProfileMe } from '../hooks/useSocialProfile'
+import { useFavoriteAnimeCardsQuery } from '../hooks/queries/useAnimeQueries'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
 import { ProfileFeedPanel } from '@/components/profile/ProfileFeedPanel'
 import { ProfileFollowSuggestions } from '@/components/profile/ProfileFollowSuggestions'
@@ -38,7 +39,8 @@ import { ProfilePageSkeleton } from '@/components/profile/ProfilePageSkeleton'
 
 const Profile = () => {
   const { user, isReady, inTelegram, login, register } = useAppAuth()
-  const { stats } = useUserAnimeList()
+  const { stats, favoriteAnime } = useUserAnimeList({ syncRemoteList: false })
+  const { data: favoriteCards = [] } = useFavoriteAnimeCardsQuery(favoriteAnime)
   const { data: socialProfile, isLoading: socialProfileLoading } = useSocialProfileMe(
     Boolean(user)
   )
@@ -74,10 +76,23 @@ const Profile = () => {
     n == null ? '—' : toPersianDigits(n)
 
   const roleBadges = socialProfile?.profile?.role_badges ?? []
-  const favoriteListItems = useMemo(
-    () => (socialProfile?.watched?.items ?? []).filter((item) => item.is_favorite === true),
-    [socialProfile?.watched?.items]
-  )
+  const favoriteListItems = useMemo(() => {
+    const byId = new Map(favoriteCards.map((card) => [String(card.id), card]))
+    return favoriteAnime
+      .map((id) => byId.get(String(id)))
+      .filter((card): card is NonNullable<typeof card> => Boolean(card))
+      .map((card) => ({
+        anime_id: String(card.id),
+        slug: card.slug ?? null,
+        title: card.title,
+        image: card.image,
+        episodes_watched: 0,
+        episodes_total: null,
+        user_rating: null,
+        is_favorite: true,
+        updated_at: '',
+      }))
+  }, [favoriteAnime, favoriteCards])
   const watchedItems = socialProfile?.watched?.items ?? []
   const memberSinceLabel = formatProfileMemberSince(socialProfile?.profile?.member_since)
   const showSocialWatch = socialProfile?.enabled === true
