@@ -8,6 +8,7 @@ import { useUserAnimeList } from '../hooks/useUserAnimeList'
 import { useSocialProfileMe } from '../hooks/useSocialProfile'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
 import { ProfileFeedPanel } from '@/components/profile/ProfileFeedPanel'
+import { ProfileFollowSuggestions } from '@/components/profile/ProfileFollowSuggestions'
 import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
 import { ProfileOverviewStrip } from '@/components/profile/ProfileOverviewStrip'
 import { ProfilePersonalPanel } from '@/components/profile/ProfilePersonalPanel'
@@ -222,7 +223,10 @@ const Profile = () => {
       <div className="mx-4 mt-4">
         {activeTab === 'stats' ? <ProfileStatsPanel /> : null}
         {activeTab === 'feed' ? (
-          <ProfileFeedPanel enabled />
+          <>
+            <ProfileFollowSuggestions enabled={socialProfile?.enabled === true} />
+            <ProfileFeedPanel enabled />
+          </>
         ) : null}
         {activeTab === 'personal' ? (
           <ProfilePersonalPanel

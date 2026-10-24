@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.80',
+    items: ['پیشنهاد کاربران برای دنبال کردن در تب فید پروفایل'],
+  },
+  {
     version: '0.2.79',
     items: ['مسدود و بی‌صدا کردن کاربران از پروفایل و تنظیمات'],
   },

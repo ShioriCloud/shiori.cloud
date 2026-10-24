@@ -85,6 +85,16 @@ export type SocialProfileUserList = {
   limit: number
 }
 
+export type SocialProfileFollowSuggestionItem = SocialProfileUserListItem & {
+  mutual_connections: number
+}
+
+export type SocialProfileFollowSuggestions = {
+  enabled: boolean
+  mode: 'off' | 'allowlist' | 'on'
+  items: SocialProfileFollowSuggestionItem[]
+}
+
 export type SocialProfileFeedItem = {
   type: 'watch_progress' | 'rating' | 'list_add'
   actor: SocialProfileUserListItem
@@ -161,6 +171,11 @@ export const fetchSocialFollowing = async (
 export const fetchSocialFeed = async (page = 1, limit = 30): Promise<SocialProfileFeed> =>
   shioriFetch<SocialProfileFeed>(
     `/user-social-profile/feed?page=${encodeURIComponent(String(page))}&limit=${encodeURIComponent(String(limit))}`
+  )
+
+export const fetchSocialFollowSuggestions = async (limit = 8): Promise<SocialProfileFollowSuggestions> =>
+  shioriFetch<SocialProfileFollowSuggestions>(
+    `/user-social-profile/suggestions?limit=${encodeURIComponent(String(limit))}`
   )
 
 export const searchSocialUsers = async (
