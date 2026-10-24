@@ -115,25 +115,12 @@ export const ProfileFollowButton = ({
 
   return (
     <>
-      {followsYou ? (
-        <p
-          className={cn(
-            'mt-3 text-center text-xs',
-            following
-              ? 'font-semibold text-emerald-600 dark:text-emerald-400'
-              : 'font-medium text-muted-foreground'
-          )}
-        >
-          {following ? 'همدیگه رو دنبال می‌کنید' : 'تو رو دنبال می‌کنه'}
-        </p>
-      ) : null}
       <button
         type="button"
         disabled={apiEnabled && isPending}
         onClick={onPrimaryClick}
         className={cn(
-          'flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-colors',
-          followsYou ? 'mt-2' : 'mt-4',
+          'mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-colors',
           following
             ? 'border border-border/70 bg-card text-foreground hover:bg-muted/50'
             : cn('border border-transparent text-white', SHIORI_PRIMARY_BUTTON_CLASS),
@@ -153,6 +140,26 @@ export const ProfileFollowButton = ({
           </>
         )}
       </button>
+
+      {followsYou ? (
+        <p
+          className={cn(
+            'mt-2 flex items-center justify-center gap-1.5 text-xs',
+            following
+              ? 'font-semibold text-emerald-600 dark:text-emerald-400'
+              : 'font-medium text-muted-foreground'
+          )}
+        >
+          <span
+            className={cn(
+              'h-2 w-2 shrink-0 rounded-full',
+              following ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-muted-foreground/55'
+            )}
+            aria-hidden
+          />
+          {following ? 'همدیگه رو دنبال می‌کنید' : 'تو رو دنبال می‌کنه'}
+        </p>
+      ) : null}
 
       <Sheet open={confirmOpen} onOpenChange={setConfirmOpen}>
         <SheetContent

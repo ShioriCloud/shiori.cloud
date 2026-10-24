@@ -29,7 +29,7 @@ export const ProfileRecentEpisodesRail = ({
           const episode = item.episodes_watched ?? 0
           const when = formatRelativeTimeFa(item.updated_at)
           return (
-            <HomeRailSlide key={`${item.anime_id}-${item.updated_at}`} className="w-[108px]">
+            <HomeRailSlide key={`${item.anime_id}-${item.updated_at}`} className="w-[100px]">
               <div className="space-y-2">
                 <AnimePrefetchLink
                   animeId={animePublicSegment(routeRef)}
@@ -38,7 +38,7 @@ export const ProfileRecentEpisodesRail = ({
                   aria-label={`${item.title} قسمت ${episode}`}
                 >
                   <div className="media-card-skeuo rounded-xl">
-                    <div className="media-card-skeuo-face relative aspect-[2/3] bg-muted">
+                    <div className="media-card-skeuo-face relative aspect-square bg-muted">
                       {item.image ? (
                         <img
                           src={item.image}
@@ -57,7 +57,7 @@ export const ProfileRecentEpisodesRail = ({
                     </div>
                   </div>
                 </AnimePrefetchLink>
-                <div className="text-right">
+                <div className="text-center">
                   <BidiText
                     as="p"
                     className="line-clamp-2 text-[11px] font-semibold leading-snug text-foreground"
