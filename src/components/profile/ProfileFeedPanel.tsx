@@ -4,7 +4,8 @@ import AnimePrefetchLink from '@/components/AnimePrefetchLink'
 import { BidiText } from '@/components/BidiText'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { MyListCompactCard } from '@/components/my-list/MyListUi'
-import { useSocialFeed } from '@/hooks/useSocialProfile'
+import { useSocialFeedInfinite } from '@/hooks/useSocialProfile'
+import { Button } from '@/components/ui/button'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { cn } from '@/lib/utils'
@@ -32,7 +33,10 @@ const activityDetail = (item: SocialProfileFeedItem): string => {
 }
 
 export const ProfileFeedPanel = ({ enabled = true }: { enabled?: boolean }) => {
-  const { data, isLoading } = useSocialFeed(enabled)
+  const feedQuery = useSocialFeedInfinite(enabled)
+  const { isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = feedQuery
+  const data = feedQuery.data?.pages[0]
+  const items = feedQuery.data?.pages.flatMap((page) => page.items) ?? []
 
   if (!enabled) {
     return (
@@ -73,7 +77,7 @@ export const ProfileFeedPanel = ({ enabled = true }: { enabled?: boolean }) => {
         جست‌وجوی کاربران
       </Link>
 
-      {data.items.length === 0 ? (
+      {items.length === 0 ? (
         <ExploreEmptyState
           compact
           showImage={false}
@@ -81,7 +85,7 @@ export const ProfileFeedPanel = ({ enabled = true }: { enabled?: boolean }) => {
           subtitle="کاربرانی را که دوست داری دنبال کن تا فعالیتشان اینجا بیاید."
         />
       ) : (
-        data.items.map((item) => {
+        items.map((item) => {
           const routeRef = { id: item.anime_id, slug: item.slug, title: item.title }
           return (
             <MyListCompactCard
@@ -113,6 +117,19 @@ export const ProfileFeedPanel = ({ enabled = true }: { enabled?: boolean }) => {
           )
         })
       )}
+
+      {hasNextPage ? (
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="w-full"
+          disabled={isFetchingNextPage}
+          onClick={() => void fetchNextPage()}
+        >
+          {isFetchingNextPage ? 'در حال بارگذاری…' : 'نمایش بیشتر'}
+        </Button>
+      ) : null}
     </div>
   )
 }

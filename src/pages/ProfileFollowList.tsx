@@ -1,10 +1,11 @@
 import { Link, useLocation, useParams } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
-import { ProfileUserListRow } from '@/components/profile/ProfileUserListRow'
+import { ProfileFollowListRow } from '@/components/profile/ProfileFollowListRow'
 import { MyListCompactCard } from '@/components/my-list/MyListUi'
+import { Button } from '@/components/ui/button'
 import { useAppAuth } from '@/hooks/useAppAuth'
-import { useSocialFollowList, useSocialProfileMe } from '@/hooks/useSocialProfile'
+import { useSocialFollowListInfinite, useSocialProfileMe } from '@/hooks/useSocialProfile'
 
 const ProfileFollowList = () => {
   const { pathname } = useLocation()
@@ -21,11 +22,17 @@ const ProfileFollowList = () => {
     : '/profile'
 
   const socialEnabled = socialMe?.enabled === true
-  const { data, isLoading } = useSocialFollowList(
+  const listQuery = useSocialFollowListInfinite(
     subjectId,
     isFollowing ? 'following' : 'followers',
     Boolean(user) && socialEnabled && subjectId.length > 0
   )
+  const items = listQuery.data?.pages.flatMap((page) => page.items) ?? []
+  const showUnfollow =
+    isFollowing &&
+    subjectId.length > 0 &&
+    user?.id != null &&
+    String(user.id) === subjectId
 
   return (
     <div className="bg-background pb-24 text-foreground">
@@ -43,7 +50,7 @@ const ProfileFollowList = () => {
         </div>
       </div>
 
-      <div className="px-4 pt-4">
+      <div className="space-y-3 px-4 pt-4">
         {!socialEnabled ? (
           <ExploreEmptyState
             compact
@@ -51,18 +58,36 @@ const ProfileFollowList = () => {
             title="به‌زودی"
             subtitle="شبکه اجتماعی شیوری برای حساب تو هنوز فعال نشده."
           />
-        ) : isLoading ? (
+        ) : listQuery.isLoading ? (
           <div className="space-y-2 animate-pulse">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="h-16 rounded-xl bg-muted/70" />
             ))}
           </div>
-        ) : data?.items.length ? (
-          <MyListCompactCard className="overflow-hidden divide-y divide-border/40">
-            {data.items.map((row) => (
-              <ProfileUserListRow key={row.telegram_user_id} user={row} />
-            ))}
-          </MyListCompactCard>
+        ) : items.length ? (
+          <>
+            <MyListCompactCard className="overflow-hidden divide-y divide-border/40">
+              {items.map((row) => (
+                <ProfileFollowListRow
+                  key={row.telegram_user_id}
+                  user={row}
+                  showUnfollow={showUnfollow}
+                />
+              ))}
+            </MyListCompactCard>
+            {listQuery.hasNextPage ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="w-full"
+                disabled={listQuery.isFetchingNextPage}
+                onClick={() => void listQuery.fetchNextPage()}
+              >
+                {listQuery.isFetchingNextPage ? 'در حال بارگذاری…' : 'نمایش بیشتر'}
+              </Button>
+            ) : null}
+          </>
         ) : (
           <ExploreEmptyState
             compact

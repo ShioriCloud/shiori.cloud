@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useState } from 'react'
 import { ensureDevAppAuth, hasAppUserAuth } from '../lib/ensureDevAppAuth'
 import {
@@ -68,6 +68,64 @@ export function useSocialFeed(enabled = true, page = 1, limit = 30) {
     queryKey: queryKeys.socialProfileFeed(page, limit),
     queryFn: () => fetchSocialFeed(page, limit),
     enabled: enabled && authReady,
+    staleTime: 30_000,
+    retry: false,
+  })
+}
+
+const feedNextPage = (last: Awaited<ReturnType<typeof fetchSocialFeed>>) => {
+  if (!last.enabled) return undefined
+  const loaded = last.page * last.limit
+  if (loaded >= last.total) return undefined
+  return last.page + 1
+}
+
+export function useSocialFeedInfinite(enabled = true, limit = 20) {
+  const authReady = useSocialAuthReady(enabled)
+
+  return useInfiniteQuery({
+    queryKey: [...queryKeys.socialProfileFeed(1, limit), 'infinite'] as const,
+    queryFn: ({ pageParam }) => fetchSocialFeed(pageParam, limit),
+    initialPageParam: 1,
+    getNextPageParam: feedNextPage,
+    enabled: enabled && authReady,
+    staleTime: 30_000,
+    retry: false,
+  })
+}
+
+const listNextPage = (
+  last: Awaited<ReturnType<typeof fetchSocialFollowers>>
+) => {
+  if (!last.enabled) return undefined
+  const loaded = last.page * last.limit
+  if (loaded >= last.total) return undefined
+  return last.page + 1
+}
+
+export function useSocialFollowListInfinite(
+  telegramUserId: string | undefined,
+  kind: 'followers' | 'following',
+  enabled = true,
+  limit = 30
+) {
+  const authReady = useSocialAuthReady(enabled)
+  const id = telegramUserId?.trim() ?? ''
+
+  return useInfiniteQuery({
+    queryKey: [
+      ...(kind === 'followers'
+        ? queryKeys.socialProfileFollowers(id, 1, limit)
+        : queryKeys.socialProfileFollowing(id, 1, limit)),
+      'infinite',
+    ] as const,
+    queryFn: ({ pageParam }) =>
+      kind === 'followers'
+        ? fetchSocialFollowers(id, pageParam, limit)
+        : fetchSocialFollowing(id, pageParam, limit),
+    initialPageParam: 1,
+    getNextPageParam: listNextPage,
+    enabled: enabled && authReady && id.length > 0,
     staleTime: 30_000,
     retry: false,
   })
