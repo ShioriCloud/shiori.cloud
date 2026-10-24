@@ -67,7 +67,7 @@ const AnimeDetail = () => {
     handleSaveTracking,
     trackingActive,
     handleAiringReminder,
-    toggleFavorite,
+    clearListTracking,
     getProgress,
     showAlert,
     openLink,
@@ -172,9 +172,9 @@ const AnimeDetail = () => {
             ? () => {
                 void (async () => {
                   try {
-                    await toggleFavorite(anime.id)
+                    await clearListTracking(anime.id)
                     setTrackingEditorOpen(false)
-                    showAlert('از لیست تماشا حذف شد')
+                    showAlert('پیشرفت تماشا پاک شد')
                   } catch (e) {
                     showAlert(formatUserListSaveError(e))
                   }

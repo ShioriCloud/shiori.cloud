@@ -35,6 +35,7 @@ export type SocialProfileMe = {
       episodes_watched: number
       episodes_total: number | null
       user_rating: number | null
+      is_favorite?: boolean
       updated_at: string
     }>
     total: number

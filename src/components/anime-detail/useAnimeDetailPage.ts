@@ -28,8 +28,14 @@ export function useAnimeDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const { toggleFavorite, isFavorite, getProgress, saveProgress, isSaving: isSavingProgress } =
-    useUserAnimeList({ syncRemoteList: false })
+  const {
+    toggleFavorite,
+    isFavorite,
+    getProgress,
+    saveProgress,
+    clearListTracking,
+    isSaving: isSavingProgress,
+  } = useUserAnimeList({ syncRemoteList: false })
   const { preferences, updatePreferences, updatingPreferences } = useNotifications()
   const {
     isReminderOn,
@@ -210,9 +216,6 @@ export function useAnimeDetailPage() {
   }) => {
     if (!anime) return
     try {
-      if (!isFavorite(anime.id)) {
-        await toggleFavorite(anime.id)
-      }
       await saveProgress(anime.id, progress)
       setTrackingEditorOpen(false)
       showAlert('در پروفایل ذخیره شد')
@@ -287,6 +290,7 @@ export function useAnimeDetailPage() {
     handleOpenTracking,
     handleSaveTracking,
     handleAiringReminder,
+    clearListTracking,
     toggleFavorite,
     getProgress,
     showAlert,

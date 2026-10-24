@@ -26,6 +26,13 @@ const toProgress = (row: {
   userRating: row.user_rating,
 })
 
+const hasTrackedProgress = (progress: FavoriteProgress): boolean =>
+  Boolean(
+    progress.listStatus ||
+      (progress.episodesWatched ?? 0) > 0 ||
+      progress.userRating != null
+  )
+
 export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
   const syncRemoteList = options?.syncRemoteList !== false
   const { user, isReady, inTelegram } = useAppAuth()
@@ -97,6 +104,7 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
         remoteRows.map((row) => ({
           animeId: row.anime_id,
           progress: toProgress(row),
+          isFavorite: row.is_favorite,
         }))
       )
     }
@@ -223,10 +231,15 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
     mutationFn: async (animeId: number | string) => {
       await ensureDevAppAuth()
       const uid = user?.id ?? getSessionTelegramUserId()
+      const progress = favoriteProgress[String(animeId)] ?? {
+        episodesWatched: 0,
+        userRating: null,
+      }
       if (typeof uid === 'number' && canSyncUserAnimeList()) {
         return upsertUserAnimeListEntry(uid, animeId, {
-          episodes_watched: 0,
-          user_rating: null,
+          episodes_watched: progress.episodesWatched,
+          user_rating: progress.userRating,
+          is_favorite: true,
         })
       }
       return undefined
@@ -250,18 +263,34 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
     mutationFn: async (animeId: number | string) => {
       await ensureDevAppAuth()
       const uid = user?.id ?? getSessionTelegramUserId()
+      const progress = favoriteProgress[String(animeId)] ?? {
+        episodesWatched: 0,
+        userRating: null,
+      }
       if (typeof uid === 'number' && canSyncUserAnimeList()) {
+        if (hasTrackedProgress(progress)) {
+          return upsertUserAnimeListEntry(uid, animeId, {
+            episodes_watched: progress.episodesWatched,
+            user_rating: progress.userRating,
+            is_favorite: false,
+          })
+        }
         return removeUserAnimeListEntry(uid, animeId)
       }
       return undefined
     },
     onMutate: (animeId) => {
-      removeFromFavorites(animeId)
-      return { previousProgress: favoriteProgress[String(animeId)] }
+      const previousProgress = favoriteProgress[String(animeId)] ?? {
+        episodesWatched: 0,
+        userRating: null,
+      }
+      const keepProgress = hasTrackedProgress(previousProgress)
+      removeFromFavorites(animeId, keepProgress)
+      return { previousProgress, keepProgress }
     },
     onError: (_error, animeId, context) => {
       addToFavorites(animeId)
-      if (context?.previousProgress) {
+      if (context?.previousProgress && !context.keepProgress) {
         setFavoriteProgress(animeId, context.previousProgress)
       }
     },
@@ -296,11 +325,28 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
     [saveMutation]
   )
 
+  const clearListTracking = useCallback(
+    async (animeId: number | string) => {
+      const cleared: FavoriteProgress = {
+        episodesWatched: 0,
+        userRating: null,
+        listStatus: null,
+      }
+      if (isFavorite(animeId)) {
+        await saveProgress(animeId, cleared)
+        return
+      }
+      await removeFavoriteMutation.mutateAsync(animeId)
+    },
+    [isFavorite, saveProgress, removeFavoriteMutation]
+  )
+
   return {
     favoriteAnime,
     stats,
     getProgress,
     saveProgress,
+    clearListTracking,
     toggleFavorite,
     isFavorite,
     isSaving: saveMutation.isPending,

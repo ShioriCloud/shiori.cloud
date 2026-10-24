@@ -26,10 +26,14 @@ interface AnimeState {
   favoriteAnime: (number | string)[]
   favoriteProgress: Record<string, FavoriteProgress>
   addToFavorites: (animeId: number | string) => void
-  removeFromFavorites: (animeId: number | string) => void
+  removeFromFavorites: (animeId: number | string, keepProgress?: boolean) => void
   setFavoriteProgress: (animeId: number | string, progress: FavoriteProgress) => void
   hydrateFavoritesFromRemote: (
-    entries: Array<{ animeId: number | string; progress: FavoriteProgress }>
+    entries: Array<{
+      animeId: number | string
+      progress: FavoriteProgress
+      isFavorite?: boolean
+    }>
   ) => void
   setAnimeList: (animeList: AnimeListItem[]) => void
 }
@@ -56,9 +60,15 @@ export const useAnimeStore = create<AnimeState>()(
               : { ...state.favoriteProgress, [key]: defaultProgress() },
           }
         }),
-      removeFromFavorites: (animeId) =>
+      removeFromFavorites: (animeId, keepProgress = false) =>
         set((state) => {
           const key = String(animeId)
+          if (keepProgress) {
+            return {
+              favoriteAnime: state.favoriteAnime.filter((id) => String(id) !== key),
+              favoriteProgress: state.favoriteProgress,
+            }
+          }
           const nextProgress = { ...state.favoriteProgress }
           delete nextProgress[key]
           return {
@@ -74,12 +84,15 @@ export const useAnimeStore = create<AnimeState>()(
           },
         })),
       hydrateFavoritesFromRemote: (entries) =>
-        set(() => ({
-          favoriteAnime: entries.map((e) => e.animeId),
-          favoriteProgress: Object.fromEntries(
+        set(() => {
+          const favoriteAnime = entries
+            .filter((e) => e.isFavorite !== false)
+            .map((e) => e.animeId)
+          const favoriteProgress = Object.fromEntries(
             entries.map((e) => [String(e.animeId), e.progress])
-          ),
-        })),
+          )
+          return { favoriteAnime, favoriteProgress }
+        }),
       setAnimeList: (animeList) => set({ animeList }),
     }),
     {

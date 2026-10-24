@@ -75,7 +75,10 @@ const Profile = () => {
 
   const roleBadges = socialProfile?.profile?.role_badges ?? []
   const watchedItems = socialProfile?.watched?.items ?? []
-  const watchedTotal = socialProfile?.watched?.total ?? watchedItems.length
+  const favoriteListItems = useMemo(
+    () => watchedItems.filter((item) => item.is_favorite === true),
+    [watchedItems]
+  )
   const memberSinceLabel = formatProfileMemberSince(socialProfile?.profile?.member_since)
   const showSocialWatch = socialProfile?.enabled === true
 
@@ -214,8 +217,8 @@ const Profile = () => {
         <>
           <ProfileRecentEpisodesRail items={watchedItems} restoreKey="own-profile-recent" />
           <ProfileFavoritesPreview
-            items={watchedItems}
-            total={watchedTotal}
+            items={favoriteListItems}
+            total={favoriteListItems.length}
             profileBase="/profile"
           />
         </>

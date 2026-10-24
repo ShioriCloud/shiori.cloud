@@ -42,6 +42,7 @@ export const upsertUserAnimeListEntry = async (
   payload: {
     episodes_watched?: number
     user_rating?: number | null
+    is_favorite?: boolean
   }
 ): Promise<UserAnimeListMutationResult> => {
   return withListAuth(async () => {
@@ -53,6 +54,7 @@ export const upsertUserAnimeListEntry = async (
         anime_id: recordId,
         episodes_watched: payload.episodes_watched,
         user_rating: payload.user_rating,
+        is_favorite: payload.is_favorite,
         telegram_init_data: getTelegramInitData() || undefined,
       }),
     })

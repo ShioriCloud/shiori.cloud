@@ -2,6 +2,7 @@ export type UserAnimeListRow = {
   anime_id: number | string
   episodes_watched: number
   user_rating: number | null
+  is_favorite?: boolean
   updated_at?: string
 }
 

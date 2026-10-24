@@ -144,7 +144,10 @@ const PublicUserProfile = () => {
   const roleBadges = data.profile.role_badges ?? []
   const translator = data.translator ?? null
   const watchedItems = data.watched?.items ?? []
-  const watchedTotal = data.watched?.total ?? watchedItems.length
+  const favoriteListItems = useMemo(
+    () => watchedItems.filter((item) => item.is_favorite === true),
+    [watchedItems]
+  )
   const memberSinceLabel = formatProfileMemberSince(data.profile.member_since)
   const watchVisible = !data.privacy?.watch_activity_hidden
 
@@ -274,8 +277,8 @@ const PublicUserProfile = () => {
             restoreKey={`public-${telegramUserId}-recent`}
           />
           <ProfileFavoritesPreview
-            items={watchedItems}
-            total={watchedTotal}
+            items={favoriteListItems}
+            total={favoriteListItems.length}
             profileBase={profileBase}
           />
         </>
