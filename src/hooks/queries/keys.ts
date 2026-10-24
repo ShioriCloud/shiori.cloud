@@ -30,6 +30,12 @@ export const queryKeys = {
     ['anime', 'favorite-cards', ids.map(String).sort().join(',')] as const,
   downloadTokenBalance: ['download-tokens', 'balance'] as const,
   downloadTokenWallet: ['download-tokens', 'wallet'] as const,
+  animeComments: (
+    animeId: string,
+    parentId: string | null,
+    page: number,
+    limit: number
+  ) => ['anime-comments', animeId, parentId, page, limit] as const,
   socialProfileMe: ['user-social-profile', 'me'] as const,
   socialProfileUser: (telegramUserId: string) =>
     ['user-social-profile', 'user', telegramUserId] as const,

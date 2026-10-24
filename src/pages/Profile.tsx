@@ -228,7 +228,7 @@ const Profile = () => {
       <div className="mx-4 mt-4">
         {activeTab === 'stats' ? <ProfileStatsPanel /> : null}
         {activeTab === 'feed' ? (
-          <ProfileFeedPanel enabled={socialProfile?.enabled === true} />
+          <ProfileFeedPanel enabled />
         ) : null}
         {activeTab === 'personal' ? (
           <ProfilePersonalPanel
