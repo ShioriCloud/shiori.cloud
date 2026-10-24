@@ -22,6 +22,13 @@ import { showAppConfirm, showAppToast } from '@/store/appFeedbackStore'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { cn } from '@/lib/utils'
 
+const replyContextSnippet = (body: string, maxLen = 80): string | null => {
+  const flat = body.replace(/\s+/g, ' ').trim()
+  if (!flat) return null
+  if (flat.length <= maxLen) return flat
+  return `${flat.slice(0, maxLen - 1)}…`
+}
+
 const CommentCardShell = ({
   children,
   className,
@@ -263,7 +270,17 @@ const CommentCard = ({
   )
 }
 
-const CommentReplies = ({ animeId, parentId }: { animeId: string; parentId: string }) => {
+const CommentReplies = ({
+  animeId,
+  parentId,
+  rootAuthorName,
+  rootCommentSnippet,
+}: {
+  animeId: string
+  parentId: string
+  rootAuthorName: string
+  rootCommentSnippet: string | null
+}) => {
   const { data, isLoading } = useAnimeCommentsQuery(animeId, true, parentId, 1, 50)
   const { create, remove } = useAnimeCommentMutations(animeId)
   const [replyOpen, setReplyOpen] = useState(false)
@@ -280,7 +297,22 @@ const CommentReplies = ({ animeId, parentId }: { animeId: string; parentId: stri
 
   return (
     <div className="mr-1 mt-1 space-y-2 border-r-2 border-primary-400/30 pr-3">
-      <p className="pr-1 text-[10px] font-medium text-muted-foreground">پاسخ‌ها</p>
+      <div
+        className={cn(
+          'rounded-xl border border-border/40 bg-muted/25 px-2.5 py-2 text-right',
+          'dark:bg-muted/15'
+        )}
+      >
+        <p className="text-[11px] leading-5 text-muted-foreground">
+          در پاسخ به{' '}
+          <span className="font-semibold text-foreground">{rootAuthorName}</span>
+        </p>
+        {rootCommentSnippet ? (
+          <p className="mt-1 line-clamp-2 text-[11px] leading-5 text-muted-foreground/85">
+            «{rootCommentSnippet}»
+          </p>
+        ) : null}
+      </div>
       {items.map((reply) => (
         <CommentCard
           key={reply.id}
@@ -380,7 +412,16 @@ const RootCommentRow = ({
           />
         </CommentCardShell>
       ) : null}
-      {repliesOpen ? <CommentReplies animeId={animeId} parentId={comment.id} /> : null}
+      {repliesOpen ? (
+        <CommentReplies
+          animeId={animeId}
+          parentId={comment.id}
+          rootAuthorName={comment.author.display_name}
+          rootCommentSnippet={
+            comment.is_deleted ? null : replyContextSnippet(comment.body)
+          }
+        />
+      ) : null}
     </div>
   )
 }
