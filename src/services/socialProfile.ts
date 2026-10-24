@@ -110,6 +110,13 @@ export const fetchSocialProfileMe = async (page = 1, limit = 60): Promise<Social
     `/user-social-profile/me?page=${encodeURIComponent(String(page))}&limit=${encodeURIComponent(String(limit))}`
   )
 
+export const updateSocialDisplayName = async (displayName: string) =>
+  shioriFetch<{ ok: boolean; display_name: string }>('/user-social-profile/me', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ display_name: displayName }),
+  })
+
 export const fetchSocialProfileUser = async (
   telegramUserId: string,
   page = 1,

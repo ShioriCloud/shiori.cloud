@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { AlarmClockIcon, CustomerServiceIcon } from 'hugeicons-react'
 import { ChevronLeft, ChevronRight, Crown, Moon, Sun } from 'lucide-react'
@@ -6,9 +6,11 @@ import { useAppAuth } from '../hooks/useAppAuth'
 import { useNotifications } from '../hooks/useNotifications'
 import { useSubscriptionMe } from '../hooks/useSubscription'
 import { useTokenRechargeUi } from '../hooks/useTokenRechargeUi'
+import { useSocialProfileMe, useUpdateSocialDisplayName } from '../hooks/useSocialProfile'
 import { ENABLE_SUBSCRIPTION_DOWNLOAD_GATE } from '../config/monetizationFlags'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import { MyListCompactCard } from '@/components/my-list/MyListUi'
 import { ProfileTokenWalletCard } from '@/components/download-tokens/ProfileTokenWalletCard'
 import { TokenRechargeSheet } from '@/components/download-tokens/TokenRechargeSheet'
@@ -92,8 +94,19 @@ const ProfileSettings = () => {
   } = useNotifications()
   const { preference, setPreference, isDarkMode } = useTheme()
   const tokenRecharge = useTokenRechargeUi(Boolean(user))
+  const { data: socialProfile } = useSocialProfileMe(Boolean(user))
+  const updateDisplayName = useUpdateSocialDisplayName()
+  const [draftName, setDraftName] = useState('')
+  const [nameSaved, setNameSaved] = useState(false)
   const showNotificationSettings = inTelegram && user != null
   const showPrivacySettings = inTelegram && user != null
+  const showIdentitySettings = Boolean(user) && socialProfile?.enabled === true
+  const currentSocialName =
+    socialProfile?.profile?.display_name?.trim() || user?.displayName || ''
+
+  useEffect(() => {
+    setDraftName(currentSocialName)
+  }, [currentSocialName])
 
   return (
     <div className="bg-background pb-24 text-foreground">
@@ -112,8 +125,61 @@ const ProfileSettings = () => {
       </div>
 
       <div className="px-4 pt-4">
-        {tokenRecharge.walletEnabled ? (
+        {showIdentitySettings ? (
           <div className="mt-2">
+            <SectionTitle>نام نمایشی</SectionTitle>
+            <MyListCompactCard className="space-y-3 overflow-hidden p-3">
+              <div className="text-right">
+                <Label htmlFor="social-display-name" className="text-sm font-medium text-foreground">
+                  نام روی پروفایل
+                </Label>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  این نام در پروفایل، نظرات و فید دیده می‌شود. خالی بگذار تا نام تلگرام برگردد.
+                </p>
+              </div>
+              <Input
+                id="social-display-name"
+                value={draftName}
+                maxLength={40}
+                dir="auto"
+                placeholder="مثلاً شیوری"
+                onChange={(event) => {
+                  setNameSaved(false)
+                  setDraftName(event.target.value)
+                }}
+              />
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[11px] text-muted-foreground">
+                  {nameSaved
+                    ? 'ذخیره شد'
+                    : updateDisplayName.isError
+                      ? 'ذخیره نشد؛ دوباره تلاش کن'
+                      : ' '}
+                </p>
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={
+                    updateDisplayName.isPending ||
+                    draftName.trim() === currentSocialName ||
+                    draftName.trim().length === 1
+                  }
+                  onClick={() => {
+                    hapticSelection()
+                    updateDisplayName.mutate(draftName.trim(), {
+                      onSuccess: () => setNameSaved(true),
+                    })
+                  }}
+                >
+                  {updateDisplayName.isPending ? 'در حال ذخیره…' : 'ذخیره'}
+                </Button>
+              </div>
+            </MyListCompactCard>
+          </div>
+        ) : null}
+
+        {tokenRecharge.walletEnabled ? (
+          <div className={showIdentitySettings ? 'mt-6' : 'mt-2'}>
             <SectionTitle>کیف توکن</SectionTitle>
             <ProfileTokenWalletCard
               balance={tokenRecharge.balance}

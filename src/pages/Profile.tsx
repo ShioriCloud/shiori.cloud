@@ -52,7 +52,8 @@ const Profile = () => {
     )
   }
 
-  const displayName = user?.displayName ?? 'کاربر'
+  const displayName =
+    socialProfile?.profile?.display_name?.trim() || user?.displayName || 'کاربر'
   const initials = useMemo(() => getInitials(displayName), [displayName])
   const avatarUrl = user?.photoUrl && !avatarFailed ? user.photoUrl : null
   const showWebAuth = !inTelegram && !user

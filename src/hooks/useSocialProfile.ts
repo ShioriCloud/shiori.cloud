@@ -10,6 +10,7 @@ import {
   followSocialUser,
   searchSocialUsers,
   unfollowSocialUser,
+  updateSocialDisplayName,
 } from '../services/socialProfile'
 import { queryKeys } from './queries/keys'
 
@@ -129,4 +130,16 @@ export function useSocialFollowMutation(targetTelegramUserId: string | undefined
   })
 
   return { follow, unfollow, isPending: follow.isPending || unfollow.isPending }
+}
+
+export function useUpdateSocialDisplayName() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (displayName: string) => updateSocialDisplayName(displayName),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['user-social-profile'] })
+      void queryClient.invalidateQueries({ queryKey: ['anime-comments'] })
+    },
+  })
 }
