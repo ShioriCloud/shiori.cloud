@@ -1,11 +1,11 @@
-import { FormEvent, useState } from 'react'
+import { FormEvent, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Message01Icon, UserIcon } from 'hugeicons-react'
+import { CornerDownLeft, Flag, ThumbsUp, Trash2 } from 'lucide-react'
 import { BidiText } from '@/components/BidiText'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { MyListCompactCard } from '@/components/my-list/MyListUi'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import {
@@ -20,8 +20,29 @@ import { cn } from '@/lib/utils'
 const formatCommentTime = (iso: string) => {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return '—'
-  return d.toLocaleString('fa-IR', { dateStyle: 'short', timeStyle: 'short' })
+  const date = d.toLocaleDateString('fa-IR', { year: 'numeric', month: '2-digit', day: '2-digit' })
+  const time = d.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })
+  return `${date} - ${time}`
 }
+
+const CommentCardShell = ({
+  children,
+  className,
+}: {
+  children: ReactNode
+  className?: string
+}) => (
+  <article
+    dir="rtl"
+    className={cn(
+      'rounded-2xl border border-border/50 bg-muted/25 px-3.5 py-3.5',
+      'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] dark:bg-muted/15',
+      className
+    )}
+  >
+    {children}
+  </article>
+)
 
 const CommentComposer = ({
   placeholder,
@@ -29,12 +50,14 @@ const CommentComposer = ({
   disabled,
   pending,
   onSubmit,
+  compact,
 }: {
   placeholder: string
   submitLabel: string
   disabled?: boolean
   pending?: boolean
   onSubmit: (body: string) => Promise<void>
+  compact?: boolean
 }) => {
   const [body, setBody] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -54,18 +77,18 @@ const CommentComposer = ({
   }
 
   return (
-    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-2">
+    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-2" dir="rtl">
       <Textarea
         value={body}
         onChange={(e) => setBody(e.target.value)}
         placeholder={placeholder}
         disabled={disabled || pending}
         maxLength={2000}
-        rows={3}
-        className="min-h-[5.5rem] resize-none text-sm leading-6"
+        rows={compact ? 2 : 3}
+        className="min-h-[5rem] resize-none text-sm leading-7 text-right"
       />
-      {error ? <p className="text-xs text-red-400">{error}</p> : null}
-      <div className="flex justify-end">
+      {error ? <p className="text-right text-xs text-red-400">{error}</p> : null}
+      <div className="flex justify-start">
         <Button type="submit" size="sm" disabled={disabled || pending || !body.trim()}>
           {pending ? 'در حال ارسال…' : submitLabel}
         </Button>
@@ -74,83 +97,128 @@ const CommentComposer = ({
   )
 }
 
-const CommentAuthorAvatar = ({ photoUrl }: { photoUrl: string | null }) => (
-  <div className="h-9 w-9 shrink-0 overflow-hidden rounded-xl border border-border/50 bg-muted">
+const CommentAuthorAvatar = ({
+  photoUrl,
+  size = 'md',
+}: {
+  photoUrl: string | null
+  size?: 'md' | 'sm'
+}) => (
+  <div
+    className={cn(
+      'shrink-0 overflow-hidden rounded-full border border-border/60 bg-muted',
+      size === 'sm' ? 'h-9 w-9' : 'h-11 w-11'
+    )}
+  >
     {photoUrl ? (
       <img src={photoUrl} alt="" className="h-full w-full object-cover" />
     ) : (
       <div className="flex h-full w-full items-center justify-center">
-        <UserIcon className="h-4 w-4 text-muted-foreground/50" />
+        <UserIcon className={cn('text-muted-foreground/50', size === 'sm' ? 'h-4 w-4' : 'h-5 w-5')} />
       </div>
     )}
   </div>
 )
 
-const CommentBody = ({
+const CommentCard = ({
   comment,
   onReply,
   onDelete,
   deleting,
   showReplyAction,
+  compact,
 }: {
   comment: AnimeComment
   onReply?: () => void
   onDelete?: () => void
   deleting?: boolean
   showReplyAction?: boolean
+  compact?: boolean
 }) => {
-  const username = comment.author.username ? `@${comment.author.username}` : null
+  const profileHref = `/u/${encodeURIComponent(comment.author.telegram_user_id)}`
 
   return (
-    <div className="flex gap-2.5">
-      <Link
-        to={`/u/${encodeURIComponent(comment.author.telegram_user_id)}`}
-        className="shrink-0"
-        aria-label={comment.author.display_name}
-      >
-        <CommentAuthorAvatar photoUrl={comment.author.photo_url} />
-      </Link>
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-          <Link
-            to={`/u/${encodeURIComponent(comment.author.telegram_user_id)}`}
-            className="text-sm font-semibold text-foreground hover:text-primary-400"
+    <CommentCardShell className={compact ? 'py-3' : undefined}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex shrink-0 items-center gap-2 text-muted-foreground">
+          <button
+            type="button"
+            className="inline-flex items-center gap-1 rounded-lg px-1.5 py-1 text-[11px] tabular-nums opacity-60"
+            aria-label="پسندیدن"
+            disabled
           >
-            {comment.author.display_name}
-          </Link>
-          {username ? (
-            <span className="text-[11px] text-muted-foreground">{username}</span>
-          ) : null}
-          <span className="text-[10px] text-muted-foreground/80">
-            {formatCommentTime(comment.created_at)}
-          </span>
-        </div>
-        <BidiText as="p" className="mt-1 whitespace-pre-wrap text-sm leading-6 text-foreground">
-          {comment.body}
-        </BidiText>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {showReplyAction && onReply ? (
-            <button
-              type="button"
-              onClick={onReply}
-              className="text-[11px] font-medium text-primary-400 hover:underline"
-            >
-              پاسخ
-            </button>
-          ) : null}
+            <ThumbsUp className="h-3.5 w-3.5" />
+            <span>{toPersianDigits(0)}</span>
+          </button>
           {comment.is_own && onDelete ? (
             <button
               type="button"
               disabled={deleting}
               onClick={() => void onDelete()}
-              className="text-[11px] font-medium text-muted-foreground hover:text-red-400 disabled:opacity-50"
+              className="rounded-lg p-1 text-muted-foreground hover:text-red-400 disabled:opacity-50"
+              aria-label="حذف نظر"
             >
-              {deleting ? 'حذف…' : 'حذف'}
+              <Trash2 className="h-3.5 w-3.5" />
             </button>
-          ) : null}
+          ) : (
+            <button
+              type="button"
+              className="rounded-lg p-1 opacity-50"
+              aria-label="گزارش"
+              disabled
+            >
+              <Flag className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+
+        <div className="flex min-w-0 flex-1 items-start justify-end gap-2.5">
+          <div className="min-w-0 text-right">
+            <Link
+              to={profileHref}
+              className="block truncate text-sm font-bold text-foreground hover:text-primary-400"
+            >
+              {comment.author.display_name}
+            </Link>
+            {comment.author.username ? (
+              <p className="truncate text-[11px] text-muted-foreground" dir="ltr">
+                @{comment.author.username}
+              </p>
+            ) : null}
+            <p className="mt-0.5 text-[10px] leading-5 text-muted-foreground/90 tabular-nums">
+              {formatCommentTime(comment.created_at)}
+            </p>
+          </div>
+          <Link to={profileHref} className="shrink-0" aria-label={comment.author.display_name}>
+            <CommentAuthorAvatar photoUrl={comment.author.photo_url} size={compact ? 'sm' : 'md'} />
+          </Link>
         </div>
       </div>
-    </div>
+
+      <BidiText
+        as="p"
+        className="mt-3 whitespace-pre-wrap text-right text-sm leading-7 text-foreground/95"
+      >
+        {comment.body}
+      </BidiText>
+
+      {showReplyAction && onReply ? (
+        <div className="mt-3 flex justify-end">
+          <button
+            type="button"
+            onClick={onReply}
+            className={cn(
+              'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5',
+              'bg-primary-500/15 text-[11px] font-semibold text-primary-400',
+              'border border-primary-400/25 active:scale-[0.98] transition-transform'
+            )}
+          >
+            <span>پاسخ</span>
+            <CornerDownLeft className="h-3.5 w-3.5" aria-hidden />
+          </button>
+        </div>
+      ) : null}
+    </CommentCardShell>
   )
 }
 
@@ -161,9 +229,9 @@ const CommentReplies = ({ animeId, parentId }: { animeId: string; parentId: stri
 
   if (isLoading) {
     return (
-      <div className="mr-4 mt-2 space-y-2 border-r-2 border-border/40 pr-3">
+      <div className="mt-2 space-y-2 border-r-2 border-primary-400/20 pr-3 mr-1">
         {[1, 2].map((i) => (
-          <div key={i} className="h-14 animate-pulse rounded-lg bg-muted/60" />
+          <div key={i} className="h-20 animate-pulse rounded-2xl bg-muted/50" />
         ))}
       </div>
     )
@@ -172,11 +240,12 @@ const CommentReplies = ({ animeId, parentId }: { animeId: string; parentId: stri
   const items = data?.items ?? []
 
   return (
-    <div className="mr-4 mt-3 space-y-3 border-r-2 border-border/40 pr-3">
+    <div className="mt-2 space-y-2 border-r-2 border-primary-400/20 pr-3 mr-1">
       {items.map((reply) => (
-        <CommentBody
+        <CommentCard
           key={reply.id}
           comment={reply}
+          compact
           deleting={remove.isPending}
           onDelete={
             reply.is_own
@@ -188,19 +257,22 @@ const CommentReplies = ({ animeId, parentId }: { animeId: string; parentId: stri
         />
       ))}
       {replyOpen ? (
-        <CommentComposer
-          placeholder="پاسخ خود را بنویسید…"
-          submitLabel="ارسال پاسخ"
-          pending={create.isPending}
-          onSubmit={async (body) => {
-            await create.mutateAsync({
-              anime_id: animeId,
-              body,
-              parent_id: parentId,
-            })
-            setReplyOpen(false)
-          }}
-        />
+        <CommentCardShell className="py-3">
+          <CommentComposer
+            compact
+            placeholder="پاسخ خود را بنویسید…"
+            submitLabel="ارسال پاسخ"
+            pending={create.isPending}
+            onSubmit={async (body) => {
+              await create.mutateAsync({
+                anime_id: animeId,
+                body,
+                parent_id: parentId,
+              })
+              setReplyOpen(false)
+            }}
+          />
+        </CommentCardShell>
       ) : (
         <button
           type="button"
@@ -227,8 +299,8 @@ const RootCommentRow = ({
   const replyCount = comment.reply_count ?? 0
 
   return (
-    <MyListCompactCard className="p-3.5">
-      <CommentBody
+    <div className="space-y-2">
+      <CommentCard
         comment={comment}
         showReplyAction
         deleting={remove.isPending}
@@ -245,8 +317,9 @@ const RootCommentRow = ({
         }
       />
       {replyComposerOpen ? (
-        <div className="mt-3 border-t border-border/40 pt-3">
+        <CommentCardShell className="py-3">
           <CommentComposer
+            compact
             placeholder="پاسخ به این نظر…"
             submitLabel="ارسال پاسخ"
             pending={create.isPending}
@@ -260,14 +333,14 @@ const RootCommentRow = ({
               setRepliesOpen(true)
             }}
           />
-        </div>
+        </CommentCardShell>
       ) : null}
       {replyCount > 0 ? (
         <button
           type="button"
           onClick={() => setRepliesOpen((v) => !v)}
           className={cn(
-            'mt-2 text-[11px] font-medium text-muted-foreground hover:text-foreground',
+            'w-full text-right text-[11px] font-medium text-muted-foreground hover:text-foreground',
             repliesOpen && 'text-primary-400'
           )}
         >
@@ -277,7 +350,7 @@ const RootCommentRow = ({
         </button>
       ) : null}
       {repliesOpen ? <CommentReplies animeId={animeId} parentId={comment.id} /> : null}
-    </MyListCompactCard>
+    </div>
   )
 }
 
@@ -293,9 +366,9 @@ export const AnimeDetailCommentsTab = ({ animeId }: { animeId: string | number }
 
   if (!isReady) {
     return (
-      <div className="space-y-2 animate-pulse">
+      <div className="space-y-3 animate-pulse">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-24 rounded-xl bg-muted/60" />
+          <div key={i} className="h-28 rounded-2xl bg-muted/50" />
         ))}
       </div>
     )
@@ -315,15 +388,15 @@ export const AnimeDetailCommentsTab = ({ animeId }: { animeId: string | number }
   const total = data?.total ?? 0
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" dir="rtl">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-base font-semibold text-foreground">نظرات</h2>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs text-muted-foreground tabular-nums">
           {isLoading ? '…' : `${toPersianDigits(total)} نظر`}
         </span>
       </div>
 
-      <MyListCompactCard className="p-3.5">
+      <CommentCardShell>
         <CommentComposer
           placeholder="نظر خود را درباره این انیمه بنویسید…"
           submitLabel="ثبت نظر"
@@ -333,12 +406,12 @@ export const AnimeDetailCommentsTab = ({ animeId }: { animeId: string | number }
             await create.mutateAsync({ anime_id: animeKey, body })
           }}
         />
-      </MyListCompactCard>
+      </CommentCardShell>
 
       {isLoading ? (
-        <div className="space-y-2 animate-pulse">
+        <div className="space-y-3 animate-pulse">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-24 rounded-xl bg-muted/60" />
+            <div key={i} className="h-28 rounded-2xl bg-muted/50" />
           ))}
         </div>
       ) : null}
@@ -359,7 +432,7 @@ export const AnimeDetailCommentsTab = ({ animeId }: { animeId: string | number }
       ) : null}
 
       {!isLoading && !isError && (data?.items.length ?? 0) > 0 ? (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {data!.items.map((comment) => (
             <RootCommentRow key={comment.id} animeId={animeKey} comment={comment} />
           ))}
