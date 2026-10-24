@@ -8,14 +8,21 @@ import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
 import { ProfileFeedPanel } from '@/components/profile/ProfileFeedPanel'
 import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
 import { ProfileOverviewStrip } from '@/components/profile/ProfileOverviewStrip'
-import { ProfilePersonalPanel } from '@/components/profile/ProfilePersonalPanel'
+import { ProfileFavoritesPreview } from '@/components/profile/ProfileFavoritesPreview'
+import { ProfilePublicStatsExtras } from '@/components/profile/ProfilePublicStatsExtras'
+import { ProfileRecentEpisodesRail } from '@/components/profile/ProfileRecentEpisodesRail'
 import { ProfileSocialWatchedRail } from '@/components/profile/ProfileSocialWatchedRail'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
 import { ProfileBadgesStrip } from '@/components/profile/ProfileBadgesStrip'
 import { ProfileShareButton } from '@/components/profile/ProfileShareButton'
 import { ProfileSocialActionsSheet } from '@/components/profile/ProfileSocialActionsSheet'
 import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
-import { PROFILE_TABS, parseProfileTab, type ProfileTabId } from '@/components/profile/profileTabs'
+import {
+  PUBLIC_PROFILE_TABS,
+  parseProfileTab,
+  type ProfileTabId,
+} from '@/components/profile/profileTabs'
+import { formatProfileMemberSince } from '@/lib/profileMemberSince'
 import { ExploreEmptyState, ExploreTabBar } from '@/components/explore/ExploreUi'
 import { MyListCompactCard } from '@/components/my-list/MyListUi'
 import { cn } from '@/lib/utils'
@@ -46,7 +53,10 @@ const PublicUserProfile = () => {
   const [avatarFailed, setAvatarFailed] = useState(false)
   const [actionsOpen, setActionsOpen] = useState(false)
 
-  const activeTab = parseProfileTab(searchParams.get('tab'))
+  const activeTab = (() => {
+    const tab = parseProfileTab(searchParams.get('tab'))
+    return tab === 'personal' ? 'stats' : tab
+  })()
 
   const setActiveTab = (tab: ProfileTabId) => {
     setSearchParams(
@@ -134,6 +144,9 @@ const PublicUserProfile = () => {
   const roleBadges = data.profile.role_badges ?? []
   const translator = data.translator ?? null
   const watchedItems = data.watched?.items ?? []
+  const watchedTotal = data.watched?.total ?? watchedItems.length
+  const memberSinceLabel = formatProfileMemberSince(data.profile.member_since)
+  const watchVisible = !data.privacy?.watch_activity_hidden
 
   return (
     <div className="bg-background pb-24 text-foreground">
@@ -201,6 +214,10 @@ const PublicUserProfile = () => {
             {displayName}
           </h1>
 
+          {memberSinceLabel ? (
+            <p className="mt-1 text-center text-xs text-muted-foreground">{memberSinceLabel}</p>
+          ) : null}
+
           {roleBadges.length > 0 ? (
             <div className="mt-2 flex flex-wrap justify-center gap-1.5">
               {roleBadges.map((badge) => (
@@ -242,7 +259,7 @@ const PublicUserProfile = () => {
         />
       </div>
 
-      {data.privacy?.watch_activity_hidden ? (
+      {!watchVisible ? (
         <div className="mx-4 mt-5 rounded-2xl border border-border/50 bg-muted/30 px-4 py-5 text-center text-sm leading-7 text-muted-foreground">
           فعالیت تماشای این کاربر خصوصی است.
         </div>
@@ -250,42 +267,54 @@ const PublicUserProfile = () => {
         <ProfileOverviewStrip data={overview} fullStatsTo={null} />
       )}
 
+      {watchVisible ? (
+        <>
+          <ProfileRecentEpisodesRail
+            items={watchedItems}
+            restoreKey={`public-${telegramUserId}-recent`}
+          />
+          <ProfileFavoritesPreview
+            items={watchedItems}
+            total={watchedTotal}
+            profileBase={profileBase}
+          />
+        </>
+      ) : null}
+
       {translator ? (
         <ProfileTranslationsRail translator={translator} profileUserId={telegramUserId} />
       ) : null}
 
-      {!data.privacy?.watch_activity_hidden ? (
+      {watchVisible ? (
         <div className="mx-4 mt-6">
           <ProfileBadgesStrip badges={data.badges} />
         </div>
       ) : null}
 
       <div className="mx-4 mt-6">
-        <ExploreTabBar tabs={[...PROFILE_TABS]} active={activeTab} onChange={setActiveTab} />
+        <ExploreTabBar tabs={[...PUBLIC_PROFILE_TABS]} active={activeTab} onChange={setActiveTab} />
       </div>
 
       <div className="mx-4 mt-4">
         {activeTab === 'stats' ? (
-          data.privacy?.watch_activity_hidden ? (
+          !watchVisible ? (
             <MyListCompactCard className="p-4 text-center text-sm text-muted-foreground">
               لیست تماشا خصوصی است.
             </MyListCompactCard>
           ) : (
-            <div className="-mx-4">
-              <ProfileSocialWatchedRail items={watchedItems} />
-            </div>
+            <>
+              <div className="-mx-4">
+                <ProfileSocialWatchedRail items={watchedItems} />
+              </div>
+              <ProfilePublicStatsExtras
+                profileUserId={telegramUserId}
+                translator={translator}
+                displayName={displayName}
+              />
+            </>
           )
         ) : null}
         {activeTab === 'feed' ? <ProfileFeedPanel enabled /> : null}
-        {activeTab === 'personal' ? (
-          <ProfilePersonalPanel
-            translator={translator}
-            variant="public"
-            profileUserId={telegramUserId}
-            memberSince={data.profile.member_since}
-            displayName={displayName}
-          />
-        ) : null}
       </div>
 
       {user ? (

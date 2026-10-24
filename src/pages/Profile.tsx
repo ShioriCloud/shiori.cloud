@@ -13,12 +13,15 @@ import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
 import { ProfileOverviewStrip } from '@/components/profile/ProfileOverviewStrip'
 import { ProfilePersonalPanel } from '@/components/profile/ProfilePersonalPanel'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
+import { ProfileFavoritesPreview } from '@/components/profile/ProfileFavoritesPreview'
+import { ProfileRecentEpisodesRail } from '@/components/profile/ProfileRecentEpisodesRail'
 import { ProfileStatsPanel } from '@/components/profile/ProfileStatsPanel'
 import { ProfileBadgesStrip } from '@/components/profile/ProfileBadgesStrip'
 import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import { PROFILE_TABS, parseProfileTab, type ProfileTabId } from '@/components/profile/profileTabs'
 import { ExploreTabBar } from '@/components/explore/ExploreUi'
 import { mergeOwnProfileHeaderStats } from '@/lib/ownProfileStats'
+import { formatProfileMemberSince } from '@/lib/profileMemberSince'
 import { toPersianDigits } from '@/lib/persianDigits'
 
 const getInitials = (name: string): string => {
@@ -71,6 +74,10 @@ const Profile = () => {
     n == null ? '—' : toPersianDigits(n)
 
   const roleBadges = socialProfile?.profile?.role_badges ?? []
+  const watchedItems = socialProfile?.watched?.items ?? []
+  const watchedTotal = socialProfile?.watched?.total ?? watchedItems.length
+  const memberSinceLabel = formatProfileMemberSince(socialProfile?.profile?.member_since)
+  const showSocialWatch = socialProfile?.enabled === true
 
   const overview = useMemo(
     () => ({
@@ -154,6 +161,10 @@ const Profile = () => {
             {displayName}
           </h1>
 
+          {memberSinceLabel ? (
+            <p className="mt-1 text-center text-xs text-muted-foreground">{memberSinceLabel}</p>
+          ) : null}
+
           {user?.email && !inTelegram ? (
             <p className="mt-1 text-left text-sm text-muted-foreground" dir="ltr">
               {user.email}
@@ -198,6 +209,17 @@ const Profile = () => {
       </div>
 
       <ProfileOverviewStrip data={overview} />
+
+      {showSocialWatch ? (
+        <>
+          <ProfileRecentEpisodesRail items={watchedItems} restoreKey="own-profile-recent" />
+          <ProfileFavoritesPreview
+            items={watchedItems}
+            total={watchedTotal}
+            profileBase="/profile"
+          />
+        </>
+      ) : null}
 
       {socialProfile?.translator && user?.id != null ? (
         <ProfileTranslationsRail

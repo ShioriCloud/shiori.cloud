@@ -116,7 +116,16 @@ export const ProfileFollowButton = ({
   return (
     <>
       {followsYou ? (
-        <p className="mt-3 text-center text-[11px] text-muted-foreground">دنبال‌ات می‌کند</p>
+        <p
+          className={cn(
+            'mt-3 text-center text-xs',
+            following
+              ? 'font-semibold text-emerald-600 dark:text-emerald-400'
+              : 'font-medium text-muted-foreground'
+          )}
+        >
+          {following ? 'همدیگه رو دنبال می‌کنید' : 'تو رو دنبال می‌کنه'}
+        </p>
       ) : null}
       <button
         type="button"
