@@ -11,6 +11,11 @@ import {
   searchSocialUsers,
   unfollowSocialUser,
   updateSocialDisplayName,
+  blockSocialUser,
+  unblockSocialUser,
+  muteSocialUser,
+  unmuteSocialUser,
+  fetchBlockedSocialUsers,
 } from '../services/socialProfile'
 import { queryKeys } from './queries/keys'
 
@@ -188,6 +193,57 @@ export function useSocialFollowMutation(targetTelegramUserId: string | undefined
   })
 
   return { follow, unfollow, isPending: follow.isPending || unfollow.isPending }
+}
+
+export function useBlockedSocialUsers(enabled = true) {
+  const authReady = useSocialAuthReady(enabled)
+
+  return useQuery({
+    queryKey: ['user-social-profile', 'blocks'] as const,
+    queryFn: fetchBlockedSocialUsers,
+    enabled: enabled && authReady,
+    staleTime: 30_000,
+    retry: false,
+  })
+}
+
+export function useSocialModerationMutations(targetTelegramUserId: string | undefined) {
+  const queryClient = useQueryClient()
+  const targetId = targetTelegramUserId?.trim() ?? ''
+
+  const invalidate = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: ['user-social-profile'] })
+    void queryClient.invalidateQueries({ queryKey: ['anime-comments'] })
+  }, [queryClient])
+
+  const block = useMutation({
+    mutationFn: () => blockSocialUser(targetId),
+    onSuccess: invalidate,
+  })
+  const unblock = useMutation({
+    mutationFn: () => unblockSocialUser(targetId),
+    onSuccess: invalidate,
+  })
+  const mute = useMutation({
+    mutationFn: () => muteSocialUser(targetId),
+    onSuccess: invalidate,
+  })
+  const unmute = useMutation({
+    mutationFn: () => unmuteSocialUser(targetId),
+    onSuccess: invalidate,
+  })
+
+  return {
+    block,
+    unblock,
+    mute,
+    unmute,
+    isPending:
+      block.isPending ||
+      unblock.isPending ||
+      mute.isPending ||
+      unmute.isPending,
+  }
 }
 
 export function useUpdateSocialDisplayName() {

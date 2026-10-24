@@ -60,6 +60,8 @@ export type SocialProfileMe = {
   relationship?: {
     is_following: boolean
     follows_you?: boolean
+    is_muted?: boolean
+    blocked_by_you?: boolean
   }
   privacy?: {
     watch_activity_hidden: boolean
@@ -167,4 +169,33 @@ export const searchSocialUsers = async (
 ): Promise<SocialProfileUserList> =>
   shioriFetch<SocialProfileUserList>(
     `/user-social-profile/search?q=${encodeURIComponent(query)}&limit=${encodeURIComponent(String(limit))}`
+  )
+
+export const fetchBlockedSocialUsers = async () =>
+  shioriFetch<{ enabled: boolean; items: SocialProfileUserListItem[] }>(
+    '/user-social-profile/blocks'
+  )
+
+export const blockSocialUser = async (targetTelegramUserId: string) =>
+  shioriFetch<{ ok: boolean; is_blocked: boolean }>(
+    `/user-social-profile/block/${encodeURIComponent(targetTelegramUserId)}`,
+    { method: 'POST' }
+  )
+
+export const unblockSocialUser = async (targetTelegramUserId: string) =>
+  shioriFetch<{ ok: boolean; is_blocked: boolean }>(
+    `/user-social-profile/block/${encodeURIComponent(targetTelegramUserId)}`,
+    { method: 'DELETE' }
+  )
+
+export const muteSocialUser = async (targetTelegramUserId: string) =>
+  shioriFetch<{ ok: boolean; is_muted: boolean }>(
+    `/user-social-profile/mute/${encodeURIComponent(targetTelegramUserId)}`,
+    { method: 'POST' }
+  )
+
+export const unmuteSocialUser = async (targetTelegramUserId: string) =>
+  shioriFetch<{ ok: boolean; is_muted: boolean }>(
+    `/user-social-profile/mute/${encodeURIComponent(targetTelegramUserId)}`,
+    { method: 'DELETE' }
   )

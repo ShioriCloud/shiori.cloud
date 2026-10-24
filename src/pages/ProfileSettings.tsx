@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { AlarmClockIcon, CustomerServiceIcon } from 'hugeicons-react'
-import { ChevronLeft, ChevronRight, Crown, Moon, Sun } from 'lucide-react'
+import { Ban, ChevronLeft, ChevronRight, Crown, Moon, Sun } from 'lucide-react'
 import { useAppAuth } from '../hooks/useAppAuth'
 import { useNotifications } from '../hooks/useNotifications'
 import { useSubscriptionMe } from '../hooks/useSubscription'
@@ -230,6 +230,14 @@ const ProfileSettings = () => {
           <div className="mt-6">
             <SectionTitle>حریم خصوصی</SectionTitle>
             <MyListCompactCard className="overflow-hidden divide-y divide-border/40">
+              {socialProfile?.enabled ? (
+                <MenuItem
+                  to="/profile/blocked"
+                  icon={<Ban className="h-4 w-4" />}
+                  label="کاربران مسدود"
+                  hint="مدیریت مسدودیت‌ها"
+                />
+              ) : null}
               <div className="flex items-center justify-between gap-3 px-3 py-3">
                 <div className="min-w-0 text-right">
                   <Label

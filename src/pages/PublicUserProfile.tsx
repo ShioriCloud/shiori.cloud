@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
 import { UserIcon } from 'hugeicons-react'
+import { MoreHorizontal } from 'lucide-react'
 import { useAppAuth } from '../hooks/useAppAuth'
 import { useSocialProfileUser } from '../hooks/useSocialProfile'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
@@ -12,6 +13,7 @@ import { ProfileSocialWatchedRail } from '@/components/profile/ProfileSocialWatc
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
 import { ProfileBadgesStrip } from '@/components/profile/ProfileBadgesStrip'
 import { ProfileShareButton } from '@/components/profile/ProfileShareButton'
+import { ProfileSocialActionsSheet } from '@/components/profile/ProfileSocialActionsSheet'
 import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import { PROFILE_TABS, parseProfileTab, type ProfileTabId } from '@/components/profile/profileTabs'
 import { ExploreEmptyState, ExploreTabBar } from '@/components/explore/ExploreUi'
@@ -42,6 +44,7 @@ const PublicUserProfile = () => {
   )
   const [searchParams, setSearchParams] = useSearchParams()
   const [avatarFailed, setAvatarFailed] = useState(false)
+  const [actionsOpen, setActionsOpen] = useState(false)
 
   const activeTab = parseProfileTab(searchParams.get('tab'))
 
@@ -161,6 +164,16 @@ const PublicUserProfile = () => {
               displayName={displayName}
               className="absolute left-0 top-0 z-20"
             />
+            {user ? (
+              <button
+                type="button"
+                aria-label="گزینه‌های کاربر"
+                className="absolute right-0 top-0 z-20 flex h-9 w-9 items-center justify-center rounded-lg border border-border/60 bg-card/90 text-muted-foreground active:scale-95"
+                onClick={() => setActionsOpen(true)}
+              >
+                <MoreHorizontal className="h-5 w-5" />
+              </button>
+            ) : null}
 
             <div className="media-card-skeuo h-24 w-24 rounded-2xl">
               <div className="media-card-skeuo-face bg-muted">
@@ -274,6 +287,17 @@ const PublicUserProfile = () => {
           />
         ) : null}
       </div>
+
+      {user ? (
+        <ProfileSocialActionsSheet
+          open={actionsOpen}
+          onOpenChange={setActionsOpen}
+          targetTelegramUserId={telegramUserId}
+          displayName={displayName}
+          isMuted={data.relationship?.is_muted === true}
+          blockedByYou={data.relationship?.blocked_by_you === true}
+        />
+      ) : null}
     </div>
   )
 }
