@@ -15,9 +15,28 @@ export type UserCustomListRow = {
   id: string
   name: string
   icon: ShioriListIcon | string
+  is_public?: boolean
   created_at: string
   updated_at: string
   items: UserCustomListItemRow[]
+}
+
+export type PublicCustomListSummary = {
+  id: string
+  name: string
+  icon: ShioriListIcon | string
+  item_count: number
+  updated_at: string
+}
+
+export type PublicCustomListDetail = PublicCustomListSummary & {
+  items: Array<{
+    anime_id: string
+    slug: string | null
+    title: string
+    image: string
+    position: number
+  }>
 }
 
 const withListAuth = async <T>(fn: () => Promise<T>): Promise<T> => {
@@ -58,9 +77,28 @@ export const createUserCustomList = async (payload: {
   })
 }
 
+export const fetchPublicCustomLists = async (
+  telegramUserId: string
+): Promise<{ enabled: boolean; lists: PublicCustomListSummary[] }> =>
+  withListAuth(() =>
+    shioriFetch(
+      `/user-custom-lists/users/${encodeURIComponent(telegramUserId)}/public`
+    )
+  )
+
+export const fetchPublicCustomList = async (
+  telegramUserId: string,
+  listId: string
+): Promise<{ enabled: boolean; list: PublicCustomListDetail | null }> =>
+  withListAuth(() =>
+    shioriFetch(
+      `/user-custom-lists/users/${encodeURIComponent(telegramUserId)}/public/${encodeURIComponent(listId)}`
+    )
+  )
+
 export const updateUserCustomList = async (
   listId: string,
-  payload: { name?: string; icon?: ShioriListIcon }
+  payload: { name?: string; icon?: ShioriListIcon; is_public?: boolean }
 ): Promise<UserCustomListRow> => {
   return withListAuth(async () => {
     return shioriFetch<UserCustomListRow>(

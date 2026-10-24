@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.77',
+    items: ['پلی‌لیست‌های عمومی روی پروفایل و از ویرایش لیست فعال می‌شوند'],
+  },
+  {
     version: '0.2.76',
     items: [
       'فید و لیست دنبال‌شده‌ها با «نمایش بیشتر» ادامه پیدا می‌کنند',

@@ -5,6 +5,7 @@ import { MyListCompactCard } from '@/components/my-list/MyListUi'
 import { ProfileCommentActivityList } from '@/components/profile/ProfileCommentActivityList'
 import { TranslatorBioQuote } from '@/components/profile/TranslatorBioQuote'
 import { useUserAnimeCommentsQuery } from '@/hooks/useAnimeComments'
+import { usePublicCustomListsQuery } from '@/hooks/usePublicCustomLists'
 import { toPersianDigits } from '@/lib/persianDigits'
 import type { SocialProfileMe } from '@/services/socialProfile'
 import { cn } from '@/lib/utils'
@@ -78,6 +79,10 @@ export const ProfilePersonalPanel = ({
     variant === 'public' && Boolean(profileUserId),
     1,
     3
+  )
+  const publicLists = usePublicCustomListsQuery(
+    profileUserId,
+    variant === 'public' && Boolean(profileUserId)
   )
 
   if (variant === 'self') {
@@ -157,6 +162,15 @@ export const ProfilePersonalPanel = ({
             hint={translator?.name ?? 'مشاهده همه'}
           />
         ) : null}
+        {publicLists.data?.lists.map((list) => (
+          <PersonalRow
+            key={list.id}
+            to={`/u/${encodeURIComponent(profileUserId ?? '')}/lists/${encodeURIComponent(list.id)}`}
+            icon={<ListMusic className="h-4 w-4" />}
+            label={list.name}
+            hint={`${toPersianDigits(list.item_count)} انیمه`}
+          />
+        ))}
       </MyListCompactCard>
 
       {publicComments.data?.items.length ? (

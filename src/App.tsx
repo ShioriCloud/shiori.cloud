@@ -32,6 +32,7 @@ const ProfileFollowList = lazy(() => import('./pages/ProfileFollowList'))
 const UserTranslationsPage = lazy(() => import('./pages/UserTranslationsPage'))
 const ProfilePeopleSearch = lazy(() => import('./pages/ProfilePeopleSearch'))
 const ProfileActivity = lazy(() => import('./pages/ProfileActivity'))
+const PublicShioriListPage = lazy(() => import('./pages/PublicShioriListPage'))
 const Notifications = lazy(() => import('./pages/Notifications'))
 const Support = lazy(() => import('./pages/Support'))
 const SupportTicketDetail = lazy(() => import('./pages/SupportTicketDetail'))
@@ -105,6 +106,7 @@ function App() {
             <Route path="/profile/activity" element={<ProfileActivity />} />
             <Route path="/u/:telegramUserId" element={<PublicUserProfile />} />
             <Route path="/u/:telegramUserId/activity" element={<ProfileActivity />} />
+            <Route path="/u/:telegramUserId/lists/:listId" element={<PublicShioriListPage />} />
             <Route path="/u/:telegramUserId/translations" element={<UserTranslationsPage />} />
             <Route path="/u/:telegramUserId/followers" element={<ProfileFollowList />} />
             <Route path="/u/:telegramUserId/following" element={<ProfileFollowList />} />

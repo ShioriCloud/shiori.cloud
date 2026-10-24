@@ -8,6 +8,8 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import { type ShioriListIcon } from '@/store/myListStore'
 import { useCustomLists } from '@/hooks/useCustomLists'
@@ -29,11 +31,13 @@ export const EditListSheet = ({
   const list = customLists.find((l) => l.id === resolvedId || l.id === listId)
   const [name, setName] = useState('')
   const [icon, setIcon] = useState<ShioriListIcon>('heart')
+  const [isPublic, setIsPublic] = useState(false)
 
   useEffect(() => {
     if (!list || !open) return
     setName(list.name)
     setIcon(list.icon)
+    setIsPublic(list.isPublic === true)
   }, [list, open])
 
   const handleSave = async () => {
@@ -44,7 +48,7 @@ export const EditListSheet = ({
       return
     }
     try {
-      await updateList(resolvedId, { name: trimmed, icon })
+      await updateList(resolvedId, { name: trimmed, icon, isPublic })
       onOpenChange(false)
       showAlert('لیست به‌روز شد')
     } catch {
@@ -95,6 +99,21 @@ export const EditListSheet = ({
                 </button>
               ))}
             </div>
+          </div>
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-border/50 px-3 py-3">
+            <div className="min-w-0 text-right">
+              <Label htmlFor="list-is-public" className="text-sm font-medium text-foreground">
+                پلی‌لیست عمومی
+              </Label>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                روی پروفایل عمومی‌ات برای دیگران دیده می‌شود
+              </p>
+            </div>
+            <Switch
+              id="list-is-public"
+              checked={isPublic}
+              onCheckedChange={setIsPublic}
+            />
           </div>
         </div>
         <SheetFooter className="flex-row gap-2 border-t border-border/50 px-4 py-4">

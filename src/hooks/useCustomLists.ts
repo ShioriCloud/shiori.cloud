@@ -32,6 +32,7 @@ const toStoreList = (row: UserCustomListRow): ShioriCustomList => ({
   id: row.id,
   name: row.name,
   icon: isShioriListIcon(row.icon) ? row.icon : 'heart',
+  isPublic: row.is_public === true,
   animeIds: [...(row.items ?? [])]
     .sort((a, b) => a.position - b.position)
     .map((item) => item.anime_id),
@@ -285,16 +286,24 @@ export const useCustomLists = (options?: { syncRemote?: boolean }) => {
       patch,
     }: {
       id: string
-      patch: Partial<Pick<ShioriCustomList, 'name' | 'icon'>>
+      patch: Partial<Pick<ShioriCustomList, 'name' | 'icon' | 'isPublic'>>
     }) => {
       const previous = useMyListStore.getState().customLists.find((list) => list.id === id)
       updateListLocal(id, patch)
       if (!canCallApi()) return
       try {
-        await updateUserCustomList(id, patch)
+        await updateUserCustomList(id, {
+          name: patch.name,
+          icon: patch.icon,
+          is_public: patch.isPublic,
+        })
       } catch (error) {
         if (previous) {
-          updateListLocal(id, { name: previous.name, icon: previous.icon })
+          updateListLocal(id, {
+            name: previous.name,
+            icon: previous.icon,
+            isPublic: previous.isPublic,
+          })
         }
         throw error
       }
@@ -365,8 +374,10 @@ export const useCustomLists = (options?: { syncRemote?: boolean }) => {
   )
 
   const updateList = useCallback(
-    async (id: string, patch: Partial<Pick<ShioriCustomList, 'name' | 'icon'>>) =>
-      updateListMutation.mutateAsync({ id, patch }),
+    async (
+      id: string,
+      patch: Partial<Pick<ShioriCustomList, 'name' | 'icon' | 'isPublic'>>
+    ) => updateListMutation.mutateAsync({ id, patch }),
     [updateListMutation]
   )
 

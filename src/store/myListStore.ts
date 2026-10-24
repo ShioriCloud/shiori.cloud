@@ -9,6 +9,8 @@ export type ShioriCustomList = {
   id: string
   name: string
   icon: ShioriListIcon
+  /** When true, list is visible on the owner public profile. */
+  isPublic?: boolean
   animeIds: string[]
   createdAt: string
   updatedAt: string
@@ -40,7 +42,10 @@ type MyListState = {
   downloads: DownloadRecord[]
 
   createList: (name: string, icon: ShioriListIcon) => ShioriCustomList | null
-  updateList: (id: string, patch: Partial<Pick<ShioriCustomList, 'name' | 'icon'>>) => void
+  updateList: (
+    id: string,
+    patch: Partial<Pick<ShioriCustomList, 'name' | 'icon' | 'isPublic'>>
+  ) => void
   deleteList: (id: string) => void
   addAnimeToList: (listId: string, animeId: string | number) => void
   removeAnimeFromList: (listId: string, animeId: string | number) => void
