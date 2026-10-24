@@ -61,7 +61,6 @@ const PublicUserProfile = () => {
 
   const displayName = data?.profile?.display_name ?? 'کاربر'
   const initials = useMemo(() => getInitials(displayName), [displayName])
-  const username = data?.profile?.username ? `@${data.profile.username}` : null
   const avatarUrl =
     data?.profile?.photo_url && !avatarFailed ? data.profile.photo_url : null
   const showWebAuth = !inTelegram && !user
@@ -188,10 +187,6 @@ const PublicUserProfile = () => {
           <h1 className="mt-3 line-clamp-2 px-2 text-center text-lg font-bold text-foreground">
             {displayName}
           </h1>
-
-          {username ? (
-            <p className="mt-1 text-left text-sm text-muted-foreground">{username}</p>
-          ) : null}
 
           {roleBadges.length > 0 ? (
             <div className="mt-2 flex flex-wrap justify-center gap-1.5">

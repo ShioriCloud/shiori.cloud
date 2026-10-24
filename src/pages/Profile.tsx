@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { useAppAuth } from '../hooks/useAppAuth'
 import { useUserAnimeList } from '../hooks/useUserAnimeList'
 import { useSocialProfileMe } from '../hooks/useSocialProfile'
-import { useNotifications } from '../hooks/useNotifications'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
 import { ProfileFeedPanel } from '@/components/profile/ProfileFeedPanel'
 import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
@@ -36,7 +35,6 @@ const Profile = () => {
   const { user, isReady, inTelegram, login, register } = useAppAuth()
   const { stats } = useUserAnimeList()
   const { data: socialProfile } = useSocialProfileMe(Boolean(user))
-  const { preferences } = useNotifications()
   const [searchParams, setSearchParams] = useSearchParams()
   const [avatarFailed, setAvatarFailed] = useState(false)
 
@@ -56,9 +54,6 @@ const Profile = () => {
 
   const displayName = user?.displayName ?? 'کاربر'
   const initials = useMemo(() => getInitials(displayName), [displayName])
-  const hideUsername = preferences?.hide_telegram_username === true
-  const username =
-    !hideUsername && user?.username ? `@${user.username}` : null
   const avatarUrl = user?.photoUrl && !avatarFailed ? user.photoUrl : null
   const showWebAuth = !inTelegram && !user
 
@@ -163,9 +158,7 @@ const Profile = () => {
             {displayName}
           </h1>
 
-          {username ? (
-            <p className="mt-1 text-left text-sm text-muted-foreground">{username}</p>
-          ) : !hideUsername && user?.email ? (
+          {user?.email && !inTelegram ? (
             <p className="mt-1 text-left text-sm text-muted-foreground" dir="ltr">
               {user.email}
             </p>

@@ -8,8 +8,6 @@ type ProfileUserListRowProps = {
 }
 
 export const ProfileUserListRow = ({ user }: ProfileUserListRowProps) => {
-  const username = user.username ? `@${user.username}` : null
-
   return (
     <Link
       to={`/u/${encodeURIComponent(user.telegram_user_id)}`}
@@ -29,9 +27,7 @@ export const ProfileUserListRow = ({ user }: ProfileUserListRowProps) => {
       </div>
       <div className="min-w-0 flex-1 text-right">
         <p className="truncate text-sm font-semibold text-foreground">{user.display_name}</p>
-        {username ? (
-          <p className="truncate text-xs text-muted-foreground">{username}</p>
-        ) : user.role_badges?.length ? (
+        {user.role_badges?.length ? (
           <p className="truncate text-xs text-muted-foreground">
             {user.role_badges.map((b) => b.title).join(' · ')}
           </p>
