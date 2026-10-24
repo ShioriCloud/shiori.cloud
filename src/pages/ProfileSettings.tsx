@@ -90,6 +90,7 @@ const ProfileSettings = () => {
     updatePreferences,
     updatingNotifyNewEpisode,
     updatingNotifyTelegramDm,
+    updatingNotifySocialFollow,
     updatingHideWatchActivity,
   } = useNotifications()
   const { preference, setPreference, isDarkMode } = useTheme()
@@ -304,6 +305,30 @@ const ProfileSettings = () => {
                   }}
                 />
               </div>
+              {socialProfile?.enabled ? (
+                <div className="flex items-center justify-between gap-3 px-3 py-3">
+                  <div className="min-w-0 text-right">
+                    <Label
+                      htmlFor="notify-social-follow"
+                      className="text-sm font-medium text-foreground"
+                    >
+                      دنبال‌کننده جدید
+                    </Label>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      در صندوق اعلان مینی‌اپ وقتی کسی دنبالت می‌کند
+                    </p>
+                  </div>
+                  <Switch
+                    id="notify-social-follow"
+                    checked={preferences?.notify_social_follow ?? true}
+                    disabled={preferencesLoading || updatingNotifySocialFollow}
+                    onCheckedChange={(checked) => {
+                      hapticSelection()
+                      void updatePreferences({ notify_social_follow: checked })
+                    }}
+                  />
+                </div>
+              ) : null}
             </MyListCompactCard>
           </div>
         ) : null}

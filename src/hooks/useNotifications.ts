@@ -64,6 +64,7 @@ export const useNotifications = () => {
       const base: NotificationPreferences = previous ?? {
         notify_new_episode: true,
         notify_telegram_dm: true,
+        notify_social_follow: true,
         hide_telegram_username: false,
         hide_watch_activity: false,
       }
@@ -107,6 +108,9 @@ export const useNotifications = () => {
     ),
     updatingNotifyTelegramDm: Boolean(
       pendingPrefs && Object.prototype.hasOwnProperty.call(pendingPrefs, 'notify_telegram_dm')
+    ),
+    updatingNotifySocialFollow: Boolean(
+      pendingPrefs && Object.prototype.hasOwnProperty.call(pendingPrefs, 'notify_social_follow')
     ),
     updatingHideTelegramUsername: Boolean(
       pendingPrefs && Object.prototype.hasOwnProperty.call(pendingPrefs, 'hide_telegram_username')
