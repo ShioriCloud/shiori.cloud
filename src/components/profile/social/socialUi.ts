@@ -8,3 +8,6 @@ export const SOCIAL_SURFACE_CLASS = cn(
 )
 
 export const SOCIAL_DIVIDER_CLASS = 'divide-y divide-border/40'
+
+/** Padded inner shell for composers and comment cards. */
+export const SOCIAL_INSET_SHELL_CLASS = cn(SOCIAL_SURFACE_CLASS, 'px-3.5 py-3.5')

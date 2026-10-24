@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { ProfileCommentActivityList } from '@/components/profile/ProfileCommentActivityList'
+import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import {
   useMyAnimeCommentsQuery,
@@ -50,11 +51,7 @@ const ProfileActivity = () => {
             subtitle="وقتی سوشال برایت فعال شود، نظرات اینجا جمع می‌شود."
           />
         ) : isLoading ? (
-          <div className="space-y-2 animate-pulse">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-20 rounded-xl bg-muted/70" />
-            ))}
-          </div>
+          <SocialListSkeleton rows={4} />
         ) : isError ? (
           <ExploreEmptyState
             title="بارگذاری ناموفق بود"

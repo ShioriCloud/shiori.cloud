@@ -1,9 +1,12 @@
 import { FormEvent, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { Message01Icon, UserIcon } from 'hugeicons-react'
+import { Message01Icon } from 'hugeicons-react'
 import { CornerDownLeft, Flag, ThumbsUp, Trash2 } from 'lucide-react'
 import { BidiText } from '@/components/BidiText'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
+import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
+import { SocialUserAvatar } from '@/components/profile/social/SocialUserAvatar'
+import { SOCIAL_INSET_SHELL_CLASS, SOCIAL_SURFACE_CLASS } from '@/components/profile/social/socialUi'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
@@ -13,18 +16,11 @@ import {
   useAnimeCommentsQuery,
 } from '@/hooks/useAnimeComments'
 import type { AnimeComment } from '@/services/animeComments'
+import { formatRelativeTimeFa } from '@/lib/myListUtils'
 import { hapticSelection } from '@/lib/telegramHaptics'
 import { showAppConfirm, showAppToast } from '@/store/appFeedbackStore'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { cn } from '@/lib/utils'
-
-const formatCommentTime = (iso: string) => {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return '—'
-  const date = d.toLocaleDateString('fa-IR', { year: 'numeric', month: '2-digit', day: '2-digit' })
-  const time = d.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })
-  return `${date} - ${time}`
-}
 
 const CommentCardShell = ({
   children,
@@ -33,14 +29,7 @@ const CommentCardShell = ({
   children: ReactNode
   className?: string
 }) => (
-  <article
-    dir="rtl"
-    className={cn(
-      'rounded-2xl border border-border/50 bg-muted/25 px-3.5 py-3.5',
-      'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] dark:bg-muted/15',
-      className
-    )}
-  >
+  <article dir="rtl" className={cn(SOCIAL_INSET_SHELL_CLASS, className)}>
     {children}
   </article>
 )
@@ -97,29 +86,6 @@ const CommentComposer = ({
     </form>
   )
 }
-
-const CommentAuthorAvatar = ({
-  photoUrl,
-  size = 'md',
-}: {
-  photoUrl: string | null
-  size?: 'md' | 'sm'
-}) => (
-  <div
-    className={cn(
-      'shrink-0 overflow-hidden rounded-full border border-border/60 bg-muted',
-      size === 'sm' ? 'h-9 w-9' : 'h-11 w-11'
-    )}
-  >
-    {photoUrl ? (
-      <img src={photoUrl} alt="" className="h-full w-full object-cover" />
-    ) : (
-      <div className="flex h-full w-full items-center justify-center">
-        <UserIcon className={cn('text-muted-foreground/50', size === 'sm' ? 'h-4 w-4' : 'h-5 w-5')} />
-      </div>
-    )}
-  </div>
-)
 
 const CommentCard = ({
   comment,
@@ -220,11 +186,16 @@ const CommentCard = ({
               {comment.author.display_name}
             </Link>
             <p className="mt-0.5 text-[10px] leading-5 text-muted-foreground/90 tabular-nums">
-              {formatCommentTime(comment.created_at)}
+              {formatRelativeTimeFa(comment.created_at)}
             </p>
           </div>
           <Link to={profileHref} className="shrink-0" aria-label={comment.author.display_name}>
-            <CommentAuthorAvatar photoUrl={comment.author.photo_url} size={compact ? 'sm' : 'md'} />
+            <SocialUserAvatar
+              photoUrl={comment.author.photo_url}
+              displayName={comment.author.display_name}
+              size={compact ? 'sm' : 'md'}
+              className="ring-0"
+            />
           </Link>
         </div>
       </div>
@@ -266,10 +237,8 @@ const CommentReplies = ({ animeId, parentId }: { animeId: string; parentId: stri
 
   if (isLoading) {
     return (
-      <div className="mt-2 space-y-2 border-r-2 border-primary-400/20 pr-3 mr-1">
-        {[1, 2].map((i) => (
-          <div key={i} className="h-20 animate-pulse rounded-2xl bg-muted/50" />
-        ))}
+      <div className="mt-2 border-r-2 border-primary-400/20 pr-3 mr-1">
+        <SocialListSkeleton rows={2} />
       </div>
     )
   }
@@ -404,13 +373,7 @@ export const AnimeDetailCommentsTab = ({ animeId }: { animeId: string | number }
   const { create } = useAnimeCommentMutations(animeKey)
 
   if (!isReady) {
-    return (
-      <div className="space-y-3 animate-pulse">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="h-28 rounded-2xl bg-muted/50" />
-        ))}
-      </div>
-    )
+    return <SocialListSkeleton rows={3} />
   }
 
   if (!inTelegram && !user) {
@@ -447,13 +410,7 @@ export const AnimeDetailCommentsTab = ({ animeId }: { animeId: string | number }
         />
       </CommentCardShell>
 
-      {isLoading ? (
-        <div className="space-y-3 animate-pulse">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-28 rounded-2xl bg-muted/50" />
-          ))}
-        </div>
-      ) : null}
+      {isLoading ? <SocialListSkeleton rows={3} /> : null}
 
       {isError ? (
         <ExploreEmptyState
@@ -464,7 +421,7 @@ export const AnimeDetailCommentsTab = ({ animeId }: { animeId: string | number }
       ) : null}
 
       {!isLoading && !isError && (data?.items.length ?? 0) === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border bg-muted/20 py-10 px-6 text-center">
+        <div className={cn(SOCIAL_SURFACE_CLASS, 'border-dashed py-10 px-6 text-center')}>
           <Message01Icon className="mx-auto h-10 w-10 text-muted-foreground/35" aria-hidden />
           <p className="mt-3 text-sm text-muted-foreground">هنوز نظری ثبت نشده. اولین نفر باش!</p>
         </div>
