@@ -325,20 +325,67 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
     [saveMutation]
   )
 
-  const clearListTracking = useCallback(
-    async (animeId: number | string) => {
+  const clearTrackingMutation = useMutation({
+    mutationFn: async (animeId: number | string) => {
       const cleared: FavoriteProgress = {
         episodesWatched: 0,
         userRating: null,
         listStatus: null,
       }
-      if (isFavorite(animeId)) {
-        await saveProgress(animeId, cleared)
-        return
+      await ensureDevAppAuth()
+      const uid = user?.id ?? getSessionTelegramUserId()
+      const fav = favoriteAnime.some((id) => String(id) === String(animeId))
+      let result: UserAnimeListMutationResult | undefined
+      if (typeof uid === 'number' && canSyncUserAnimeList()) {
+        if (fav) {
+          result = await upsertUserAnimeListEntry(uid, animeId, {
+            episodes_watched: 0,
+            user_rating: null,
+            is_favorite: true,
+          })
+        } else {
+          try {
+            result = await removeUserAnimeListEntry(uid, animeId)
+          } catch {
+            // Row may only exist locally until first sync.
+          }
+        }
       }
-      await removeFavoriteMutation.mutateAsync(animeId)
+      setFavoriteProgress(animeId, cleared)
+      return { result, animeId }
     },
-    [isFavorite, saveProgress, removeFavoriteMutation]
+    onMutate: (animeId) => {
+      const previous = favoriteProgress[String(animeId)] ?? {
+        episodesWatched: 0,
+        userRating: null,
+      }
+      setFavoriteProgress(animeId, {
+        episodesWatched: 0,
+        userRating: null,
+        listStatus: null,
+      })
+      patchAnimeDetailShioriScore(animeId, null)
+      return { previous, animeId }
+    },
+    onError: (_error, animeId, context) => {
+      if (context?.previous) {
+        setFavoriteProgress(animeId, context.previous)
+      }
+    },
+    onSuccess: (data) => {
+      if (typeof telegramUserId === 'number') {
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.userAnimeList(telegramUserId),
+        })
+      }
+      applyMutationResult(data.animeId, data.result)
+      invalidateAnimeDetailQuery(data.animeId)
+    },
+  })
+
+  const clearListTracking = useCallback(
+    (animeId: number | string) => clearTrackingMutation.mutateAsync(animeId),
+    [clearTrackingMutation]
   )
 
   return {
@@ -349,7 +396,7 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
     clearListTracking,
     toggleFavorite,
     isFavorite,
-    isSaving: saveMutation.isPending,
+    isSaving: saveMutation.isPending || clearTrackingMutation.isPending,
     hasTelegramUser: inTelegram && typeof telegramUserId === 'number',
     hasAppUser: typeof telegramUserId === 'number',
     canSyncList: listSyncEnabled,

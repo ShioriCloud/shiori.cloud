@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.93',
+    items: ['حذف پیشرفت تماشا از صفحه انیمه دوباره درست کار می‌کند'],
+  },
+  {
     version: '0.2.92',
     items: [
       'ثبت پیشرفت و امتیاز دیگر انیمه را خودکار به علاقه‌مندی‌ها اضافه نمی‌کند',

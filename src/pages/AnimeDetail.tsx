@@ -174,7 +174,6 @@ const AnimeDetail = () => {
                   try {
                     await clearListTracking(anime.id)
                     setTrackingEditorOpen(false)
-                    showAlert('پیشرفت تماشا پاک شد')
                   } catch (e) {
                     showAlert(formatUserListSaveError(e))
                   }

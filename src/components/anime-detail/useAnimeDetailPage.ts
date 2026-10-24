@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useUserAnimeList } from '../../hooks/useUserAnimeList'
+import { useAnimeStore } from '../../store/animeStore'
 import { useNotifications } from '../../hooks/useNotifications'
 import { useAiringReminders } from '../../hooks/useAiringReminders'
 import { useTelegramApp } from '../../hooks/useTelegramApp'
@@ -179,11 +180,15 @@ export function useAnimeDetailPage() {
     .trim()
     .toUpperCase()
 
+  const favoriteProgressMap = useAnimeStore((s) => s.favoriteProgress)
   const trackingActive = useMemo(() => {
     if (!anime) return false
-    const p = getProgress(anime.id)
+    const p = favoriteProgressMap[String(anime.id)] ?? {
+      episodesWatched: 0,
+      userRating: null,
+    }
     return Boolean(p.listStatus || p.episodesWatched > 0 || p.userRating != null)
-  }, [anime, getProgress])
+  }, [anime, favoriteProgressMap])
 
   const handleShare = () => {
     if (!anime) return
