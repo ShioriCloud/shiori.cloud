@@ -7,16 +7,11 @@ import { useSocialProfileUser } from '../hooks/useSocialProfile'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
 import { ProfileFeedPanel } from '@/components/profile/ProfileFeedPanel'
 import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
-import { ProfileOverviewStrip } from '@/components/profile/ProfileOverviewStrip'
-import { ProfileFavoritesPreview } from '@/components/profile/ProfileFavoritesPreview'
-import { ProfilePublicStatsExtras } from '@/components/profile/ProfilePublicStatsExtras'
-import { ProfileRecentEpisodesRail } from '@/components/profile/ProfileRecentEpisodesRail'
-import { ProfileSocialWatchedRail } from '@/components/profile/ProfileSocialWatchedRail'
+import { ProfileStatsTabPanel } from '@/components/profile/ProfileStatsTabPanel'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
 import { ProfileBadgesStrip } from '@/components/profile/ProfileBadgesStrip'
 import { ProfileShareButton } from '@/components/profile/ProfileShareButton'
 import { ProfileSocialActionsSheet } from '@/components/profile/ProfileSocialActionsSheet'
-import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import {
   PUBLIC_PROFILE_TABS,
   parseProfileTab,
@@ -24,7 +19,6 @@ import {
 } from '@/components/profile/profileTabs'
 import { formatProfileMemberSince } from '@/lib/profileMemberSince'
 import { ExploreEmptyState, ExploreTabBar } from '@/components/explore/ExploreUi'
-import { MyListCompactCard } from '@/components/my-list/MyListUi'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
 
@@ -263,34 +257,8 @@ const PublicUserProfile = () => {
         />
       </div>
 
-      {!watchVisible ? (
-        <div className="mx-4 mt-5 rounded-2xl border border-border/50 bg-muted/30 px-4 py-5 text-center text-sm leading-7 text-muted-foreground">
-          فعالیت تماشای این کاربر خصوصی است.
-        </div>
-      ) : (
-        <ProfileOverviewStrip data={overview} fullStatsTo={null} />
-      )}
-
       {watchVisible ? (
-        <>
-          <ProfileRecentEpisodesRail
-            items={watchedItems}
-            restoreKey={`public-${telegramUserId}-recent`}
-          />
-          <ProfileFavoritesPreview
-            items={favoriteListItems}
-            total={favoriteListItems.length}
-            profileBase={profileBase}
-          />
-        </>
-      ) : null}
-
-      {translator ? (
-        <ProfileTranslationsRail translator={translator} profileUserId={telegramUserId} />
-      ) : null}
-
-      {watchVisible ? (
-        <div className="mx-4 mt-6">
+        <div className="mx-4 mt-5">
           <ProfileBadgesStrip badges={data.badges} />
         </div>
       ) : null}
@@ -301,22 +269,25 @@ const PublicUserProfile = () => {
 
       <div className="mx-4 mt-4">
         {activeTab === 'stats' ? (
-          !watchVisible ? (
-            <MyListCompactCard className="p-4 text-center text-sm text-muted-foreground">
-              لیست تماشا خصوصی است.
-            </MyListCompactCard>
-          ) : (
-            <>
-              <div className="-mx-4">
-                <ProfileSocialWatchedRail items={watchedItems} />
-              </div>
-              <ProfilePublicStatsExtras
-                profileUserId={telegramUserId}
-                translator={translator}
-                displayName={displayName}
-              />
-            </>
-          )
+          <ProfileStatsTabPanel
+            variant="public"
+            overview={overview}
+            fullStatsTo={null}
+            watchedItems={watchedItems}
+            favoriteListItems={favoriteListItems}
+            profileBase={profileBase}
+            recentRestoreKey={`public-${telegramUserId}-recent`}
+            watchVisible={watchVisible}
+            publicExtras={
+              watchVisible
+                ? {
+                    profileUserId: telegramUserId,
+                    translator,
+                    displayName,
+                  }
+                : undefined
+            }
+          />
         ) : null}
         {activeTab === 'feed' ? <ProfileFeedPanel enabled /> : null}
       </div>

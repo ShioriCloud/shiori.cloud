@@ -11,14 +11,10 @@ import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
 import { ProfileFeedPanel } from '@/components/profile/ProfileFeedPanel'
 import { ProfileFollowSuggestions } from '@/components/profile/ProfileFollowSuggestions'
 import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
-import { ProfileOverviewStrip } from '@/components/profile/ProfileOverviewStrip'
 import { ProfilePersonalPanel } from '@/components/profile/ProfilePersonalPanel'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
-import { ProfileFavoritesPreview } from '@/components/profile/ProfileFavoritesPreview'
-import { ProfileRecentEpisodesRail } from '@/components/profile/ProfileRecentEpisodesRail'
-import { ProfileStatsPanel } from '@/components/profile/ProfileStatsPanel'
+import { ProfileStatsTabPanel } from '@/components/profile/ProfileStatsTabPanel'
 import { ProfileBadgesStrip } from '@/components/profile/ProfileBadgesStrip'
-import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import { PROFILE_TABS, parseProfileTab, type ProfileTabId } from '@/components/profile/profileTabs'
 import { ExploreTabBar } from '@/components/explore/ExploreUi'
 import { mergeOwnProfileHeaderStats } from '@/lib/ownProfileStats'
@@ -226,27 +222,7 @@ const Profile = () => {
         <ProfileFollowButton viewerId={user?.id} targetId={user?.id} />
       </div>
 
-      <ProfileOverviewStrip data={overview} />
-
-      {showSocialWatch ? (
-        <>
-          <ProfileRecentEpisodesRail items={watchedItems} restoreKey="own-profile-recent" />
-          <ProfileFavoritesPreview
-            items={favoriteListItems}
-            total={favoriteListItems.length}
-            profileBase="/profile"
-          />
-        </>
-      ) : null}
-
-      {socialProfile?.translator && user?.id != null ? (
-        <ProfileTranslationsRail
-          translator={socialProfile.translator}
-          profileUserId={String(user.id)}
-        />
-      ) : null}
-
-      <div className="mx-4 mt-6">
+      <div className="mx-4 mt-5">
         <ProfileBadgesStrip badges={socialProfile?.badges} />
       </div>
 
@@ -255,7 +231,21 @@ const Profile = () => {
       </div>
 
       <div className="mx-4 mt-4">
-        {activeTab === 'stats' ? <ProfileStatsPanel /> : null}
+        {activeTab === 'stats' ? (
+          showSocialWatch ? (
+            <ProfileStatsTabPanel
+              variant="own"
+              overview={overview}
+              fullStatsTo="/profile/stats"
+              watchedItems={watchedItems}
+              favoriteListItems={favoriteListItems}
+              profileBase="/profile"
+              recentRestoreKey="own-profile-recent"
+            />
+          ) : (
+            <ProfileStatsTabPanel variant="own" overview={overview} fullStatsTo="/profile/stats" />
+          )
+        ) : null}
         {activeTab === 'feed' ? (
           <>
             <ProfileFollowSuggestions enabled={socialProfile?.enabled === true} />

@@ -11,15 +11,19 @@ type Item = NonNullable<SocialProfileMe['watched']>['items'][number]
 
 type ProfileSocialWatchedRailProps = {
   items: Item[]
+  title?: string
 }
 
-export const ProfileSocialWatchedRail = ({ items }: ProfileSocialWatchedRailProps) => {
+export const ProfileSocialWatchedRail = ({
+  items,
+  title = 'انیمه‌های تماشاشده',
+}: ProfileSocialWatchedRailProps) => {
   const slice = items.slice(0, MAX_ITEMS)
   if (slice.length === 0) return null
 
   return (
     <div>
-      <h2 className="mb-3 px-4 text-sm font-semibold text-foreground">انیمه‌های تماشاشده</h2>
+      <h2 className="mb-3 px-4 text-sm font-semibold text-foreground">{title}</h2>
       <HomeRailScroller restoreKey="profile-social-watched" className="px-4">
         {slice.map((item) => {
           const routeRef = { id: item.anime_id, slug: item.slug, title: item.title }
