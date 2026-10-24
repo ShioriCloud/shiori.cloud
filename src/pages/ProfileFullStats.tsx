@@ -11,6 +11,7 @@ import { useSocialProfileMe } from '@/hooks/useSocialProfile'
 import { useUserAnimeList } from '@/hooks/useUserAnimeList'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
 import { cn } from '@/lib/utils'
+import { mergeOwnProfileHeaderStats } from '@/lib/ownProfileStats'
 import { toPersianDigits } from '@/lib/persianDigits'
 
 const ProfileFullStats = () => {
@@ -18,9 +19,11 @@ const ProfileFullStats = () => {
   const { stats } = useUserAnimeList()
   const { data: social, isLoading } = useSocialProfileMe(Boolean(user))
 
+  const merged = mergeOwnProfileHeaderStats(social, stats, isLoading)
+
   if (!isReady || isLoading) return <RouteFallback />
 
-  const enabled = social?.enabled === true && social.summary
+  const enabled = merged.socialEnabled || stats.animeCount > 0
 
   return (
     <div className="bg-background pb-24 text-foreground">
@@ -66,32 +69,31 @@ const ProfileFullStats = () => {
         ) : (
           <>
             {(() => {
-              const summary = social.summary!
-              const topGenres = social.top_genres ?? []
-              const byFormat = social.by_format ?? []
-              const watchedItems = social.watched?.items ?? []
+              const topGenres = merged.topGenres
+              const byFormat = merged.byFormat
+              const watchedItems = merged.watchedItems
               const avgRating =
-                summary.average_rating != null
-                  ? toPersianDigits(String(summary.average_rating))
+                merged.averageRating != null
+                  ? toPersianDigits(String(merged.averageRating))
                   : '—'
 
               return (
                 <>
                   <div className="grid grid-cols-3 gap-2">
                     {[
-                      { v: toPersianDigits(summary.anime_count), l: 'انیمه' },
+                      { v: toPersianDigits(merged.animeCount), l: 'انیمه' },
                       {
-                        v: toPersianDigits(summary.episodes_watched),
+                        v: toPersianDigits(merged.episodesWatched),
                         l: 'قسمت دیده',
                       },
                       { v: avgRating, l: 'میانگین امتیاز' },
                       {
-                        v: toPersianDigits(summary.ratings_count),
+                        v: toPersianDigits(merged.ratingsCount),
                         l: 'نمره ثبت‌شده',
                       },
-                      { v: toPersianDigits(summary.active_days), l: 'روز فعال' },
+                      { v: toPersianDigits(merged.activeDays), l: 'روز فعال' },
                       {
-                        v: toPersianDigits(summary.estimated_watch_hours),
+                        v: toPersianDigits(merged.watchHours),
                         l: 'ساعت تماشا',
                       },
                     ].map((cell) => (

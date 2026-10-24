@@ -11,7 +11,7 @@ const ProfileFollowList = () => {
   const { pathname } = useLocation()
   const { telegramUserId: routeUserId } = useParams<{ telegramUserId?: string }>()
   const { user } = useAppAuth()
-  const { data: socialMe } = useSocialProfileMe(Boolean(user))
+  const { data: socialMe, isLoading: socialMeLoading } = useSocialProfileMe(Boolean(user))
 
   const isFollowing = pathname.endsWith('/following')
   const title = isFollowing ? 'دنبال‌شده‌ها' : 'دنبال‌کننده‌ها'
@@ -21,11 +21,15 @@ const ProfileFollowList = () => {
     ? `/u/${encodeURIComponent(routeUserId)}`
     : '/profile'
 
-  const socialEnabled = socialMe?.enabled === true
+  const socialBlocked = socialMe?.enabled === false
   const listQuery = useSocialFollowListInfinite(
     subjectId,
     isFollowing ? 'following' : 'followers',
-    Boolean(user) && socialEnabled && subjectId.length > 0
+    Boolean(user) &&
+      !socialMeLoading &&
+      socialMe !== undefined &&
+      !socialBlocked &&
+      subjectId.length > 0
   )
   const items = listQuery.data?.pages.flatMap((page) => page.items) ?? []
   const showUnfollow =
@@ -51,7 +55,11 @@ const ProfileFollowList = () => {
       </div>
 
       <div className="space-y-3 px-4 pt-4">
-        {!socialEnabled ? (
+        {socialMeLoading ? (
+          <MyListCompactCard className="p-4 text-center text-sm text-muted-foreground animate-pulse">
+            در حال بارگذاری…
+          </MyListCompactCard>
+        ) : socialBlocked ? (
           <ExploreEmptyState
             compact
             showImage={false}

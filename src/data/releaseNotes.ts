@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.81',
+    items: ['آمار پروفایل دوباره با لیست تماشای تو هماهنگ می‌ماند'],
+  },
+  {
     version: '0.2.80',
     items: ['پیشنهاد کاربران برای دنبال کردن در تب فید پروفایل'],
   },

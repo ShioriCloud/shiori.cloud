@@ -44,7 +44,7 @@ export function useSocialProfileMe(enabled = true, page = 1, limit = 60) {
     queryFn: () => fetchSocialProfileMe(page, limit),
     enabled: enabled && authReady,
     staleTime: 60_000,
-    retry: false,
+    retry: 1,
   })
 }
 

@@ -18,6 +18,7 @@ import { ProfileBadgesStrip } from '@/components/profile/ProfileBadgesStrip'
 import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import { PROFILE_TABS, parseProfileTab, type ProfileTabId } from '@/components/profile/profileTabs'
 import { ExploreTabBar } from '@/components/explore/ExploreUi'
+import { mergeOwnProfileHeaderStats } from '@/lib/ownProfileStats'
 import { toPersianDigits } from '@/lib/persianDigits'
 
 const getInitials = (name: string): string => {
@@ -35,7 +36,9 @@ import { ProfilePageSkeleton } from '@/components/profile/ProfilePageSkeleton'
 const Profile = () => {
   const { user, isReady, inTelegram, login, register } = useAppAuth()
   const { stats } = useUserAnimeList()
-  const { data: socialProfile } = useSocialProfileMe(Boolean(user))
+  const { data: socialProfile, isLoading: socialProfileLoading } = useSocialProfileMe(
+    Boolean(user)
+  )
   const [searchParams, setSearchParams] = useSearchParams()
   const [avatarFailed, setAvatarFailed] = useState(false)
 
@@ -59,32 +62,23 @@ const Profile = () => {
   const avatarUrl = user?.photoUrl && !avatarFailed ? user.photoUrl : null
   const showWebAuth = !inTelegram && !user
 
-  const followers = socialProfile?.profile?.followers_count ?? 0
-  const following = socialProfile?.profile?.following_count ?? 0
-  const animeWatched =
-    socialProfile?.enabled && socialProfile.summary
-      ? socialProfile.summary.anime_count
-      : stats.animeCount
+  const mergedStats = useMemo(
+    () => mergeOwnProfileHeaderStats(socialProfile, stats, socialProfileLoading),
+    [socialProfile, stats, socialProfileLoading]
+  )
+
+  const statDigits = (n: number | null) =>
+    n == null ? '—' : toPersianDigits(n)
 
   const roleBadges = socialProfile?.profile?.role_badges ?? []
 
-  const overview = useMemo(() => {
-    if (socialProfile?.enabled && socialProfile.summary) {
-      return {
-        watchHours: socialProfile.summary.estimated_watch_hours,
-        byFormat: socialProfile.by_format ?? [],
-      }
-    }
-    const estimatedHours = Math.round((stats.episodesWatched * 24) / 60)
-    return {
-      watchHours: estimatedHours,
-      byFormat: [] as Array<{
-        format: string
-        count: number
-        episodes_watched: number
-      }>,
-    }
-  }, [socialProfile, stats])
+  const overview = useMemo(
+    () => ({
+      watchHours: mergedStats.watchHours,
+      byFormat: mergedStats.byFormat,
+    }),
+    [mergedStats.watchHours, mergedStats.byFormat]
+  )
 
   if (!isReady) {
     return <ProfilePageSkeleton />
@@ -184,17 +178,17 @@ const Profile = () => {
       <div className="mx-4 mt-4 grid grid-cols-3 gap-2">
         <ProfileStatCell
           to="/profile/followers"
-          value={toPersianDigits(followers)}
+          value={statDigits(mergedStats.followers)}
           label="دنبال‌کننده"
         />
         <ProfileStatCell
           to="/profile/following"
-          value={toPersianDigits(following)}
+          value={statDigits(mergedStats.following)}
           label="دنبال‌شده"
         />
         <ProfileStatCell
           to="/my-list"
-          value={toPersianDigits(animeWatched)}
+          value={statDigits(mergedStats.animeCount)}
           label="انیمه دیده"
         />
       </div>
