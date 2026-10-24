@@ -6,6 +6,10 @@ import {
   deleteAnimeComment,
   fetchAnimeComments,
   fetchAnimeCommentsAccess,
+  fetchMyAnimeComments,
+  likeAnimeComment,
+  reportAnimeComment,
+  unlikeAnimeComment,
   type AnimeCommentList,
 } from '../services/animeComments'
 import { queryKeys } from './queries/keys'
@@ -81,7 +85,32 @@ export function useAnimeCommentMutations(animeId: string | undefined) {
     onSuccess: invalidate,
   })
 
-  return { create, remove }
+  const like = useMutation({
+    mutationFn: likeAnimeComment,
+    onSuccess: invalidate,
+  })
+
+  const unlike = useMutation({
+    mutationFn: unlikeAnimeComment,
+    onSuccess: invalidate,
+  })
+
+  const report = useMutation({
+    mutationFn: reportAnimeComment,
+  })
+
+  return { create, remove, like, unlike, report }
+}
+
+export function useMyAnimeCommentsQuery(enabled = true, page = 1, limit = 20) {
+  const authReady = useCommentsAuthReady(enabled)
+
+  return useQuery({
+    queryKey: queryKeys.animeCommentsMine(page, limit),
+    queryFn: () => fetchMyAnimeComments(page, limit),
+    enabled: enabled && authReady,
+    staleTime: 30_000,
+  })
 }
 
 export type { AnimeCommentList }

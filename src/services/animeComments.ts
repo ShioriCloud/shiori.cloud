@@ -22,6 +22,17 @@ export type AnimeComment = {
   is_own: boolean
   author: AnimeCommentAuthor
   reply_count: number
+  like_count: number
+  liked_by_me: boolean
+}
+
+export type AnimeCommentActivity = AnimeComment & {
+  anime: {
+    id: string
+    slug: string | null
+    title: string
+    image: string
+  } | null
 }
 
 export type AnimeCommentList = {
@@ -85,6 +96,52 @@ export const deleteAnimeComment = async (commentId: string): Promise<{ ok: true 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(authBodyFields()),
     })
+  )
+
+export const likeAnimeComment = async (
+  commentId: string
+): Promise<{ ok: true; like_count: number; liked_by_me: boolean }> =>
+  withCommentsAuth(() =>
+    shioriFetch(`/anime-comments/${encodeURIComponent(commentId)}/like`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(authBodyFields()),
+    })
+  )
+
+export const unlikeAnimeComment = async (
+  commentId: string
+): Promise<{ ok: true; like_count: number; liked_by_me: boolean }> =>
+  withCommentsAuth(() =>
+    shioriFetch(`/anime-comments/${encodeURIComponent(commentId)}/like`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(authBodyFields()),
+    })
+  )
+
+export const reportAnimeComment = async (commentId: string): Promise<{ ok: true }> =>
+  withCommentsAuth(() =>
+    shioriFetch(`/anime-comments/${encodeURIComponent(commentId)}/report`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(authBodyFields()),
+    })
+  )
+
+export const fetchMyAnimeComments = async (
+  page = 1,
+  limit = 20
+): Promise<{
+  items: AnimeCommentActivity[]
+  total: number
+  page: number
+  limit: number
+}> =>
+  withCommentsAuth(() =>
+    shioriFetch(
+      `/anime-comments/me?page=${encodeURIComponent(String(page))}&limit=${encodeURIComponent(String(limit))}`
+    )
   )
 
 const buildQuery = (params?: {

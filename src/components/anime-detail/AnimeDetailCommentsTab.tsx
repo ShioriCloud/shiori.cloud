@@ -14,6 +14,7 @@ import {
 } from '@/hooks/useAnimeComments'
 import type { AnimeComment } from '@/services/animeComments'
 import { hapticSelection } from '@/lib/telegramHaptics'
+import { showAppConfirm, showAppToast } from '@/store/appFeedbackStore'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { cn } from '@/lib/utils'
 
@@ -122,6 +123,7 @@ const CommentAuthorAvatar = ({
 
 const CommentCard = ({
   comment,
+  animeId,
   onReply,
   onDelete,
   deleting,
@@ -129,6 +131,7 @@ const CommentCard = ({
   compact,
 }: {
   comment: AnimeComment
+  animeId: string
   onReply?: () => void
   onDelete?: () => void
   deleting?: boolean
@@ -136,6 +139,36 @@ const CommentCard = ({
   compact?: boolean
 }) => {
   const profileHref = `/u/${encodeURIComponent(comment.author.telegram_user_id)}`
+  const { like, unlike, report } = useAnimeCommentMutations(animeId)
+  const likeCount = comment.like_count ?? 0
+  const liked = comment.liked_by_me === true
+
+  const onToggleLike = async () => {
+    if (comment.is_deleted) return
+    hapticSelection()
+    try {
+      if (liked) await unlike.mutateAsync(comment.id)
+      else await like.mutateAsync(comment.id)
+    } catch (err) {
+      showAppToast(err instanceof Error ? err.message : 'پسندیدن ناموفق بود')
+    }
+  }
+
+  const onReport = async () => {
+    const ok = await showAppConfirm({
+      title: 'گزارش نظر',
+      message: 'این نظر برای بررسی مدیران علامت می‌خورد.',
+      confirmLabel: 'گزارش',
+      destructive: true,
+    })
+    if (!ok) return
+    try {
+      await report.mutateAsync(comment.id)
+      showAppToast('گزارش ثبت شد')
+    } catch (err) {
+      showAppToast(err instanceof Error ? err.message : 'گزارش ناموفق بود')
+    }
+  }
 
   return (
     <CommentCardShell className={compact ? 'py-3' : undefined}>
@@ -143,14 +176,19 @@ const CommentCard = ({
         <div className="flex shrink-0 items-center gap-2 text-muted-foreground">
           <button
             type="button"
-            className="inline-flex items-center gap-1 rounded-lg px-1.5 py-1 text-[11px] tabular-nums opacity-60"
+            className={cn(
+              'inline-flex items-center gap-1 rounded-lg px-1.5 py-1 text-[11px] tabular-nums',
+              liked ? 'text-primary-400' : 'text-muted-foreground',
+              comment.is_deleted && 'opacity-50'
+            )}
             aria-label="پسندیدن"
-            disabled
+            disabled={comment.is_deleted || like.isPending || unlike.isPending}
+            onClick={() => void onToggleLike()}
           >
             <ThumbsUp className="h-3.5 w-3.5" />
-            <span>{toPersianDigits(0)}</span>
+            <span>{toPersianDigits(likeCount)}</span>
           </button>
-          {comment.is_own && onDelete ? (
+          {comment.is_own && onDelete && !comment.is_deleted ? (
             <button
               type="button"
               disabled={deleting}
@@ -160,16 +198,17 @@ const CommentCard = ({
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>
-          ) : (
+          ) : !comment.is_own ? (
             <button
               type="button"
-              className="rounded-lg p-1 opacity-50"
+              className="rounded-lg p-1 text-muted-foreground hover:text-foreground disabled:opacity-50"
               aria-label="گزارش"
-              disabled
+              disabled={report.isPending || comment.is_deleted}
+              onClick={() => void onReport()}
             >
               <Flag className="h-3.5 w-3.5" />
             </button>
-          )}
+          ) : null}
         </div>
 
         <div className="flex min-w-0 flex-1 items-start justify-end gap-2.5">
@@ -180,11 +219,6 @@ const CommentCard = ({
             >
               {comment.author.display_name}
             </Link>
-            {comment.author.username ? (
-              <p className="truncate text-[11px] text-muted-foreground" dir="ltr">
-                @{comment.author.username}
-              </p>
-            ) : null}
             <p className="mt-0.5 text-[10px] leading-5 text-muted-foreground/90 tabular-nums">
               {formatCommentTime(comment.created_at)}
             </p>
@@ -197,12 +231,15 @@ const CommentCard = ({
 
       <BidiText
         as="p"
-        className="mt-3 whitespace-pre-wrap text-right text-sm leading-7 text-foreground/95"
+        className={cn(
+          'mt-3 whitespace-pre-wrap text-right text-sm leading-7',
+          comment.is_deleted ? 'text-muted-foreground/70 italic' : 'text-foreground/95'
+        )}
       >
-        {comment.body}
+        {comment.is_deleted ? 'این نظر حذف شده' : comment.body}
       </BidiText>
 
-      {showReplyAction && onReply ? (
+      {showReplyAction && onReply && !comment.is_deleted ? (
         <div className="mt-3 flex justify-end">
           <button
             type="button"
@@ -244,6 +281,7 @@ const CommentReplies = ({ animeId, parentId }: { animeId: string; parentId: stri
       {items.map((reply) => (
         <CommentCard
           key={reply.id}
+          animeId={animeId}
           comment={reply}
           compact
           deleting={remove.isPending}
@@ -302,6 +340,7 @@ const RootCommentRow = ({
     <div className="space-y-2">
       <CommentCard
         comment={comment}
+        animeId={animeId}
         showReplyAction
         deleting={remove.isPending}
         onReply={() => {

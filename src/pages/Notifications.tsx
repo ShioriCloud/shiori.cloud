@@ -80,7 +80,7 @@ const NotificationsPage = () => {
                 className="flex h-16 w-12 shrink-0 items-center justify-center rounded-md bg-muted ring-1 ring-border/40"
                 aria-hidden
               >
-                {isSocialFollow ? (
+                {isSocialFollow || notification.kind === 'comment_reply' ? (
                   <UserIcon className="h-5 w-5 text-primary-400/80" />
                 ) : (
                   <AlarmClockIcon className="h-5 w-5 text-muted-foreground/70" />

@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.73',
+    items: ['نظر انیمه، پسند و صفحهٔ فعالیت نظرات'],
+  },
+  {
     version: '0.2.72',
     items: ['آیدی تلگرام دیگر روی پروفایل دیده نمی‌شود'],
   },

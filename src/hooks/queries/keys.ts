@@ -37,6 +37,8 @@ export const queryKeys = {
     page: number,
     limit: number
   ) => ['anime-comments', animeId, parentId, page, limit] as const,
+  animeCommentsMine: (page: number, limit: number) =>
+    ['anime-comments', 'me', page, limit] as const,
   socialProfileMe: ['user-social-profile', 'me'] as const,
   socialProfileUser: (telegramUserId: string) =>
     ['user-social-profile', 'user', telegramUserId] as const,

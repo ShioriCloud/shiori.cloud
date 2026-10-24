@@ -78,20 +78,12 @@ export const ProfilePersonalPanel = ({
             hint={translator?.name ?? 'مشاهده همه'}
           />
         ) : null}
-        <div className="flex items-center gap-3 px-3 py-3 opacity-60">
-          <span
-            className={cn(
-              'flex h-9 w-9 shrink-0 items-center justify-center rounded-md border',
-              'border-border/50 bg-muted/35 text-muted-foreground'
-            )}
-          >
-            <MessageSquareText className="h-4 w-4" />
-          </span>
-          <span className="min-w-0 flex-1 text-right">
-            <span className="block text-sm font-medium text-foreground">نظرات و فعالیت</span>
-            <span className="mt-0.5 block text-xs text-muted-foreground">به‌زودی</span>
-          </span>
-        </div>
+        <PersonalRow
+          to="/profile/activity"
+          icon={<MessageSquareText className="h-4 w-4" />}
+          label="نظرات و فعالیت"
+          hint="نظرها و پاسخ‌هایی که نوشته‌ای"
+        />
       </MyListCompactCard>
     ) : (
       <MyListCompactCard className="overflow-hidden divide-y divide-border/40">
