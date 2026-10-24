@@ -46,6 +46,12 @@ const authBodyFields = (): {
   app_session_token: readTelegramMiniAppSession()?.token?.trim() || undefined,
 })
 
+export const fetchAnimeCommentsAccess = async (): Promise<{ enabled: boolean }> => {
+  await ensureDevAppAuth()
+  await ensureTelegramListAuth()
+  return shioriFetch<{ enabled: boolean }>('/anime-comments/access')
+}
+
 export const fetchAnimeComments = async (
   animeId: string,
   params?: { parent_id?: string; page?: number; limit?: number }

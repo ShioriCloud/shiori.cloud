@@ -30,6 +30,7 @@ export const queryKeys = {
     ['anime', 'favorite-cards', ids.map(String).sort().join(',')] as const,
   downloadTokenBalance: ['download-tokens', 'balance'] as const,
   downloadTokenWallet: ['download-tokens', 'wallet'] as const,
+  animeCommentsAccess: ['anime-comments', 'access'] as const,
   animeComments: (
     animeId: string,
     parentId: string | null,

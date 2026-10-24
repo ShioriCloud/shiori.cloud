@@ -1,3 +1,4 @@
+import { useEffect, useMemo } from 'react'
 import FavoriteAnimeEditor from '../components/FavoriteAnimeEditor'
 import { ExploreEmptyState, ExploreTabBar } from '@/components/explore/ExploreUi'
 import { formatUserListSaveError } from '../services/userListErrors'
@@ -17,9 +18,19 @@ import { AnimeDetailTranslatorsTab } from '@/components/anime-detail/AnimeDetail
 import { SeriesSeasonSwitcher } from '@/components/anime-detail/SeriesSeasonSwitcher'
 import { useAnimeDetailPage } from '@/components/anime-detail/useAnimeDetailPage'
 import { MAIN_TABS } from '@/components/anime-detail/types'
+import { useAppAuth } from '@/hooks/useAppAuth'
+import { useAnimeCommentsAccess } from '@/hooks/useAnimeComments'
 
 const AnimeDetail = () => {
   const page = useAnimeDetailPage()
+  const { user, isReady, inTelegram } = useAppAuth()
+  const canCheckCommentsAccess = isReady && (inTelegram || Boolean(user))
+  const { data: commentsAccess } = useAnimeCommentsAccess(canCheckCommentsAccess)
+  const showCommentsTab = commentsAccess?.enabled === true
+  const mainTabs = useMemo(
+    () => MAIN_TABS.filter((tab) => tab.id !== 'comments' || showCommentsTab),
+    [showCommentsTab]
+  )
   const {
     navigate,
     anime,
@@ -61,6 +72,12 @@ const AnimeDetail = () => {
     openTelegramLink,
     downloads,
   } = page
+
+  useEffect(() => {
+    if (activeTab === 'comments' && !showCommentsTab) {
+      handleMainTabChange('info')
+    }
+  }, [activeTab, showCommentsTab, handleMainTabChange])
 
   if (!detailReady) {
     if (error && !catalogReady) {
@@ -166,7 +183,7 @@ const AnimeDetail = () => {
       />
 
       <div className="sticky top-[var(--app-header-offset)] z-30 px-4 pt-5 pb-2 bg-background/90 backdrop-blur-md border-b border-border/50">
-        <ExploreTabBar tabs={MAIN_TABS} active={activeTab} onChange={handleMainTabChange} />
+        <ExploreTabBar tabs={mainTabs} active={activeTab} onChange={handleMainTabChange} />
       </div>
 
       <div className="px-4 pt-4">
@@ -199,7 +216,9 @@ const AnimeDetail = () => {
           />
         )}
 
-        {activeTab === 'comments' && <AnimeDetailCommentsTab animeId={anime.id} />}
+        {activeTab === 'comments' && showCommentsTab ? (
+          <AnimeDetailCommentsTab animeId={anime.id} />
+        ) : null}
 
         {activeTab === 'translators' && (
           <AnimeDetailTranslatorsTab

@@ -5,6 +5,7 @@ import {
   createAnimeComment,
   deleteAnimeComment,
   fetchAnimeComments,
+  fetchAnimeCommentsAccess,
   type AnimeCommentList,
 } from '../services/animeComments'
 import { queryKeys } from './queries/keys'
@@ -24,6 +25,18 @@ function useCommentsAuthReady(enabled: boolean) {
   }, [enabled])
 
   return authReady
+}
+
+export function useAnimeCommentsAccess(enabled = true) {
+  const authReady = useCommentsAuthReady(enabled)
+
+  return useQuery({
+    queryKey: queryKeys.animeCommentsAccess,
+    queryFn: fetchAnimeCommentsAccess,
+    enabled: enabled && authReady,
+    staleTime: 60_000,
+    retry: false,
+  })
 }
 
 export function useAnimeCommentsQuery(
