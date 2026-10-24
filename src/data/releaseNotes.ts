@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.96',
+    items: ['ثبت پیشرفت تماشا کمی جمع‌وجورتر شد'],
+  },
+  {
     version: '0.2.95',
     items: [
       'ثبت پیشرفت تماشا: ظاهر جدید، وضعیت‌های واضح‌تر و امتیاز با نیم‌پله',

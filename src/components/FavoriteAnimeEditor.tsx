@@ -215,13 +215,13 @@ const FavoriteAnimeEditor = ({
             <div className="h-1.5 w-12 rounded-full bg-muted-foreground/35" />
           </div>
 
-          <div className="flex items-start gap-3 px-4 pb-4">
-            <div className="media-card-skeuo h-[88px] w-[88px] shrink-0 rounded-2xl">
+          <div className="flex items-center gap-3 px-4 pb-3">
+            <div className="media-card-skeuo h-[80px] w-[80px] shrink-0 rounded-2xl">
               <div className="media-card-skeuo-face overflow-hidden bg-muted">
                 <img src={image} alt="" className="h-full w-full object-cover" />
               </div>
             </div>
-            <div className="min-w-0 flex-1 pt-0.5 text-right">
+            <div className="min-w-0 flex-1 text-right">
               <BidiText as="h2" className="line-clamp-2 text-base font-bold leading-snug text-foreground">
                 {title}
               </BidiText>
@@ -249,7 +249,7 @@ const FavoriteAnimeEditor = ({
           </div>
         </div>
 
-        <div className="flex-1 space-y-5 overflow-y-auto px-4 pb-2">
+        <div className="flex-1 space-y-4 overflow-y-auto px-4 pb-1">
           <section>
             <p className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground">
               وضعیت تماشا
@@ -264,7 +264,7 @@ const FavoriteAnimeEditor = ({
                     disabled={saving}
                     onClick={() => applyStatus(status)}
                     className={cn(
-                      'rounded-xl border px-2.5 py-2.5 text-right text-[12px] font-medium leading-snug transition-all',
+                      'rounded-xl border px-2.5 py-2 text-right text-[12px] font-medium leading-snug transition-all',
                       active
                         ? 'border-primary-400/55 bg-primary-500/15 text-primary-300 ring-1 ring-primary-400/20'
                         : 'border-border/70 bg-card/50 text-muted-foreground hover:border-border hover:bg-muted/40'
@@ -277,21 +277,21 @@ const FavoriteAnimeEditor = ({
             </div>
           </section>
 
-          <section className="rounded-2xl border border-border/60 bg-muted/20 p-4">
-            <p className="mb-3 text-xs font-semibold text-muted-foreground">قسمت‌های دیده‌شده</p>
+          <section className="rounded-2xl border border-border/60 bg-muted/20 p-3">
+            <p className="mb-2 text-xs font-semibold text-muted-foreground">قسمت‌های دیده‌شده</p>
             <div className="flex items-center justify-between gap-3">
               <Button
                 type="button"
                 size="icon"
                 variant="secondary"
-                className="h-12 w-12 shrink-0 rounded-xl"
+                className="h-11 w-11 shrink-0 rounded-xl"
                 disabled={episodesWatched <= 0 || saving}
                 onClick={() => bumpEpisodes(-1)}
               >
                 <MinusSignIcon className="h-5 w-5" />
               </Button>
               <div className="flex-1 text-center">
-                <p className="text-2xl font-bold tabular-nums tracking-tight">
+                <p className="text-xl font-bold tabular-nums tracking-tight">
                   {toPersianDigits(episodesWatched)}
                   <span className="mx-1.5 text-base font-normal text-muted-foreground">/</span>
                   {toPersianDigits(maxEpisodes)}
@@ -302,14 +302,14 @@ const FavoriteAnimeEditor = ({
                 type="button"
                 size="icon"
                 variant="secondary"
-                className="h-12 w-12 shrink-0 rounded-xl"
+                className="h-11 w-11 shrink-0 rounded-xl"
                 disabled={episodesWatched >= maxEpisodes || saving}
                 onClick={() => bumpEpisodes(1)}
               >
                 <PlusSignIcon className="h-5 w-5" />
               </Button>
             </div>
-            <div className="mt-4 h-2 overflow-hidden rounded-full bg-background/80">
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-background/80">
               <div
                 className="h-full rounded-full bg-gradient-to-l from-primary-500 to-primary-400 transition-all duration-300"
                 style={{ width: `${progressPercent}%` }}
@@ -319,7 +319,7 @@ const FavoriteAnimeEditor = ({
               <Button
                 type="button"
                 variant="outline"
-                className="mt-3 h-10 w-full rounded-xl text-sm"
+                className="mt-2.5 h-9 w-full rounded-xl text-sm"
                 disabled={saving}
                 onClick={() => {
                   setEpisodesWatched(maxEpisodes)
@@ -333,19 +333,18 @@ const FavoriteAnimeEditor = ({
 
           <section
             className={cn(
-              'relative overflow-hidden rounded-2xl border p-4',
+              'rounded-xl border p-3',
               userRating != null
-                ? 'border-amber-400/35 bg-gradient-to-br from-amber-500/10 via-background to-primary-500/5'
+                ? 'border-amber-400/30 bg-gradient-to-br from-amber-500/8 to-muted/10'
                 : 'border-border/60 bg-muted/15'
             )}
           >
-            <div className="pointer-events-none absolute -left-8 -top-8 h-24 w-24 rounded-full bg-amber-400/10 blur-2xl" />
-            <div className="relative flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-2">
               <p className="text-xs font-semibold text-muted-foreground">امتیاز تو</p>
               {userRating != null ? (
                 <button
                   type="button"
-                  className="text-[11px] font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                  className="text-[10px] font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
                   disabled={saving}
                   onClick={() => setUserRating(null)}
                 >
@@ -354,47 +353,47 @@ const FavoriteAnimeEditor = ({
               ) : null}
             </div>
 
-            <div className="relative mt-3 flex items-center justify-center gap-4">
+            <div className="mt-2 flex items-center justify-center gap-2.5">
               <Button
                 type="button"
                 size="icon"
                 variant="secondary"
-                className="h-11 w-11 rounded-xl"
+                className="h-9 w-9 shrink-0 rounded-lg"
                 disabled={saving || (userRating != null && userRating <= 1)}
                 onClick={() => bumpRating(-0.5)}
               >
-                <MinusSignIcon className="h-4 w-4" />
+                <MinusSignIcon className="h-3.5 w-3.5" />
               </Button>
-              <div className="flex min-w-[5.5rem] flex-col items-center">
+              <div className="flex items-center gap-1.5">
                 <StarIcon
                   className={cn(
-                    'mb-1 h-5 w-5',
+                    'h-4 w-4 shrink-0',
                     userRating != null ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/40'
                   )}
                 />
                 <span
                   className={cn(
-                    'text-4xl font-bold tabular-nums leading-none',
+                    'text-2xl font-bold tabular-nums leading-none',
                     userRating != null ? 'text-foreground' : 'text-muted-foreground/50'
                   )}
                 >
                   {userRating != null ? formatUserRatingFa(userRating) : '—'}
                 </span>
-                <span className="mt-1 text-[10px] text-muted-foreground">از ۱۰</span>
+                <span className="text-[10px] text-muted-foreground">/۱۰</span>
               </div>
               <Button
                 type="button"
                 size="icon"
                 variant="secondary"
-                className="h-11 w-11 rounded-xl"
+                className="h-9 w-9 shrink-0 rounded-lg"
                 disabled={saving || (userRating != null && userRating >= 10)}
                 onClick={() => bumpRating(0.5)}
               >
-                <PlusSignIcon className="h-4 w-4" />
+                <PlusSignIcon className="h-3.5 w-3.5" />
               </Button>
             </div>
 
-            <div className="relative mt-5">
+            <div className="mt-2.5">
               <input
                 type="range"
                 min={1}
@@ -404,20 +403,16 @@ const FavoriteAnimeEditor = ({
                 value={sliderValue}
                 onChange={(e) => setUserRating(clampUserRating(Number(e.target.value)))}
                 className={cn(
-                  'h-2 w-full cursor-pointer appearance-none rounded-full bg-muted',
-                  '[&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none',
+                  'h-1.5 w-full cursor-pointer appearance-none rounded-full bg-muted',
+                  '[&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none',
                   '[&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-background',
-                  '[&::-webkit-slider-thumb]:bg-amber-400 [&::-webkit-slider-thumb]:shadow-md'
+                  '[&::-webkit-slider-thumb]:bg-amber-400'
                 )}
                 aria-label="امتیاز از ۱ تا ۱۰"
               />
-              <div className="mt-2 flex justify-between text-[10px] tabular-nums text-muted-foreground">
-                <span>{toPersianDigits(1)}</span>
-                <span>{toPersianDigits(10)}</span>
-              </div>
             </div>
 
-            <div className="relative mt-3 flex flex-wrap justify-center gap-1.5">
+            <div className="mt-2 flex flex-wrap justify-center gap-1">
               {[5, 6, 7, 8, 9, 10].map((score) => {
                 const active = userRating != null && Math.abs(userRating - score) < 0.01
                 return (
@@ -427,7 +422,7 @@ const FavoriteAnimeEditor = ({
                     disabled={saving}
                     onClick={() => setUserRating(score)}
                     className={cn(
-                      'min-w-[2.25rem] rounded-lg border px-2 py-1.5 text-xs font-semibold tabular-nums transition-colors',
+                      'min-w-[2rem] rounded-md border px-1.5 py-1 text-[11px] font-semibold tabular-nums transition-colors',
                       active
                         ? 'border-amber-400/50 bg-amber-500/15 text-amber-200'
                         : 'border-border/60 bg-background/60 text-muted-foreground hover:bg-muted/50'
