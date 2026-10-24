@@ -95,18 +95,47 @@ export type SocialProfileFollowSuggestions = {
   items: SocialProfileFollowSuggestionItem[]
 }
 
-export type SocialProfileFeedItem = {
-  type: 'watch_progress' | 'rating' | 'list_add'
-  actor: SocialProfileUserListItem
-  anime_id: string
-  slug: string | null
-  title: string
-  image: string
-  episodes_watched: number
-  episodes_total: number | null
-  user_rating?: number | null
-  updated_at: string
-}
+export type SocialProfileFeedItem =
+  | {
+      type: 'watch_progress' | 'rating' | 'list_add'
+      actor: SocialProfileUserListItem
+      anime_id: string
+      slug: string | null
+      title: string
+      image: string
+      episodes_watched: number
+      episodes_total: number | null
+      user_rating?: number | null
+      updated_at: string
+    }
+  | {
+      type: 'anime_comment'
+      actor: SocialProfileUserListItem
+      comment_id: string
+      comment_preview: string
+      anime_id: string
+      slug: string | null
+      title: string
+      image: string
+      updated_at: string
+    }
+  | {
+      type: 'public_list_add'
+      actor: SocialProfileUserListItem
+      list_id: string
+      list_name: string
+      anime_id: string
+      slug: string | null
+      title: string
+      image: string
+      updated_at: string
+    }
+  | {
+      type: 'user_follow'
+      actor: SocialProfileUserListItem
+      target: SocialProfileUserListItem
+      updated_at: string
+    }
 
 export type SocialProfileFeed = {
   enabled: boolean

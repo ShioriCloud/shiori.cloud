@@ -1,38 +1,28 @@
-import { Link } from 'react-router-dom'
-import { Search } from 'lucide-react'
-import AnimePrefetchLink from '@/components/AnimePrefetchLink'
-import { BidiText } from '@/components/BidiText'
-import { ExploreEmptyState } from '@/components/explore/ExploreUi'
-import { MyListCompactCard } from '@/components/my-list/MyListUi'
+import { Link, useNavigate } from 'react-router-dom'
+import { Search, Users } from 'lucide-react'
+import { ExploreEmptyState, EXPLORE_CHIP_CLASS } from '@/components/explore/ExploreUi'
+import { SocialActivityCard } from '@/components/profile/social/SocialActivityCard'
+import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
+import { SocialSection } from '@/components/profile/social/SocialSection'
+import { SOCIAL_SURFACE_CLASS } from '@/components/profile/social/socialUi'
 import { useSocialFeedInfinite } from '@/hooks/useSocialProfile'
 import { Button } from '@/components/ui/button'
-import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
-import { toPersianDigits } from '@/lib/persianDigits'
 import { cn } from '@/lib/utils'
 import type { SocialProfileFeedItem } from '@/services/socialProfile'
-import { ProfileUserListRow } from './ProfileUserListRow'
 
-const activityLabel = (item: SocialProfileFeedItem): string => {
-  if (item.type === 'rating') return 'نمره داد'
-  if (item.type === 'list_add') return 'به لیستش اضافه کرد'
-  return 'پیشرفت تماشا'
-}
-
-const activityDetail = (item: SocialProfileFeedItem): string => {
-  if (item.type === 'rating' && item.user_rating != null) {
-    return `نمره ${toPersianDigits(item.user_rating)}`
+const socialFeedItemKey = (item: SocialProfileFeedItem) => {
+  if (item.type === 'anime_comment') return `c-${item.comment_id}`
+  if (item.type === 'user_follow') {
+    return `f-${item.actor.telegram_user_id}-${item.target.telegram_user_id}-${item.updated_at}`
   }
-  if (item.type === 'list_add') return 'افزوده‌شده به لیست'
-  const progress =
-    item.episodes_total != null && item.episodes_total > 0
-      ? `${toPersianDigits(item.episodes_watched)}/${toPersianDigits(item.episodes_total)}`
-      : toPersianDigits(item.episodes_watched)
-  const rating =
-    item.user_rating != null ? ` · نمره ${toPersianDigits(item.user_rating)}` : ''
-  return `${progress} قسمت${rating}`
+  if (item.type === 'public_list_add') {
+    return `pl-${item.list_id}-${item.anime_id}-${item.updated_at}`
+  }
+  return `${item.type}-${item.actor.telegram_user_id}-${item.anime_id}-${item.updated_at}`
 }
 
 export const ProfileFeedPanel = ({ enabled = true }: { enabled?: boolean }) => {
+  const navigate = useNavigate()
   const feedQuery = useSocialFeedInfinite(enabled)
   const { isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = feedQuery
   const data = feedQuery.data?.pages[0]
@@ -40,82 +30,60 @@ export const ProfileFeedPanel = ({ enabled = true }: { enabled?: boolean }) => {
 
   if (!enabled) {
     return (
-      <MyListCompactCard className="p-4 text-center text-sm leading-7 text-muted-foreground">
-        فید عمومی وقتی پروفایل اجتماعی برایت فعال شود در دسترس است.
-      </MyListCompactCard>
-    )
-  }
-
-  if (isLoading) {
-    return (
-      <div className="space-y-2 animate-pulse">
-        <div className="h-20 rounded-xl bg-muted/70" />
-        <div className="h-20 rounded-xl bg-muted/70" />
+      <div className={cn(SOCIAL_SURFACE_CLASS, 'px-4 py-8 text-center')}>
+        <Users className="mx-auto mb-2 h-8 w-8 text-primary-400/70" aria-hidden />
+        <p className="text-sm font-medium text-foreground">فید اجتماعی</p>
+        <p className="mt-1 text-xs leading-6 text-muted-foreground">
+          وقتی پروفایل اجتماعی برایت فعال باشد، فعالیت دوستانی که دنبال می‌کنی اینجا می‌آید.
+        </p>
       </div>
     )
   }
 
+  if (isLoading) {
+    return <SocialListSkeleton rows={2} />
+  }
+
   if (!data?.enabled) {
     return (
-      <MyListCompactCard className="p-4 text-center text-sm leading-7 text-muted-foreground">
-        فید عمومی وقتی پروفایل اجتماعی برایت فعال شود در دسترس است.
-      </MyListCompactCard>
+      <div className={cn(SOCIAL_SURFACE_CLASS, 'px-4 py-8 text-center')}>
+        <p className="text-sm text-muted-foreground">فید اجتماعی هنوز برای حساب تو باز نشده.</p>
+      </div>
     )
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <Link
         to="/profile/people"
         className={cn(
-          'flex h-11 items-center justify-center gap-2 rounded-xl border border-border/60',
-          'bg-card text-sm font-medium text-foreground',
-          'active:scale-[0.99] transition-transform'
+          EXPLORE_CHIP_CLASS,
+          'flex h-11 w-full items-center justify-center gap-2 text-sm font-medium'
         )}
       >
-        <Search className="h-4 w-4 text-muted-foreground" aria-hidden />
+        <Search className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
         جست‌وجوی کاربران
       </Link>
 
       {items.length === 0 ? (
         <ExploreEmptyState
           compact
-          showImage={false}
           title="فید خالی است"
-          subtitle="کاربرانی را که دوست داری دنبال کن تا فعالیتشان اینجا بیاید."
+          subtitle="چند نفر را دنبال کن تا تماشا، نظر و لیست‌هایشان اینجا دیده شود."
+          actionLabel="جست‌وجوی کاربران"
+          onAction={() => navigate('/profile/people')}
         />
       ) : (
-        items.map((item) => {
-          const routeRef = { id: item.anime_id, slug: item.slug, title: item.title }
-          return (
-            <MyListCompactCard
-              key={`${item.actor.telegram_user_id}-${item.anime_id}-${item.updated_at}-${item.type}`}
-              className="overflow-hidden"
-            >
-              <ProfileUserListRow user={item.actor} />
-              <AnimePrefetchLink
-                animeId={animePublicSegment(routeRef)}
-                to={animeDetailPath(routeRef)}
-                className="flex gap-3 border-t border-border/40 px-3 py-3 active:bg-muted/30"
-              >
-                <div className="h-14 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
-                  {item.image ? (
-                    <img src={item.image} alt="" className="h-full w-full object-cover" />
-                  ) : null}
-                </div>
-                <div className="min-w-0 flex-1 text-right">
-                  <p className="text-[11px] text-muted-foreground">{activityLabel(item)}</p>
-                  <BidiText as="p" className="line-clamp-2 text-sm font-semibold text-foreground">
-                    {item.title}
-                  </BidiText>
-                  <p className="mt-0.5 text-xs tabular-nums text-muted-foreground">
-                    {activityDetail(item)}
-                  </p>
-                </div>
-              </AnimePrefetchLink>
-            </MyListCompactCard>
-          )
-        })
+        <SocialSection title="فعالیت اخیر" description="از میان کسانی که دنبال می‌کنی">
+          <div className="space-y-3">
+            {items.map((item) => (
+              <SocialActivityCard
+                key={socialFeedItemKey(item)}
+                item={item}
+              />
+            ))}
+          </div>
+        </SocialSection>
       )}
 
       {hasNextPage ? (
@@ -123,7 +91,7 @@ export const ProfileFeedPanel = ({ enabled = true }: { enabled?: boolean }) => {
           type="button"
           variant="secondary"
           size="sm"
-          className="w-full"
+          className="ui-elevated w-full"
           disabled={isFetchingNextPage}
           onClick={() => void fetchNextPage()}
         >

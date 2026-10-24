@@ -2,7 +2,9 @@ import { Link, useLocation, useParams } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { ProfileFollowListRow } from '@/components/profile/ProfileFollowListRow'
-import { MyListCompactCard } from '@/components/my-list/MyListUi'
+import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
+import { SOCIAL_DIVIDER_CLASS, SOCIAL_SURFACE_CLASS } from '@/components/profile/social/socialUi'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import { useSocialFollowListInfinite, useSocialProfileMe } from '@/hooks/useSocialProfile'
@@ -56,9 +58,7 @@ const ProfileFollowList = () => {
 
       <div className="space-y-3 px-4 pt-4">
         {socialMeLoading ? (
-          <MyListCompactCard className="p-4 text-center text-sm text-muted-foreground animate-pulse">
-            در حال بارگذاری…
-          </MyListCompactCard>
+          <SocialListSkeleton rows={2} />
         ) : socialBlocked ? (
           <ExploreEmptyState
             compact
@@ -67,14 +67,10 @@ const ProfileFollowList = () => {
             subtitle="شبکه اجتماعی شیوری برای حساب تو هنوز فعال نشده."
           />
         ) : listQuery.isLoading ? (
-          <div className="space-y-2 animate-pulse">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-16 rounded-xl bg-muted/70" />
-            ))}
-          </div>
+          <SocialListSkeleton rows={3} />
         ) : items.length ? (
           <>
-            <MyListCompactCard className="overflow-hidden divide-y divide-border/40">
+            <div className={cn(SOCIAL_SURFACE_CLASS, SOCIAL_DIVIDER_CLASS)}>
               {items.map((row) => (
                 <ProfileFollowListRow
                   key={row.telegram_user_id}
@@ -82,7 +78,7 @@ const ProfileFollowList = () => {
                   showUnfollow={showUnfollow}
                 />
               ))}
-            </MyListCompactCard>
+            </div>
             {listQuery.hasNextPage ? (
               <Button
                 type="button"
