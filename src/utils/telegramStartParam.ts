@@ -1,4 +1,9 @@
-export type AnimeDetailTab = 'info' | 'episodes' | 'similar' | 'translators'
+export type AnimeDetailTab =
+  | 'info'
+  | 'episodes'
+  | 'similar'
+  | 'translators'
+  | 'comments'
 
 export type TelegramStartRoute = {
   path: string
@@ -10,6 +15,7 @@ const parseTab = (value?: string | null): AnimeDetailTab => {
     value === 'episodes' ||
     value === 'similar' ||
     value === 'translators' ||
+    value === 'comments' ||
     value === 'info'
   ) {
     return value
@@ -52,7 +58,9 @@ export const parseTelegramStartParam = (raw: string): TelegramStartRoute | null 
     return { path: `/u/${encodeURIComponent(userMatch[1])}` }
   }
 
-  const match = param.match(/^anime_([^_]+)(?:_(info|episodes|similar|translators))?$/)
+  const match = param.match(
+    /^anime_([^_]+)(?:_(info|episodes|similar|translators|comments))?$/
+  )
   if (!match) return null
 
   const id = match[1]?.trim()

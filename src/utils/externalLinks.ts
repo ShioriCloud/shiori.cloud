@@ -98,6 +98,7 @@ export const parseAnimeDetailTab = (value: string | null): AnimeDetailTab => {
     value === 'episodes' ||
     value === 'similar' ||
     value === 'translators' ||
+    value === 'comments' ||
     value === 'info'
   ) {
     return value

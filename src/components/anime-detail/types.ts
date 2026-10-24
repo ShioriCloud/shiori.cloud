@@ -68,6 +68,7 @@ export const MAIN_TABS: { id: TabType; label: string }[] = [
   { id: 'episodes', label: 'دانلود' },
   { id: 'translators', label: 'مترجم' },
   { id: 'similar', label: 'مشابه' },
+  { id: 'comments', label: 'نظرات' },
 ]
 
 /** Softsub / hardsub / free — restored when SHOW_HARD_AND_FREE_DOWNLOAD_TABS is true */

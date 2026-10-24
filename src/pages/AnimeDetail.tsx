@@ -11,6 +11,7 @@ import { AnimeDetailDownloadTab } from '@/components/anime-detail/AnimeDetailDow
 import { AnimeDetailHero } from '@/components/anime-detail/AnimeDetailHero'
 import { AnimeDetailInfoTab } from '@/components/anime-detail/AnimeDetailInfoTab'
 import { AnimeDetailSimilarTab } from '@/components/anime-detail/AnimeDetailSimilarTab'
+import { AnimeDetailCommentsTab } from '@/components/anime-detail/AnimeDetailCommentsTab'
 import { AnimeDetailSynopsis } from '@/components/anime-detail/AnimeDetailSynopsis'
 import { AnimeDetailTranslatorsTab } from '@/components/anime-detail/AnimeDetailTranslatorsTab'
 import { SeriesSeasonSwitcher } from '@/components/anime-detail/SeriesSeasonSwitcher'
@@ -197,6 +198,8 @@ const AnimeDetail = () => {
             hasGenres={anime.genres.length > 0}
           />
         )}
+
+        {activeTab === 'comments' && <AnimeDetailCommentsTab animeId={anime.id} />}
 
         {activeTab === 'translators' && (
           <AnimeDetailTranslatorsTab
