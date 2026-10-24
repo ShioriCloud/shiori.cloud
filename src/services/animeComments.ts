@@ -1,3 +1,7 @@
+import { ensureDevAppAuth } from '../lib/ensureDevAppAuth'
+import { ensureTelegramListAuth } from '../lib/ensureTelegramListAuth'
+import { getTelegramInitData } from '../lib/telegramRequestHeaders'
+import { readTelegramMiniAppSession } from '../lib/telegramSessionStorage'
 import { shioriFetch } from '../lib/shioriApi'
 
 export type AnimeCommentAuthor = {
@@ -27,12 +31,29 @@ export type AnimeCommentList = {
   limit: number
 }
 
+const withCommentsAuth = async <T>(fn: () => Promise<T>): Promise<T> => {
+  await ensureDevAppAuth()
+  await ensureTelegramListAuth()
+  return fn()
+}
+
+/** Same fallbacks as list/register when proxies strip auth headers. */
+const authBodyFields = (): {
+  telegram_init_data?: string
+  app_session_token?: string
+} => ({
+  telegram_init_data: getTelegramInitData() || undefined,
+  app_session_token: readTelegramMiniAppSession()?.token?.trim() || undefined,
+})
+
 export const fetchAnimeComments = async (
   animeId: string,
   params?: { parent_id?: string; page?: number; limit?: number }
 ): Promise<AnimeCommentList> =>
-  shioriFetch<AnimeCommentList>(
-    `/anime-comments/anime/${encodeURIComponent(animeId)}${buildQuery(params)}`
+  withCommentsAuth(() =>
+    shioriFetch<AnimeCommentList>(
+      `/anime-comments/anime/${encodeURIComponent(animeId)}${buildQuery(params)}`
+    )
   )
 
 export const createAnimeComment = async (input: {
@@ -40,16 +61,25 @@ export const createAnimeComment = async (input: {
   body: string
   parent_id?: string
 }): Promise<AnimeComment> =>
-  shioriFetch<AnimeComment>('/anime-comments', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
-  })
+  withCommentsAuth(() =>
+    shioriFetch<AnimeComment>('/anime-comments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...input,
+        ...authBodyFields(),
+      }),
+    })
+  )
 
 export const deleteAnimeComment = async (commentId: string): Promise<{ ok: true }> =>
-  shioriFetch<{ ok: true }>(`/anime-comments/${encodeURIComponent(commentId)}`, {
-    method: 'DELETE',
-  })
+  withCommentsAuth(() =>
+    shioriFetch<{ ok: true }>(`/anime-comments/${encodeURIComponent(commentId)}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(authBodyFields()),
+    })
+  )
 
 const buildQuery = (params?: {
   parent_id?: string
