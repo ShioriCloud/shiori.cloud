@@ -1,27 +1,36 @@
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
-import AnimePrefetchLink from '@/components/AnimePrefetchLink'
-import { BidiText } from '@/components/BidiText'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
-import { MyListCompactCard } from '@/components/my-list/MyListUi'
+import { ProfileCommentActivityList } from '@/components/profile/ProfileCommentActivityList'
 import { useAppAuth } from '@/hooks/useAppAuth'
-import { useMyAnimeCommentsQuery } from '@/hooks/useAnimeComments'
+import {
+  useMyAnimeCommentsQuery,
+  useUserAnimeCommentsQuery,
+} from '@/hooks/useAnimeComments'
 import { useSocialProfileMe } from '@/hooks/useSocialProfile'
-import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
-import { toPersianDigits } from '@/lib/persianDigits'
 
 const ProfileActivity = () => {
+  const { telegramUserId: rawId } = useParams<{ telegramUserId: string }>()
+  const targetId = rawId?.trim() ?? ''
+  const isPublic = targetId.length > 0
   const { user } = useAppAuth()
-  const { data: socialMe } = useSocialProfileMe(Boolean(user))
-  const enabled = socialMe?.enabled === true
-  const { data, isLoading, isError, refetch } = useMyAnimeCommentsQuery(Boolean(user) && enabled)
+  const { data: socialMe } = useSocialProfileMe(Boolean(user) && !isPublic)
+  const enabled = isPublic || socialMe?.enabled === true
+  const mine = useMyAnimeCommentsQuery(Boolean(user) && enabled && !isPublic)
+  const theirs = useUserAnimeCommentsQuery(targetId, Boolean(user) && enabled && isPublic)
+  const query = isPublic ? theirs : mine
+  const { data, isLoading, isError, refetch } = query
+
+  const backTo = isPublic
+    ? `/u/${encodeURIComponent(targetId)}?tab=personal`
+    : '/profile?tab=personal'
 
   return (
     <div className="bg-background pb-24 text-foreground">
       <div className="sticky top-[var(--app-header-offset)] z-10 border-b border-border/60 bg-background/95 backdrop-blur-sm">
         <div className="flex items-center gap-2 px-4 py-3.5">
           <Link
-            to="/profile?tab=personal"
+            to={backTo}
             className="inline-flex items-center gap-1 text-sm text-muted-foreground active:opacity-80"
           >
             <ChevronRight className="h-4 w-4" aria-hidden />
@@ -38,7 +47,7 @@ const ProfileActivity = () => {
             compact
             showImage={false}
             title="به‌زودی"
-            subtitle="وقتی سوشال برایت فعال شود، نظراتت اینجا جمع می‌شود."
+            subtitle="وقتی سوشال برایت فعال شود، نظرات اینجا جمع می‌شود."
           />
         ) : isLoading ? (
           <div className="space-y-2 animate-pulse">
@@ -56,52 +65,18 @@ const ProfileActivity = () => {
           <ExploreEmptyState
             compact
             showImage={false}
-            title="هنوز نظری نداری"
-            subtitle="از صفحهٔ انیمه اولین نظرت را بنویس."
+            title={isPublic ? 'هنوز نظری ندارد' : 'هنوز نظری نداری'}
+            subtitle={
+              isPublic
+                ? 'وقتی نظری بنویسد اینجا دیده می‌شود.'
+                : 'از صفحهٔ انیمه اولین نظرت را بنویس.'
+            }
           />
         ) : (
-          data.items.map((item) => {
-            const anime = item.anime
-            const routeRef = anime
-              ? { id: anime.id, slug: anime.slug, title: anime.title }
-              : null
-            const inner = (
-              <MyListCompactCard className="flex gap-3 overflow-hidden px-3 py-3">
-                <div className="h-16 w-11 shrink-0 overflow-hidden rounded-lg bg-muted">
-                  {anime?.image ? (
-                    <img src={anime.image} alt="" className="h-full w-full object-cover" />
-                  ) : null}
-                </div>
-                <div className="min-w-0 flex-1 text-right">
-                  <p className="text-[11px] text-muted-foreground">
-                    {item.parent_id ? 'پاسخ دادی' : 'نظر گذاشتی'}
-                    {item.like_count > 0
-                      ? ` · ${toPersianDigits(item.like_count)} پسند`
-                      : ''}
-                  </p>
-                  <BidiText as="p" className="mt-0.5 line-clamp-2 text-sm font-semibold text-foreground">
-                    {anime?.title ?? 'انیمه'}
-                  </BidiText>
-                  <p className="mt-1 line-clamp-2 text-xs leading-6 text-muted-foreground">
-                    {item.body}
-                  </p>
-                </div>
-              </MyListCompactCard>
-            )
-
-            if (!routeRef) return <div key={item.id}>{inner}</div>
-
-            return (
-              <AnimePrefetchLink
-                key={item.id}
-                animeId={animePublicSegment(routeRef)}
-                to={`${animeDetailPath(routeRef)}?tab=comments`}
-                className="block active:scale-[0.99] transition-transform"
-              >
-                {inner}
-              </AnimePrefetchLink>
-            )
-          })
+          <ProfileCommentActivityList
+            items={data.items}
+            tone={isPublic ? 'public' : 'self'}
+          />
         )}
       </div>
     </div>

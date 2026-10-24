@@ -269,6 +269,8 @@ const PublicUserProfile = () => {
             translator={translator}
             variant="public"
             profileUserId={telegramUserId}
+            memberSince={data.profile.member_since}
+            displayName={displayName}
           />
         ) : null}
       </div>

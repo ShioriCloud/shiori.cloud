@@ -104,6 +104,7 @@ function App() {
             <Route path="/profile/people" element={<ProfilePeopleSearch />} />
             <Route path="/profile/activity" element={<ProfileActivity />} />
             <Route path="/u/:telegramUserId" element={<PublicUserProfile />} />
+            <Route path="/u/:telegramUserId/activity" element={<ProfileActivity />} />
             <Route path="/u/:telegramUserId/translations" element={<UserTranslationsPage />} />
             <Route path="/u/:telegramUserId/followers" element={<ProfileFollowList />} />
             <Route path="/u/:telegramUserId/following" element={<ProfileFollowList />} />

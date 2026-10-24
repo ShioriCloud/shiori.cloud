@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.75',
+    items: ['در پروفایل دیگران نظرات و تاریخ عضویت دیده می‌شود'],
+  },
+  {
     version: '0.2.74',
     items: ['نام نمایشی پروفایل را خودت انتخاب کن'],
   },

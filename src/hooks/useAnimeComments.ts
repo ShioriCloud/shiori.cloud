@@ -7,6 +7,7 @@ import {
   fetchAnimeComments,
   fetchAnimeCommentsAccess,
   fetchMyAnimeComments,
+  fetchUserAnimeComments,
   likeAnimeComment,
   reportAnimeComment,
   unlikeAnimeComment,
@@ -109,6 +110,23 @@ export function useMyAnimeCommentsQuery(enabled = true, page = 1, limit = 20) {
     queryKey: queryKeys.animeCommentsMine(page, limit),
     queryFn: () => fetchMyAnimeComments(page, limit),
     enabled: enabled && authReady,
+    staleTime: 30_000,
+  })
+}
+
+export function useUserAnimeCommentsQuery(
+  telegramUserId: string | undefined,
+  enabled = true,
+  page = 1,
+  limit = 20
+) {
+  const authReady = useCommentsAuthReady(enabled)
+  const id = telegramUserId?.trim() ?? ''
+
+  return useQuery({
+    queryKey: queryKeys.animeCommentsUser(id, page, limit),
+    queryFn: () => fetchUserAnimeComments(id, page, limit),
+    enabled: enabled && authReady && id.length > 0,
     staleTime: 30_000,
   })
 }

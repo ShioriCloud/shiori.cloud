@@ -144,6 +144,22 @@ export const fetchMyAnimeComments = async (
     )
   )
 
+export const fetchUserAnimeComments = async (
+  telegramUserId: string,
+  page = 1,
+  limit = 20
+): Promise<{
+  items: AnimeCommentActivity[]
+  total: number
+  page: number
+  limit: number
+}> =>
+  withCommentsAuth(() =>
+    shioriFetch(
+      `/anime-comments/users/${encodeURIComponent(telegramUserId)}?page=${encodeURIComponent(String(page))}&limit=${encodeURIComponent(String(limit))}`
+    )
+  )
+
 const buildQuery = (params?: {
   parent_id?: string
   page?: number
