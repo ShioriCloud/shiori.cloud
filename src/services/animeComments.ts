@@ -21,6 +21,10 @@ export type AnimeComment = {
   is_deleted: boolean
   is_own: boolean
   author: AnimeCommentAuthor
+  reply_to: {
+    comment_id: string
+    author: AnimeCommentAuthor
+  } | null
   reply_count: number
   like_count: number
   liked_by_me: boolean
@@ -77,6 +81,7 @@ export const createAnimeComment = async (input: {
   anime_id: string
   body: string
   parent_id?: string
+  reply_to_comment_id?: string
 }): Promise<AnimeComment> =>
   withCommentsAuth(() =>
     shioriFetch<AnimeComment>('/anime-comments', {

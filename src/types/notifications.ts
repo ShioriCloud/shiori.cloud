@@ -17,6 +17,7 @@ export type NotificationPreferences = {
   notify_social_follow: boolean
   notify_comment_reply: boolean
   notify_comment_like: boolean
+  notify_following_comment: boolean
   hide_telegram_username: boolean
   hide_watch_activity: boolean
 }

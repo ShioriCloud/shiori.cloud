@@ -226,6 +226,15 @@ const CommentCard = ({
         </div>
       </div>
 
+      {comment.reply_to && !comment.is_deleted ? (
+        <p className="mt-2 text-right text-[11px] text-muted-foreground">
+          به{' '}
+          <span className="font-semibold text-primary-400/95">
+            {comment.reply_to.author.display_name}
+          </span>
+        </p>
+      ) : null}
+
       <BidiText
         as="p"
         className={cn(
@@ -284,6 +293,16 @@ const CommentReplies = ({
   const { data, isLoading } = useAnimeCommentsQuery(animeId, true, parentId, 1, 50)
   const { create, remove } = useAnimeCommentMutations(animeId)
   const [replyOpen, setReplyOpen] = useState(false)
+  const [replyTo, setReplyTo] = useState<{ id: string; name: string } | null>(null)
+
+  const openReplyComposer = (target?: AnimeComment) => {
+    setReplyOpen(true)
+    if (target) {
+      setReplyTo({ id: target.id, name: target.author.display_name })
+    } else {
+      setReplyTo(null)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -319,6 +338,8 @@ const CommentReplies = ({
           animeId={animeId}
           comment={reply}
           compact
+          showReplyAction
+          onReply={() => openReplyComposer(reply)}
           deleting={remove.isPending}
           onDelete={
             reply.is_own
@@ -331,9 +352,17 @@ const CommentReplies = ({
       ))}
       {replyOpen ? (
         <CommentCardShell className="py-3">
+          {replyTo ? (
+            <p className="mb-2 text-right text-[11px] text-muted-foreground">
+              در پاسخ به{' '}
+              <span className="font-semibold text-foreground">{replyTo.name}</span>
+            </p>
+          ) : null}
           <CommentComposer
             compact
-            placeholder="پاسخ خود را بنویسید…"
+            placeholder={
+              replyTo ? `پاسخ به ${replyTo.name}…` : 'پاسخ خود را بنویسید…'
+            }
             submitLabel="ارسال پاسخ"
             pending={create.isPending}
             onSubmit={async (body) => {
@@ -341,18 +370,21 @@ const CommentReplies = ({
                 anime_id: animeId,
                 body,
                 parent_id: parentId,
+                reply_to_comment_id: replyTo?.id,
               })
               setReplyOpen(false)
+              setReplyTo(null)
             }}
           />
         </CommentCardShell>
       ) : (
         <button
           type="button"
-          onClick={() => setReplyOpen(true)}
-          className="text-[11px] font-medium text-primary-400"
+          onClick={() => openReplyComposer()}
+          className={commentActionPill(false)}
         >
-          نوشتن پاسخ
+          <span>نوشتن پاسخ</span>
+          <CornerDownLeft className="h-3.5 w-3.5" aria-hidden />
         </button>
       )}
     </div>

@@ -93,6 +93,7 @@ const ProfileSettings = () => {
     updatingNotifySocialFollow,
     updatingNotifyCommentReply,
     updatingNotifyCommentLike,
+    updatingNotifyFollowingComment,
     updatingHideWatchActivity,
   } = useNotifications()
   const { preference, setPreference, isDarkMode } = useTheme()
@@ -354,6 +355,29 @@ const ProfileSettings = () => {
                 />
               </div>
               {socialProfile?.enabled ? (
+                <>
+                <div className="flex items-center justify-between gap-3 px-3 py-3">
+                  <div className="min-w-0 text-right">
+                    <Label
+                      htmlFor="notify-following-comment"
+                      className="text-sm font-medium text-foreground"
+                    >
+                      نظر دنبال‌شده
+                    </Label>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      وقتی کسی که دنبال می‌کنی روی انیمه نظر می‌گذارد
+                    </p>
+                  </div>
+                  <Switch
+                    id="notify-following-comment"
+                    checked={preferences?.notify_following_comment ?? true}
+                    disabled={preferencesLoading || updatingNotifyFollowingComment}
+                    onCheckedChange={(checked) => {
+                      hapticSelection()
+                      void updatePreferences({ notify_following_comment: checked })
+                    }}
+                  />
+                </div>
                 <div className="flex items-center justify-between gap-3 px-3 py-3">
                   <div className="min-w-0 text-right">
                     <Label
@@ -376,6 +400,7 @@ const ProfileSettings = () => {
                     }}
                   />
                 </div>
+                </>
               ) : null}
             </MyListCompactCard>
           </div>

@@ -63,7 +63,8 @@ const NotificationsPage = () => {
             const isSocialInbox =
               notification.kind === 'social_follow' ||
               notification.kind === 'comment_reply' ||
-              notification.kind === 'comment_like'
+              notification.kind === 'comment_like' ||
+              notification.kind === 'following_comment'
             const poster = coverSrc ? (
               <div className="media-card-skeuo w-12 shrink-0 rounded-lg">
                 <img
