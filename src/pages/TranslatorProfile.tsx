@@ -1,222 +1,39 @@
 import { useMemo } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
-import AnimePrefetchLink from '../components/AnimePrefetchLink'
-import { BidiText } from '../components/BidiText'
-import { UserIcon } from 'hugeicons-react'
-import type { AnimeCard, GenreItem } from '../services/catalogSource'
-import { ExploreEmptyState } from '@/components/explore/ExploreUi'
-import { useTranslatorProfileQuery } from '@/hooks/queries/useAnimeQueries'
-import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
-import { Badge } from '@/components/ui/badge'
-import { toPersianDigits } from '@/lib/persianDigits'
+import { ProfilePageSkeleton } from '@/components/profile/ProfilePageSkeleton'
+import { useTranslatorResolveQuery } from '@/hooks/queries/useAnimeQueries'
+import UnlinkedTranslatorProfile from './UnlinkedTranslatorProfile'
 
-const genreLabel = (g: GenreItem) => g.name_fa || g.name_en || g.slug
-
-const ProfileSkeleton = () => (
-  <div className="pb-24 animate-pulse">
-    <div className="relative h-52">
-      <div className="absolute inset-x-0 top-0 h-full bg-muted" />
-      <div className="relative z-10 pt-24 flex flex-col items-center">
-        <div className="w-24 h-24 rounded-2xl bg-muted border-4 border-background" />
-        <div className="h-6 w-40 bg-muted rounded mt-4" />
-      </div>
-    </div>
-    <div className="mx-4 mt-6 h-20 rounded-2xl bg-muted" />
-    <div className="grid grid-cols-3 gap-3 p-4 mt-6">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="aspect-[2/3] rounded-2xl bg-muted" />
-      ))}
-    </div>
-  </div>
-)
-
-const AnimeGridCard = ({ anime }: { anime: AnimeCard }) => {
-  const genres = (anime.genres || []).slice(0, 2)
-
-  return (
-    <AnimePrefetchLink
-      animeId={animePublicSegment(anime)}
-      to={animeDetailPath(anime)}
-      className="group block active:scale-[0.98] transition-transform"
-      aria-label={`مشاهده ${anime.title}`}
-    >
-      <div className="media-card-skeuo rounded-xl">
-        <div className="media-card-skeuo-face relative aspect-[2/3] bg-muted">
-          <img
-            src={anime.image}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-          <div className="absolute left-0 bottom-0 p-2.5 pt-10">
-            <BidiText as="h3" className="text-xs font-semibold text-white text-left line-clamp-2">
-              {anime.title}
-            </BidiText>
-            {genres.length > 0 && (
-              <div className="flex flex-wrap gap-0.5 mt-1 justify-end">
-                {genres.map((g) => (
-                  <span
-                    key={g.slug}
-                    className="text-[8px] leading-none px-1 py-0.5 rounded-md bg-white/15 text-white/90 border border-white/10 truncate max-w-full"
-                  >
-                    {genreLabel(g)}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </AnimePrefetchLink>
-  )
-}
-
+/**
+ * Legacy `/translators/:slug` URLs: resolve linked user without rendering a separate layout.
+ */
 const TranslatorProfile = () => {
   const { slug } = useParams<{ slug: string }>()
   const safeSlug = useMemo(() => String(slug || '').trim(), [slug])
-  const { data, isLoading, isError, refetch } = useTranslatorProfileQuery(safeSlug || undefined)
-
-  const translator = data?.translator ?? null
-  const animeList = data?.animeList ?? []
-  const linkedUserId =
-    translator?.linked_telegram_user_id?.trim() ||
-    translator?.telegram_user_id?.trim() ||
-    null
-
-  const animeCount = useMemo(() => {
-    const ids = new Set(animeList.map((a) => String(a.id)))
-    return ids.size
-  }, [animeList])
-
-  const totalEpisodes = useMemo(() => {
-    return animeList.reduce(
-      (sum, a) => sum + (typeof a.episodes_count === 'number' ? a.episodes_count : 0),
-      0
-    )
-  }, [animeList])
-
-  const coverImage = useMemo(() => {
-    return (
-      translator?.cover_url ||
-      translator?.avatar_url ||
-      animeList[0]?.featuredImage ||
-      animeList[0]?.image ||
-      null
-    )
-  }, [translator?.cover_url, translator?.avatar_url, animeList])
+  const { data, isLoading, isError } = useTranslatorResolveQuery(safeSlug || undefined)
 
   if (!safeSlug) {
     return (
-      <div className="px-4 py-16 text-center text-muted-foreground pb-24">مترجم یافت نشد.</div>
+      <div className="px-4 py-16 text-center text-muted-foreground pb-24">
+        مترجم یافت نشد.
+      </div>
     )
   }
 
-  if (isLoading) return <ProfileSkeleton />
+  if (isLoading) {
+    return <ProfilePageSkeleton />
+  }
 
-  if (isError || !translator) {
+  if (!isError && data?.linked_telegram_user_id) {
     return (
-      <div className="pb-24">
-        <ExploreEmptyState
-          title="خطا در بارگذاری مترجم"
-          subtitle={isError ? 'خطا در بارگذاری پروفایل مترجم' : 'مترجم یافت نشد.'}
-          actionLabel="تلاش مجدد"
-          onAction={() => void refetch()}
-        />
-      </div>
+      <Navigate
+        to={`/u/${encodeURIComponent(data.linked_telegram_user_id)}`}
+        replace
+      />
     )
   }
 
-  // Linked translators share the same social profile as any user (role badge there).
-  if (linkedUserId) {
-    return <Navigate to={`/u/${encodeURIComponent(linkedUserId)}`} replace />
-  }
-
-  const experienceLabel =
-    translator.experience && translator.experience.trim().length > 0
-      ? translator.experience
-      : '—'
-
-  return (
-    <div className="pb-24 bg-background text-foreground">
-      {/* Cover + avatar — extends under transparent app header */}
-      <div className="relative">
-        <div className="absolute inset-x-0 top-0 h-52 overflow-hidden">
-          {coverImage ? (
-            <img src={coverImage} alt="" className="w-full h-full object-cover opacity-45" />
-          ) : (
-            <div className="w-full h-full bg-muted" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-background/30 to-background" />
-        </div>
-
-        <div className="relative z-10 pt-24 px-4 pb-2 flex flex-col items-center">
-          <div className="w-24 h-24 rounded-2xl overflow-hidden border-4 border-background bg-muted shadow-lg ring-2 ring-primary-400/25">
-            {translator.avatar_url ? (
-              <img
-                src={translator.avatar_url}
-                alt={translator.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-muted">
-                <UserIcon className="w-10 h-10 text-muted-foreground/50" />
-              </div>
-            )}
-          </div>
-
-          <div className="mt-3 flex flex-wrap items-center justify-center gap-2 px-2">
-            <h1 className="text-lg font-bold text-foreground text-center line-clamp-2">
-              {translator.name}
-            </h1>
-            <Badge variant={translator.is_active !== false ? 'success' : 'secondary'}>
-              {translator.is_active !== false ? 'فعال' : 'غیرفعال'}
-            </Badge>
-          </div>
-          {translator.bio ? (
-          <p className="text-sm text-muted-foreground leading-7 text-center whitespace-pre-wrap">
-            {translator.bio}
-          </p>
-        ) : (
-          <p className="text-sm text-muted-foreground/70 text-center italic">بیوگرافی ثبت نشده</p>
-        )}
-        </div>
-      </div>
-      {/* Stats */}
-      <div className="mx-4 mt-5 grid grid-cols-3 gap-2">
-        {[
-          { value: toPersianDigits(animeCount), label: 'انیمه' },
-          { value: toPersianDigits(totalEpisodes), label: 'قسمت' },
-          { value: experienceLabel, label: 'سابقه' },
-        ].map((stat) => (
-          <div key={stat.label} className="surface-skeuo rounded-xl py-3 px-2 text-center">
-            <p className="text-base font-bold text-foreground">{stat.value}</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">{stat.label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Works */}
-      <div className="px-4 pt-6 pb-2 flex items-baseline justify-between">
-        <h2 className="text-base font-semibold text-foreground">آثار</h2>
-        <span className="text-xs text-muted-foreground">
-          {animeCount > 0 ? `${toPersianDigits(animeCount)} عنوان` : 'خالی'}
-        </span>
-      </div>
-
-      {animeList.length === 0 ? (
-        <div className="mx-4 rounded-2xl border border-dashed border-border bg-muted/20 py-12 text-center">
-          <p className="text-sm text-muted-foreground">اثری برای این مترجم ثبت نشده.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-3 gap-3 px-4">
-          {animeList.map((a) => (
-            <AnimeGridCard key={String(a.id)} anime={a} />
-          ))}
-        </div>
-      )}
-    </div>
-  )
+  return <UnlinkedTranslatorProfile slug={safeSlug} />
 }
 
 export default TranslatorProfile

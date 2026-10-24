@@ -338,6 +338,19 @@ export const getStudioBySlug = async (slug: string): Promise<StudioPublicItem | 
   }
 }
 
+export const resolveTranslatorSlug = async (
+  slug: string,
+): Promise<{ slug: string; linked_telegram_user_id: string | null } | null> => {
+  try {
+    return await shioriFetch<{
+      slug: string
+      linked_telegram_user_id: string | null
+    }>(`/anime-catalog/translators/${encodeURIComponent(slug)}/resolve`)
+  } catch {
+    return null
+  }
+}
+
 export const getTranslatorBySlug = async (slug: string): Promise<TranslatorItem | null> => {
   try {
     const result = await shioriFetch<{

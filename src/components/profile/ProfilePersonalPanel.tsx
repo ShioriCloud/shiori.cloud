@@ -38,12 +38,23 @@ const PersonalRow = ({ to, icon, label, hint }: RowProps) => (
 type ProfilePersonalPanelProps = {
   translator?: SocialProfileMe['translator']
   variant?: 'self' | 'public'
+  /** Target user for translations deep link (avoids /translators slug hop). */
+  profileUserId?: string
 }
 
 export const ProfilePersonalPanel = ({
   translator,
   variant = 'self',
-}: ProfilePersonalPanelProps) => (
+  profileUserId,
+}: ProfilePersonalPanelProps) => {
+  const translationsPath =
+    profileUserId && translator
+      ? `/u/${encodeURIComponent(profileUserId)}/translations`
+      : translator
+        ? `/translators/${encodeURIComponent(translator.slug)}`
+        : null
+
+  return (
   <div className="space-y-6">
     {variant === 'self' ? (
       <MyListCompactCard className="overflow-hidden divide-y divide-border/40">
@@ -59,12 +70,12 @@ export const ProfilePersonalPanel = ({
           label="پلی‌لیست‌ها"
           hint="لیست‌های شخصی شیوری"
         />
-        {translator ? (
+        {translationsPath ? (
           <PersonalRow
-            to={`/translators/${encodeURIComponent(translator.slug)}`}
+            to={translationsPath}
             icon={<Languages className="h-4 w-4" />}
-            label="صفحه مترجم در کاتالوگ"
-            hint={translator.name}
+            label="آثار ترجمه"
+            hint={translator?.name ?? 'مشاهده همه'}
           />
         ) : null}
         <div className="flex items-center gap-3 px-3 py-3 opacity-60">
@@ -86,12 +97,14 @@ export const ProfilePersonalPanel = ({
       <MyListCompactCard className="overflow-hidden divide-y divide-border/40">
         {translator ? (
           <>
-            <PersonalRow
-              to={`/translators/${encodeURIComponent(translator.slug)}`}
-              icon={<Languages className="h-4 w-4" />}
-              label="صفحه مترجم در کاتالوگ"
-              hint={translator.name}
-            />
+            {translationsPath ? (
+              <PersonalRow
+                to={translationsPath}
+                icon={<Languages className="h-4 w-4" />}
+                label="آثار ترجمه"
+                hint={translator.name}
+              />
+            ) : null}
             {translator.bio ? (
               <div className="px-3 py-3 text-right">
                 <p className="text-xs font-medium text-muted-foreground">درباره مترجم</p>
@@ -109,4 +122,5 @@ export const ProfilePersonalPanel = ({
       </MyListCompactCard>
     )}
   </div>
-)
+  )
+}

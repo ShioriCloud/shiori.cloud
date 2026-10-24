@@ -30,24 +30,7 @@ const getInitials = (name: string): string => {
   return trimmed.charAt(0)
 }
 
-const ProfileSkeleton = () => (
-  <div className="animate-pulse pb-24">
-    <div className="relative h-44">
-      <div className="absolute inset-x-0 top-0 h-full bg-muted/60" />
-      <div className="relative z-10 flex flex-col items-center pt-24">
-        <div className="media-card-skeuo h-24 w-24 rounded-2xl">
-          <div className="media-card-skeuo-face bg-muted" />
-        </div>
-        <div className="mt-4 h-6 w-36 rounded-md bg-muted" />
-      </div>
-    </div>
-    <div className="mx-4 mt-6 grid grid-cols-3 gap-2">
-      <div className="h-16 rounded-lg bg-muted/70" />
-      <div className="h-16 rounded-lg bg-muted/70" />
-      <div className="h-16 rounded-lg bg-muted/70" />
-    </div>
-  </div>
-)
+import { ProfilePageSkeleton } from '@/components/profile/ProfilePageSkeleton'
 
 const Profile = () => {
   const { user, isReady, inTelegram, login, register } = useAppAuth()
@@ -107,7 +90,7 @@ const Profile = () => {
   }, [socialProfile, stats])
 
   if (!isReady) {
-    return <ProfileSkeleton />
+    return <ProfilePageSkeleton />
   }
 
   if (showWebAuth) {
@@ -248,7 +231,10 @@ const Profile = () => {
           <ProfileFeedPanel enabled={socialProfile?.enabled === true} />
         ) : null}
         {activeTab === 'personal' ? (
-          <ProfilePersonalPanel translator={socialProfile?.translator ?? null} />
+          <ProfilePersonalPanel
+            translator={socialProfile?.translator ?? null}
+            profileUserId={user?.id != null ? String(user.id) : undefined}
+          />
         ) : null}
       </div>
     </div>

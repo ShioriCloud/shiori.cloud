@@ -373,6 +373,17 @@ export const useStudioPageQuery = (slug: string | undefined) =>
     enabled: Boolean(slug),
   })
 
+export const useTranslatorResolveQuery = (slug: string | undefined) =>
+  useQuery({
+    queryKey: ['translator-resolve', slug ?? ''],
+    queryFn: async () => {
+      const { resolveTranslatorSlug } = await import('../../services/shioriCatalog')
+      return resolveTranslatorSlug(slug!)
+    },
+    enabled: Boolean(slug),
+    staleTime: 60_000,
+  })
+
 export const useTranslatorProfileQuery = (slug: string | undefined) =>
   useQuery({
     queryKey: queryKeys.translatorProfile(slug ?? ''),
