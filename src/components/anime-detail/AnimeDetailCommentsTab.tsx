@@ -1,7 +1,7 @@
 import { FormEvent, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Message01Icon } from 'hugeicons-react'
-import { CornerDownLeft, Flag, ThumbsUp, Trash2 } from 'lucide-react'
+import { ChevronDown, CornerDownLeft, Flag, MessageSquare, ThumbsUp, Trash2 } from 'lucide-react'
 import { BidiText } from '@/components/BidiText'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
 import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
@@ -87,6 +87,15 @@ const CommentComposer = ({
   )
 }
 
+const commentActionPill = (active?: boolean) =>
+  cn(
+    'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5',
+    'text-[11px] font-semibold active:scale-[0.98] transition-transform',
+    active
+      ? 'border-primary-400/35 bg-primary-500/15 text-primary-400'
+      : 'border-border/50 bg-muted/30 text-muted-foreground hover:text-foreground'
+  )
+
 const CommentCard = ({
   comment,
   animeId,
@@ -94,6 +103,9 @@ const CommentCard = ({
   onDelete,
   deleting,
   showReplyAction,
+  replyCount,
+  repliesOpen,
+  onToggleReplies,
   compact,
 }: {
   comment: AnimeComment
@@ -102,6 +114,9 @@ const CommentCard = ({
   onDelete?: () => void
   deleting?: boolean
   showReplyAction?: boolean
+  replyCount?: number
+  repliesOpen?: boolean
+  onToggleReplies?: () => void
   compact?: boolean
 }) => {
   const profileHref = `/u/${encodeURIComponent(comment.author.telegram_user_id)}`
@@ -136,10 +151,36 @@ const CommentCard = ({
     }
   }
 
+  const repliesTotal = replyCount ?? 0
+
   return (
-    <CommentCardShell className={compact ? 'py-3' : undefined}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex shrink-0 items-center gap-2 text-muted-foreground">
+    <CommentCardShell
+      className={cn(compact && 'border-border/40 bg-muted/15 py-3 dark:bg-muted/10')}
+    >
+      <div className="flex items-start gap-3">
+        <div className="flex min-w-0 flex-1 items-start gap-2.5">
+          <Link to={profileHref} className="shrink-0" aria-label={comment.author.display_name}>
+            <SocialUserAvatar
+              photoUrl={comment.author.photo_url}
+              displayName={comment.author.display_name}
+              size={compact ? 'sm' : 'md'}
+              className="ring-0"
+            />
+          </Link>
+          <div className="min-w-0 flex-1 text-right">
+            <Link
+              to={profileHref}
+              className="block truncate text-sm font-bold text-foreground hover:text-primary-400"
+            >
+              {comment.author.display_name}
+            </Link>
+            <p className="mt-0.5 text-[10px] leading-5 text-muted-foreground/90 tabular-nums">
+              {formatRelativeTimeFa(comment.created_at)}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-1 text-muted-foreground">
           <button
             type="button"
             className={cn(
@@ -176,28 +217,6 @@ const CommentCard = ({
             </button>
           ) : null}
         </div>
-
-        <div className="flex min-w-0 flex-1 items-start justify-end gap-2.5">
-          <div className="min-w-0 text-right">
-            <Link
-              to={profileHref}
-              className="block truncate text-sm font-bold text-foreground hover:text-primary-400"
-            >
-              {comment.author.display_name}
-            </Link>
-            <p className="mt-0.5 text-[10px] leading-5 text-muted-foreground/90 tabular-nums">
-              {formatRelativeTimeFa(comment.created_at)}
-            </p>
-          </div>
-          <Link to={profileHref} className="shrink-0" aria-label={comment.author.display_name}>
-            <SocialUserAvatar
-              photoUrl={comment.author.photo_url}
-              displayName={comment.author.display_name}
-              size={compact ? 'sm' : 'md'}
-              className="ring-0"
-            />
-          </Link>
-        </div>
       </div>
 
       <BidiText
@@ -210,20 +229,34 @@ const CommentCard = ({
         {comment.is_deleted ? 'این نظر حذف شده' : comment.body}
       </BidiText>
 
-      {showReplyAction && onReply && !comment.is_deleted ? (
-        <div className="mt-3 flex justify-end">
-          <button
-            type="button"
-            onClick={onReply}
-            className={cn(
-              'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5',
-              'bg-primary-500/15 text-[11px] font-semibold text-primary-400',
-              'border border-primary-400/25 active:scale-[0.98] transition-transform'
-            )}
-          >
-            <span>پاسخ</span>
-            <CornerDownLeft className="h-3.5 w-3.5" aria-hidden />
-          </button>
+      {!comment.is_deleted &&
+      ((showReplyAction && onReply) || (repliesTotal > 0 && onToggleReplies)) ? (
+        <div className="mt-3 flex flex-wrap items-center justify-start gap-2">
+          {showReplyAction && onReply ? (
+            <button type="button" onClick={onReply} className={commentActionPill(true)}>
+              <span>پاسخ</span>
+              <CornerDownLeft className="h-3.5 w-3.5" aria-hidden />
+            </button>
+          ) : null}
+          {repliesTotal > 0 && onToggleReplies ? (
+            <button
+              type="button"
+              onClick={onToggleReplies}
+              className={commentActionPill(repliesOpen)}
+              aria-expanded={repliesOpen}
+            >
+              <MessageSquare className="h-3.5 w-3.5" aria-hidden />
+              <span>
+                {repliesOpen
+                  ? 'پنهان کردن پاسخ‌ها'
+                  : `${toPersianDigits(repliesTotal)} پاسخ`}
+              </span>
+              <ChevronDown
+                className={cn('h-3.5 w-3.5 transition-transform', repliesOpen && 'rotate-180')}
+                aria-hidden
+              />
+            </button>
+          ) : null}
         </div>
       ) : null}
     </CommentCardShell>
@@ -246,7 +279,8 @@ const CommentReplies = ({ animeId, parentId }: { animeId: string; parentId: stri
   const items = data?.items ?? []
 
   return (
-    <div className="mt-2 space-y-2 border-r-2 border-primary-400/20 pr-3 mr-1">
+    <div className="mr-1 mt-1 space-y-2 border-r-2 border-primary-400/30 pr-3">
+      <p className="pr-1 text-[10px] font-medium text-muted-foreground">پاسخ‌ها</p>
       {items.map((reply) => (
         <CommentCard
           key={reply.id}
@@ -311,6 +345,9 @@ const RootCommentRow = ({
         comment={comment}
         animeId={animeId}
         showReplyAction
+        replyCount={replyCount}
+        repliesOpen={repliesOpen}
+        onToggleReplies={() => setRepliesOpen((v) => !v)}
         deleting={remove.isPending}
         onReply={() => {
           setReplyComposerOpen((v) => !v)
@@ -342,20 +379,6 @@ const RootCommentRow = ({
             }}
           />
         </CommentCardShell>
-      ) : null}
-      {replyCount > 0 ? (
-        <button
-          type="button"
-          onClick={() => setRepliesOpen((v) => !v)}
-          className={cn(
-            'w-full text-right text-[11px] font-medium text-muted-foreground hover:text-foreground',
-            repliesOpen && 'text-primary-400'
-          )}
-        >
-          {repliesOpen
-            ? 'پنهان کردن پاسخ‌ها'
-            : `مشاهده ${toPersianDigits(replyCount)} پاسخ`}
-        </button>
       ) : null}
       {repliesOpen ? <CommentReplies animeId={animeId} parentId={comment.id} /> : null}
     </div>

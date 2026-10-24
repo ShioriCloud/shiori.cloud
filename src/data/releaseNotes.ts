@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.87',
+    items: ['چیدمان نظرات انیمه برای فارسی درست شد و پاسخ‌ها راحت‌تر دیده می‌شوند'],
+  },
+  {
     version: '0.2.86',
     items: [
       'اعلان اولین پسند روی نظر با سوئیچ جدا در تنظیمات',
