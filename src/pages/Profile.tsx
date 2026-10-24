@@ -74,11 +74,11 @@ const Profile = () => {
     n == null ? '—' : toPersianDigits(n)
 
   const roleBadges = socialProfile?.profile?.role_badges ?? []
-  const watchedItems = socialProfile?.watched?.items ?? []
   const favoriteListItems = useMemo(
-    () => watchedItems.filter((item) => item.is_favorite === true),
-    [watchedItems]
+    () => (socialProfile?.watched?.items ?? []).filter((item) => item.is_favorite === true),
+    [socialProfile?.watched?.items]
   )
+  const watchedItems = socialProfile?.watched?.items ?? []
   const memberSinceLabel = formatProfileMemberSince(socialProfile?.profile?.member_since)
   const showSocialWatch = socialProfile?.enabled === true
 
