@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.85',
+    items: ['می‌توانی اعلان «پاسخ به نظر» را از تنظیمات خاموش کنی'],
+  },
+  {
     version: '0.2.84',
     items: [
       'تب شخصی و نظرات انیمه ظاهر یکدست‌تری با فید پروفایل دارند',

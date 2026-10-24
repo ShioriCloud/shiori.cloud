@@ -1,0 +1,32 @@
+---
+description: Social profile, feed, and comment UI conventions in the mini-app
+globs: src/components/profile/**/*.tsx,src/components/profile/**/*.ts,src/pages/Profile*.tsx,src/components/anime-detail/AnimeDetailCommentsTab.tsx
+alwaysApply: false
+---
+
+# Social UI (shiori.cloud)
+
+## Surfaces
+
+- Use `SOCIAL_SURFACE_CLASS` and `SOCIAL_DIVIDER_CLASS` from `src/components/profile/social/socialUi.ts` for list cards and grouped rows (not `MyListCompactCard` on social surfaces).
+- Inner padded blocks (composers, comment cards): `SOCIAL_INSET_SHELL_CLASS`.
+
+## Components
+
+- Avatars: `SocialUserAvatar` (sizes `sm` | `md` | `lg`).
+- User rows / search / follow lists: `SocialUserRow`, `SocialSuggestionCard`, `SocialListSkeleton`.
+- Feed and comment activity: `SocialActivityCard`, `SocialCommentActivityCard` — same header + poster layout; link anime via `AnimePrefetchLink` when applicable.
+- Section headers: `SocialSection` (title + optional description).
+
+## Feed metadata
+
+- New feed `type` values need entries in `socialFeedMeta.tsx` (label, icon, pill colors) and API + `SocialProfileFeedItem` union in `services/socialProfile.ts`.
+
+## Copy
+
+- User-facing Persian; benefit language in release notes, not engineering detail.
+- Relative time: `formatRelativeTimeFa` for social/comment headers unless a fixed datetime is required.
+
+## Notifications
+
+- In-app kinds include `social_follow`, `comment_reply`. New social kinds should respect a `notify_*` preference on `telegram_users` and block/mute checks before insert.

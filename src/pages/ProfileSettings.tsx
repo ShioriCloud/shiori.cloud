@@ -91,6 +91,7 @@ const ProfileSettings = () => {
     updatingNotifyNewEpisode,
     updatingNotifyTelegramDm,
     updatingNotifySocialFollow,
+    updatingNotifyCommentReply,
     updatingHideWatchActivity,
   } = useNotifications()
   const { preference, setPreference, isDarkMode } = useTheme()
@@ -302,6 +303,28 @@ const ProfileSettings = () => {
                   onCheckedChange={(checked) => {
                     hapticSelection()
                     void updatePreferences({ notify_telegram_dm: checked })
+                  }}
+                />
+              </div>
+              <div className="flex items-center justify-between gap-3 px-3 py-3">
+                <div className="min-w-0 text-right">
+                  <Label
+                    htmlFor="notify-comment-reply"
+                    className="text-sm font-medium text-foreground"
+                  >
+                    پاسخ به نظر
+                  </Label>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    وقتی کسی به نظرت در صفحهٔ انیمه پاسخ می‌دهد
+                  </p>
+                </div>
+                <Switch
+                  id="notify-comment-reply"
+                  checked={preferences?.notify_comment_reply ?? true}
+                  disabled={preferencesLoading || updatingNotifyCommentReply}
+                  onCheckedChange={(checked) => {
+                    hapticSelection()
+                    void updatePreferences({ notify_comment_reply: checked })
                   }}
                 />
               </div>

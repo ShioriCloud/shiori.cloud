@@ -15,6 +15,7 @@ export type NotificationPreferences = {
   notify_new_episode: boolean
   notify_telegram_dm: boolean
   notify_social_follow: boolean
+  notify_comment_reply: boolean
   hide_telegram_username: boolean
   hide_watch_activity: boolean
 }
