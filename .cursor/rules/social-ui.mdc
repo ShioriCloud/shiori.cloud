@@ -29,4 +29,4 @@ alwaysApply: false
 
 ## Notifications
 
-- In-app kinds include `social_follow`, `comment_reply`. New social kinds should respect a `notify_*` preference on `telegram_users` and block/mute checks before insert.
+- In-app kinds: `social_follow`, `comment_reply`, `comment_like` (first like per comment). Deliver via API `SocialNotificationDeliveryService` (inbox + optional Telegram DM when `notify_telegram_dm` is on). Each kind has a `notify_*` preference; respect block checks before calling deliver.

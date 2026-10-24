@@ -66,6 +66,7 @@ export const useNotifications = () => {
         notify_telegram_dm: true,
         notify_social_follow: true,
         notify_comment_reply: true,
+        notify_comment_like: true,
         hide_telegram_username: false,
         hide_watch_activity: false,
       }
@@ -115,6 +116,9 @@ export const useNotifications = () => {
     ),
     updatingNotifyCommentReply: Boolean(
       pendingPrefs && Object.prototype.hasOwnProperty.call(pendingPrefs, 'notify_comment_reply')
+    ),
+    updatingNotifyCommentLike: Boolean(
+      pendingPrefs && Object.prototype.hasOwnProperty.call(pendingPrefs, 'notify_comment_like')
     ),
     updatingHideTelegramUsername: Boolean(
       pendingPrefs && Object.prototype.hasOwnProperty.call(pendingPrefs, 'hide_telegram_username')

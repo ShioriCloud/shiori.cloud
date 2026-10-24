@@ -66,7 +66,10 @@ const NotificationsPage = () => {
         <div className="space-y-3 p-4">
           {notifications.map((notification) => {
             const coverSrc = resolveMediaServeUrl(notification.anime_cover_image)
-            const isSocialFollow = notification.kind === 'social_follow'
+            const isSocialInbox =
+              notification.kind === 'social_follow' ||
+              notification.kind === 'comment_reply' ||
+              notification.kind === 'comment_like'
             const poster = coverSrc ? (
               <img
                 src={coverSrc}
@@ -80,7 +83,7 @@ const NotificationsPage = () => {
                 className="flex h-16 w-12 shrink-0 items-center justify-center rounded-md bg-muted ring-1 ring-border/40"
                 aria-hidden
               >
-                {isSocialFollow || notification.kind === 'comment_reply' ? (
+                {isSocialInbox ? (
                   <UserIcon className="h-5 w-5 text-primary-400/80" />
                 ) : (
                   <AlarmClockIcon className="h-5 w-5 text-muted-foreground/70" />

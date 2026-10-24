@@ -92,6 +92,7 @@ const ProfileSettings = () => {
     updatingNotifyTelegramDm,
     updatingNotifySocialFollow,
     updatingNotifyCommentReply,
+    updatingNotifyCommentLike,
     updatingHideWatchActivity,
   } = useNotifications()
   const { preference, setPreference, isDarkMode } = useTheme()
@@ -294,7 +295,9 @@ const ProfileSettings = () => {
                   <Label htmlFor="notify-telegram-dm" className="text-sm font-medium text-foreground">
                     پیام Telegram
                   </Label>
-                  <p className="mt-0.5 text-xs text-muted-foreground">وقتی مینی‌اپ بسته است</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    پاسخ نظر، دنبال‌کننده و پسند؛ وقتی مینی‌اپ بسته است
+                  </p>
                 </div>
                 <Switch
                   id="notify-telegram-dm"
@@ -328,6 +331,28 @@ const ProfileSettings = () => {
                   }}
                 />
               </div>
+              <div className="flex items-center justify-between gap-3 px-3 py-3">
+                <div className="min-w-0 text-right">
+                  <Label
+                    htmlFor="notify-comment-like"
+                    className="text-sm font-medium text-foreground"
+                  >
+                    پسند نظر
+                  </Label>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    اولین پسند روی هر نظر؛ در مینی‌اپ و در صورت فعال بودن، پیام تلگرام
+                  </p>
+                </div>
+                <Switch
+                  id="notify-comment-like"
+                  checked={preferences?.notify_comment_like ?? true}
+                  disabled={preferencesLoading || updatingNotifyCommentLike}
+                  onCheckedChange={(checked) => {
+                    hapticSelection()
+                    void updatePreferences({ notify_comment_like: checked })
+                  }}
+                />
+              </div>
               {socialProfile?.enabled ? (
                 <div className="flex items-center justify-between gap-3 px-3 py-3">
                   <div className="min-w-0 text-right">
@@ -338,7 +363,7 @@ const ProfileSettings = () => {
                       دنبال‌کننده جدید
                     </Label>
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      در صندوق اعلان مینی‌اپ وقتی کسی دنبالت می‌کند
+                      در مینی‌اپ و در صورت فعال بودن، پیام تلگرام
                     </p>
                   </div>
                   <Switch
