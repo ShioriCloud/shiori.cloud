@@ -2,23 +2,42 @@ import type { FavoriteProgress } from '@/store/animeStore'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { translateAiringStatus } from '@/lib/searchFilters'
 
-export type WatchStatus = 'planning' | 'watching' | 'completed' | 'paused' | 'dropped'
+export type WatchStatus =
+  | 'planning'
+  | 'watching'
+  | 'completed'
+  | 'rewatching'
+  | 'paused'
+  | 'dropped'
 
 export const WATCH_STATUS_LABELS: Record<WatchStatus, string> = {
-  planning: 'در انتظار',
-  watching: 'در حال تماشا',
-  completed: 'تمام‌شده',
-  paused: 'متوقف',
-  dropped: 'رها‌شده',
+  watching: 'دارم می‌بینم',
+  planning: 'می‌خوام ببینم',
+  completed: 'کامل دیدم',
+  rewatching: 'دوباره می‌بینم',
+  paused: 'فعلاً نمی‌بینم',
+  dropped: 'دراپ کردم',
 }
 
 export const PROFILE_WATCH_STATUSES: WatchStatus[] = [
   'watching',
   'planning',
   'completed',
+  'rewatching',
   'paused',
   'dropped',
 ]
+
+const RATING_STEP = 0.5
+
+export const clampUserRating = (value: number): number =>
+  Math.min(10, Math.max(1, Math.round(value / RATING_STEP) * RATING_STEP))
+
+export const formatUserRatingFa = (value: number): string => {
+  const clamped = clampUserRating(value)
+  const text = clamped % 1 === 0 ? String(clamped) : clamped.toFixed(1)
+  return toPersianDigits(text)
+}
 
 export const deriveWatchStatus = (
   progress: FavoriteProgress,
@@ -44,7 +63,7 @@ export const progressForWatchStatus = (
   if (status === 'planning') {
     return { ...current, listStatus: status, episodesWatched: 0 }
   }
-  if (status === 'watching') {
+  if (status === 'watching' || status === 'rewatching') {
     const ep =
       current.episodesWatched > 0 && current.episodesWatched < max
         ? current.episodesWatched
@@ -96,7 +115,7 @@ export const displayScore = (
   shioriScore?: number | null
 ): string | null => {
   if (typeof userRating === 'number' && Number.isFinite(userRating)) {
-    return toPersianNumber(userRating)
+    return formatUserRatingFa(userRating)
   }
   if (typeof shioriScore === 'number' && Number.isFinite(shioriScore)) {
     return toPersianNumber(shioriScore)

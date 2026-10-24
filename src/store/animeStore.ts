@@ -18,7 +18,14 @@ export type FavoriteProgress = {
   episodesWatched: number
   userRating: number | null
   /** Explicit list status (paused/dropped); otherwise derived from episodes. */
-  listStatus?: 'planning' | 'watching' | 'completed' | 'paused' | 'dropped' | null
+  listStatus?:
+    | 'planning'
+    | 'watching'
+    | 'completed'
+    | 'rewatching'
+    | 'paused'
+    | 'dropped'
+    | null
 }
 
 interface AnimeState {

@@ -26,6 +26,12 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.95',
+    items: [
+      'ثبت پیشرفت تماشا: ظاهر جدید، وضعیت‌های واضح‌تر و امتیاز با نیم‌پله',
+    ],
+  },
+  {
     version: '0.2.94',
     items: ['قلب علاقه‌مندی و لیست پروفایل سریع‌تر با هم هماهنگ می‌شوند'],
   },

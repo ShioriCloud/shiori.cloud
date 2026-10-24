@@ -29,6 +29,7 @@ export type WatchlistItem = {
   id: number | string
   slug?: string | null
   title: string
+  titleRomaji?: string | null
   image: string
   episodesCount: number
   genres: GenreItem[]
@@ -39,7 +40,7 @@ export type WatchlistItem = {
 
 const statusTone = (status: WatchStatus) => {
   if (status === 'completed') return 'success' as const
-  if (status === 'watching') return 'primary' as const
+  if (status === 'watching' || status === 'rewatching') return 'primary' as const
   if (status === 'dropped') return 'warning' as const
   if (status === 'paused') return 'warning' as const
   return 'warning' as const
@@ -120,6 +121,7 @@ export const WatchlistTab = () => {
         id: card.id,
         slug: card.slug ?? null,
         title: card.title,
+        titleRomaji: card.title_romaji ?? null,
         image: card.image,
         episodesCount:
           typeof card.episodes_count === 'number' && card.episodes_count > 0
@@ -206,6 +208,7 @@ export const WatchlistTab = () => {
             if (!open) setEditingAnime(null)
           }}
           title={editingAnime.title}
+          titleRomaji={editingAnime.titleRomaji}
           image={editingAnime.image}
           detailHref={animeDetailPath(editingAnime)}
           episodesCount={editingAnime.episodesCount}

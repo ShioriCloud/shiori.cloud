@@ -162,6 +162,7 @@ const AnimeDetail = () => {
         open={trackingEditorOpen}
         onOpenChange={setTrackingEditorOpen}
         title={anime.title}
+        titleRomaji={anime.title_romaji}
         image={anime.image}
         episodesCount={anime.episodes_count || downloads.episodesForList.length}
         progress={getProgress(anime.id)}
