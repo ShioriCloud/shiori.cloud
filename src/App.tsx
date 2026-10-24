@@ -14,6 +14,8 @@ import { useTelegramStartNavigation } from './hooks/useTelegramStartNavigation'
 import { useTelegramUserSync } from './hooks/useTelegramUserSync'
 import { useTelegramLinkComplete } from './hooks/useTelegramLinkComplete'
 import { prefetchSchedule } from './hooks/queries/prefetch'
+import PublicUserProfile from './pages/PublicUserProfile'
+import TranslatorProfile from './pages/TranslatorProfile'
 
 const Home = lazy(() => import('./pages/Home'))
 const AnimeDetail = lazy(() => import('./pages/AnimeDetail'))
@@ -27,13 +29,11 @@ const SocialProfile = lazy(() => import('./pages/SocialProfile'))
 const ProfileSettings = lazy(() => import('./pages/ProfileSettings'))
 const ProfileFullStats = lazy(() => import('./pages/ProfileFullStats'))
 const ProfileFollowList = lazy(() => import('./pages/ProfileFollowList'))
-const PublicUserProfile = lazy(() => import('./pages/PublicUserProfile'))
 const UserTranslationsPage = lazy(() => import('./pages/UserTranslationsPage'))
 const ProfilePeopleSearch = lazy(() => import('./pages/ProfilePeopleSearch'))
 const Notifications = lazy(() => import('./pages/Notifications'))
 const Support = lazy(() => import('./pages/Support'))
 const SupportTicketDetail = lazy(() => import('./pages/SupportTicketDetail'))
-const TranslatorProfile = lazy(() => import('./pages/TranslatorProfile'))
 const StudioDetail = lazy(() => import('./pages/StudioDetail'))
 // Subscribe page kept for later monetization relaunch (see monetizationFlags.ts)
 const Subscribe = lazy(() => import('./pages/Subscribe'))

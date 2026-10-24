@@ -3,6 +3,7 @@ import { AppHeader } from '@/components/AppHeader'
 import { DetailSkeleton } from '@/components/anime-detail/AnimeDetailSkeletons'
 import { AnimePosterSkeletonGrid } from '@/components/anime/AnimePosterCard'
 import { MyListSkeletonCards } from '@/components/my-list/MyListUi'
+import { ProfilePageSkeleton } from '@/components/profile/ProfilePageSkeleton'
 
 const Pulse = ({ className }: { className: string }) => (
   <div className={`animate-pulse rounded-md bg-muted ${className}`} aria-hidden />
@@ -77,21 +78,6 @@ const MyListPageSkeleton = () => (
   <div className="px-4 pb-24 pt-4" aria-busy="true" aria-label="در حال بارگذاری لیست">
     <Pulse className="mb-4 h-11 rounded-xl" />
     <MyListSkeletonCards />
-  </div>
-)
-
-const ProfilePageSkeleton = () => (
-  <div className="px-4 pb-24 pt-24" aria-busy="true" aria-label="در حال بارگذاری پروفایل">
-    <div className="flex flex-col items-center gap-3">
-      <Pulse className="h-20 w-20 rounded-full" />
-      <Pulse className="h-5 w-36" />
-      <Pulse className="h-4 w-24" />
-    </div>
-    <div className="mt-8 space-y-2">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Pulse key={i} className="h-14 rounded-xl" />
-      ))}
-    </div>
   </div>
 )
 

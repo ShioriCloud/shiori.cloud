@@ -35,7 +35,11 @@ const PublicUserProfile = () => {
   const { telegramUserId: rawId } = useParams<{ telegramUserId: string }>()
   const telegramUserId = rawId?.trim() ?? ''
   const { user, isReady, inTelegram, login, register } = useAppAuth()
-  const { data, isLoading, isError } = useSocialProfileUser(telegramUserId, Boolean(user))
+  const canFetchProfile = isReady && (inTelegram || Boolean(user))
+  const { data, isLoading, isError } = useSocialProfileUser(
+    telegramUserId,
+    canFetchProfile
+  )
   const [searchParams, setSearchParams] = useSearchParams()
   const [avatarFailed, setAvatarFailed] = useState(false)
 
@@ -72,7 +76,7 @@ const PublicUserProfile = () => {
     return { watchHours: 0, byFormat: [] as Array<{ format: string; count: number; episodes_watched: number }> }
   }, [data])
 
-  if (!isReady || (Boolean(user) && isLoading && !data)) {
+  if (!isReady || (canFetchProfile && isLoading && !data)) {
     return <ProfilePageSkeleton />
   }
 
