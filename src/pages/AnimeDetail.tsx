@@ -42,8 +42,8 @@ const AnimeDetail = () => {
     handleMainTabChange,
     showFullDescription,
     setShowFullDescription,
-    progressEditorOpen,
-    setProgressEditorOpen,
+    trackingEditorOpen,
+    setTrackingEditorOpen,
     translatorLinks,
     translatorLinksPending,
     similarAnime,
@@ -63,8 +63,10 @@ const AnimeDetail = () => {
     isSavingProgress,
     handleShare,
     handleFavorite,
+    handleOpenTracking,
+    handleSaveTracking,
+    trackingActive,
     handleAiringReminder,
-    handleSaveProgress,
     toggleFavorite,
     getProgress,
     showAlert,
@@ -118,9 +120,11 @@ const AnimeDetail = () => {
         hardsubLanguage={mediaTags.hardsubLanguage}
         statusKey={statusKey}
         favoriteActive={favoriteActive}
+        trackingActive={trackingActive}
         onFavorite={() => {
           void handleFavorite()
         }}
+        onTracking={handleOpenTracking}
         onShare={handleShare}
         openLink={openLink}
         navigate={navigate}
@@ -155,25 +159,29 @@ const AnimeDetail = () => {
       ) : null}
 
       <FavoriteAnimeEditor
-        open={progressEditorOpen}
-        onOpenChange={setProgressEditorOpen}
+        open={trackingEditorOpen}
+        onOpenChange={setTrackingEditorOpen}
         title={anime.title}
         image={anime.image}
         episodesCount={anime.episodes_count || downloads.episodesForList.length}
         progress={getProgress(anime.id)}
         saving={isSavingProgress}
-        onSave={handleSaveProgress}
-        onRemove={() => {
-          void (async () => {
-            try {
-              await toggleFavorite(anime.id)
-              setProgressEditorOpen(false)
-              showAlert('از علاقه‌مندی‌ها حذف شد')
-            } catch (e) {
-              showAlert(formatUserListSaveError(e))
-            }
-          })()
-        }}
+        onSave={handleSaveTracking}
+        onRemove={
+          trackingActive
+            ? () => {
+                void (async () => {
+                  try {
+                    await toggleFavorite(anime.id)
+                    setTrackingEditorOpen(false)
+                    showAlert('از لیست تماشا حذف شد')
+                  } catch (e) {
+                    showAlert(formatUserListSaveError(e))
+                  }
+                })()
+              }
+            : undefined
+        }
       />
 
       <AnimeDetailSynopsis

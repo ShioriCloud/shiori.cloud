@@ -1,4 +1,4 @@
-import { Share08Icon, FavouriteIcon, CheckmarkCircle02Icon } from 'hugeicons-react'
+import { Share08Icon, FavouriteIcon, CheckmarkCircle02Icon, PlayListIcon } from 'hugeicons-react'
 import { BidiText } from '../BidiText'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
@@ -21,7 +21,9 @@ export const AnimeDetailHero = ({
   hardsubLanguage,
   statusKey,
   favoriteActive,
+  trackingActive,
   onFavorite,
+  onTracking,
   onShare,
   openLink,
   navigate,
@@ -31,7 +33,9 @@ export const AnimeDetailHero = ({
   hardsubLanguage: AnimeMediaTags['hardsubLanguage']
   statusKey: string
   favoriteActive: boolean
+  trackingActive: boolean
   onFavorite: () => void
+  onTracking: () => void
   onShare: () => void
   openLink: (url: string) => void
   navigate: (to: string) => void
@@ -67,12 +71,29 @@ export const AnimeDetailHero = ({
                   ? 'text-red-500 hover:text-red-500'
                   : 'text-muted-foreground hover:text-foreground'
               )}
-              aria-label={
-                favoriteActive ? 'ویرایش پیشرفت و امتیاز' : 'افزودن به علاقه‌مندی‌ها'
-              }
+              aria-label={favoriteActive ? 'حذف از علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها'}
             >
               <FavouriteIcon
                 className={cn('h-4 w-4', favoriteActive && 'fill-red-500 text-red-500')}
+              />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon-sm"
+              onClick={onTracking}
+              className={cn(
+                'surface-skeuo border-border/60',
+                trackingActive
+                  ? 'text-primary-500 hover:text-primary-500'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+              aria-label={
+                trackingActive ? 'ویرایش لیست تماشا' : 'افزودن به لیست تماشا'
+              }
+            >
+              <PlayListIcon
+                className={cn('h-4 w-4', trackingActive && 'text-primary-500')}
               />
             </Button>
             <AddToShioriListButton

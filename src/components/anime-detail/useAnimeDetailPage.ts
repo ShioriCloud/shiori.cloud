@@ -17,6 +17,7 @@ import { isAnimeDetailShell } from '../../utils/api'
 import { animeCardMatchesRouteParam, animeDetailPath, animePublicSegment } from '../../lib/animePaths'
 import { parseAnimeDetailTab, buildAnimeMiniAppLink } from '../../utils/externalLinks'
 import { trackAnimeBrowse } from '../../lib/myListTracking'
+import type { WatchStatus } from '@/lib/myListUtils'
 import { hapticImpact, hapticNotification } from '../../lib/telegramHaptics'
 import { recordAnimeView } from '../../services/shioriCatalog'
 import { getAnimeMediaTags, getAnimeScoreLabels } from './animeDetailMedia'
@@ -89,7 +90,7 @@ export function useAnimeDetailPage() {
     parseAnimeDetailTab(searchParams.get('tab'))
   )
   const [showFullDescription, setShowFullDescription] = useState(false)
-  const [progressEditorOpen, setProgressEditorOpen] = useState(false)
+  const [trackingEditorOpen, setTrackingEditorOpen] = useState(false)
 
   const {
     data: translatorLinks = [],
@@ -172,6 +173,12 @@ export function useAnimeDetailPage() {
     .trim()
     .toUpperCase()
 
+  const trackingActive = useMemo(() => {
+    if (!anime) return false
+    const p = getProgress(anime.id)
+    return Boolean(p.listStatus || p.episodesWatched > 0 || p.userRating != null)
+  }, [anime, getProgress])
+
   const handleShare = () => {
     if (!anime) return
     const link = buildAnimeMiniAppLink(animePublicSegment(anime), activeTab)
@@ -180,19 +187,36 @@ export function useAnimeDetailPage() {
 
   const handleFavorite = async () => {
     if (!anime) return
-    if (isFavorite(anime.id)) {
-      setProgressEditorOpen(true)
-      return
-    }
     try {
       hapticImpact('medium')
-      // Open first — Telegram showAlert can dismiss the sheet if shown before it.
-      setProgressEditorOpen(true)
       await toggleFavorite(anime.id)
       hapticNotification('success')
     } catch (e) {
-      setProgressEditorOpen(false)
       hapticNotification('error')
+      showAlert(formatUserListSaveError(e))
+    }
+  }
+
+  const handleOpenTracking = () => {
+    if (!anime) return
+    hapticImpact('light')
+    setTrackingEditorOpen(true)
+  }
+
+  const handleSaveTracking = async (progress: {
+    episodesWatched: number
+    userRating: number | null
+    listStatus?: WatchStatus | null
+  }) => {
+    if (!anime) return
+    try {
+      if (!isFavorite(anime.id)) {
+        await toggleFavorite(anime.id)
+      }
+      await saveProgress(anime.id, progress)
+      setTrackingEditorOpen(false)
+      showAlert('در پروفایل ذخیره شد')
+    } catch (e) {
       showAlert(formatUserListSaveError(e))
     }
   }
@@ -227,20 +251,6 @@ export function useAnimeDetailPage() {
     }
   }
 
-  const handleSaveProgress = async (progress: {
-    episodesWatched: number
-    userRating: number | null
-  }) => {
-    if (!anime) return
-    try {
-      await saveProgress(anime.id, progress)
-      setProgressEditorOpen(false)
-      showAlert('پیشرفت و امتیاز ذخیره شد')
-    } catch (e) {
-      showAlert(formatUserListSaveError(e))
-    }
-  }
-
   return {
     navigate,
     anime,
@@ -252,8 +262,8 @@ export function useAnimeDetailPage() {
     handleMainTabChange,
     showFullDescription,
     setShowFullDescription,
-    progressEditorOpen,
-    setProgressEditorOpen,
+    trackingEditorOpen,
+    setTrackingEditorOpen,
     translatorLinks,
     translatorLinksPending,
     similarAnime,
@@ -266,6 +276,7 @@ export function useAnimeDetailPage() {
     mediaTags,
     statusKey,
     favoriteActive: anime ? isFavorite(anime.id) : false,
+    trackingActive,
     reminderActive: anime ? isReminderOn(anime.id) : false,
     reminderBusy,
     reminderToggling,
@@ -273,8 +284,9 @@ export function useAnimeDetailPage() {
     isSavingProgress,
     handleShare,
     handleFavorite,
+    handleOpenTracking,
+    handleSaveTracking,
     handleAiringReminder,
-    handleSaveProgress,
     toggleFavorite,
     getProgress,
     showAlert,

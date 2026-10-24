@@ -2,22 +2,60 @@ import type { FavoriteProgress } from '@/store/animeStore'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { translateAiringStatus } from '@/lib/searchFilters'
 
-export type WatchStatus = 'planning' | 'watching' | 'completed'
+export type WatchStatus = 'planning' | 'watching' | 'completed' | 'paused' | 'dropped'
 
 export const WATCH_STATUS_LABELS: Record<WatchStatus, string> = {
   planning: 'در انتظار',
   watching: 'در حال تماشا',
   completed: 'تمام‌شده',
+  paused: 'متوقف',
+  dropped: 'رها‌شده',
 }
+
+export const PROFILE_WATCH_STATUSES: WatchStatus[] = [
+  'watching',
+  'planning',
+  'completed',
+  'paused',
+  'dropped',
+]
 
 export const deriveWatchStatus = (
   progress: FavoriteProgress,
   episodesCount: number
 ): WatchStatus => {
+  if (progress.listStatus) return progress.listStatus
   const max = Math.max(episodesCount, 1)
   if (progress.episodesWatched >= max) return 'completed'
   if (progress.episodesWatched > 0) return 'watching'
   return 'planning'
+}
+
+/** Map AniList-style status to episode progress for API sync. */
+export const progressForWatchStatus = (
+  status: WatchStatus,
+  current: FavoriteProgress,
+  episodesCount: number
+): FavoriteProgress => {
+  const max = Math.max(episodesCount, 1)
+  if (status === 'completed') {
+    return { ...current, listStatus: status, episodesWatched: max }
+  }
+  if (status === 'planning') {
+    return { ...current, listStatus: status, episodesWatched: 0 }
+  }
+  if (status === 'watching') {
+    const ep =
+      current.episodesWatched > 0 && current.episodesWatched < max
+        ? current.episodesWatched
+        : Math.min(1, max)
+    return { ...current, listStatus: status, episodesWatched: ep }
+  }
+  return {
+    ...current,
+    listStatus: status,
+    episodesWatched: Math.min(current.episodesWatched, max),
+  }
 }
 
 export const airingStatusLabel = (status?: string | null): string => {

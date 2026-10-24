@@ -13,6 +13,13 @@ import {
 import { cn } from '@/lib/utils'
 import { BidiText } from '@/components/BidiText'
 import { toPersianDigits } from '@/lib/persianDigits'
+import {
+  deriveWatchStatus,
+  PROFILE_WATCH_STATUSES,
+  progressForWatchStatus,
+  WATCH_STATUS_LABELS,
+  type WatchStatus,
+} from '@/lib/myListUtils'
 
 const DISMISS_DRAG_PX = 80
 const MAX_UPWARD_DRAG_PX = 24
@@ -52,6 +59,9 @@ const FavoriteAnimeEditor = ({
   const maxEpisodes = Math.max(episodesCount, 1)
   const [episodesWatched, setEpisodesWatched] = useState(progress.episodesWatched)
   const [userRating, setUserRating] = useState<number | null>(progress.userRating)
+  const [listStatus, setListStatus] = useState<WatchStatus>(() =>
+    deriveWatchStatus(progress, maxEpisodes)
+  )
   const [dragOffset, setDragOffset] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [isClosingByDrag, setIsClosingByDrag] = useState(false)
@@ -68,7 +78,8 @@ const FavoriteAnimeEditor = ({
     if (!open) return
     setEpisodesWatched(progress.episodesWatched)
     setUserRating(progress.userRating)
-  }, [open, progress.episodesWatched, progress.userRating])
+    setListStatus(deriveWatchStatus(progress, maxEpisodes))
+  }, [open, progress, maxEpisodes])
 
   useEffect(() => {
     if (open) return
@@ -82,7 +93,22 @@ const FavoriteAnimeEditor = ({
   const progressPercent = Math.min(100, Math.round((episodesWatched / maxEpisodes) * 100))
 
   const bumpEpisodes = (delta: number) => {
-    setEpisodesWatched((prev) => Math.min(maxEpisodes, Math.max(0, prev + delta)))
+    setEpisodesWatched((prev) => {
+      const next = Math.min(maxEpisodes, Math.max(0, prev + delta))
+      if (next >= maxEpisodes) setListStatus('completed')
+      else if (next > 0 && listStatus === 'planning') setListStatus('watching')
+      return next
+    })
+  }
+
+  const applyStatus = (status: WatchStatus) => {
+    const next = progressForWatchStatus(
+      status,
+      { episodesWatched, userRating, listStatus },
+      maxEpisodes
+    )
+    setListStatus(status)
+    setEpisodesWatched(next.episodesWatched)
   }
 
   const setDrag = (offset: number) => {
@@ -200,6 +226,31 @@ const FavoriteAnimeEditor = ({
 
             <div className="min-w-0 flex-1 space-y-5">
               <div>
+                <p className="mb-2.5 text-xs font-medium text-muted-foreground">وضعیت تماشا</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {PROFILE_WATCH_STATUSES.map((status) => {
+                    const active = listStatus === status
+                    return (
+                      <button
+                        key={status}
+                        type="button"
+                        disabled={saving}
+                        onClick={() => applyStatus(status)}
+                        className={cn(
+                          'rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition-colors',
+                          active
+                            ? 'border-primary-400/50 bg-primary-500/20 text-primary-300'
+                            : 'border-border bg-card/60 text-muted-foreground hover:bg-muted/50'
+                        )}
+                      >
+                        {WATCH_STATUS_LABELS[status]}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div>
                 <p className="mb-2.5 text-xs font-medium text-muted-foreground">قسمت‌های دیده‌شده</p>
                 <div className="flex items-center justify-between gap-2">
                   <Button
@@ -243,7 +294,10 @@ const FavoriteAnimeEditor = ({
                     variant="outline"
                     className="mt-3 h-10 w-full text-sm"
                     disabled={saving}
-                    onClick={() => setEpisodesWatched(maxEpisodes)}
+                    onClick={() => {
+                      setEpisodesWatched(maxEpisodes)
+                      setListStatus('completed')
+                    }}
                   >
                     علامت‌گذاری همه ({toPersianDigits(maxEpisodes)} قسمت)
                   </Button>
@@ -282,7 +336,13 @@ const FavoriteAnimeEditor = ({
             type="button"
             className="h-11 flex-1"
             disabled={saving}
-            onClick={() => onSave({ episodesWatched, userRating })}
+            onClick={() =>
+              onSave({
+                episodesWatched,
+                userRating,
+                listStatus,
+              })
+            }
           >
             {saving ? 'در حال ذخیره…' : 'ذخیره'}
           </Button>
