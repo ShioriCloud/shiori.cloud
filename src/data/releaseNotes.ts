@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.78',
+    items: ['نشان‌های پروفایل بر اساس تماشا، نظر و شبکه اجتماعی باز می‌شوند'],
+  },
+  {
     version: '0.2.77',
     items: ['پلی‌لیست‌های عمومی روی پروفایل و از ویرایش لیست فعال می‌شوند'],
   },
