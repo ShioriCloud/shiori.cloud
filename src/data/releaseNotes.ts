@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.71',
+    items: ['بیوی مترجم مثل دیالوگ انیمه خوانده می‌شود'],
+  },
+  {
     version: '0.2.70',
     items: [
       'اعلان دنبال‌کننده جدید و جست‌وجوی کاربران',

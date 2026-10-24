@@ -3,6 +3,7 @@ import { ChevronRight, Languages } from 'lucide-react'
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
 import { BidiText } from '@/components/BidiText'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
+import { TranslatorBioQuote } from '@/components/profile/TranslatorBioQuote'
 import { useSocialProfileUser } from '@/hooks/useSocialProfile'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
@@ -40,25 +41,24 @@ const UserTranslationsPage = () => {
         <div
           className={cn(
             'mb-5 overflow-hidden rounded-2xl border border-violet-500/25',
-            'bg-gradient-to-br from-violet-500/15 via-background to-fuchsia-500/10 p-4'
+            'bg-gradient-to-br from-violet-500/18 via-background to-fuchsia-500/12 p-4'
           )}
         >
           <div className="flex items-start gap-3">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-violet-400/30 bg-violet-500/15 text-violet-300">
               <Languages className="h-5 w-5" aria-hidden />
             </span>
-            <div className="min-w-0 text-right">
+            <div className="min-w-0 flex-1 text-right">
               <p className="text-base font-semibold text-foreground">{displayName}</p>
               <p className="mt-1 text-xs text-muted-foreground">
                 مترجم شیوری · {toPersianDigits(translator?.anime_count ?? 0)} اثر
               </p>
-              {translator?.bio ? (
-                <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-muted-foreground">
-                  {translator.bio}
-                </p>
-              ) : null}
             </div>
           </div>
+
+          {translator?.bio ? (
+            <TranslatorBioQuote bio={translator.bio} attribution={displayName} />
+          ) : null}
         </div>
 
         {isLoading ? (

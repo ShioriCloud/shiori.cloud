@@ -1,6 +1,7 @@
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
 import { BidiText } from '@/components/BidiText'
 import { MyListCompactCard } from '@/components/my-list/MyListUi'
+import { TranslatorBioQuote } from '@/components/profile/TranslatorBioQuote'
 import type { SocialProfileMe } from '@/services/socialProfile'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
 import { toPersianDigits } from '@/lib/persianDigits'
@@ -19,11 +20,7 @@ export const ProfileTranslatorPanel = ({ translator }: ProfileTranslatorPanelPro
           : 'هنوز انیمه‌ای به این مترجم وصل نشده'}
         {translator.experience ? ` · ${translator.experience}` : ''}
       </p>
-      {translator.bio ? (
-        <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-muted-foreground">
-          {translator.bio}
-        </p>
-      ) : null}
+      {translator.bio ? <TranslatorBioQuote bio={translator.bio} /> : null}
     </div>
 
     {translator.anime.length === 0 ? (

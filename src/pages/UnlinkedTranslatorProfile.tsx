@@ -8,6 +8,7 @@ import { ProfilePageSkeleton } from '@/components/profile/ProfilePageSkeleton'
 import { useTranslatorProfileQuery } from '@/hooks/queries/useAnimeQueries'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { Badge } from '@/components/ui/badge'
+import { TranslatorBioQuote } from '@/components/profile/TranslatorBioQuote'
 import { toPersianDigits } from '@/lib/persianDigits'
 const genreLabel = (g: GenreItem) => g.name_fa || g.name_en || g.slug
 
@@ -150,9 +151,11 @@ export default function UnlinkedTranslatorProfile({ slug }: { slug: string }) {
           </div>
 
           {translator.bio ? (
-            <p className="mt-3 text-sm leading-7 text-muted-foreground text-center whitespace-pre-wrap">
-              {translator.bio}
-            </p>
+            <TranslatorBioQuote
+              bio={translator.bio}
+              attribution={translator.name}
+              className="mt-4 w-full max-w-sm text-right"
+            />
           ) : null}
         </div>
       </div>
