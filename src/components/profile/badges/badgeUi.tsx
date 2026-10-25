@@ -51,9 +51,8 @@ export const BadgeVisual = ({
   size = 'md',
   className,
 }: BadgeVisualProps) => {
-  const showImage =
-    earned && Boolean(imageUrl?.trim()) && !(hidden && !earned)
   const showHidden = hidden && !earned
+  const hasArt = Boolean(imageUrl?.trim()) && !showHidden
   const ring = BADGE_RARITY_RING[rarity] ?? BADGE_RARITY_RING.common
 
   return (
@@ -69,8 +68,15 @@ export const BadgeVisual = ({
       )}
       aria-hidden={!earned}
     >
-      {showImage ? (
-        <img src={imageUrl!} alt="" className="h-full w-full object-cover" />
+      {hasArt ? (
+        <img
+          src={imageUrl!}
+          alt=""
+          className={cn(
+            'h-full w-full object-cover',
+            !earned && 'opacity-40 grayscale-[35%]'
+          )}
+        />
       ) : earned ? (
         <span className="font-bold text-primary-200/90">
           {(title ?? '?').trim().charAt(0) || '★'}
