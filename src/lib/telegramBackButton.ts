@@ -46,7 +46,8 @@ export const fallbackBackPath = (pathname: string): string => {
   if (
     pathname.startsWith('/profile/favorites') ||
     pathname.startsWith('/profile/watch-archive') ||
-    pathname.startsWith('/profile/playlists')
+    pathname.startsWith('/profile/playlists') ||
+    pathname.startsWith('/profile/badges')
   ) {
     return '/profile?tab=personal'
   }

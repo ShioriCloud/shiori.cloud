@@ -13,7 +13,7 @@ import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
 import { ProfilePersonalPanel } from '@/components/profile/ProfilePersonalPanel'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
 import { ProfileStatsTabPanel } from '@/components/profile/ProfileStatsTabPanel'
-import { ProfileBadgesStrip } from '@/components/profile/ProfileBadgesStrip'
+import { ProfileBadgesSection } from '@/components/profile/ProfileBadgesSection'
 import { buildOwnProfileTabs, parseProfileTab, type ProfileTabId } from '@/components/profile/profileTabs'
 import { ProfilePlaylistsTabPanel } from '@/components/profile/ProfilePlaylistsTabPanel'
 import { useCustomLists } from '@/hooks/useCustomLists'
@@ -251,7 +251,11 @@ const Profile = () => {
       ) : null}
 
       <div className="mx-4 mt-5">
-        <ProfileBadgesStrip badges={socialProfile?.badges} />
+        <ProfileBadgesSection
+          variant="own"
+          badgesSummary={socialProfile?.badges_summary}
+          previewBadges={socialProfile?.badges}
+        />
       </div>
 
       <div className="mx-4 mt-6">

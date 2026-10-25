@@ -46,6 +46,9 @@ export const queryKeys = {
   animeCommentsUser: (telegramUserId: string, page: number, limit: number) =>
     ['anime-comments', 'user', telegramUserId, page, limit] as const,
   socialProfileMe: ['user-social-profile', 'me'] as const,
+  socialBadgeCatalogMe: ['user-social-profile', 'me', 'badges'] as const,
+  socialBadgeCatalogUser: (telegramUserId: string) =>
+    ['user-social-profile', 'users', telegramUserId, 'badges'] as const,
   socialProfileUser: (telegramUserId: string) =>
     ['user-social-profile', 'user', telegramUserId] as const,
   socialProfileFollowers: (telegramUserId: string, page: number, limit: number) =>

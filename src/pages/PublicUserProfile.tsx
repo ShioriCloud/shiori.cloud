@@ -9,7 +9,7 @@ import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslation
 import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
 import { ProfileStatsTabPanel } from '@/components/profile/ProfileStatsTabPanel'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
-import { ProfileBadgesStrip } from '@/components/profile/ProfileBadgesStrip'
+import { ProfileBadgesSection } from '@/components/profile/ProfileBadgesSection'
 import { ProfileShareButton } from '@/components/profile/ProfileShareButton'
 import { ProfileSocialActionsSheet } from '@/components/profile/ProfileSocialActionsSheet'
 import {
@@ -281,7 +281,13 @@ const PublicUserProfile = () => {
 
       {watchVisible ? (
         <div className="mx-4 mt-5">
-          <ProfileBadgesStrip badges={data.badges} />
+          <ProfileBadgesSection
+            variant="public"
+            badgesSummary={data.badges_summary}
+            previewBadges={data.badges}
+            displayName={displayName}
+            targetUserId={telegramUserId}
+          />
         </div>
       ) : null}
 

@@ -5,6 +5,8 @@ import {
   fetchSocialFeed,
   fetchSocialFollowers,
   fetchSocialFollowing,
+  fetchSocialBadgeCatalogMe,
+  fetchSocialBadgeCatalogUser,
   fetchSocialProfileMe,
   fetchSocialProfileUser,
   followSocialUser,
@@ -34,6 +36,34 @@ function useSocialAuthReady(enabled: boolean) {
   }, [enabled])
 
   return authReady
+}
+
+export function useSocialBadgeCatalogMe(enabled = true) {
+  const authReady = useSocialAuthReady(enabled)
+
+  return useQuery({
+    queryKey: queryKeys.socialBadgeCatalogMe,
+    queryFn: () => fetchSocialBadgeCatalogMe(),
+    enabled: enabled && authReady,
+    staleTime: 60_000,
+    retry: 1,
+  })
+}
+
+export function useSocialBadgeCatalogUser(
+  telegramUserId: string | undefined,
+  enabled = true
+) {
+  const authReady = useSocialAuthReady(enabled)
+  const id = telegramUserId?.trim() ?? ''
+
+  return useQuery({
+    queryKey: queryKeys.socialBadgeCatalogUser(id),
+    queryFn: () => fetchSocialBadgeCatalogUser(id),
+    enabled: enabled && authReady && id.length > 0,
+    staleTime: 60_000,
+    retry: false,
+  })
 }
 
 export function useSocialProfileMe(enabled = true, page = 1, limit = 60) {

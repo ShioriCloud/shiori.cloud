@@ -26,6 +26,7 @@ export type SocialProfileMe = {
   top_genres?: Array<{ slug: string; label: string; percent: number }>
   by_format?: Array<{ format: string; count: number; episodes_watched: number }>
   badges?: Array<{ id: string; title: string; is_new?: boolean }>
+  badges_summary?: { earned_count: number; total_count: number }
   watched?: {
     items: Array<{
       anime_id: string
@@ -146,6 +147,59 @@ export type SocialProfileFeed = {
   page: number
   limit: number
 }
+
+export type SocialBadgeCatalogItem = {
+  id: string
+  title: string
+  display_title: string
+  description: string
+  category_id: string
+  category_label: string
+  rarity: 'common' | 'rare' | 'hidden'
+  hidden: boolean
+  hint: string | null
+  earned: boolean
+  earned_at: string | null
+  is_new: boolean
+  progress: { current: number; target: number }
+  image_url: string | null
+}
+
+export type SocialBadgeCatalog = {
+  enabled: boolean
+  earned_count: number
+  total_count: number
+  categories: Array<{
+    id: string
+    label: string
+    badges: SocialBadgeCatalogItem[]
+  }>
+}
+
+export type SocialBadgePublicList = {
+  enabled: boolean
+  earned_count: number
+  total_count: number
+  display_name: string
+  badges: Array<{
+    id: string
+    title: string
+    description: string
+    earned_at: string
+    is_new?: boolean
+    image_url: string | null
+  }>
+}
+
+export const fetchSocialBadgeCatalogMe = async (): Promise<SocialBadgeCatalog> =>
+  shioriFetch<SocialBadgeCatalog>('/user-social-profile/me/badges')
+
+export const fetchSocialBadgeCatalogUser = async (
+  telegramUserId: string
+): Promise<SocialBadgePublicList> =>
+  shioriFetch<SocialBadgePublicList>(
+    `/user-social-profile/users/${encodeURIComponent(telegramUserId)}/badges`
+  )
 
 export const fetchSocialProfileMe = async (page = 1, limit = 60): Promise<SocialProfileMe> =>
   shioriFetch<SocialProfileMe>(
