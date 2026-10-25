@@ -14,7 +14,9 @@ import { ProfilePersonalPanel } from '@/components/profile/ProfilePersonalPanel'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
 import { ProfileStatsTabPanel } from '@/components/profile/ProfileStatsTabPanel'
 import { ProfileBadgesStrip } from '@/components/profile/ProfileBadgesStrip'
-import { PROFILE_TABS, parseProfileTab, type ProfileTabId } from '@/components/profile/profileTabs'
+import { buildOwnProfileTabs, parseProfileTab, type ProfileTabId } from '@/components/profile/profileTabs'
+import { ProfilePlaylistsTabPanel } from '@/components/profile/ProfilePlaylistsTabPanel'
+import { useCustomLists } from '@/hooks/useCustomLists'
 import { ExploreTabBar } from '@/components/explore/ExploreUi'
 import { mergeOwnProfileHeaderStats } from '@/lib/ownProfileStats'
 import { formatProfileMemberSince } from '@/lib/profileMemberSince'
@@ -35,6 +37,12 @@ import { ProfilePageSkeleton } from '@/components/profile/ProfilePageSkeleton'
 const Profile = () => {
   const { user, isReady, inTelegram, login, register } = useAppAuth()
   const { stats, favoriteAnime } = useUserAnimeList({ syncRemoteList: false })
+  const { customLists } = useCustomLists({ syncRemote: false })
+  const hasPublicPlaylists = useMemo(
+    () => customLists.some((list) => list.isPublic === true),
+    [customLists]
+  )
+  const profileTabs = useMemo(() => buildOwnProfileTabs(hasPublicPlaylists), [hasPublicPlaylists])
   const { data: favoriteCards = [] } = useFavoriteAnimeCardsQuery(favoriteAnime)
   const { data: socialProfile, isLoading: socialProfileLoading } = useSocialProfileMe(
     Boolean(user)
@@ -105,8 +113,17 @@ const Profile = () => {
     return <Navigate to="/feed" replace />
   }
 
+  const tabAllowed =
+    activeTab === 'stats' ||
+    activeTab === 'personal' ||
+    (activeTab === 'playlists' && hasPublicPlaylists)
+
   if (!isReady) {
     return <ProfilePageSkeleton />
+  }
+
+  if (!tabAllowed) {
+    return <Navigate to="/profile" replace />
   }
 
   if (showWebAuth) {
@@ -238,7 +255,7 @@ const Profile = () => {
       </div>
 
       <div className="mx-4 mt-6">
-        <ExploreTabBar tabs={[...PROFILE_TABS]} active={activeTab} onChange={setActiveTab} />
+        <ExploreTabBar tabs={[...profileTabs]} active={activeTab} onChange={setActiveTab} />
       </div>
 
       <div className="mx-4 mt-4">
@@ -250,12 +267,20 @@ const Profile = () => {
               fullStatsTo="/profile/stats"
               watchedItems={watchedItems}
               favoriteListItems={favoriteListItems}
+              favoriteOrderIds={favoriteAnime}
               profileBase="/profile"
               recentRestoreKey="own-profile-recent"
             />
           ) : (
             <ProfileStatsTabPanel variant="own" overview={overview} fullStatsTo="/profile/stats" />
           )
+        ) : null}
+        {activeTab === 'playlists' && user?.id != null ? (
+          <ProfilePlaylistsTabPanel
+            variant="own"
+            profileUserId={String(user.id)}
+            profileBase="/profile"
+          />
         ) : null}
         {activeTab === 'personal' ? (
           <ProfilePersonalPanel

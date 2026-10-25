@@ -26,6 +26,8 @@ export type FavoriteProgress = {
     | 'paused'
     | 'dropped'
     | null
+  /** When listStatus (or major progress) was last set — ISO string. */
+  listStatusUpdatedAt?: string | null
 }
 
 interface AnimeState {
@@ -49,6 +51,8 @@ interface AnimeState {
       isFavorite: boolean
     }>
   ) => void
+  moveFavorite: (animeId: number | string, direction: 'up' | 'down') => void
+  reorderFavorites: (orderedIds: Array<number | string>) => void
   setAnimeList: (animeList: AnimeListItem[]) => void
 }
 
@@ -107,6 +111,19 @@ export const useAnimeStore = create<AnimeState>()(
           )
           return { favoriteAnime, favoriteProgress }
         }),
+      moveFavorite: (animeId, direction) =>
+        set((state) => {
+          const key = String(animeId)
+          const idx = state.favoriteAnime.findIndex((id) => String(id) === key)
+          if (idx < 0) return state
+          const next = [...state.favoriteAnime]
+          const swap = direction === 'up' ? idx - 1 : idx + 1
+          if (swap < 0 || swap >= next.length) return state
+          ;[next[idx], next[swap]] = [next[swap], next[idx]]
+          return { favoriteAnime: next }
+        }),
+      reorderFavorites: (orderedIds) =>
+        set({ favoriteAnime: [...orderedIds] }),
       mergeListFromRemote: (entries) =>
         set((state) => {
           const favoriteProgress = { ...state.favoriteProgress }
@@ -134,7 +151,7 @@ export const useAnimeStore = create<AnimeState>()(
     }),
     {
       name: 'anime-storage',
-      version: 2,
+      version: 3,
       migrate: (persisted: unknown) => {
         const state = persisted as Partial<AnimeState> | undefined
         return {

@@ -256,6 +256,7 @@ export const useCustomLists = (options?: { syncRemote?: boolean }) => {
     const uid = user?.id ?? getSessionTelegramUserId()
     if (typeof uid === 'number') {
       void queryClient.invalidateQueries({ queryKey: queryKeys.userCustomLists(uid) })
+      void queryClient.invalidateQueries({ queryKey: queryKeys.publicCustomLists(String(uid)) })
     }
   }, [queryClient, user?.id])
 

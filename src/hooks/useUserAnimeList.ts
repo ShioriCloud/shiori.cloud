@@ -26,12 +26,27 @@ const toProgress = (row: {
   userRating: row.user_rating,
 })
 
-const hasTrackedProgress = (progress: FavoriteProgress): boolean =>
+export const hasTrackedProgress = (progress: FavoriteProgress): boolean =>
   Boolean(
     progress.listStatus ||
       (progress.episodesWatched ?? 0) > 0 ||
       progress.userRating != null
   )
+
+const stampProgress = (
+  animeId: number | string,
+  next: FavoriteProgress,
+  previous?: FavoriteProgress
+): FavoriteProgress => {
+  const key = String(animeId)
+  const prev = previous ?? useAnimeStore.getState().favoriteProgress[key]
+  const statusChanged =
+    next.listStatus !== prev?.listStatus ||
+    next.episodesWatched !== prev?.episodesWatched ||
+    next.userRating !== prev?.userRating
+  if (!statusChanged) return next
+  return { ...next, listStatusUpdatedAt: new Date().toISOString() }
+}
 
 export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
   const syncRemoteList = options?.syncRemoteList !== false
@@ -71,6 +86,7 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
   const setFavoriteProgress = useAnimeStore((s) => s.setFavoriteProgress)
   const hydrateFavoritesFromRemote = useAnimeStore((s) => s.hydrateFavoritesFromRemote)
   const mergeListFromRemote = useAnimeStore((s) => s.mergeListFromRemote)
+  const moveFavorite = useAnimeStore((s) => s.moveFavorite)
 
   const listSyncEnabled =
     syncRemoteList &&
@@ -226,15 +242,17 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
           is_favorite: isFav,
         })
       }
-      setFavoriteProgress(animeId, progress)
-      return { result, progress }
+      const stamped = stampProgress(animeId, progress)
+      setFavoriteProgress(animeId, stamped)
+      return { result, progress: stamped }
     },
     onMutate: async ({ animeId, progress }) => {
       const previous = favoriteProgress[String(animeId)] ?? {
         episodesWatched: 0,
         userRating: null,
       }
-      setFavoriteProgress(animeId, progress)
+      const stamped = stampProgress(animeId, progress, previous)
+      setFavoriteProgress(animeId, stamped)
       // Optimistic Shiori score when anime had none yet.
       if (typeof progress.userRating === 'number') {
         patchAnimeDetailShioriScore(animeId, progress.userRating)
@@ -407,15 +425,27 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
     [clearTrackingMutation]
   )
 
+  const moveFavoriteUp = useCallback(
+    (animeId: number | string) => moveFavorite(animeId, 'up'),
+    [moveFavorite]
+  )
+  const moveFavoriteDown = useCallback(
+    (animeId: number | string) => moveFavorite(animeId, 'down'),
+    [moveFavorite]
+  )
+
   return {
     favoriteAnime,
     listAnimeIds,
+    favoriteProgress,
     stats,
     getProgress,
     saveProgress,
     clearListTracking,
     toggleFavorite,
     isFavorite,
+    moveFavoriteUp,
+    moveFavoriteDown,
     isSaving: saveMutation.isPending || clearTrackingMutation.isPending,
     hasTelegramUser: inTelegram && typeof telegramUserId === 'number',
     hasAppUser: typeof telegramUserId === 'number',

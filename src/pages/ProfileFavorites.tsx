@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom'
-import { ChevronRight } from 'lucide-react'
+import { ChevronDown, ChevronRight, ChevronUp } from 'lucide-react'
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
 import { BidiText } from '@/components/BidiText'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { RouteFallback } from '@/components/RouteFallback'
+import { FavoriteRankBadge } from '@/components/profile/FavoriteRankBadge'
 import { SOCIAL_SURFACE_CLASS } from '@/components/profile/social/socialUi'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import { useFavoriteAnimeCardsQuery } from '@/hooks/queries/useAnimeQueries'
@@ -11,10 +12,11 @@ import { useUserAnimeList } from '@/hooks/useUserAnimeList'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { cn } from '@/lib/utils'
+import { hapticSelection } from '@/lib/telegramHaptics'
 
 const ProfileFavorites = () => {
   const { isReady } = useAppAuth()
-  const { favoriteAnime } = useUserAnimeList()
+  const { favoriteAnime, moveFavoriteUp, moveFavoriteDown } = useUserAnimeList()
   const { data: cards = [], isLoading } = useFavoriteAnimeCardsQuery(favoriteAnime)
 
   if (!isReady) {
@@ -23,21 +25,28 @@ const ProfileFavorites = () => {
 
   const byId = new Map(cards.map((c) => [String(c.id), c]))
   const items = favoriteAnime
-    .map((id) => byId.get(String(id)))
-    .filter((c): c is NonNullable<typeof c> => Boolean(c))
+    .map((id) => ({ id, card: byId.get(String(id)) }))
+    .filter((row): row is { id: number | string; card: NonNullable<typeof row.card> } =>
+      Boolean(row.card)
+    )
 
   return (
     <div className="bg-background pb-24 text-foreground">
       <div className="sticky top-[var(--app-header-offset)] z-10 border-b border-border/60 bg-background/95 backdrop-blur-sm">
-        <div className="flex items-center gap-2 px-4 py-3.5">
-          <Link
-            to="/profile?tab=personal"
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground active:opacity-80"
-          >
-            <ChevronRight className="h-4 w-4" aria-hidden />
-            شخصی
-          </Link>
-          <span className="text-sm font-semibold text-foreground">علاقه‌مندی‌ها</span>
+        <div className="flex flex-col gap-1 px-4 py-3.5">
+          <div className="flex items-center gap-2">
+            <Link
+              to="/profile?tab=personal"
+              className="inline-flex items-center gap-1 text-sm text-muted-foreground active:opacity-80"
+            >
+              <ChevronRight className="h-4 w-4" aria-hidden />
+              شخصی
+            </Link>
+            <span className="text-sm font-semibold text-foreground">علاقه‌مندی‌ها</span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            با دکمه‌های بالا و پایین ترتیب را عوض کن — در پروفایل با مدال نمایش داده می‌شود.
+          </p>
         </div>
       </div>
 
@@ -54,36 +63,80 @@ const ProfileFavorites = () => {
             <p className="mb-3 text-xs text-muted-foreground">
               {toPersianDigits(items.length)} انیمه
             </p>
-            <div className={cn(SOCIAL_SURFACE_CLASS, 'grid grid-cols-3 gap-2 p-2')}>
-              {items.map((item) => {
-                const routeRef = { id: item.id, slug: item.slug, title: item.title }
+            <div className={cn(SOCIAL_SURFACE_CLASS, 'divide-y divide-border/40 overflow-hidden')}>
+              {items.map((row, index) => {
+                const rank = index + 1
+                const routeRef = { id: row.card.id, slug: row.card.slug, title: row.card.title }
                 return (
-                  <AnimePrefetchLink
-                    key={String(item.id)}
-                    animeId={animePublicSegment(routeRef)}
-                    to={animeDetailPath(routeRef)}
-                    className="group block overflow-hidden rounded-xl active:scale-[0.98] transition-transform"
+                  <div
+                    key={String(row.id)}
+                    className="flex items-stretch gap-2 px-2 py-2 sm:gap-3"
                   >
-                    <div className="relative aspect-[2/3] bg-muted">
-                      {item.image ? (
-                        <img
-                          src={item.image}
-                          alt=""
-                          className="h-full w-full object-cover"
-                          loading="lazy"
-                        />
-                      ) : null}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                      <div className="absolute bottom-0 left-0 right-0 p-2">
-                        <BidiText
-                          as="p"
-                          className="text-[10px] font-semibold text-white line-clamp-2 text-left"
-                        >
-                          {item.title}
-                        </BidiText>
-                      </div>
+                    <div className="flex flex-col items-center justify-center gap-0.5 py-1">
+                      <button
+                        type="button"
+                        disabled={index === 0}
+                        onClick={() => {
+                          hapticSelection()
+                          moveFavoriteUp(row.id)
+                        }}
+                        className="rounded-lg p-1.5 text-muted-foreground enabled:active:bg-muted/60 disabled:opacity-25"
+                        aria-label="بالا"
+                      >
+                        <ChevronUp className="h-4 w-4" />
+                      </button>
+                      <FavoriteRankBadge rank={rank} size={rank <= 3 ? 'md' : 'sm'} />
+                      <button
+                        type="button"
+                        disabled={index === items.length - 1}
+                        onClick={() => {
+                          hapticSelection()
+                          moveFavoriteDown(row.id)
+                        }}
+                        className="rounded-lg p-1.5 text-muted-foreground enabled:active:bg-muted/60 disabled:opacity-25"
+                        aria-label="پایین"
+                      >
+                        <ChevronDown className="h-4 w-4" />
+                      </button>
                     </div>
-                  </AnimePrefetchLink>
+
+                    <AnimePrefetchLink
+                      animeId={animePublicSegment(routeRef)}
+                      to={animeDetailPath(routeRef)}
+                      className="flex min-w-0 flex-1 items-center gap-3 rounded-xl px-1 py-1 active:bg-muted/30"
+                    >
+                      <div className="relative h-[5.5rem] w-10 shrink-0 overflow-hidden rounded-lg bg-muted ring-1 ring-border/40">
+                        {row.card.image ? (
+                          <img
+                            src={row.card.image}
+                            alt=""
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                          />
+                        ) : null}
+                        {rank <= 3 ? (
+                          <div
+                            className="pointer-events-none absolute inset-0 ring-2 ring-inset ring-white/20"
+                            aria-hidden
+                          />
+                        ) : null}
+                      </div>
+                      <div className="min-w-0 flex-1 text-right">
+                        <BidiText as="p" className="text-sm font-semibold text-foreground line-clamp-2">
+                          {row.card.title}
+                        </BidiText>
+                        {rank <= 3 ? (
+                          <p className="mt-1 text-[11px] font-medium text-amber-700/90 dark:text-amber-200/90">
+                            {rank === 1 ? 'رتبه طلایی پروفایل' : rank === 2 ? 'رتبه نقره‌ای' : 'رتبه برنزی'}
+                          </p>
+                        ) : (
+                          <p className="mt-1 text-[11px] text-muted-foreground">
+                            رتبه {toPersianDigits(rank)} در پروفایل
+                          </p>
+                        )}
+                      </div>
+                    </AnimePrefetchLink>
+                  </div>
                 )
               })}
             </div>

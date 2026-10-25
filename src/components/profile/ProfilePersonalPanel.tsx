@@ -1,7 +1,11 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { CalendarDays, ChevronLeft, Heart, Languages, ListMusic, MessageSquareText } from 'lucide-react'
+import { CalendarDays, ChevronLeft, Languages, ListMusic, MessageSquareText } from 'lucide-react'
 import { ProfileCommentActivityList } from '@/components/profile/ProfileCommentActivityList'
+import { PersonalFavoritesTeaser } from '@/components/profile/personal/PersonalFavoritesTeaser'
+import { PersonalPlaylistsBlock } from '@/components/profile/personal/PersonalPlaylistsBlock'
+import { PersonalSocialBlock } from '@/components/profile/personal/PersonalSocialBlock'
+import { PersonalWatchArchive } from '@/components/profile/personal/PersonalWatchArchive'
 import { SocialSection } from '@/components/profile/social/SocialSection'
 import { SOCIAL_DIVIDER_CLASS, SOCIAL_SURFACE_CLASS } from '@/components/profile/social/socialUi'
 import { TranslatorBioQuote } from '@/components/profile/TranslatorBioQuote'
@@ -31,8 +35,7 @@ const PersonalRow = ({ to, icon, label, hint, iconClass }: RowProps) => (
     <span
       className={cn(
         'flex h-9 w-9 shrink-0 items-center justify-center rounded-full border',
-        iconClass ??
-          'border-border/50 bg-muted/35 text-muted-foreground'
+        iconClass ?? 'border-border/50 bg-muted/35 text-muted-foreground'
       )}
     >
       {icon}
@@ -45,10 +48,6 @@ const PersonalRow = ({ to, icon, label, hint, iconClass }: RowProps) => (
   </Link>
 )
 
-const PersonalLinksCard = ({ children }: { children: ReactNode }) => (
-  <div className={cn(SOCIAL_SURFACE_CLASS, SOCIAL_DIVIDER_CLASS)}>{children}</div>
-)
-
 const formatMemberSince = (iso?: string | null): string | null => {
   if (!iso) return null
   const date = new Date(iso)
@@ -59,7 +58,6 @@ const formatMemberSince = (iso?: string | null): string | null => {
 type ProfilePersonalPanelProps = {
   translator?: SocialProfileMe['translator']
   variant?: 'self' | 'public'
-  /** Target user for translations deep link (avoids /translators slug hop). */
   profileUserId?: string
   memberSince?: string | null
   displayName?: string
@@ -101,41 +99,11 @@ export const ProfilePersonalPanel = ({
 
   if (variant === 'self') {
     return (
-      <div className="space-y-6">
-        <PersonalLinksCard>
-          {translationsPath ? (
-            <PersonalRow
-              to={translationsPath}
-              icon={<Languages className="h-4 w-4" />}
-              label="آثار ترجمه"
-              hint={translator?.name ?? 'مشاهده همه'}
-              iconClass="border-sky-400/30 bg-sky-400/10 text-sky-600 dark:text-sky-300"
-            />
-          ) : null}
-          <PersonalRow
-            to="/profile/favorites"
-            icon={<Heart className="h-4 w-4" />}
-            label="علاقه‌مندی‌ها"
-            hint="انیمه‌هایی که قلب زدی"
-            iconClass="border-rose-400/30 bg-rose-400/10 text-rose-600 dark:text-rose-300"
-          />
-          <PersonalRow
-            to="/my-list?tab=lists"
-            icon={<ListMusic className="h-4 w-4" />}
-            label="پلی‌لیست‌ها"
-            hint="لیست‌های شخصی شیوری"
-            iconClass="border-violet-400/30 bg-violet-400/10 text-violet-700 dark:text-violet-300"
-          />
-          {commentsEnabled ? (
-            <PersonalRow
-              to="/profile/activity"
-              icon={<MessageSquareText className="h-4 w-4" />}
-              label="نظرات و فعالیت"
-              hint="نظرها و پاسخ‌هایی که نوشته‌ای"
-              iconClass="border-emerald-400/30 bg-emerald-400/10 text-emerald-700 dark:text-emerald-300"
-            />
-          ) : null}
-        </PersonalLinksCard>
+      <div className="space-y-10 pb-4">
+        <PersonalFavoritesTeaser />
+        <PersonalWatchArchive />
+        <PersonalPlaylistsBlock />
+        <PersonalSocialBlock />
       </div>
     )
   }
@@ -167,7 +135,7 @@ export const ProfilePersonalPanel = ({
         </div>
       ) : null}
 
-      <PersonalLinksCard>
+      <div className={cn(SOCIAL_SURFACE_CLASS, SOCIAL_DIVIDER_CLASS)}>
         {commentsEnabled ? (
           <PersonalRow
             to={commentsPath}
@@ -196,7 +164,7 @@ export const ProfilePersonalPanel = ({
             iconClass="border-fuchsia-400/30 bg-fuchsia-400/10 text-fuchsia-700 dark:text-fuchsia-300"
           />
         ))}
-      </PersonalLinksCard>
+      </div>
 
       {commentsEnabled && publicComments.data?.items.length ? (
         <SocialSection title="آخرین نظرات" description="از میان فعالیت‌های اخیر">

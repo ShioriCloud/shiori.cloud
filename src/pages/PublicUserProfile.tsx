@@ -13,10 +13,12 @@ import { ProfileBadgesStrip } from '@/components/profile/ProfileBadgesStrip'
 import { ProfileShareButton } from '@/components/profile/ProfileShareButton'
 import { ProfileSocialActionsSheet } from '@/components/profile/ProfileSocialActionsSheet'
 import {
-  PUBLIC_PROFILE_TABS,
+  buildPublicProfileTabs,
   parseProfileTab,
   type ProfileTabId,
 } from '@/components/profile/profileTabs'
+import { ProfilePlaylistsTabPanel } from '@/components/profile/ProfilePlaylistsTabPanel'
+import { usePublicCustomListsQuery } from '@/hooks/usePublicCustomLists'
 import { formatProfileMemberSince } from '@/lib/profileMemberSince'
 import { ExploreEmptyState, ExploreTabBar } from '@/components/explore/ExploreUi'
 import { cn } from '@/lib/utils'
@@ -48,7 +50,18 @@ const PublicUserProfile = () => {
   const [actionsOpen, setActionsOpen] = useState(false)
 
   const rawTab = searchParams.get('tab')
-  const activeTab = parseProfileTab(rawTab)
+  const parsedTab = parseProfileTab(rawTab)
+  const { data: publicListsData } = usePublicCustomListsQuery(
+    telegramUserId,
+    canFetchProfile && telegramUserId.length > 0
+  )
+  const hasPublicPlaylists = (publicListsData?.lists?.length ?? 0) > 0
+  const profileTabs = useMemo(
+    () => buildPublicProfileTabs(hasPublicPlaylists),
+    [hasPublicPlaylists]
+  )
+  const activeTab: ProfileTabId =
+    parsedTab === 'personal' ? 'stats' : parsedTab
 
   const setActiveTab = (tab: ProfileTabId) => {
     setSearchParams(
@@ -272,13 +285,20 @@ const PublicUserProfile = () => {
         </div>
       ) : null}
 
-      {PUBLIC_PROFILE_TABS.length > 1 ? (
+      {profileTabs.length > 1 ? (
         <div className="mx-4 mt-6">
-          <ExploreTabBar tabs={[...PUBLIC_PROFILE_TABS]} active={activeTab} onChange={setActiveTab} />
+          <ExploreTabBar tabs={[...profileTabs]} active={activeTab} onChange={setActiveTab} />
         </div>
       ) : null}
 
-      <div className={cn('mx-4', PUBLIC_PROFILE_TABS.length > 1 ? 'mt-4' : 'mt-6')}>
+      <div className={cn('mx-4', profileTabs.length > 1 ? 'mt-4' : 'mt-6')}>
+        {activeTab === 'playlists' ? (
+          <ProfilePlaylistsTabPanel
+            variant="public"
+            profileUserId={telegramUserId}
+            profileBase={profileBase}
+          />
+        ) : null}
         {activeTab === 'stats' ? (
           <ProfileStatsTabPanel
             variant="public"

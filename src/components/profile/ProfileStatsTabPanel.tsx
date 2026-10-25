@@ -15,6 +15,7 @@ type ProfileStatsTabPanelProps = {
   fullStatsTo?: string | null
   watchedItems?: WatchedItem[]
   favoriteListItems?: WatchedItem[]
+  favoriteOrderIds?: Array<string | number>
   profileBase?: string
   recentRestoreKey?: string
   watchVisible?: boolean
@@ -40,6 +41,7 @@ export const ProfileStatsTabPanel = ({
   fullStatsTo,
   watchedItems = [],
   favoriteListItems = [],
+  favoriteOrderIds,
   profileBase = '/profile',
   recentRestoreKey = 'profile-stats-recent',
   watchVisible = true,
@@ -70,6 +72,7 @@ export const ProfileStatsTabPanel = ({
       <ProfileFavoritesPreview
         items={favoriteListItems}
         total={favoriteListItems.length}
+        orderedIds={favoriteOrderIds}
         profileBase={profileBase}
         className="mt-2"
       />
