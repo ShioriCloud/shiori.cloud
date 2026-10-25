@@ -42,6 +42,13 @@ interface AnimeState {
       isFavorite?: boolean
     }>
   ) => void
+  mergeListFromRemote: (
+    entries: Array<{
+      animeId: number | string
+      progress: FavoriteProgress
+      isFavorite: boolean
+    }>
+  ) => void
   setAnimeList: (animeList: AnimeListItem[]) => void
 }
 
@@ -93,12 +100,35 @@ export const useAnimeStore = create<AnimeState>()(
       hydrateFavoritesFromRemote: (entries) =>
         set(() => {
           const favoriteAnime = entries
-            .filter((e) => e.isFavorite !== false)
+            .filter((e) => e.isFavorite === true)
             .map((e) => e.animeId)
           const favoriteProgress = Object.fromEntries(
             entries.map((e) => [String(e.animeId), e.progress])
           )
           return { favoriteAnime, favoriteProgress }
+        }),
+      mergeListFromRemote: (entries) =>
+        set((state) => {
+          const favoriteProgress = { ...state.favoriteProgress }
+          const favOrder = [...state.favoriteAnime]
+          const favSet = new Set(favOrder.map(String))
+
+          for (const entry of entries) {
+            const key = String(entry.animeId)
+            favoriteProgress[key] = entry.progress
+            if (entry.isFavorite) {
+              if (!favSet.has(key)) {
+                favSet.add(key)
+                favOrder.push(entry.animeId)
+              }
+            } else if (favSet.has(key)) {
+              favSet.delete(key)
+              const idx = favOrder.findIndex((id) => String(id) === key)
+              if (idx >= 0) favOrder.splice(idx, 1)
+            }
+          }
+
+          return { favoriteAnime: favOrder, favoriteProgress }
         }),
       setAnimeList: (animeList) => set({ animeList }),
     }),

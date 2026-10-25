@@ -11,8 +11,8 @@ import { toPersianDigits } from '@/lib/persianDigits'
 const MAX_ITEMS = 5
 
 export const ProfileWatchingRail = () => {
-  const { favoriteAnime, getProgress } = useUserAnimeList()
-  const { data: cards = [], isLoading } = useFavoriteAnimeCardsQuery(favoriteAnime)
+  const { listAnimeIds, getProgress } = useUserAnimeList()
+  const { data: cards = [], isLoading } = useFavoriteAnimeCardsQuery(listAnimeIds)
 
   const watching = useMemo(() => {
     const byId = new Map(cards.map((c) => [String(c.id), c]))
@@ -25,7 +25,7 @@ export const ProfileWatchingRail = () => {
       episodesWatched: number
     }> = []
 
-    for (const id of favoriteAnime) {
+    for (const id of listAnimeIds) {
       if (picked.length >= MAX_ITEMS) break
       const card = byId.get(String(id))
       if (!card) continue
@@ -45,7 +45,7 @@ export const ProfileWatchingRail = () => {
       })
     }
     return picked
-  }, [favoriteAnime, cards, getProgress])
+  }, [listAnimeIds, cards, getProgress])
 
   if (!isLoading && watching.length === 0) return null
 

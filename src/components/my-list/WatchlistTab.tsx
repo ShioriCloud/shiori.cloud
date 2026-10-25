@@ -102,7 +102,7 @@ const WatchlistCard = ({
 
 export const WatchlistTab = () => {
   const { showAlert } = useAppAuth()
-  const { favoriteAnime, getProgress, saveProgress, toggleFavorite, isSaving } =
+  const { listAnimeIds, getProgress, saveProgress, clearListTracking, isSaving } =
     useUserAnimeList()
 
   const [editingAnime, setEditingAnime] = useState<WatchlistItem | null>(null)
@@ -112,7 +112,7 @@ export const WatchlistTab = () => {
     isLoading: cardsLoading,
     isError: cardsError,
     refetch: refetchCards,
-  } = useFavoriteAnimeCardsQuery(favoriteAnime)
+  } = useFavoriteAnimeCardsQuery(listAnimeIds)
 
   const items = useMemo((): WatchlistItem[] => {
     const byId = new Map<string, WatchlistItem>()
@@ -133,14 +133,14 @@ export const WatchlistTab = () => {
         shioriScore: card.shioriScore ?? card.averageScore ?? null,
       })
     }
-    return favoriteAnime
+    return listAnimeIds
       .map((id) => byId.get(String(id)))
       .filter((item): item is WatchlistItem => item != null)
-  }, [favoriteCards, favoriteAnime])
+  }, [favoriteCards, listAnimeIds])
 
-  const loading = favoriteAnime.length > 0 && items.length === 0 && cardsLoading
-  const hasError = favoriteAnime.length > 0 && items.length === 0 && !loading && cardsError
-  const isEmpty = !loading && !hasError && favoriteAnime.length === 0
+  const loading = listAnimeIds.length > 0 && items.length === 0 && cardsLoading
+  const hasError = listAnimeIds.length > 0 && items.length === 0 && !loading && cardsError
+  const isEmpty = !loading && !hasError && listAnimeIds.length === 0
 
   const handleSave = async (progress: FavoriteProgress) => {
     if (!editingAnime) return
@@ -155,7 +155,7 @@ export const WatchlistTab = () => {
 
   const handleRemove = async (anime: WatchlistItem) => {
     try {
-      await toggleFavorite(anime.id)
+      await clearListTracking(anime.id)
       if (editingAnime?.id === anime.id) setEditingAnime(null)
       showAlert('از لیست تماشا حذف شد')
     } catch (e) {
@@ -167,7 +167,7 @@ export const WatchlistTab = () => {
     return (
       <MyListEmptyState
         title="لیست تماشات خالیه"
-        description="انیمه‌هایی که می‌خوای بعداً ببینی رو از صفحهٔ جزئیات با دکمهٔ قلب به لیست تماشا اضافه کن."
+        description="از صفحهٔ جزئیات انیمه با دکمهٔ لیست، وضعیت تماشا و پیشرفت رو ثبت کن."
       />
     )
   }
@@ -176,7 +176,7 @@ export const WatchlistTab = () => {
     <div>
       <MyListTabHeader
         title="لیست تماشا"
-        meta={`${toPersianNumber(favoriteAnime.length)} انیمه`}
+        meta={`${toPersianNumber(listAnimeIds.length)} انیمه`}
       />
 
       {loading && <MyListSkeletonCards />}

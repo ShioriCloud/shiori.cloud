@@ -70,6 +70,7 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
   const removeFromFavorites = useAnimeStore((s) => s.removeFromFavorites)
   const setFavoriteProgress = useAnimeStore((s) => s.setFavoriteProgress)
   const hydrateFavoritesFromRemote = useAnimeStore((s) => s.hydrateFavoritesFromRemote)
+  const mergeListFromRemote = useAnimeStore((s) => s.mergeListFromRemote)
 
   const listSyncEnabled =
     syncRemoteList &&
@@ -99,31 +100,42 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
     const remoteIdSet = new Set(remoteRows.map((r) => String(r.anime_id)))
 
     // Only seed from server when local store is empty — never wipe optimistic heart toggles.
-    const shouldHydrateFromRemote = localIds.length === 0 && remoteRows.length > 0
-    if (shouldHydrateFromRemote) {
-      hydrateFavoritesFromRemote(
-        remoteRows.map((row) => ({
-          animeId: row.anime_id,
-          progress: toProgress(row),
-          isFavorite: row.is_favorite,
-        }))
-      )
+    const remoteEntries = remoteRows.map((row) => ({
+      animeId: row.anime_id,
+      progress: toProgress(row),
+      isFavorite: row.is_favorite === true,
+    }))
+
+    if (remoteEntries.length > 0) {
+      if (localIds.length === 0) {
+        hydrateFavoritesFromRemote(remoteEntries)
+      } else {
+        mergeListFromRemote(remoteEntries)
+      }
     }
 
-    const localOnly = localIds.filter((id) => !remoteIdSet.has(id))
-    if (localOnly.length === 0 || !canSyncUserAnimeList()) return
+    const localOnlyFavorites = localIds.filter((id) => !remoteIdSet.has(id))
+    const localOnlyTracking = Object.keys(localProgressSnapshot).filter((id) => {
+      if (remoteIdSet.has(id) || localIds.includes(id)) return false
+      return hasTrackedProgress(
+        localProgressSnapshot[id] ?? { episodesWatched: 0, userRating: null }
+      )
+    })
+    const toPush = [...new Set([...localOnlyFavorites, ...localOnlyTracking])]
+    if (toPush.length === 0 || !canSyncUserAnimeList()) return
 
     void (async () => {
-      for (const id of localOnly) {
+      for (const id of toPush) {
         const progress = localProgressSnapshot[id] ?? { episodesWatched: 0, userRating: null }
+        const isFav = localIds.includes(id)
         try {
           await upsertUserAnimeListEntry(telegramUserId, id, {
             episodes_watched: progress.episodesWatched,
             user_rating: progress.userRating,
-            is_favorite: true,
+            is_favorite: isFav,
           })
         } catch (e) {
-          if (import.meta.env.DEV) console.warn('sync local favorite:', e)
+          if (import.meta.env.DEV) console.warn('sync local list entry:', e)
         }
       }
       void queryClient.invalidateQueries({
@@ -140,6 +152,7 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
     favoriteAnime,
     favoriteProgress,
     hydrateFavoritesFromRemote,
+    mergeListFromRemote,
     queryClient,
   ])
 
@@ -147,8 +160,26 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
     syncedRef.current = false
   }, [telegramUserId, listSyncEnabled])
 
+  const listAnimeIds = useMemo(() => {
+    const ordered: (number | string)[] = []
+    const seen = new Set<string>()
+    for (const id of favoriteAnime) {
+      const key = String(id)
+      if (seen.has(key)) continue
+      seen.add(key)
+      ordered.push(id)
+    }
+    for (const [key, progress] of Object.entries(favoriteProgress)) {
+      if (seen.has(key)) continue
+      if (!hasTrackedProgress(progress)) continue
+      seen.add(key)
+      ordered.push(key)
+    }
+    return ordered
+  }, [favoriteAnime, favoriteProgress])
+
   const stats = useMemo(() => {
-    const rows = favoriteAnime.map((animeId) => {
+    const rows = listAnimeIds.map((animeId) => {
       const key = String(animeId)
       const progress = favoriteProgress[key] ?? { episodesWatched: 0, userRating: null }
       return {
@@ -158,7 +189,7 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
       }
     })
     return computeUserListStats(rows)
-  }, [favoriteAnime, favoriteProgress])
+  }, [listAnimeIds, favoriteProgress])
 
   const getProgress = useCallback(
     (animeId: number | string): FavoriteProgress =>
@@ -191,9 +222,13 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
       const uid = user?.id ?? getSessionTelegramUserId()
       let result: UserAnimeListMutationResult | undefined
       if (typeof uid === 'number' && canSyncUserAnimeList()) {
+        const isFav = useAnimeStore
+          .getState()
+          .favoriteAnime.some((id) => String(id) === String(animeId))
         result = await upsertUserAnimeListEntry(uid, animeId, {
           episodes_watched: progress.episodesWatched,
           user_rating: progress.userRating,
+          is_favorite: isFav,
         })
       }
       setFavoriteProgress(animeId, progress)
@@ -379,6 +414,7 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
 
   return {
     favoriteAnime,
+    listAnimeIds,
     stats,
     getProgress,
     saveProgress,
