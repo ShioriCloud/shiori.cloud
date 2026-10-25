@@ -148,6 +148,8 @@ export type SocialProfileFeed = {
   limit: number
 }
 
+export type SocialBadgeRarity = 'common' | 'rare' | 'epic' | 'legendary'
+
 export type SocialBadgeCatalogItem = {
   id: string
   title: string
@@ -155,13 +157,19 @@ export type SocialBadgeCatalogItem = {
   description: string
   category_id: string
   category_label: string
-  rarity: 'common' | 'rare' | 'hidden'
+  rarity: SocialBadgeRarity
   hidden: boolean
   hint: string | null
   earned: boolean
   earned_at: string | null
   is_new: boolean
   progress: { current: number; target: number }
+  progress_parts: Array<{
+    label: string
+    current: number
+    target: number
+    complete: boolean
+  }>
   image_url: string | null
 }
 
@@ -169,6 +177,7 @@ export type SocialBadgeCatalog = {
   enabled: boolean
   earned_count: number
   total_count: number
+  showcase: string[]
   categories: Array<{
     id: string
     label: string
@@ -181,18 +190,27 @@ export type SocialBadgePublicList = {
   earned_count: number
   total_count: number
   display_name: string
+  showcase: string[]
   badges: Array<{
     id: string
     title: string
     description: string
     earned_at: string
     is_new?: boolean
+    rarity?: SocialBadgeRarity
     image_url: string | null
   }>
 }
 
 export const fetchSocialBadgeCatalogMe = async (): Promise<SocialBadgeCatalog> =>
   shioriFetch<SocialBadgeCatalog>('/user-social-profile/me/badges')
+
+export const updateSocialBadgeShowcase = async (badgeIds: string[]) =>
+  shioriFetch<{ showcase: string[] }>('/user-social-profile/me/badges/showcase', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ badge_ids: badgeIds }),
+  })
 
 export const fetchSocialBadgeCatalogUser = async (
   telegramUserId: string

@@ -5,7 +5,15 @@ import { toPersianDigits } from '@/lib/persianDigits'
 export const BADGE_RARITY_LABEL: Record<string, string> = {
   common: 'معمولی',
   rare: 'کمیاب',
-  hidden: 'کمیاب',
+  epic: 'حماسی',
+  legendary: 'افسانه‌ای',
+}
+
+export const BADGE_RARITY_RING: Record<string, string> = {
+  common: 'ring-muted-foreground/35',
+  rare: 'ring-sky-400/50',
+  epic: 'ring-violet-400/55',
+  legendary: 'ring-amber-400/60',
 }
 
 export const formatBadgeProgress = (current: number, target: number): string => {
@@ -23,6 +31,7 @@ type BadgeVisualProps = {
   hidden?: boolean
   imageUrl?: string | null
   title?: string
+  rarity?: string
   size?: 'sm' | 'md' | 'lg'
   className?: string
 }
@@ -38,18 +47,23 @@ export const BadgeVisual = ({
   hidden,
   imageUrl,
   title,
+  rarity = 'common',
   size = 'md',
   className,
 }: BadgeVisualProps) => {
-  const showImage = earned && Boolean(imageUrl?.trim())
+  const showImage =
+    earned && Boolean(imageUrl?.trim()) && !(hidden && !earned)
+  const showHidden = hidden && !earned
+  const ring = BADGE_RARITY_RING[rarity] ?? BADGE_RARITY_RING.common
 
   return (
     <div
       className={cn(
-        'relative mx-auto flex shrink-0 items-center justify-center overflow-hidden rounded-full border-2',
+        'relative mx-auto flex shrink-0 items-center justify-center overflow-hidden rounded-full border-2 ring-2',
         earned
           ? 'border-primary-400/40 bg-gradient-to-br from-primary-500/25 via-card to-card'
           : 'border-border/50 bg-muted/30',
+        earned ? ring : 'ring-transparent',
         sizeClass[size],
         className
       )}
@@ -61,9 +75,13 @@ export const BadgeVisual = ({
         <span className="font-bold text-primary-200/90">
           {(title ?? '?').trim().charAt(0) || '★'}
         </span>
-      ) : hidden ? (
+      ) : showHidden ? (
         <span className="font-bold text-muted-foreground">؟</span>
-      ) : null}
+      ) : (
+        <span className="font-bold text-muted-foreground/80">
+          {(title ?? '?').trim().charAt(0) || '·'}
+        </span>
+      )}
     </div>
   )
 }

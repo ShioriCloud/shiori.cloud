@@ -34,6 +34,7 @@ export const BadgeDetailDialog = ({ badge, open, onOpenChange }: BadgeDetailDial
             hidden={badge.hidden}
             imageUrl={badge.image_url}
             title={badge.title}
+            rarity={badge.rarity}
             size="lg"
             className="mb-2"
           />
@@ -48,7 +49,34 @@ export const BadgeDetailDialog = ({ badge, open, onOpenChange }: BadgeDetailDial
             {badge.earned ? badge.description : showHidden ? badge.description : badge.description}
           </DialogDescription>
         </DialogHeader>
-        {!badge.earned && badge.progress.target > 0 ? (
+        {badge.earned && badge.earned_at ? (
+          <p className="text-center text-xs text-muted-foreground">
+            دریافت:{' '}
+            {new Date(badge.earned_at).toLocaleDateString('fa-IR', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            })}
+          </p>
+        ) : null}
+        {!badge.earned && !showHidden && badge.progress_parts.length > 0 ? (
+          <div className="space-y-3 pt-2">
+            {badge.progress_parts.map((part) => (
+              <div key={part.label} className="space-y-1">
+                <p className="text-xs text-muted-foreground">{part.label}</p>
+                <BadgeProgressBar
+                  current={part.current}
+                  target={part.target}
+                  earned={part.complete}
+                  className="h-1.5"
+                />
+                <p className="text-center text-[11px] text-muted-foreground">
+                  {formatBadgeProgress(part.current, part.target)}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : !badge.earned && !showHidden && badge.progress.target > 0 ? (
           <div className="space-y-2 pt-2">
             <BadgeProgressBar
               current={badge.progress.current}

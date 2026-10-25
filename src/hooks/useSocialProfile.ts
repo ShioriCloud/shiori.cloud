@@ -7,6 +7,7 @@ import {
   fetchSocialFollowing,
   fetchSocialBadgeCatalogMe,
   fetchSocialBadgeCatalogUser,
+  updateSocialBadgeShowcase,
   fetchSocialProfileMe,
   fetchSocialProfileUser,
   followSocialUser,
@@ -47,6 +48,18 @@ export function useSocialBadgeCatalogMe(enabled = true) {
     enabled: enabled && authReady,
     staleTime: 60_000,
     retry: 1,
+  })
+}
+
+export function useUpdateSocialBadgeShowcase() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (badgeIds: string[]) => updateSocialBadgeShowcase(badgeIds),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.socialBadgeCatalogMe })
+      void queryClient.invalidateQueries({ queryKey: queryKeys.socialProfileMe })
+    },
   })
 }
 
