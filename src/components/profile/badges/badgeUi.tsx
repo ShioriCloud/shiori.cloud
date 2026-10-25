@@ -73,7 +73,7 @@ export const BadgeVisual = ({
           src={imageUrl!}
           alt=""
           className={cn(
-            'h-full w-full object-cover',
+            'h-[78%] w-[78%] object-contain',
             !earned && 'opacity-40 grayscale-[35%]'
           )}
         />
