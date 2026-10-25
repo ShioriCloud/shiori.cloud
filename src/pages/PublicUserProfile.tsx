@@ -48,10 +48,6 @@ const PublicUserProfile = () => {
   const [actionsOpen, setActionsOpen] = useState(false)
 
   const rawTab = searchParams.get('tab')
-  if (rawTab === 'feed') {
-    return <Navigate to="/feed" replace />
-  }
-
   const activeTab = parseProfileTab(rawTab)
 
   const setActiveTab = (tab: ProfileTabId) => {
@@ -88,6 +84,10 @@ const PublicUserProfile = () => {
     () => (data?.watched?.items ?? []).filter((item) => item.is_favorite === true),
     [data?.watched?.items]
   )
+
+  if (rawTab === 'feed') {
+    return <Navigate to="/feed" replace />
+  }
 
   if (!isReady || (canFetchProfile && isLoading && !data)) {
     return <ProfilePageSkeleton />

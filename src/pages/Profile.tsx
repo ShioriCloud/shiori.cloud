@@ -43,10 +43,6 @@ const Profile = () => {
   const [avatarFailed, setAvatarFailed] = useState(false)
 
   const rawTab = searchParams.get('tab')
-  if (rawTab === 'feed') {
-    return <Navigate to="/feed" replace />
-  }
-
   const activeTab = parseProfileTab(rawTab)
 
   const setActiveTab = (tab: ProfileTabId) => {
@@ -104,6 +100,10 @@ const Profile = () => {
     }),
     [mergedStats.watchHours, mergedStats.byFormat]
   )
+
+  if (rawTab === 'feed') {
+    return <Navigate to="/feed" replace />
+  }
 
   if (!isReady) {
     return <ProfilePageSkeleton />
