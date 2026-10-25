@@ -1,10 +1,10 @@
-import { Link } from 'react-router-dom'
-import { ChevronDown, ChevronRight, ChevronUp } from 'lucide-react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
 import { BidiText } from '@/components/BidiText'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { RouteFallback } from '@/components/RouteFallback'
 import { FavoriteRankBadge } from '@/components/profile/FavoriteRankBadge'
+import { ProfilePersonalSubpageLayout } from '@/components/profile/ProfilePersonalSubpageLayout'
 import { SOCIAL_SURFACE_CLASS } from '@/components/profile/social/socialUi'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import { useFavoriteAnimeCardsQuery } from '@/hooks/queries/useAnimeQueries'
@@ -31,26 +31,10 @@ const ProfileFavorites = () => {
     )
 
   return (
-    <div className="bg-background pb-24 text-foreground">
-      <div className="sticky top-[var(--app-header-offset)] z-10 border-b border-border/60 bg-background/95 backdrop-blur-sm">
-        <div className="flex flex-col gap-1 px-4 py-3.5">
-          <div className="flex items-center gap-2">
-            <Link
-              to="/profile?tab=personal"
-              className="inline-flex items-center gap-1 text-sm text-muted-foreground active:opacity-80"
-            >
-              <ChevronRight className="h-4 w-4" aria-hidden />
-              شخصی
-            </Link>
-            <span className="text-sm font-semibold text-foreground">علاقه‌مندی‌ها</span>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            با دکمه‌های بالا و پایین ترتیب را عوض کن — در پروفایل با مدال نمایش داده می‌شود.
-          </p>
-        </div>
-      </div>
-
-      <div className="px-4 pt-4">
+    <ProfilePersonalSubpageLayout
+      title="علاقه‌مندی‌ها"
+      description="با دکمه‌های بالا و پایین ترتیب را عوض کن — در پروفایل با مدال نمایش داده می‌شود."
+    >
         {isLoading && favoriteAnime.length > 0 ? (
           <p className="text-center text-sm text-muted-foreground">در حال بارگذاری…</p>
         ) : items.length === 0 ? (
@@ -142,8 +126,7 @@ const ProfileFavorites = () => {
             </div>
           </>
         )}
-      </div>
-    </div>
+    </ProfilePersonalSubpageLayout>
   )
 }
 

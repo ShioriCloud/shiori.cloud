@@ -11,7 +11,7 @@ import { PersonalSection } from './PersonalSection'
 import { CreateShioriListSheet } from '@/components/my-list/CreateShioriListSheet'
 import { useState } from 'react'
 
-export const PersonalPlaylistsBlock = () => {
+export const PersonalPlaylistsBlock = ({ embedded = false }: { embedded?: boolean }) => {
   const { showAlert } = useAppAuth()
   const { customLists, updateList, isMutating } = useCustomLists({ syncRemote: false })
   const [createOpen, setCreateOpen] = useState(false)
@@ -25,22 +25,19 @@ export const PersonalPlaylistsBlock = () => {
     }
   }
 
-  return (
-    <PersonalSection
-      title="پلی‌لیست‌ها"
-      subtitle="لیست‌های شخصی — عمومی را دیگران در پروفایلت می‌بینند"
-      accent="violet"
-      action={
-        <button
-          type="button"
-          onClick={() => setCreateOpen(true)}
-          className="inline-flex h-9 items-center gap-1 rounded-xl border border-violet-400/30 bg-violet-400/10 px-2.5 text-xs font-semibold text-violet-700 dark:text-violet-200"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          جدید
-        </button>
-      }
+  const newListButton = (
+    <button
+      type="button"
+      onClick={() => setCreateOpen(true)}
+      className="inline-flex h-9 items-center gap-1 rounded-xl border border-violet-400/30 bg-violet-400/10 px-2.5 text-xs font-semibold text-violet-700 dark:text-violet-200"
     >
+      <Plus className="h-3.5 w-3.5" />
+      جدید
+    </button>
+  )
+
+  const body = (
+    <>
       {customLists.length === 0 ? (
         <div
           className={cn(
@@ -94,6 +91,26 @@ export const PersonalPlaylistsBlock = () => {
       )}
 
       <CreateShioriListSheet open={createOpen} onOpenChange={setCreateOpen} />
+    </>
+  )
+
+  if (embedded) {
+    return (
+      <div className="space-y-3">
+        <div className="flex justify-end">{newListButton}</div>
+        {body}
+      </div>
+    )
+  }
+
+  return (
+    <PersonalSection
+      title="پلی‌لیست‌ها"
+      subtitle="لیست‌های شخصی — عمومی را دیگران در پروفایلت می‌بینند"
+      accent="violet"
+      action={newListButton}
+    >
+      {body}
     </PersonalSection>
   )
 }

@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { PersonalSection } from './PersonalSection'
 
-export const PersonalWatchArchive = () => {
+export const PersonalWatchArchive = ({ embedded = false }: { embedded?: boolean }) => {
   const { listAnimeIds, favoriteProgress } = useUserAnimeList()
   const { data: cards = [], isLoading } = useFavoriteAnimeCardsQuery(listAnimeIds)
   const [statusTab, setStatusTab] = useState<WatchStatus>('watching')
@@ -67,12 +67,8 @@ export const PersonalWatchArchive = () => {
     label: WATCH_STATUS_LABELS[id],
   }))
 
-  return (
-    <PersonalSection
-      title="آرشیو تماشای من"
-      subtitle="بر اساس وضعیت ثبت‌شده در پیشرفت تماشا"
-      accent="amber"
-    >
+  const body = (
+    <>
       <ExploreTabBar
         tabs={tabs}
         active={statusTab}
@@ -128,6 +124,18 @@ export const PersonalWatchArchive = () => {
       <p className="text-[10px] text-muted-foreground/80 text-center">
         {PROFILE_WATCH_STATUSES.map((s) => `${WATCH_STATUS_LABELS[s]}: ${toPersianDigits(counts.get(s) ?? 0)}`).join(' · ')}
       </p>
+    </>
+  )
+
+  if (embedded) return <div className="space-y-3">{body}</div>
+
+  return (
+    <PersonalSection
+      title="آرشیو تماشای من"
+      subtitle="بر اساس وضعیت ثبت‌شده در پیشرفت تماشا"
+      accent="amber"
+    >
+      {body}
     </PersonalSection>
   )
 }

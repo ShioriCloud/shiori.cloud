@@ -25,6 +25,8 @@ const Explore = lazy(() => import('./pages/Explore'))
 const MyList = lazy(() => import('./pages/MyList'))
 const Feed = lazy(() => import('./pages/Feed'))
 const ProfileFavorites = lazy(() => import('./pages/ProfileFavorites'))
+const ProfileWatchArchive = lazy(() => import('./pages/ProfileWatchArchive'))
+const ProfilePlaylists = lazy(() => import('./pages/ProfilePlaylists'))
 const ShioriListDetail = lazy(() => import('./pages/ShioriListDetail'))
 const Profile = lazy(() => import('./pages/Profile'))
 const SocialProfile = lazy(() => import('./pages/SocialProfile'))
@@ -109,6 +111,8 @@ function App() {
             <Route path="/profile/people" element={<ProfilePeopleSearch />} />
             <Route path="/profile/activity" element={<ProfileActivity />} />
             <Route path="/profile/favorites" element={<ProfileFavorites />} />
+            <Route path="/profile/watch-archive" element={<ProfileWatchArchive />} />
+            <Route path="/profile/playlists" element={<ProfilePlaylists />} />
             <Route path="/profile/blocked" element={<ProfileBlockedUsers />} />
             <Route path="/u/:telegramUserId" element={<PublicUserProfile />} />
             <Route path="/u/:telegramUserId/activity" element={<ProfileActivity />} />
