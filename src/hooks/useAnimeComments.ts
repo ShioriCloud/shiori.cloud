@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useState } from 'react'
 import { ensureDevAppAuth, hasAppUserAuth } from '../lib/ensureDevAppAuth'
+import { showAppToast } from '@/store/appFeedbackStore'
 import {
   createAnimeComment,
   deleteAnimeComment,
@@ -78,7 +79,12 @@ export function useAnimeCommentMutations(animeId: string | undefined) {
 
   const create = useMutation({
     mutationFn: createAnimeComment,
-    onSuccess: invalidate,
+    onSuccess: (comment) => {
+      invalidate()
+      if (comment.is_pending || comment.moderation_status === 'pending') {
+        showAppToast('نظر شما پس از تأیید ادمین نمایش داده می‌شود')
+      }
+    },
   })
 
   const remove = useMutation({

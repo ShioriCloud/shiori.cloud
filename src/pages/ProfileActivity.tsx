@@ -5,6 +5,7 @@ import { ProfileCommentActivityList } from '@/components/profile/ProfileCommentA
 import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import {
+  useAnimeCommentsAccess,
   useMyAnimeCommentsQuery,
   useUserAnimeCommentsQuery,
 } from '@/hooks/useAnimeComments'
@@ -14,9 +15,12 @@ const ProfileActivity = () => {
   const { telegramUserId: rawId } = useParams<{ telegramUserId: string }>()
   const targetId = rawId?.trim() ?? ''
   const isPublic = targetId.length > 0
-  const { user } = useAppAuth()
+  const { user, isReady, inTelegram } = useAppAuth()
+  const canCheckComments = isReady && (inTelegram || Boolean(user))
+  const { data: commentsAccess } = useAnimeCommentsAccess(canCheckComments)
+  const commentsRollout = commentsAccess?.enabled === true
   const { data: socialMe } = useSocialProfileMe(Boolean(user) && !isPublic)
-  const enabled = isPublic || socialMe?.enabled === true
+  const enabled = commentsRollout && (isPublic || socialMe?.enabled === true)
   const mine = useMyAnimeCommentsQuery(Boolean(user) && enabled && !isPublic)
   const theirs = useUserAnimeCommentsQuery(targetId, Boolean(user) && enabled && isPublic)
   const query = isPublic ? theirs : mine

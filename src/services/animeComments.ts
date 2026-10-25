@@ -20,6 +20,8 @@ export type AnimeComment = {
   updated_at: string
   is_deleted: boolean
   is_own: boolean
+  moderation_status?: 'pending' | 'approved' | 'rejected'
+  is_pending?: boolean
   author: AnimeCommentAuthor
   reply_to: {
     comment_id: string

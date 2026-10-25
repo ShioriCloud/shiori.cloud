@@ -5,7 +5,8 @@ import { ProfileCommentActivityList } from '@/components/profile/ProfileCommentA
 import { SocialSection } from '@/components/profile/social/SocialSection'
 import { SOCIAL_DIVIDER_CLASS, SOCIAL_SURFACE_CLASS } from '@/components/profile/social/socialUi'
 import { TranslatorBioQuote } from '@/components/profile/TranslatorBioQuote'
-import { useUserAnimeCommentsQuery } from '@/hooks/useAnimeComments'
+import { useAppAuth } from '@/hooks/useAppAuth'
+import { useAnimeCommentsAccess, useUserAnimeCommentsQuery } from '@/hooks/useAnimeComments'
 import { usePublicCustomListsQuery } from '@/hooks/usePublicCustomLists'
 import { toPersianDigits } from '@/lib/persianDigits'
 import type { SocialProfileMe } from '@/services/socialProfile'
@@ -71,6 +72,12 @@ export const ProfilePersonalPanel = ({
   memberSince,
   displayName,
 }: ProfilePersonalPanelProps) => {
+  const { user, isReady, inTelegram } = useAppAuth()
+  const { data: commentsAccess } = useAnimeCommentsAccess(
+    isReady && (inTelegram || Boolean(user))
+  )
+  const commentsEnabled = commentsAccess?.enabled === true
+
   const translationsPath =
     profileUserId && translator
       ? `/u/${encodeURIComponent(profileUserId)}/translations`
@@ -83,7 +90,7 @@ export const ProfilePersonalPanel = ({
   const joined = formatMemberSince(memberSince)
   const publicComments = useUserAnimeCommentsQuery(
     profileUserId,
-    variant === 'public' && Boolean(profileUserId),
+    commentsEnabled && variant === 'public' && Boolean(profileUserId),
     1,
     3
   )
@@ -119,13 +126,15 @@ export const ProfilePersonalPanel = ({
               iconClass="border-sky-400/30 bg-sky-400/10 text-sky-600 dark:text-sky-300"
             />
           ) : null}
-          <PersonalRow
-            to="/profile/activity"
-            icon={<MessageSquareText className="h-4 w-4" />}
-            label="نظرات و فعالیت"
-            hint="نظرها و پاسخ‌هایی که نوشته‌ای"
-            iconClass="border-emerald-400/30 bg-emerald-400/10 text-emerald-700 dark:text-emerald-300"
-          />
+          {commentsEnabled ? (
+            <PersonalRow
+              to="/profile/activity"
+              icon={<MessageSquareText className="h-4 w-4" />}
+              label="نظرات و فعالیت"
+              hint="نظرها و پاسخ‌هایی که نوشته‌ای"
+              iconClass="border-emerald-400/30 bg-emerald-400/10 text-emerald-700 dark:text-emerald-300"
+            />
+          ) : null}
         </PersonalLinksCard>
       </div>
     )
@@ -159,13 +168,15 @@ export const ProfilePersonalPanel = ({
       ) : null}
 
       <PersonalLinksCard>
-        <PersonalRow
-          to={commentsPath}
-          icon={<MessageSquareText className="h-4 w-4" />}
-          label="نظرات"
-          hint={commentHint}
-          iconClass="border-emerald-400/30 bg-emerald-400/10 text-emerald-700 dark:text-emerald-300"
-        />
+        {commentsEnabled ? (
+          <PersonalRow
+            to={commentsPath}
+            icon={<MessageSquareText className="h-4 w-4" />}
+            label="نظرات"
+            hint={commentHint}
+            iconClass="border-emerald-400/30 bg-emerald-400/10 text-emerald-700 dark:text-emerald-300"
+          />
+        ) : null}
         {translationsPath ? (
           <PersonalRow
             to={translationsPath}
@@ -187,7 +198,7 @@ export const ProfilePersonalPanel = ({
         ))}
       </PersonalLinksCard>
 
-      {publicComments.data?.items.length ? (
+      {commentsEnabled && publicComments.data?.items.length ? (
         <SocialSection title="آخرین نظرات" description="از میان فعالیت‌های اخیر">
           <ProfileCommentActivityList items={publicComments.data.items} tone="public" />
           {commentCount > publicComments.data.items.length ? (

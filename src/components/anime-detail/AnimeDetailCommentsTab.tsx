@@ -181,9 +181,16 @@ const CommentCard = ({
             >
               {comment.author.display_name}
             </Link>
-            <p className="mt-0.5 text-[10px] leading-5 text-muted-foreground/90 tabular-nums">
-              {formatRelativeTimeFa(comment.created_at)}
-            </p>
+            <div className="mt-0.5 flex flex-wrap items-center justify-end gap-1.5">
+              {comment.is_pending || comment.moderation_status === 'pending' ? (
+                <span className="rounded-md border border-amber-500/35 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-amber-700 dark:text-amber-300">
+                  در انتظار تأیید
+                </span>
+              ) : null}
+              <p className="text-[10px] leading-5 text-muted-foreground/90 tabular-nums">
+                {formatRelativeTimeFa(comment.created_at)}
+              </p>
+            </div>
           </div>
         </div>
 
