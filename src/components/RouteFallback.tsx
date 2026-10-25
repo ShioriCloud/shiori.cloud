@@ -100,12 +100,16 @@ export const RouteFallback = () => {
   if (pathname.startsWith('/schedule')) return <SchedulePageSkeleton />
   if (pathname === '/feed') return <GenericPageSkeleton />
   if (pathname.startsWith('/my-list')) return <MyListPageSkeleton />
-  if (
-    pathname.startsWith('/profile') ||
+  const isMainProfileShell =
+    pathname === '/profile' ||
     pathname.startsWith('/translators/') ||
-    pathname.startsWith('/u/')
-  ) {
+    /^\/u\/[^/]+$/.test(pathname.replace(/\/+$/, ''))
+
+  if (isMainProfileShell) {
     return <ProfilePageSkeleton />
+  }
+  if (pathname.startsWith('/profile/') || pathname.startsWith('/u/')) {
+    return <GenericPageSkeleton />
   }
   if (pathname.startsWith('/studios/')) return <DetailSkeleton />
 

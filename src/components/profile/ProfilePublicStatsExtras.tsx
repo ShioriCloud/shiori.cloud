@@ -11,14 +11,18 @@ type ProfilePublicStatsExtrasProps = {
   profileUserId: string
   translator?: SocialProfileMe['translator']
   displayName: string
+  /** When translations rail is already on the profile hero, hide duplicate links/bio here. */
+  hideTranslatorDupes?: boolean
 }
 
 export const ProfilePublicStatsExtras = ({
   profileUserId,
   translator,
   displayName,
+  hideTranslatorDupes = false,
 }: ProfilePublicStatsExtrasProps) => {
-  const translationsPath = translator
+  const showTranslatorLinks = Boolean(translator) && !hideTranslatorDupes
+  const translationsPath = showTranslatorLinks
     ? `/u/${encodeURIComponent(profileUserId)}/translations`
     : null
 
@@ -29,7 +33,8 @@ export const ProfilePublicStatsExtras = ({
   const rowClass =
     'flex items-center gap-3 px-3 py-3 transition-colors hover:bg-muted/40 active:bg-muted/55'
 
-  if (!hasLinks && !translator?.bio) return null
+  const showBio = Boolean(translator?.bio) && !hideTranslatorDupes
+  if (!hasLinks && !showBio) return null
 
   return (
     <div className="mt-6 space-y-6">
@@ -78,7 +83,7 @@ export const ProfilePublicStatsExtras = ({
         </div>
       ) : null}
 
-      {translator?.bio ? (
+      {showBio && translator?.bio ? (
         <TranslatorBioQuote bio={translator.bio} attribution={displayName} />
       ) : null}
     </div>

@@ -23,6 +23,7 @@ type ProfileStatsTabPanelProps = {
     profileUserId: string
     translator?: SocialProfileMe['translator']
     displayName: string
+    hideTranslatorDupes?: boolean
   }
 }
 
@@ -86,6 +87,7 @@ export const ProfileStatsTabPanel = ({
           profileUserId={publicExtras.profileUserId}
           translator={publicExtras.translator}
           displayName={publicExtras.displayName}
+          hideTranslatorDupes={publicExtras.hideTranslatorDupes}
         />
       ) : null}
     </div>

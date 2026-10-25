@@ -1,11 +1,10 @@
-import { Link } from 'react-router-dom'
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
+import { ProfileSectionMoreLink } from '@/components/profile/ProfileSectionMoreLink'
 import { BidiText } from '@/components/BidiText'
 import { FavoriteRankBadge } from '@/components/profile/FavoriteRankBadge'
 import { SOCIAL_SURFACE_CLASS } from '@/components/profile/social/socialUi'
 import type { SocialProfileMe } from '@/services/socialProfile'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
-import { toPersianDigits } from '@/lib/persianDigits'
 import { cn } from '@/lib/utils'
 
 const PREVIEW_COUNT = 9
@@ -50,11 +49,10 @@ export const ProfileFavoritesPreview = ({
       <div className="mb-3 flex items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-foreground">علاقه‌مندی‌ها</h2>
         {showMore ? (
-          <Link to={moreHref} className="text-xs font-medium text-primary-400">
-            {profileBase === '/profile'
-              ? `مرتب‌سازی (${toPersianDigits(total)})`
-              : `همه (${toPersianDigits(total)})`}
-          </Link>
+          <ProfileSectionMoreLink
+            to={moreHref}
+            label={profileBase === '/profile' ? 'مرتب‌سازی' : 'همه'}
+          />
         ) : null}
       </div>
       <div className={cn(SOCIAL_SURFACE_CLASS, 'grid grid-cols-3 gap-2 p-2')}>
@@ -99,14 +97,6 @@ export const ProfileFavoritesPreview = ({
           )
         })}
       </div>
-      {showMore ? (
-        <Link
-          to={moreHref}
-          className="mt-3 flex h-10 w-full items-center justify-center rounded-xl border border-rose-400/25 bg-rose-400/5 text-sm font-medium text-foreground active:bg-rose-400/10"
-        >
-          مشاهده و مرتب‌سازی علاقه‌مندی‌ها
-        </Link>
-      ) : null}
     </section>
   )
 }

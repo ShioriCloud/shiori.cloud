@@ -93,6 +93,7 @@ export function useSocialProfileUser(
     enabled: enabled && authReady && id.length > 0,
     staleTime: 60_000,
     retry: false,
+    placeholderData: (previous) => previous,
   })
 }
 

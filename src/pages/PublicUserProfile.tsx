@@ -114,7 +114,13 @@ const PublicUserProfile = () => {
     return <Navigate to="/feed" replace />
   }
 
-  if (!isReady || (canFetchProfile && isLoading && !data)) {
+  const initialProfileLoad = canFetchProfile && isLoading && !data
+
+  if (!isReady) {
+    return <ProfilePageSkeleton />
+  }
+
+  if (initialProfileLoad) {
     return <ProfilePageSkeleton />
   }
 
@@ -333,6 +339,7 @@ const PublicUserProfile = () => {
                     profileUserId: telegramUserId,
                     translator,
                     displayName,
+                    hideTranslatorDupes: Boolean(translator),
                   }
                 : undefined
             }
