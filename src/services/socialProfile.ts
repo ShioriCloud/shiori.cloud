@@ -25,7 +25,12 @@ export type SocialProfileMe = {
   }
   top_genres?: Array<{ slug: string; label: string; percent: number }>
   by_format?: Array<{ format: string; count: number; episodes_watched: number }>
-  badges?: Array<{ id: string; title: string; is_new?: boolean }>
+  badges?: Array<{
+    id: string
+    title: string
+    image_url?: string | null
+    is_new?: boolean
+  }>
   badges_summary?: { earned_count: number; total_count: number }
   watched?: {
     items: Array<{
@@ -160,6 +165,7 @@ export type SocialBadgeCatalogItem = {
   rarity: SocialBadgeRarity
   hidden: boolean
   hint: string | null
+  unlock_hint: string | null
   earned: boolean
   earned_at: string | null
   is_new: boolean

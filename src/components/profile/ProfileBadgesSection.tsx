@@ -35,7 +35,6 @@ export const ProfileBadgesSection = ({
       : toPersianDigits(earned)
 
   const preview = previewBadges?.slice(0, 3) ?? []
-  const firstPreview = preview[0]
 
   const headerLink =
     variant === 'own' ? (
@@ -73,6 +72,28 @@ export const ProfileBadgesSection = ({
     )
   }
 
+  const badgeRow = (
+    <div className="flex items-center justify-center gap-3 py-1">
+      {preview.length > 0 ? (
+        preview.map((badge) => (
+          <BadgeVisual
+            key={badge.id}
+            earned
+            imageUrl={badge.image_url}
+            title={badge.title}
+            size="sm"
+          />
+        ))
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          {variant === 'own'
+            ? 'هنوز نشانی نگرفتی — ببین چطور می‌توانی جمع کنی'
+            : 'هنوز نشانی ندارد'}
+        </p>
+      )}
+    </div>
+  )
+
   return (
     <>
       <MyListCompactCard className={cn('overflow-hidden p-0', className)}>
@@ -85,52 +106,13 @@ export const ProfileBadgesSection = ({
             <button
               type="button"
               onClick={() => setSheetOpen(true)}
-              className="flex w-full items-center gap-3 text-right active:opacity-90"
+              className="w-full active:opacity-90"
             >
-              {firstPreview ? (
-                <>
-                  <BadgeVisual earned title={firstPreview.title} size="sm" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-foreground">
-                      {firstPreview.title}
-                    </p>
-                    {preview.length > 1 ? (
-                      <p className="text-xs text-muted-foreground">
-                        و {toPersianDigits(preview.length - 1)} نشان دیگر
-                      </p>
-                    ) : null}
-                  </div>
-                </>
-              ) : (
-                <p className="text-xs text-muted-foreground">هنوز نشانی ندارد</p>
-              )}
+              {badgeRow}
             </button>
           ) : (
-            <Link
-              to="/profile/badges"
-              className="flex items-center gap-3 active:opacity-90"
-            >
-              {firstPreview ? (
-                <>
-                  <BadgeVisual earned title={firstPreview.title} size="sm" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-foreground">
-                      {firstPreview.title}
-                    </p>
-                    {preview.length > 1 ? (
-                      <p className="text-xs text-muted-foreground">
-                        و {toPersianDigits(preview.length - 1)} نشان دیگر
-                      </p>
-                    ) : (
-                      <p className="text-xs text-muted-foreground">مشاهده و پیشرفت</p>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <p className="text-xs text-muted-foreground">
-                  هنوز نشانی نگرفتی — ببین چطور می‌توانی جمع کنی
-                </p>
-              )}
+            <Link to="/profile/badges" className="block active:opacity-90">
+              {badgeRow}
             </Link>
           )}
         </div>

@@ -1,4 +1,5 @@
 import type { SocialBadgeCatalogItem } from '@/services/socialProfile'
+import { BADGE_ART_DROP_SHADOW, badgeImageSrc } from '@/lib/badgeArt'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
 
@@ -30,25 +31,28 @@ type BadgeVisualProps = {
 }
 
 const sizeClass = {
-  sm: 'h-14 w-14 text-lg',
-  md: 'h-[4.5rem] w-[4.5rem] text-2xl',
-  lg: 'h-28 w-28 text-4xl',
+  sm: 'h-16 w-16 text-lg',
+  md: 'h-[5rem] w-[5rem] text-2xl',
+  lg: 'h-32 w-32 text-4xl',
 }
 
 /**
- * Artwork is a transparent cutout (no circular plate).
- * Do not wrap art in an extra border/ring — the asset silhouette is the badge.
+ * Earned: transparent cutout art. Locked: empty circle; «?» only for hidden badges.
  */
 export const BadgeVisual = ({
   earned,
   hidden,
   imageUrl,
   title,
+  rarity = 'common',
   size = 'md',
   className,
 }: BadgeVisualProps) => {
   const showHidden = hidden && !earned
-  const hasArt = Boolean(imageUrl?.trim()) && !showHidden
+  const src = badgeImageSrc(imageUrl, size)
+  const hasArt = earned && Boolean(src)
+  const glow =
+    BADGE_ART_DROP_SHADOW[rarity] ?? BADGE_ART_DROP_SHADOW.common
 
   if (hasArt) {
     return (
@@ -58,15 +62,13 @@ export const BadgeVisual = ({
           sizeClass[size],
           className
         )}
-        aria-hidden={!earned}
+        aria-hidden={false}
       >
         <img
-          src={imageUrl!}
+          src={src!}
           alt=""
-          className={cn(
-            'h-full w-full object-contain drop-shadow-sm',
-            !earned && 'opacity-40 grayscale-[40%]'
-          )}
+          decoding="async"
+          className={cn('h-full w-full object-contain', glow)}
         />
       </div>
     )
@@ -75,23 +77,22 @@ export const BadgeVisual = ({
   return (
     <div
       className={cn(
-        'relative mx-auto flex shrink-0 items-center justify-center rounded-full border border-border/40 bg-muted/25',
+        'relative mx-auto flex shrink-0 items-center justify-center rounded-full border-2 border-dashed',
+        earned
+          ? 'border-primary-400/35 bg-primary-500/10'
+          : 'border-border/55 bg-muted/20',
         sizeClass[size],
         className
       )}
-      aria-hidden={!earned}
+      aria-hidden={!earned && !showHidden}
     >
-      {earned ? (
+      {showHidden ? (
+        <span className="font-bold text-muted-foreground">؟</span>
+      ) : earned ? (
         <span className="font-bold text-primary-200/90">
           {(title ?? '?').trim().charAt(0) || '★'}
         </span>
-      ) : showHidden ? (
-        <span className="font-bold text-muted-foreground">؟</span>
-      ) : (
-        <span className="font-bold text-muted-foreground/80">
-          {(title ?? '?').trim().charAt(0) || '·'}
-        </span>
-      )}
+      ) : null}
     </div>
   )
 }
@@ -113,8 +114,8 @@ export const BadgeProgressBar = ({
       className={cn('h-1 w-full overflow-hidden rounded-full bg-muted/60', className)}
       role="progressbar"
       aria-valuenow={pct}
-      aria-valuemax={100}
       aria-valuemin={0}
+      aria-valuemax={100}
     >
       <div
         className={cn(
@@ -135,6 +136,7 @@ export type BadgeCardModel = Pick<
   | 'earned'
   | 'hidden'
   | 'hint'
+  | 'unlock_hint'
   | 'progress'
   | 'image_url'
   | 'is_new'

@@ -56,9 +56,60 @@ export function useUpdateSocialBadgeShowcase() {
 
   return useMutation({
     mutationFn: (badgeIds: string[]) => updateSocialBadgeShowcase(badgeIds),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.socialBadgeCatalogMe })
-      void queryClient.invalidateQueries({ queryKey: queryKeys.socialProfileMe })
+    onMutate: async (badgeIds) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.socialBadgeCatalogMe })
+      const prevCatalog = queryClient.getQueryData<Awaited<
+        ReturnType<typeof fetchSocialBadgeCatalogMe>
+      >>(queryKeys.socialBadgeCatalogMe)
+
+      if (prevCatalog) {
+        queryClient.setQueryData(queryKeys.socialBadgeCatalogMe, {
+          ...prevCatalog,
+          showcase: badgeIds,
+        })
+      }
+
+      const chipFromCatalog = (id: string) => {
+        if (!prevCatalog) return null
+        for (const cat of prevCatalog.categories) {
+          const b = cat.badges.find((x) => x.id === id && x.earned)
+          if (b) {
+            return {
+              id: b.id,
+              title: b.title,
+              image_url: b.image_url,
+              is_new: b.is_new,
+            }
+          }
+        }
+        return null
+      }
+
+      const chips = badgeIds.map(chipFromCatalog).filter(Boolean)
+
+      queryClient.setQueriesData(
+        { queryKey: queryKeys.socialProfileMe },
+        (old: unknown) => {
+          if (!old || typeof old !== 'object') return old
+          const profile = old as { badges?: unknown[] }
+          if (!Array.isArray(profile.badges) && chips.length === 0) return old
+          return { ...profile, badges: chips }
+        }
+      )
+
+      return { prevCatalog }
+    },
+    onError: (_err, _ids, ctx) => {
+      if (ctx?.prevCatalog) {
+        queryClient.setQueryData(queryKeys.socialBadgeCatalogMe, ctx.prevCatalog)
+      }
+    },
+    onSuccess: (result) => {
+      queryClient.setQueryData(
+        queryKeys.socialBadgeCatalogMe,
+        (old: Awaited<ReturnType<typeof fetchSocialBadgeCatalogMe>> | undefined) =>
+          old ? { ...old, showcase: result.showcase } : old
+      )
     },
   })
 }

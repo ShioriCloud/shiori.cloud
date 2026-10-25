@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import { ContentLoadingSkeleton } from '@/components/RouteFallback'
@@ -22,6 +22,7 @@ const ProfileBadges = () => {
   const showcaseMutation = useUpdateSocialBadgeShowcase()
   const [selected, setSelected] = useState<SocialBadgeCatalogItem | null>(null)
   const [showcaseEdit, setShowcaseEdit] = useState(false)
+  const [draftShowcase, setDraftShowcase] = useState<string[]>([])
 
   const earned = data?.earned_count ?? 0
   const total = data?.total_count ?? 0
@@ -36,23 +37,33 @@ const ProfileBadges = () => {
     return list
   }, [data?.categories])
 
+  const activeShowcase = showcaseEdit ? draftShowcase : (data?.showcase ?? [])
+
   const showcaseSet = useMemo(
-    () => new Set(data?.showcase ?? []),
-    [data?.showcase]
+    () => new Set(activeShowcase),
+    [activeShowcase]
   )
 
-  const toggleShowcase = (badgeId: string) => {
-    const current = data?.showcase ?? []
-    const has = current.includes(badgeId)
-    let next: string[]
+  useEffect(() => {
+    if (showcaseEdit) {
+      setDraftShowcase(data?.showcase ?? [])
+    }
+  }, [showcaseEdit, data?.showcase])
+
+  const toggleShowcaseDraft = (badgeId: string) => {
+    const has = draftShowcase.includes(badgeId)
     if (has) {
-      next = current.filter((id) => id !== badgeId)
-    } else if (current.length >= 3) {
+      setDraftShowcase(draftShowcase.filter((id) => id !== badgeId))
+    } else if (draftShowcase.length >= 3) {
       return
     } else {
-      next = [...current, badgeId]
+      setDraftShowcase([...draftShowcase, badgeId])
     }
-    showcaseMutation.mutate(next)
+  }
+
+  const finishShowcaseEdit = () => {
+    setShowcaseEdit(false)
+    showcaseMutation.mutate(draftShowcase)
   }
 
   if (isLoading) return <ContentLoadingSkeleton />
@@ -87,10 +98,12 @@ const ProfileBadges = () => {
                 <h2 className="text-sm font-semibold">نشان‌های پروفایل</h2>
                 <button
                   type="button"
-                  onClick={() => setShowcaseEdit((v) => !v)}
+                  onClick={() =>
+                    showcaseEdit ? finishShowcaseEdit() : setShowcaseEdit(true)
+                  }
                   className="text-xs font-medium text-primary-400 active:opacity-80"
                 >
-                  {showcaseEdit ? 'تمام' : 'ویرایش'}
+                  {showcaseEdit ? 'ذخیره' : 'ویرایش'}
                 </button>
               </div>
               <p className="mb-3 text-xs text-muted-foreground">
@@ -103,8 +116,8 @@ const ProfileBadges = () => {
                     <button
                       key={badge.id}
                       type="button"
-                      disabled={!showcaseEdit || showcaseMutation.isPending}
-                      onClick={() => showcaseEdit && toggleShowcase(badge.id)}
+                      disabled={!showcaseEdit}
+                      onClick={() => showcaseEdit && toggleShowcaseDraft(badge.id)}
                       className={cn(
                         'flex flex-col items-center gap-1 rounded-xl p-2',
                         showcaseEdit && 'active:scale-[0.98]',
@@ -130,13 +143,13 @@ const ProfileBadges = () => {
                 <div className="mt-4 grid grid-cols-3 gap-2">
                   {earnedBadges.map((badge) => {
                     const picked = showcaseSet.has(badge.id)
-                    const full = (data?.showcase?.length ?? 0) >= 3 && !picked
+                    const full = draftShowcase.length >= 3 && !picked
                     return (
                       <button
                         key={badge.id}
                         type="button"
-                        disabled={full || showcaseMutation.isPending}
-                        onClick={() => toggleShowcase(badge.id)}
+                        disabled={full}
+                        onClick={() => toggleShowcaseDraft(badge.id)}
                         className={cn(
                           'rounded-xl border border-border/50 p-2 text-center text-[10px]',
                           picked && 'border-primary-400/50 bg-primary-500/10',
@@ -189,9 +202,9 @@ const ProfileBadges = () => {
                     <p className="line-clamp-2 flex-1 text-[11px] font-medium leading-snug text-foreground">
                       {badge.display_title}
                     </p>
-                    {badge.hint && !badge.earned ? (
-                      <p className="mt-1 line-clamp-2 text-[9px] leading-tight text-muted-foreground">
-                        {badge.hint}
+                    {!badge.earned && badge.unlock_hint ? (
+                      <p className="mt-1 line-clamp-3 text-[9px] leading-tight text-muted-foreground">
+                        {badge.unlock_hint}
                       </p>
                     ) : null}
                     {!(badge.hidden && !badge.earned) ? (

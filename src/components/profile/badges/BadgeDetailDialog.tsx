@@ -46,8 +46,13 @@ export const BadgeDetailDialog = ({ badge, open, onOpenChange }: BadgeDetailDial
             {BADGE_RARITY_LABEL[badge.rarity] ?? badge.rarity}
           </p>
           <DialogDescription className="text-sm leading-relaxed text-foreground/85">
-            {badge.earned ? badge.description : showHidden ? badge.description : badge.description}
+            {badge.description}
           </DialogDescription>
+          {!badge.earned && badge.unlock_hint ? (
+            <p className="text-center text-xs leading-relaxed text-muted-foreground">
+              {badge.unlock_hint}
+            </p>
+          ) : null}
         </DialogHeader>
         {badge.earned && badge.earned_at ? (
           <p className="text-center text-xs text-muted-foreground">

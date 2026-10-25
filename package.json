@@ -1,7 +1,7 @@
 {
   "name": "shiori",
   "private": true,
-  "version": "0.2.103",
+  "version": "0.2.105",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "optimize-badges": "node scripts/optimize-badge-art.mjs"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.2.8",
@@ -52,6 +53,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "globals": "^15.15.0",
+    "sharp": "^0.33.5",
     "typescript": "^5.2.2",
     "typescript-eslint": "^7.18.0",
     "vite": "^5.1.0"
