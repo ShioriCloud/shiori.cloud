@@ -247,6 +247,7 @@ const Profile = () => {
         <ProfileTranslationsRail
           translator={socialProfile.translator}
           profileUserId={String(user.id)}
+          title="ترجمه‌هام"
         />
       ) : null}
 

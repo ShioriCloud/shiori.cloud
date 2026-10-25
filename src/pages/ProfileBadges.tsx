@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
-import { RouteFallback } from '@/components/RouteFallback'
+import { ContentLoadingSkeleton } from '@/components/RouteFallback'
 import { BadgeDetailDialog } from '@/components/profile/badges/BadgeDetailDialog'
 import {
   BadgeProgressBar,
@@ -20,7 +20,7 @@ const ProfileBadges = () => {
   const earned = data?.earned_count ?? 0
   const total = data?.total_count ?? 0
 
-  if (isLoading) return <RouteFallback />
+  if (isLoading) return <ContentLoadingSkeleton />
 
   return (
     <div className="bg-background pb-24 text-foreground">

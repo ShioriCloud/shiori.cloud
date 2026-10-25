@@ -1,4 +1,8 @@
-/** Shared loading shell for /profile, /u/:id, /translators/:slug resolve. */
+/**
+ * Hero-style loading shell — only for the main profile shell routes:
+ * `/profile`, `/u/:id`, `/translators/:slug` (see RouteFallback + page initial load).
+ * Do not use inside sheets, tabs, or subpages; use ContentLoadingSkeleton or SocialListSkeleton.
+ */
 export const ProfilePageSkeleton = () => (
   <div className="animate-pulse pb-24">
     <div className="relative h-44">

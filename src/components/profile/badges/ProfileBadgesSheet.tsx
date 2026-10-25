@@ -5,7 +5,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { RouteFallback } from '@/components/RouteFallback'
+import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
 import { useSocialBadgeCatalogUser } from '@/hooks/useSocialProfile'
 import type { SocialBadgePublicList } from '@/services/socialProfile'
 import { cn } from '@/lib/utils'
@@ -59,7 +59,9 @@ export const ProfileBadgesSheet = ({
           </SheetHeader>
 
           {isLoading ? (
-            <RouteFallback />
+            <div className="py-4">
+              <SocialListSkeleton rows={2} />
+            </div>
           ) : badges.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
               هنوز نشانی ثبت نشده یا خصوصی است.

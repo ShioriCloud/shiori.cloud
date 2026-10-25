@@ -36,12 +36,15 @@ type ProfileTranslationsRailProps = {
   translator: NonNullable<SocialProfileMe['translator']>
   profileUserId: string
   maxVisible?: number
+  /** Section title — own profile vs another user. */
+  title?: string
 }
 
 export const ProfileTranslationsRail = ({
   translator,
   profileUserId,
   maxVisible = DEFAULT_VISIBLE,
+  title = 'ترجمه‌هاش',
 }: ProfileTranslationsRailProps) => {
   const total = translator.anime_count
   if (total === 0) return null
@@ -79,16 +82,16 @@ export const ProfileTranslationsRail = ({
               <Languages className="h-4 w-4" aria-hidden />
             </span>
 
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center justify-between gap-2">
-                <h2 className="text-sm font-semibold text-foreground">ترجمه‌هاش</h2>
-                <ProfileSectionMoreLink to={allPath} />
+            <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
+              <div className="min-w-0 flex-1 text-end">
+                <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+                <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
+                  <span>{roleLine} شیوری</span>
+                  <span className="mx-1.5 text-border" aria-hidden>|</span>
+                  <span className="tabular-nums">{toPersianDigits(total)} اثر</span>
+                </p>
               </div>
-              <p className="mt-0.5 text-end text-xs leading-5 text-muted-foreground">
-                <span>{roleLine} شیوری</span>
-                <span className="mx-1.5 text-border" aria-hidden>|</span>
-                <span className="tabular-nums">{toPersianDigits(total)} اثر</span>
-              </p>
+              <ProfileSectionMoreLink to={allPath} className="mt-0.5 shrink-0" />
             </div>
           </div>
         </div>

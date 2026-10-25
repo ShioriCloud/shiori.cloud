@@ -81,7 +81,8 @@ const MyListPageSkeleton = () => (
   </div>
 )
 
-const GenericPageSkeleton = () => (
+/** In-page / modal loading — never the profile hero shell. */
+export const ContentLoadingSkeleton = () => (
   <div className="space-y-4 px-4 pb-24 pt-4" aria-busy="true" aria-label="در حال بارگذاری">
     <Pulse className="h-6 w-40" />
     <Pulse className="h-40 rounded-2xl" />
@@ -98,7 +99,7 @@ export const RouteFallback = () => {
   if (pathname.startsWith('/anime/')) return <DetailSkeleton />
   if (pathname.startsWith('/explore')) return <ExplorePageSkeleton />
   if (pathname.startsWith('/schedule')) return <SchedulePageSkeleton />
-  if (pathname === '/feed') return <GenericPageSkeleton />
+  if (pathname === '/feed') return <ContentLoadingSkeleton />
   if (pathname.startsWith('/my-list')) return <MyListPageSkeleton />
   const isMainProfileShell =
     pathname === '/profile' ||
@@ -109,9 +110,9 @@ export const RouteFallback = () => {
     return <ProfilePageSkeleton />
   }
   if (pathname.startsWith('/profile/') || pathname.startsWith('/u/')) {
-    return <GenericPageSkeleton />
+    return <ContentLoadingSkeleton />
   }
   if (pathname.startsWith('/studios/')) return <DetailSkeleton />
 
-  return <GenericPageSkeleton />
+  return <ContentLoadingSkeleton />
 }
