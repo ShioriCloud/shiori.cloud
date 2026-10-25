@@ -6,9 +6,12 @@ import {
   computeUserListStats,
   getUserAnimeList,
   removeUserAnimeListEntry,
+  reorderUserAnimeListFavorites,
   upsertUserAnimeListEntry,
   type UserAnimeListMutationResult,
+  type UserAnimeListRow,
 } from '../services/userDataSource'
+import type { WatchStatus } from '@/lib/myListUtils'
 import { canSyncUserAnimeList } from '@/lib/userListAuth'
 import { ensureDevAppAuth } from '@/lib/ensureDevAppAuth'
 import { getSessionTelegramUserId } from '@/lib/telegramSessionStorage'
@@ -18,13 +21,27 @@ import {
 } from './queries/invalidate'
 import { queryKeys } from './queries/keys'
 
-const toProgress = (row: {
-  episodes_watched: number
-  user_rating: number | null
-}): FavoriteProgress => ({
-  episodesWatched: row.episodes_watched,
-  userRating: row.user_rating,
-})
+const WATCH_STATUSES: WatchStatus[] = [
+  'planning',
+  'watching',
+  'completed',
+  'rewatching',
+  'paused',
+  'dropped',
+]
+
+const toProgress = (row: UserAnimeListRow): FavoriteProgress => {
+  const rawStatus = row.list_status?.trim() ?? ''
+  const listStatus = WATCH_STATUSES.includes(rawStatus as WatchStatus)
+    ? (rawStatus as WatchStatus)
+    : undefined
+  return {
+    episodesWatched: row.episodes_watched,
+    userRating: row.user_rating,
+    listStatus: listStatus ?? null,
+    listStatusUpdatedAt: row.list_status_at ?? null,
+  }
+}
 
 export const hasTrackedProgress = (progress: FavoriteProgress): boolean =>
   Boolean(
@@ -120,6 +137,7 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
       animeId: row.anime_id,
       progress: toProgress(row),
       isFavorite: row.is_favorite === true,
+      favoriteRank: row.favorite_rank ?? null,
     }))
 
     if (remoteEntries.length > 0) {
@@ -149,6 +167,7 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
             episodes_watched: progress.episodesWatched,
             user_rating: progress.userRating,
             is_favorite: isFav,
+            list_status: progress.listStatus ?? null,
           })
         } catch (e) {
           if (import.meta.env.DEV) console.warn('sync local list entry:', e)
@@ -240,6 +259,7 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
           episodes_watched: progress.episodesWatched,
           user_rating: progress.userRating,
           is_favorite: isFav,
+          list_status: progress.listStatus ?? null,
         })
       }
       const stamped = stampProgress(animeId, progress)
@@ -425,13 +445,30 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
     [clearTrackingMutation]
   )
 
+  const syncFavoriteOrderToServer = useCallback(async () => {
+    if (!listSyncEnabled || typeof telegramUserId !== 'number') return
+    const ids = useAnimeStore.getState().favoriteAnime
+    if (ids.length === 0) return
+    try {
+      await reorderUserAnimeListFavorites(telegramUserId, ids)
+    } catch (e) {
+      if (import.meta.env.DEV) console.warn('sync favorite order:', e)
+    }
+  }, [listSyncEnabled, telegramUserId])
+
   const moveFavoriteUp = useCallback(
-    (animeId: number | string) => moveFavorite(animeId, 'up'),
-    [moveFavorite]
+    async (animeId: number | string) => {
+      moveFavorite(animeId, 'up')
+      await syncFavoriteOrderToServer()
+    },
+    [moveFavorite, syncFavoriteOrderToServer]
   )
   const moveFavoriteDown = useCallback(
-    (animeId: number | string) => moveFavorite(animeId, 'down'),
-    [moveFavorite]
+    async (animeId: number | string) => {
+      moveFavorite(animeId, 'down')
+      await syncFavoriteOrderToServer()
+    },
+    [moveFavorite, syncFavoriteOrderToServer]
   )
 
   return {

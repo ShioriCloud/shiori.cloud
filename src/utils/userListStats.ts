@@ -3,6 +3,9 @@ export type UserAnimeListRow = {
   episodes_watched: number
   user_rating: number | null
   is_favorite?: boolean
+  favorite_rank?: number | null
+  list_status?: string | null
+  list_status_at?: string | null
   updated_at?: string
 }
 

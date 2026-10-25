@@ -42,6 +42,7 @@ interface AnimeState {
       animeId: number | string
       progress: FavoriteProgress
       isFavorite?: boolean
+      favoriteRank?: number | null
     }>
   ) => void
   mergeListFromRemote: (
@@ -49,6 +50,7 @@ interface AnimeState {
       animeId: number | string
       progress: FavoriteProgress
       isFavorite: boolean
+      favoriteRank?: number | null
     }>
   ) => void
   moveFavorite: (animeId: number | string, direction: 'up' | 'down') => void
@@ -60,6 +62,24 @@ const defaultProgress = (): FavoriteProgress => ({
   episodesWatched: 0,
   userRating: null,
 })
+
+type RemoteListEntry = {
+  animeId: number | string
+  progress: FavoriteProgress
+  isFavorite?: boolean
+  favoriteRank?: number | null
+}
+
+const sortFavoriteIds = (entries: RemoteListEntry[]) =>
+  entries
+    .filter((e) => e.isFavorite === true)
+    .sort((a, b) => {
+      const ar = a.favoriteRank ?? Number.MAX_SAFE_INTEGER
+      const br = b.favoriteRank ?? Number.MAX_SAFE_INTEGER
+      if (ar !== br) return ar - br
+      return String(a.animeId).localeCompare(String(b.animeId))
+    })
+    .map((e) => e.animeId)
 
 export const useAnimeStore = create<AnimeState>()(
   persist(
@@ -103,9 +123,7 @@ export const useAnimeStore = create<AnimeState>()(
         })),
       hydrateFavoritesFromRemote: (entries) =>
         set(() => {
-          const favoriteAnime = entries
-            .filter((e) => e.isFavorite === true)
-            .map((e) => e.animeId)
+          const favoriteAnime = sortFavoriteIds(entries)
           const favoriteProgress = Object.fromEntries(
             entries.map((e) => [String(e.animeId), e.progress])
           )

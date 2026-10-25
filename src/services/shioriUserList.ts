@@ -43,6 +43,7 @@ export const upsertUserAnimeListEntry = async (
     episodes_watched?: number
     user_rating?: number | null
     is_favorite?: boolean
+    list_status?: string | null
   }
 ): Promise<UserAnimeListMutationResult> => {
   return withListAuth(async () => {
@@ -55,6 +56,24 @@ export const upsertUserAnimeListEntry = async (
         episodes_watched: payload.episodes_watched,
         user_rating: payload.user_rating,
         is_favorite: payload.is_favorite,
+        list_status: payload.list_status,
+        telegram_init_data: getTelegramInitData() || undefined,
+      }),
+    })
+  })
+}
+
+export const reorderUserAnimeListFavorites = async (
+  _telegramUserId: number,
+  animeIds: Array<number | string>
+): Promise<{ ok: boolean }> => {
+  return withListAuth(async () => {
+    const recordIds = await Promise.all(animeIds.map((id) => resolveListAnimeId(id)))
+    return shioriFetch<{ ok: boolean }>('/user-anime-list/favorites/order', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        anime_ids: recordIds,
         telegram_init_data: getTelegramInitData() || undefined,
       }),
     })
