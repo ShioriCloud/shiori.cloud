@@ -27,7 +27,7 @@ const ProfileActivity = () => {
   const { data, isLoading, isError, refetch } = query
 
   const backTo = isPublic
-    ? `/u/${encodeURIComponent(targetId)}?tab=personal`
+    ? `/u/${encodeURIComponent(targetId)}`
     : '/profile?tab=personal'
 
   return (

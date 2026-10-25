@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
 import { UserIcon } from 'hugeicons-react'
 import { MoreHorizontal } from 'lucide-react'
@@ -62,6 +62,18 @@ const PublicUserProfile = () => {
   )
   const activeTab: ProfileTabId =
     parsedTab === 'personal' ? 'stats' : parsedTab
+
+  useEffect(() => {
+    if (rawTab !== 'personal') return
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('tab')
+        return next
+      },
+      { replace: true }
+    )
+  }, [rawTab, setSearchParams])
 
   const setActiveTab = (tab: ProfileTabId) => {
     setSearchParams(
@@ -138,8 +150,8 @@ const PublicUserProfile = () => {
     return (
       <div className="px-4 pt-10 pb-24">
         <ExploreEmptyState
-          title="پروفایل اجتماعی فعال نیست"
-          subtitle="این بخش هنوز برای حساب تو باز نشده. بعداً دوباره سر بزن."
+          title="پروفایل در دسترس نیست"
+          subtitle="این پروفایل اجتماعی را نمی‌توانی ببینی؛ ممکن است برای تو هنوز شبکه اجتماعی فعال نشده باشد."
         />
         <Link to="/profile" className="mt-6 block text-center text-sm font-medium text-primary-400">
           برگشت به پروفایل من

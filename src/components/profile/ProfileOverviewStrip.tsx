@@ -18,10 +18,12 @@ type OverviewModel = {
 export const ProfileOverviewStrip = ({
   data,
   fullStatsTo = '/profile/stats',
+  audience = 'own',
 }: {
   data: OverviewModel
   /** Pass `null` to hide the full-stats link (e.g. public profiles). */
   fullStatsTo?: string | null
+  audience?: 'own' | 'public'
 }) => {
   const formats = sortFormats(data.byFormat).slice(0, 6)
   const hours = Math.max(0, Math.round(data.watchHours))
@@ -89,7 +91,9 @@ export const ProfileOverviewStrip = ({
                 </div>
               ) : (
                 <p className="text-xs leading-6 text-muted-foreground">
-                  هنوز انیمه‌ای در لیست تماشا نداری.
+                  {audience === 'public'
+                    ? 'هنوز آمار تماشایی برای نمایش نیست.'
+                    : 'هنوز انیمه‌ای در لیست تماشا نداری.'}
                 </p>
               )}
             </div>

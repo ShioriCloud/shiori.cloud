@@ -3,6 +3,7 @@ import { ChevronLeft } from 'lucide-react'
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
 import { BidiText } from '@/components/BidiText'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
+import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
 import { getListIcon } from '@/components/my-list/listIcons'
 import { usePublicCustomListQuery, usePublicCustomListsQuery } from '@/hooks/usePublicCustomLists'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
@@ -29,7 +30,7 @@ export const ProfilePlaylistsTabPanel = ({
   const detail = usePublicCustomListQuery(profileUserId, expandedId ?? '', Boolean(expandedId))
 
   if (isLoading) {
-    return <p className="py-10 text-center text-sm text-muted-foreground">در حال بارگذاری…</p>
+    return <SocialListSkeleton rows={3} />
   }
 
   if (lists.length === 0) {

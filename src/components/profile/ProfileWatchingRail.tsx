@@ -93,7 +93,7 @@ export const ProfileWatchingRail = () => {
                       <div className="absolute bottom-0 left-0 right-0 p-2 pt-6">
                         <BidiText
                           as="p"
-                          className="text-[10px] font-semibold text-white line-clamp-2 text-left"
+                          className="text-[10px] font-semibold text-white line-clamp-2 text-start"
                         >
                           {item.title}
                         </BidiText>

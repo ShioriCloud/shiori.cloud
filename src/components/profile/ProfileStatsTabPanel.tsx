@@ -59,7 +59,11 @@ export const ProfileStatsTabPanel = ({
 
   return (
     <div className="-mx-4 space-y-1 pb-2">
-      <ProfileOverviewStrip data={overview} fullStatsTo={fullStatsTo ?? null} />
+      <ProfileOverviewStrip
+        data={overview}
+        fullStatsTo={fullStatsTo ?? null}
+        audience={variant}
+      />
 
       <ProfileRecentEpisodesRail items={watchedItems} restoreKey={recentRestoreKey} />
 

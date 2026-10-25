@@ -1,14 +1,13 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { Search, Users } from 'lucide-react'
+import { Search } from 'lucide-react'
 import { ExploreEmptyState, EXPLORE_CHIP_CLASS } from '@/components/explore/ExploreUi'
 import { SocialActivityCard } from '@/components/profile/social/SocialActivityCard'
 import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
 import { SocialSection } from '@/components/profile/social/SocialSection'
-import { SOCIAL_SURFACE_CLASS } from '@/components/profile/social/socialUi'
 import { useSocialFeedInfinite } from '@/hooks/useSocialProfile'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 import type { SocialProfileFeedItem } from '@/services/socialProfile'
+import { cn } from '@/lib/utils'
 
 const socialFeedItemKey = (item: SocialProfileFeedItem) => {
   if (item.type === 'anime_comment') return `c-${item.comment_id}`
@@ -30,13 +29,14 @@ export const ProfileFeedPanel = ({ enabled = true }: { enabled?: boolean }) => {
 
   if (!enabled) {
     return (
-      <div className={cn(SOCIAL_SURFACE_CLASS, 'px-4 py-8 text-center')}>
-        <Users className="mx-auto mb-2 h-8 w-8 text-primary-400/70" aria-hidden />
-        <p className="text-sm font-medium text-foreground">فید اجتماعی</p>
-        <p className="mt-1 text-xs leading-6 text-muted-foreground">
-          وقتی پروفایل اجتماعی برایت فعال باشد، فعالیت دوستانی که دنبال می‌کنی اینجا می‌آید.
-        </p>
-      </div>
+      <ExploreEmptyState
+        compact
+        showImage={false}
+        title="فید اجتماعی"
+        subtitle="وقتی شبکه اجتماعی شیوری برای حسابت باز شود، فعالیت دوستانی که دنبال می‌کنی اینجا نمایش داده می‌شود."
+        actionLabel="رفتن به پروفایل"
+        onAction={() => navigate('/profile')}
+      />
     )
   }
 
@@ -46,9 +46,14 @@ export const ProfileFeedPanel = ({ enabled = true }: { enabled?: boolean }) => {
 
   if (!data?.enabled) {
     return (
-      <div className={cn(SOCIAL_SURFACE_CLASS, 'px-4 py-8 text-center')}>
-        <p className="text-sm text-muted-foreground">فید اجتماعی هنوز برای حساب تو باز نشده.</p>
-      </div>
+      <ExploreEmptyState
+        compact
+        showImage={false}
+        title="فید در دسترس نیست"
+        subtitle="شبکه اجتماعی برای حسابت هنوز فعال نشده. بعداً دوباره سر بزن."
+        actionLabel="پروفایل من"
+        onAction={() => navigate('/profile')}
+      />
     )
   }
 

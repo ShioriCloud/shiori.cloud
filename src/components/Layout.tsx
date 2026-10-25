@@ -58,6 +58,8 @@ const Layout = ({ children }: LayoutProps) => {
     if (path === '/profile') {
       return (
         pathname === '/profile' ||
+        pathname.startsWith('/profile/') ||
+        pathname.startsWith('/u/') ||
         pathname.startsWith('/notifications') ||
         pathname.startsWith('/support') ||
         pathname.startsWith('/subscribe')

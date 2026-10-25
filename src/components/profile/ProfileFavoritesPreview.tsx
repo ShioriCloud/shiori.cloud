@@ -51,7 +51,9 @@ export const ProfileFavoritesPreview = ({
         <h2 className="text-sm font-semibold text-foreground">علاقه‌مندی‌ها</h2>
         {showMore ? (
           <Link to={moreHref} className="text-xs font-medium text-primary-400">
-            مرتب‌سازی ({toPersianDigits(total)})
+            {profileBase === '/profile'
+              ? `مرتب‌سازی (${toPersianDigits(total)})`
+              : `همه (${toPersianDigits(total)})`}
           </Link>
         ) : null}
       </div>

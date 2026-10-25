@@ -23,15 +23,14 @@ const ProfileFollowList = () => {
     ? `/u/${encodeURIComponent(routeUserId)}`
     : '/profile'
 
-  const socialBlocked = socialMe?.enabled === false
+  const viewingOther = Boolean(routeUserId?.trim())
+  const socialBlocked = !viewingOther && socialMe?.enabled === false
   const listQuery = useSocialFollowListInfinite(
     subjectId,
     isFollowing ? 'following' : 'followers',
     Boolean(user) &&
-      !socialMeLoading &&
-      socialMe !== undefined &&
-      !socialBlocked &&
-      subjectId.length > 0
+      subjectId.length > 0 &&
+      (viewingOther || (!socialMeLoading && socialMe !== undefined && !socialBlocked))
   )
   const items = listQuery.data?.pages.flatMap((page) => page.items) ?? []
   const showUnfollow =
@@ -57,7 +56,7 @@ const ProfileFollowList = () => {
       </div>
 
       <div className="space-y-3 px-4 pt-4">
-        {socialMeLoading ? (
+        {!viewingOther && socialMeLoading ? (
           <SocialListSkeleton rows={2} />
         ) : socialBlocked ? (
           <ExploreEmptyState
