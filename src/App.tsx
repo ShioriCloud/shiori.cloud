@@ -23,6 +23,8 @@ const Schedule = lazy(() => import('./pages/Schedule'))
 const Search = lazy(() => import('./pages/Search'))
 const Explore = lazy(() => import('./pages/Explore'))
 const MyList = lazy(() => import('./pages/MyList'))
+const Feed = lazy(() => import('./pages/Feed'))
+const ProfileFavorites = lazy(() => import('./pages/ProfileFavorites'))
 const ShioriListDetail = lazy(() => import('./pages/ShioriListDetail'))
 const Profile = lazy(() => import('./pages/Profile'))
 const SocialProfile = lazy(() => import('./pages/SocialProfile'))
@@ -95,6 +97,7 @@ function App() {
             <Route path="/schedule" element={<Schedule />} />
             <Route path="/search" element={<Search />} />
             <Route path="/explore" element={<Explore />} />
+            <Route path="/feed" element={<Feed />} />
             <Route path="/my-list" element={<MyList />} />
             <Route path="/my-list/lists/:listId" element={<ShioriListDetail />} />
             <Route path="/profile" element={<Profile />} />
@@ -105,6 +108,7 @@ function App() {
             <Route path="/profile/following" element={<ProfileFollowList />} />
             <Route path="/profile/people" element={<ProfilePeopleSearch />} />
             <Route path="/profile/activity" element={<ProfileActivity />} />
+            <Route path="/profile/favorites" element={<ProfileFavorites />} />
             <Route path="/profile/blocked" element={<ProfileBlockedUsers />} />
             <Route path="/u/:telegramUserId" element={<PublicUserProfile />} />
             <Route path="/u/:telegramUserId/activity" element={<ProfileActivity />} />

@@ -32,7 +32,7 @@ export const historyCanGoBack = (): boolean => {
   return window.history.length > 1
 }
 
-const ROOT_TAB_PATHS = new Set(['/', '/schedule', '/explore', '/my-list', '/profile'])
+const ROOT_TAB_PATHS = new Set(['/', '/schedule', '/explore', '/feed', '/profile'])
 
 export const shouldShowTelegramBackButton = (pathname: string): boolean => {
   const path = pathname.replace(/\/+$/, '') || '/'
@@ -42,7 +42,8 @@ export const shouldShowTelegramBackButton = (pathname: string): boolean => {
 
 export const fallbackBackPath = (pathname: string): string => {
   if (pathname.startsWith('/my-list/lists/')) return '/my-list?tab=lists'
-  if (pathname.startsWith('/profile/people')) return '/profile?tab=feed'
+  if (pathname.startsWith('/profile/people')) return '/feed'
+  if (pathname.startsWith('/profile/favorites')) return '/profile?tab=personal'
   if (pathname.startsWith('/notifications')) return '/profile'
   if (pathname.startsWith('/support')) return '/profile'
   if (pathname.startsWith('/subscribe') || pathname.startsWith('/donate')) return '/profile'

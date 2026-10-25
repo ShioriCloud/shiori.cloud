@@ -4,7 +4,7 @@ import {
   Home01Icon,
   Calendar01Icon,
   UserIcon,
-  FavouriteIcon,
+  Activity01Icon,
   Search01Icon,
 } from 'hugeicons-react'
 import { AppHeader, APP_HEADER_PAD_CLASS } from '@/components/AppHeader'
@@ -48,6 +48,9 @@ const Layout = ({ children }: LayoutProps) => {
     const pathname = location.pathname
     if (path === '/explore') {
       return pathname === '/explore' || pathname.startsWith('/explore/')
+    }
+    if (path === '/feed') {
+      return pathname === '/feed'
     }
     if (path === '/my-list') {
       return pathname === '/my-list' || pathname.startsWith('/my-list/')
@@ -144,16 +147,16 @@ const Layout = ({ children }: LayoutProps) => {
               <span className="text-xs">گشت‌و‌گذار</span>
             </Link>
             <Link
-              to="/my-list"
+              to="/feed"
               onClick={() => hapticSelection()}
               className={cn(
                 'flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 transition-colors',
-                isActive('/my-list') ? 'text-primary-400' : 'text-muted-foreground'
+                isActive('/feed') ? 'text-primary-400' : 'text-muted-foreground'
               )}
-              aria-label="لیست من"
+              aria-label="فید"
             >
-              <FavouriteIcon className="w-6 h-6" />
-              <span className="text-xs">لیست من</span>
+              <Activity01Icon className="w-6 h-6" />
+              <span className="text-xs">فید</span>
             </Link>
             <Link
               to="/profile"

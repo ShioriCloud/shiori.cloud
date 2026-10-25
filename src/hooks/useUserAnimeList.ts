@@ -160,23 +160,18 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
     syncedRef.current = false
   }, [telegramUserId, listSyncEnabled])
 
+  /** Watchlist / tracking only — favorites without progress are excluded. */
   const listAnimeIds = useMemo(() => {
     const ordered: (number | string)[] = []
     const seen = new Set<string>()
-    for (const id of favoriteAnime) {
-      const key = String(id)
-      if (seen.has(key)) continue
-      seen.add(key)
-      ordered.push(id)
-    }
     for (const [key, progress] of Object.entries(favoriteProgress)) {
-      if (seen.has(key)) continue
       if (!hasTrackedProgress(progress)) continue
+      if (seen.has(key)) continue
       seen.add(key)
       ordered.push(key)
     }
     return ordered
-  }, [favoriteAnime, favoriteProgress])
+  }, [favoriteProgress])
 
   const stats = useMemo(() => {
     const rows = listAnimeIds.map((animeId) => {

@@ -5,7 +5,7 @@ import { MoreHorizontal } from 'lucide-react'
 import { useAppAuth } from '../hooks/useAppAuth'
 import { useSocialProfileUser } from '../hooks/useSocialProfile'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
-import { ProfileFeedPanel } from '@/components/profile/ProfileFeedPanel'
+import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
 import { ProfileStatsTabPanel } from '@/components/profile/ProfileStatsTabPanel'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
@@ -47,10 +47,12 @@ const PublicUserProfile = () => {
   const [avatarFailed, setAvatarFailed] = useState(false)
   const [actionsOpen, setActionsOpen] = useState(false)
 
-  const activeTab = (() => {
-    const tab = parseProfileTab(searchParams.get('tab'))
-    return tab === 'personal' ? 'stats' : tab
-  })()
+  const rawTab = searchParams.get('tab')
+  if (rawTab === 'feed') {
+    return <Navigate to="/feed" replace />
+  }
+
+  const activeTab = parseProfileTab(rawTab)
 
   const setActiveTab = (tab: ProfileTabId) => {
     setSearchParams(
@@ -257,17 +259,26 @@ const PublicUserProfile = () => {
         />
       </div>
 
+      {data.translator ? (
+        <ProfileTranslationsRail
+          translator={data.translator}
+          profileUserId={telegramUserId}
+        />
+      ) : null}
+
       {watchVisible ? (
         <div className="mx-4 mt-5">
           <ProfileBadgesStrip badges={data.badges} />
         </div>
       ) : null}
 
-      <div className="mx-4 mt-6">
-        <ExploreTabBar tabs={[...PUBLIC_PROFILE_TABS]} active={activeTab} onChange={setActiveTab} />
-      </div>
+      {PUBLIC_PROFILE_TABS.length > 1 ? (
+        <div className="mx-4 mt-6">
+          <ExploreTabBar tabs={[...PUBLIC_PROFILE_TABS]} active={activeTab} onChange={setActiveTab} />
+        </div>
+      ) : null}
 
-      <div className="mx-4 mt-4">
+      <div className={cn('mx-4', PUBLIC_PROFILE_TABS.length > 1 ? 'mt-4' : 'mt-6')}>
         {activeTab === 'stats' ? (
           <ProfileStatsTabPanel
             variant="public"
@@ -289,7 +300,6 @@ const PublicUserProfile = () => {
             }
           />
         ) : null}
-        {activeTab === 'feed' ? <ProfileFeedPanel enabled /> : null}
       </div>
 
       {user ? (

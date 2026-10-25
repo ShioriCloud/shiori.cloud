@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { UserIcon } from 'hugeicons-react'
 import { Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -8,8 +8,7 @@ import { useUserAnimeList } from '../hooks/useUserAnimeList'
 import { useSocialProfileMe } from '../hooks/useSocialProfile'
 import { useFavoriteAnimeCardsQuery } from '../hooks/queries/useAnimeQueries'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
-import { ProfileFeedPanel } from '@/components/profile/ProfileFeedPanel'
-import { ProfileFollowSuggestions } from '@/components/profile/ProfileFollowSuggestions'
+import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
 import { ProfilePersonalPanel } from '@/components/profile/ProfilePersonalPanel'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
@@ -43,7 +42,12 @@ const Profile = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const [avatarFailed, setAvatarFailed] = useState(false)
 
-  const activeTab = parseProfileTab(searchParams.get('tab'))
+  const rawTab = searchParams.get('tab')
+  if (rawTab === 'feed') {
+    return <Navigate to="/feed" replace />
+  }
+
+  const activeTab = parseProfileTab(rawTab)
 
   const setActiveTab = (tab: ProfileTabId) => {
     setSearchParams(
@@ -212,7 +216,7 @@ const Profile = () => {
           label="دنبال‌شده"
         />
         <ProfileStatCell
-          to="/my-list"
+          to="/profile/stats"
           value={statDigits(mergedStats.animeCount)}
           label="انیمه دیده"
         />
@@ -221,6 +225,13 @@ const Profile = () => {
       <div className="mx-4">
         <ProfileFollowButton viewerId={user?.id} targetId={user?.id} />
       </div>
+
+      {socialProfile?.translator && user?.id != null ? (
+        <ProfileTranslationsRail
+          translator={socialProfile.translator}
+          profileUserId={String(user.id)}
+        />
+      ) : null}
 
       <div className="mx-4 mt-5">
         <ProfileBadgesStrip badges={socialProfile?.badges} />
@@ -245,12 +256,6 @@ const Profile = () => {
           ) : (
             <ProfileStatsTabPanel variant="own" overview={overview} fullStatsTo="/profile/stats" />
           )
-        ) : null}
-        {activeTab === 'feed' ? (
-          <>
-            <ProfileFollowSuggestions enabled={socialProfile?.enabled === true} />
-            <ProfileFeedPanel enabled />
-          </>
         ) : null}
         {activeTab === 'personal' ? (
           <ProfilePersonalPanel

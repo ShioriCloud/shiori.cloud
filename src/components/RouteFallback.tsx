@@ -98,6 +98,7 @@ export const RouteFallback = () => {
   if (pathname.startsWith('/anime/')) return <DetailSkeleton />
   if (pathname.startsWith('/explore')) return <ExplorePageSkeleton />
   if (pathname.startsWith('/schedule')) return <SchedulePageSkeleton />
+  if (pathname === '/feed') return <GenericPageSkeleton />
   if (pathname.startsWith('/my-list')) return <MyListPageSkeleton />
   if (
     pathname.startsWith('/profile') ||

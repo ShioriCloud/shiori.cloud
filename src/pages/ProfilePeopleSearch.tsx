@@ -22,7 +22,7 @@ const ProfilePeopleSearch = () => {
       <div className="sticky top-[var(--app-header-offset)] z-10 border-b border-border/60 bg-background/95 backdrop-blur-sm">
         <div className="flex items-center gap-2 px-4 py-3.5">
           <Link
-            to="/profile?tab=feed"
+            to="/feed"
             className="inline-flex items-center gap-1 text-sm text-muted-foreground active:opacity-80"
           >
             <ChevronRight className="h-4 w-4" aria-hidden />

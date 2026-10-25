@@ -103,20 +103,6 @@ export const ProfilePersonalPanel = ({
     return (
       <div className="space-y-6">
         <PersonalLinksCard>
-          <PersonalRow
-            to="/my-list"
-            icon={<Heart className="h-4 w-4" />}
-            label="علاقه‌مندی‌ها"
-            hint="لیست تماشا و پیشرفت قسمت‌ها"
-            iconClass="border-rose-400/30 bg-rose-400/10 text-rose-600 dark:text-rose-300"
-          />
-          <PersonalRow
-            to="/my-list?tab=lists"
-            icon={<ListMusic className="h-4 w-4" />}
-            label="پلی‌لیست‌ها"
-            hint="لیست‌های شخصی شیوری"
-            iconClass="border-violet-400/30 bg-violet-400/10 text-violet-700 dark:text-violet-300"
-          />
           {translationsPath ? (
             <PersonalRow
               to={translationsPath}
@@ -126,6 +112,20 @@ export const ProfilePersonalPanel = ({
               iconClass="border-sky-400/30 bg-sky-400/10 text-sky-600 dark:text-sky-300"
             />
           ) : null}
+          <PersonalRow
+            to="/profile/favorites"
+            icon={<Heart className="h-4 w-4" />}
+            label="علاقه‌مندی‌ها"
+            hint="انیمه‌هایی که قلب زدی"
+            iconClass="border-rose-400/30 bg-rose-400/10 text-rose-600 dark:text-rose-300"
+          />
+          <PersonalRow
+            to="/my-list?tab=lists"
+            icon={<ListMusic className="h-4 w-4" />}
+            label="پلی‌لیست‌ها"
+            hint="لیست‌های شخصی شیوری"
+            iconClass="border-violet-400/30 bg-violet-400/10 text-violet-700 dark:text-violet-300"
+          />
           {commentsEnabled ? (
             <PersonalRow
               to="/profile/activity"
