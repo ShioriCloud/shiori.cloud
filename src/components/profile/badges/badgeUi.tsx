@@ -9,13 +9,6 @@ export const BADGE_RARITY_LABEL: Record<string, string> = {
   legendary: 'افسانه‌ای',
 }
 
-export const BADGE_RARITY_RING: Record<string, string> = {
-  common: 'ring-muted-foreground/35',
-  rare: 'ring-sky-400/50',
-  epic: 'ring-violet-400/55',
-  legendary: 'ring-amber-400/60',
-}
-
 export const formatBadgeProgress = (current: number, target: number): string => {
   if (target <= 0) return ''
   return `${toPersianDigits(current)} از ${toPersianDigits(target)}`
@@ -42,42 +35,53 @@ const sizeClass = {
   lg: 'h-28 w-28 text-4xl',
 }
 
+/**
+ * Artwork is a transparent cutout (no circular plate).
+ * Do not wrap art in an extra border/ring — the asset silhouette is the badge.
+ */
 export const BadgeVisual = ({
   earned,
   hidden,
   imageUrl,
   title,
-  rarity = 'common',
   size = 'md',
   className,
 }: BadgeVisualProps) => {
   const showHidden = hidden && !earned
   const hasArt = Boolean(imageUrl?.trim()) && !showHidden
-  const ring = BADGE_RARITY_RING[rarity] ?? BADGE_RARITY_RING.common
+
+  if (hasArt) {
+    return (
+      <div
+        className={cn(
+          'relative mx-auto flex shrink-0 items-center justify-center',
+          sizeClass[size],
+          className
+        )}
+        aria-hidden={!earned}
+      >
+        <img
+          src={imageUrl!}
+          alt=""
+          className={cn(
+            'h-full w-full object-contain drop-shadow-sm',
+            !earned && 'opacity-40 grayscale-[40%]'
+          )}
+        />
+      </div>
+    )
+  }
 
   return (
     <div
       className={cn(
-        'relative mx-auto flex shrink-0 items-center justify-center overflow-hidden rounded-full border-2 ring-2',
-        earned
-          ? 'border-primary-400/40 bg-gradient-to-br from-primary-500/25 via-card to-card'
-          : 'border-border/50 bg-muted/30',
-        earned ? ring : 'ring-transparent',
+        'relative mx-auto flex shrink-0 items-center justify-center rounded-full border border-border/40 bg-muted/25',
         sizeClass[size],
         className
       )}
       aria-hidden={!earned}
     >
-      {hasArt ? (
-        <img
-          src={imageUrl!}
-          alt=""
-          className={cn(
-            'h-[78%] w-[78%] object-contain',
-            !earned && 'opacity-40 grayscale-[35%]'
-          )}
-        />
-      ) : earned ? (
+      {earned ? (
         <span className="font-bold text-primary-200/90">
           {(title ?? '?').trim().charAt(0) || '★'}
         </span>
@@ -109,8 +113,8 @@ export const BadgeProgressBar = ({
       className={cn('h-1 w-full overflow-hidden rounded-full bg-muted/60', className)}
       role="progressbar"
       aria-valuenow={pct}
-      aria-valuemin={0}
       aria-valuemax={100}
+      aria-valuemin={0}
     >
       <div
         className={cn(
