@@ -11,6 +11,7 @@ import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
 import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
 import { ProfilePersonalPanel } from '@/components/profile/ProfilePersonalPanel'
 import { ProfileBadgesShowcase } from '@/components/profile/ProfileBadgesShowcase'
+import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import { ProfileSocialStatsRow } from '@/components/profile/ProfileSocialStatsRow'
 import { ProfileStatsTabPanel } from '@/components/profile/ProfileStatsTabPanel'
 import { ProfileWatchTabPanel } from '@/components/profile/ProfileWatchTabPanel'
@@ -250,9 +251,16 @@ const Profile = () => {
         ]}
       />
 
-      <div className="mx-4 mt-2">
-        <ProfileFollowButton viewerId={user?.id} targetId={user?.id} />
-      </div>
+      <ProfileFollowButton viewerId={user?.id} targetId={user?.id} className="mx-4" />
+
+      {socialProfile?.translator && user?.id != null ? (
+        <ProfileTranslationsRail
+          translator={socialProfile.translator}
+          profileUserId={String(user.id)}
+          title="ترجمه‌هام"
+          className="mt-3"
+        />
+      ) : null}
 
       <ProfileBadgesShowcase
         variant="own"

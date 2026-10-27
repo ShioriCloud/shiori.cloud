@@ -5,6 +5,10 @@ import { BidiText } from '@/components/BidiText'
 import { HomeRailScroller, HomeRailSlide } from '@/components/home/HomeRailScroller'
 import type { SocialProfileMe } from '@/services/socialProfile'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
+import {
+  profileHighlightGlowClass,
+  profileHighlightSectionClass,
+} from '@/components/profile/profileHighlightCard'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
 
@@ -38,6 +42,7 @@ type ProfileTranslationsRailProps = {
   maxVisible?: number
   /** Section title — own profile vs another user. */
   title?: string
+  className?: string
 }
 
 export const ProfileTranslationsRail = ({
@@ -45,6 +50,7 @@ export const ProfileTranslationsRail = ({
   profileUserId,
   maxVisible = DEFAULT_VISIBLE,
   title = 'ترجمه‌هاش',
+  className,
 }: ProfileTranslationsRailProps) => {
   const total = translator.anime_count
   if (total === 0) return null
@@ -54,20 +60,11 @@ export const ProfileTranslationsRail = ({
   const roleLine = formatTranslatorRoleLine(translator.anime)
 
   return (
-    <div className="mx-4 mt-6">
-      <section
-        className={cn(
-          'relative overflow-hidden rounded-2xl border border-border/50',
-          'bg-gradient-to-br from-sky-400/[0.10] via-background to-primary-400/[0.08]',
-          'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]'
-        )}
-      >
+    <div className={cn('mx-4 mt-6', className)}>
+      <section className={profileHighlightSectionClass('sky')}>
+        <div className={profileHighlightGlowClass('right', 'sky')} aria-hidden />
         <div
-          className="pointer-events-none absolute -right-10 top-0 h-32 w-32 rounded-full bg-sky-400/15 blur-3xl"
-          aria-hidden
-        />
-        <div
-          className="pointer-events-none absolute -left-8 bottom-0 h-28 w-28 rounded-full bg-primary-400/12 blur-3xl"
+          className={cn(profileHighlightGlowClass('left', 'primary'), 'bottom-0 top-auto')}
           aria-hidden
         />
 

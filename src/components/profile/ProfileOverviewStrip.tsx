@@ -8,6 +8,10 @@ import {
   sortFormats,
   type FormatBreakdownRow,
 } from './profileFormats'
+import {
+  profileHighlightGlowClass,
+  profileHighlightSectionClass,
+} from '@/components/profile/profileHighlightCard'
 import { WatchHoursDonut } from './WatchHoursDonut'
 
 type OverviewModel = {
@@ -30,19 +34,10 @@ export const ProfileOverviewStrip = ({
 
   return (
     <div className="mx-4 mt-5">
-      <section
-        className={cn(
-          'relative overflow-hidden rounded-2xl border border-border/50',
-          'bg-gradient-to-br from-primary-400/[0.08] via-background to-sky-400/[0.06]',
-          'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]'
-        )}
-      >
+      <section className={profileHighlightSectionClass('primary')}>
+        <div className={profileHighlightGlowClass('left', 'primary')} aria-hidden />
         <div
-          className="pointer-events-none absolute -left-10 top-0 h-36 w-36 rounded-full bg-primary-400/15 blur-3xl"
-          aria-hidden
-        />
-        <div
-          className="pointer-events-none absolute -right-8 bottom-0 h-28 w-28 rounded-full bg-primary-500/10 blur-3xl"
+          className={cn(profileHighlightGlowClass('right', 'primary'), 'bottom-0 top-auto')}
           aria-hidden
         />
 

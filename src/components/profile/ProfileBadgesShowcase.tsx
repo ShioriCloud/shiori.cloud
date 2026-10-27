@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Award, ChevronLeft } from 'lucide-react'
+import { BadgeDetailDialog } from '@/components/profile/badges/BadgeDetailDialog'
 import { BadgeVisual } from '@/components/profile/badges/badgeUi'
 import { ProfileBadgesSheet } from '@/components/profile/badges/ProfileBadgesSheet'
 import { ProfileSectionMoreLink } from '@/components/profile/ProfileSectionMoreLink'
@@ -8,9 +9,30 @@ import {
   profileHighlightGlowClass,
   profileHighlightSectionClass,
 } from '@/components/profile/profileHighlightCard'
-import type { SocialProfileMe } from '@/services/socialProfile'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  useSocialBadgeCatalogMe,
+  useSocialBadgeCatalogUser,
+} from '@/hooks/useSocialProfile'
+import type { SocialBadgeCatalogItem, SocialProfileMe } from '@/services/socialProfile'
 import { cn } from '@/lib/utils'
-import { toPersianDigits } from '@/lib/persianDigits'
+
+type PreviewBadge = NonNullable<SocialProfileMe['badges']>[number]
+type PublicBadge = {
+  id: string
+  title: string
+  description: string
+  earned_at: string
+  is_new?: boolean
+  rarity?: string
+  image_url: string | null
+}
 
 type ProfileBadgesShowcaseProps = {
   variant: 'own' | 'public'
@@ -21,6 +43,19 @@ type ProfileBadgesShowcaseProps = {
   className?: string
 }
 
+const PREVIEW_COUNT = 3
+
+const badgeShowcaseGlow = (rarity?: string) =>
+  cn(
+    'relative rounded-2xl p-1.5',
+    'before:pointer-events-none before:absolute before:inset-1 before:-z-10 before:rounded-full before:blur-2xl',
+    rarity === 'legendary' && 'before:bg-amber-400/55 shadow-[0_0_28px_-6px_rgba(251,191,36,0.65)]',
+    rarity === 'epic' && 'before:bg-violet-400/50 shadow-[0_0_26px_-6px_rgba(139,92,246,0.55)]',
+    rarity === 'rare' && 'before:bg-sky-400/45 shadow-[0_0_24px_-6px_rgba(56,189,248,0.5)]',
+    (!rarity || rarity === 'common') &&
+      'before:bg-amber-300/40 shadow-[0_0_22px_-6px_rgba(251,191,36,0.45)]'
+  )
+
 export const ProfileBadgesShowcase = ({
   variant,
   badgesSummary,
@@ -30,20 +65,35 @@ export const ProfileBadgesShowcase = ({
   className,
 }: ProfileBadgesShowcaseProps) => {
   const [sheetOpen, setSheetOpen] = useState(false)
-  const earned = badgesSummary?.earned_count ?? previewBadges?.length ?? 0
-  const total = badgesSummary?.total_count ?? 0
-  const preview = previewBadges?.slice(0, 4) ?? []
-  const title = variant === 'own' ? 'نشان‌هام' : 'نشان‌هاش'
-  const counter =
-    total > 0
-      ? `${toPersianDigits(earned)} از ${toPersianDigits(total)}`
-      : toPersianDigits(earned)
+  const [selectedOwn, setSelectedOwn] = useState<SocialBadgeCatalogItem | null>(null)
+  const [selectedPublic, setSelectedPublic] = useState<PublicBadge | null>(null)
 
-  const moreHref = variant === 'own' ? '/profile/badges' : null
+  const earned = badgesSummary?.earned_count ?? previewBadges?.length ?? 0
+  const preview = previewBadges?.slice(0, PREVIEW_COUNT) ?? []
+  const title = variant === 'own' ? 'نشان‌هام' : 'نشان‌هاش'
+
+  const { data: ownCatalog } = useSocialBadgeCatalogMe(variant === 'own')
+  const ownCatalogMap = useMemo(() => {
+    const map = new Map<string, SocialBadgeCatalogItem>()
+    for (const cat of ownCatalog?.categories ?? []) {
+      for (const badge of cat.badges) map.set(badge.id, badge)
+    }
+    return map
+  }, [ownCatalog?.categories])
+
+  const { data: publicCatalog } = useSocialBadgeCatalogUser(
+    targetUserId ?? '',
+    variant === 'public' && Boolean(targetUserId)
+  )
+  const publicCatalogMap = useMemo(() => {
+    const map = new Map<string, PublicBadge>()
+    for (const badge of publicCatalog?.badges ?? []) map.set(badge.id, badge)
+    return map
+  }, [publicCatalog?.badges])
 
   const headerMore =
-    variant === 'own' && moreHref ? (
-      <ProfileSectionMoreLink to={moreHref} className="shrink-0 self-center" />
+    variant === 'own' ? (
+      <ProfileSectionMoreLink to="/profile/badges" className="shrink-0 self-center" />
     ) : (
       <button
         type="button"
@@ -57,6 +107,43 @@ export const ProfileBadgesShowcase = ({
         <ChevronLeft className="h-3.5 w-3.5 opacity-80" aria-hidden />
       </button>
     )
+
+  const openPreview = (badge: PreviewBadge) => {
+    if (variant === 'own') {
+      const full = ownCatalogMap.get(badge.id)
+      if (full) {
+        setSelectedOwn(full)
+        return
+      }
+      setSelectedOwn({
+        id: badge.id,
+        title: badge.title,
+        display_title: badge.title,
+        description: 'برای جزئیات بیشتر صفحه نشان‌ها را ببین.',
+        category_id: '',
+        category_label: '',
+        rarity: 'common',
+        hidden: false,
+        hint: null,
+        unlock_hint: null,
+        earned: true,
+        earned_at: null,
+        is_new: badge.is_new ?? false,
+        progress: { current: 0, target: 0 },
+        progress_parts: [],
+        image_url: badge.image_url ?? null,
+      })
+      return
+    }
+    const full = publicCatalogMap.get(badge.id)
+    if (full) setSelectedPublic(full)
+    else setSheetOpen(true)
+  }
+
+  const rarityForPreview = (badge: PreviewBadge) => {
+    if (variant === 'own') return ownCatalogMap.get(badge.id)?.rarity
+    return publicCatalogMap.get(badge.id)?.rarity
+  }
 
   return (
     <>
@@ -82,15 +169,9 @@ export const ProfileBadgesShowcase = ({
               <div className="min-w-0 flex-1 text-start">
                 <h2 className="text-sm font-semibold text-foreground">{title}</h2>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  {earned > 0 ? (
-                    <>
-                      <span className="tabular-nums">{counter}</span>
-                      <span className="mx-1.5 text-border" aria-hidden>|</span>
-                      <span>دستاورد تماشا و فعالیت</span>
-                    </>
-                  ) : (
-                    'با تماشا و فعالیت در شیوری باز می‌شوند'
-                  )}
+                  {earned > 0
+                    ? 'دستاورد تماشا و فعالیت در شیوری'
+                    : 'با تماشا و فعالیت در شیوری باز می‌شوند'}
                 </p>
               </div>
 
@@ -98,41 +179,28 @@ export const ProfileBadgesShowcase = ({
             </div>
 
             {preview.length > 0 ? (
-              <div className="mt-3 flex items-center justify-center gap-3">
-                {preview.map((badge) =>
-                  variant === 'own' ? (
-                    <Link
-                      key={badge.id}
-                      to="/profile/badges"
-                      className="active:scale-95 transition-transform"
-                      aria-label={badge.title}
-                    >
-                      <BadgeVisual
-                        earned
-                        imageUrl={badge.image_url}
-                        title={badge.title}
-                        size="sm"
-                        className="h-11 w-11"
-                      />
-                    </Link>
-                  ) : (
-                    <button
-                      key={badge.id}
-                      type="button"
-                      onClick={() => setSheetOpen(true)}
-                      className="active:scale-95 transition-transform"
-                      aria-label={badge.title}
-                    >
-                      <BadgeVisual
-                        earned
-                        imageUrl={badge.image_url}
-                        title={badge.title}
-                        size="sm"
-                        className="h-11 w-11"
-                      />
-                    </button>
-                  )
-                )}
+              <div className="mt-3 flex items-center justify-center gap-4">
+                {preview.map((badge) => (
+                  <button
+                    key={badge.id}
+                    type="button"
+                    onClick={() => openPreview(badge)}
+                    className={cn(
+                      'active:scale-95 transition-transform',
+                      badgeShowcaseGlow(rarityForPreview(badge))
+                    )}
+                    aria-label={badge.title}
+                  >
+                    <BadgeVisual
+                      earned
+                      imageUrl={badge.image_url}
+                      title={badge.title}
+                      rarity={rarityForPreview(badge)}
+                      size="sm"
+                      className="h-12 w-12 drop-shadow-[0_0_20px_rgba(251,191,36,0.35)]"
+                    />
+                  </button>
+                ))}
               </div>
             ) : variant === 'own' ? (
               <Link
@@ -145,6 +213,40 @@ export const ProfileBadgesShowcase = ({
           </div>
         </section>
       </div>
+
+      <BadgeDetailDialog
+        badge={selectedOwn}
+        open={selectedOwn != null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedOwn(null)
+        }}
+      />
+
+      <Dialog
+        open={selectedPublic != null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedPublic(null)
+        }}
+      >
+        {selectedPublic ? (
+          <DialogContent className="max-w-sm border-border/60 bg-card">
+            <DialogHeader className="items-center text-center">
+              <BadgeVisual
+                earned
+                imageUrl={selectedPublic.image_url}
+                title={selectedPublic.title}
+                rarity={selectedPublic.rarity}
+                size="lg"
+                className="mb-2"
+              />
+              <DialogTitle>{selectedPublic.title}</DialogTitle>
+              <DialogDescription className="text-sm leading-relaxed text-foreground/85">
+                {selectedPublic.description}
+              </DialogDescription>
+            </DialogHeader>
+          </DialogContent>
+        ) : null}
+      </Dialog>
 
       {variant === 'public' && targetUserId ? (
         <ProfileBadgesSheet
