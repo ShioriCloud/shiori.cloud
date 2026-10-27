@@ -201,7 +201,7 @@ const PublicUserProfile = () => {
         </div>
 
         <div className="relative z-10 flex flex-col items-center px-4 pb-2 pt-24">
-          <div className="relative flex w-full justify-center">
+          <div className="relative flex w-full justify-center overflow-visible">
             <ProfileShareButton
               telegramUserId={telegramUserId}
               displayName={displayName}

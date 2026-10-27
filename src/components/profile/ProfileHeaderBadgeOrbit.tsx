@@ -18,9 +18,10 @@ const HEADER_BADGE_SLOTS = 4
 
 /** Matches `ProfileCircleAvatar` size `lg` (6.5rem ≈ 104px). */
 const AVATAR_PX = 104
-const SHELL_W = 172
-const SHELL_H = 132
-const ORBIT_RADIUS_PX = 58
+/** Same width as avatar so the photo stays page-centered; badges overflow to the left. */
+const SHELL_W = AVATAR_PX
+const SHELL_H = 144
+const ORBIT_RADIUS_PX = 62
 /** Arc on the physical left of the avatar (math angles, 0° = right). */
 const ARC_START_DEG = 118
 const ARC_END_DEG = 242
@@ -38,7 +39,7 @@ type ProfileHeaderBadgeOrbitProps = {
 }
 
 const avatarCenter = () => ({
-  x: SHELL_W - AVATAR_PX / 2,
+  x: SHELL_W / 2,
   y: SHELL_H / 2,
 })
 
@@ -67,25 +68,22 @@ const ProfileBadgesMoreButton = ({
     type="button"
     onClick={onClick}
     className={cn(
-      'flex h-9 min-w-[2.35rem] items-center justify-center gap-1 rounded-xl px-2',
-      'border border-primary-400/50 bg-gradient-to-b from-primary-400/30 via-primary-500/15 to-card/90',
-      'text-[11px] font-bold leading-none text-primary-100',
-      'shadow-[0_4px_14px_rgba(0,0,0,0.35)] shadow-primary-400/20',
-      'ring-1 ring-inset ring-white/20',
-      'active:scale-[0.96] transition-transform'
+      'flex h-10 w-10 flex-col items-center justify-center rounded-full',
+      'border border-primary-400/55 bg-gradient-to-b from-primary-400/35 via-primary-500/20 to-card/95',
+      'text-[11px] font-bold leading-none text-primary-50',
+      'shadow-[0_4px_16px_rgba(0,0,0,0.4)] shadow-primary-400/25',
+      'ring-2 ring-inset ring-white/25',
+      'active:scale-[0.94] transition-transform'
     )}
     aria-label="همه نشان‌ها"
   >
     {moreCount > 0 ? (
-      <>
-        <span className="text-[10px] font-extrabold opacity-90">+</span>
-        <span className="tabular-nums">{toPersianDigits(moreCount)}</span>
-      </>
+      <span className="flex flex-col items-center gap-0 leading-none">
+        <span className="text-[9px] font-extrabold opacity-95">+</span>
+        <span className="tabular-nums text-[11px]">{toPersianDigits(moreCount)}</span>
+      </span>
     ) : (
-      <>
-        <LayoutGrid className="h-3.5 w-3.5 opacity-90" aria-hidden />
-        <span>همه</span>
-      </>
+      <LayoutGrid className="h-4 w-4 opacity-95" aria-hidden />
     )}
   </button>
 )
@@ -144,11 +142,13 @@ export const ProfileHeaderBadgeOrbit = ({
   return (
     <>
       <div
-        className={cn('relative mx-auto shrink-0', className)}
+        className={cn('relative mx-auto shrink-0 overflow-visible', className)}
         style={{ width: SHELL_W, height: SHELL_H }}
         aria-label="نشان‌ها"
       >
-        <div className="absolute right-0 top-1/2 z-0 -translate-y-1/2">{children}</div>
+        <div className="absolute left-1/2 top-1/2 z-0 -translate-x-1/2 -translate-y-1/2">
+          {children}
+        </div>
 
         {stripBadges.map((badge, index) => (
           <button
