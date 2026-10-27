@@ -10,6 +10,7 @@ import { ProfileStatsTabPanel } from '@/components/profile/ProfileStatsTabPanel'
 import { ProfileWatchTabPanel } from '@/components/profile/ProfileWatchTabPanel'
 import { ProfileBadgesShowcase } from '@/components/profile/ProfileBadgesShowcase'
 import { ProfileSocialStatsRow } from '@/components/profile/ProfileSocialStatsRow'
+import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import { ProfileShareButton } from '@/components/profile/ProfileShareButton'
 import { ProfileSocialActionsSheet } from '@/components/profile/ProfileSocialActionsSheet'
 import {
@@ -287,15 +288,23 @@ const PublicUserProfile = () => {
         ]}
       />
 
-      <div className="mx-4 mt-2">
-        <ProfileFollowButton
-          viewerId={user?.id}
-          targetId={telegramUserId}
-          apiEnabled
-          isFollowing={data.relationship?.is_following === true}
-          followsYou={data.relationship?.follows_you === true}
+      <ProfileFollowButton
+        viewerId={user?.id}
+        targetId={telegramUserId}
+        apiEnabled
+        isFollowing={data.relationship?.is_following === true}
+        followsYou={data.relationship?.follows_you === true}
+        className="mx-4"
+      />
+
+      {translator ? (
+        <ProfileTranslationsRail
+          translator={translator}
+          profileUserId={telegramUserId}
+          title="ترجمه‌هاش"
+          className="mt-3"
         />
-      </div>
+      ) : null}
 
       <ProfileBadgesShowcase
         variant="public"
@@ -333,6 +342,7 @@ const PublicUserProfile = () => {
               profileUserId: telegramUserId,
               translator,
               displayName,
+              hideTranslatorDupes: Boolean(translator),
             }}
           />
         ) : null}
