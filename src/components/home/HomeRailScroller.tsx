@@ -105,6 +105,7 @@ export const HomeRailScroller = ({
   return (
     <div
       ref={scrollerRef}
+      data-tab-swipe-ignore
       className={cn('home-rail-scroller scrollbar-none', className)}
     >
       <div className="home-rail-track">{children}</div>

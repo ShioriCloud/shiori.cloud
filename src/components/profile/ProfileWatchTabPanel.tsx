@@ -1,8 +1,10 @@
+import { useNavigate } from 'react-router-dom'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { ProfileFavoritesPreview } from '@/components/profile/ProfileFavoritesPreview'
 import { ProfileRecentEpisodesRail } from '@/components/profile/ProfileRecentEpisodesRail'
 import { ProfileSocialWatchedRail } from '@/components/profile/ProfileSocialWatchedRail'
 import { ProfileWatchingRail } from '@/components/profile/ProfileWatchingRail'
+import { useProfileWatchingItems } from '@/hooks/useProfileWatchingItems'
 import type { SocialProfileMe } from '@/services/socialProfile'
 
 type WatchedItem = NonNullable<SocialProfileMe['watched']>['items'][number]
@@ -35,6 +37,9 @@ export const ProfileWatchTabPanel = ({
   recentRestoreKey = 'profile-watch-recent',
   watchVisible = true,
 }: ProfileWatchTabPanelProps) => {
+  const navigate = useNavigate()
+  const { items: localWatching, isLoading: localWatchingLoading } = useProfileWatchingItems()
+
   if (variant === 'public' && !watchVisible) {
     return (
       <p className="rounded-2xl border border-border/50 bg-muted/30 px-4 py-5 text-center text-sm text-muted-foreground">
@@ -45,17 +50,40 @@ export const ProfileWatchTabPanel = ({
 
   const watchingFromApi = filterCurrentlyWatching(watchedItems)
   const recentCount = watchedItems.filter((item) => (item.episodes_watched ?? 0) > 0).length
+  const favoriteCount =
+    favoriteListItems.length > 0
+      ? favoriteListItems.length
+      : (favoriteOrderIds?.length ?? 0)
+
   const publicWatchEmpty =
     variant === 'public' &&
     recentCount === 0 &&
     watchingFromApi.length === 0 &&
-    favoriteListItems.length === 0
+    favoriteCount === 0
+
+  const ownWatchEmpty =
+    variant === 'own' &&
+    !localWatchingLoading &&
+    recentCount === 0 &&
+    localWatching.length === 0 &&
+    favoriteCount === 0
 
   if (publicWatchEmpty) {
     return (
       <ExploreEmptyState
         title="هنوز فعالیت تماشایی نیست"
         subtitle="وقتی این کاربر انیمه تماشا کند یا علاقه‌مندی عمومی داشته باشد، اینجا می‌بینی."
+      />
+    )
+  }
+
+  if (ownWatchEmpty) {
+    return (
+      <ExploreEmptyState
+        title="هنوز چیزی اینجا نیست"
+        subtitle="از اکتشاف شروع کن یا انیمه‌ای را به لیستت اضافه کن؛ پیشرفت تماشا و علاقه‌مندی‌ها اینجا دیده می‌شوند."
+        actionLabel="رفتن به اکتشاف"
+        onAction={() => navigate('/explore')}
       />
     )
   }

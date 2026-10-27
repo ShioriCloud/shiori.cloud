@@ -23,7 +23,7 @@ import {
 } from '@/components/profile/profileTabs'
 import { ProfilePlaylistsTabPanel } from '@/components/profile/ProfilePlaylistsTabPanel'
 import { useCustomLists } from '@/hooks/useCustomLists'
-import { ExploreTabBar } from '@/components/explore/ExploreUi'
+import { ProfileTabSwipeShell } from '@/components/profile/ProfileTabSwipeShell'
 import { mergeOwnProfileHeaderStats } from '@/lib/ownProfileStats'
 import { formatProfileMemberSince } from '@/lib/profileMemberSince'
 import { toPersianDigits } from '@/lib/persianDigits'
@@ -256,11 +256,7 @@ const Profile = () => {
         previewBadges={socialProfile?.badges}
       />
 
-      <div className="mx-4 mt-6">
-        <ExploreTabBar tabs={[...profileTabs]} active={activeTab} onChange={setActiveTab} />
-      </div>
-
-      <div className="mx-4 mt-4">
+      <ProfileTabSwipeShell tabs={profileTabs} active={activeTab} onChange={setActiveTab}>
         {activeTab === 'watch' ? (
           <ProfileWatchTabPanel
             variant="own"
@@ -298,7 +294,7 @@ const Profile = () => {
             profileUserId={user?.id != null ? String(user.id) : undefined}
           />
         ) : null}
-      </div>
+      </ProfileTabSwipeShell>
     </div>
   )
 }

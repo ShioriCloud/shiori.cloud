@@ -22,7 +22,8 @@ import {
 import { ProfilePlaylistsTabPanel } from '@/components/profile/ProfilePlaylistsTabPanel'
 import { usePublicCustomListsQuery } from '@/hooks/usePublicCustomLists'
 import { formatProfileMemberSince } from '@/lib/profileMemberSince'
-import { ExploreEmptyState, ExploreTabBar } from '@/components/explore/ExploreUi'
+import { ExploreEmptyState } from '@/components/explore/ExploreUi'
+import { ProfileTabSwipeShell } from '@/components/profile/ProfileTabSwipeShell'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
 
@@ -300,11 +301,7 @@ const PublicUserProfile = () => {
         targetUserId={telegramUserId}
       />
 
-      <div className="mx-4 mt-6">
-        <ExploreTabBar tabs={[...profileTabs]} active={activeTab} onChange={setActiveTab} />
-      </div>
-
-      <div className="mx-4 mt-4">
+      <ProfileTabSwipeShell tabs={profileTabs} active={activeTab} onChange={setActiveTab}>
         {activeTab === 'watch' ? (
           <ProfileWatchTabPanel
             variant="public"
@@ -344,7 +341,7 @@ const PublicUserProfile = () => {
             }}
           />
         ) : null}
-      </div>
+      </ProfileTabSwipeShell>
 
       {user ? (
         <ProfileSocialActionsSheet

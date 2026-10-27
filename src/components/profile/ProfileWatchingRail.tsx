@@ -1,51 +1,12 @@
-import { useMemo } from 'react'
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
 import { BidiText } from '@/components/BidiText'
 import { HomeRailScroller, HomeRailSlide } from '@/components/home/HomeRailScroller'
-import { useFavoriteAnimeCardsQuery } from '@/hooks/queries/useAnimeQueries'
-import { useUserAnimeList } from '@/hooks/useUserAnimeList'
+import { useProfileWatchingItems } from '@/hooks/useProfileWatchingItems'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
-import { deriveWatchStatus } from '@/lib/myListUtils'
 import { toPersianDigits } from '@/lib/persianDigits'
 
-const MAX_ITEMS = 5
-
 export const ProfileWatchingRail = () => {
-  const { listAnimeIds, getProgress } = useUserAnimeList()
-  const { data: cards = [], isLoading } = useFavoriteAnimeCardsQuery(listAnimeIds)
-
-  const watching = useMemo(() => {
-    const byId = new Map(cards.map((c) => [String(c.id), c]))
-    const picked: Array<{
-      id: string | number
-      title: string
-      image: string
-      slug: string | null
-      episodesCount: number
-      episodesWatched: number
-    }> = []
-
-    for (const id of listAnimeIds) {
-      if (picked.length >= MAX_ITEMS) break
-      const card = byId.get(String(id))
-      if (!card) continue
-      const episodesCount =
-        typeof card.episodes_count === 'number' && card.episodes_count > 0
-          ? card.episodes_count
-          : 1
-      const progress = getProgress(id)
-      if (deriveWatchStatus(progress, episodesCount) !== 'watching') continue
-      picked.push({
-        id: card.id,
-        title: card.title,
-        image: card.image,
-        slug: card.slug ?? null,
-        episodesCount,
-        episodesWatched: progress.episodesWatched,
-      })
-    }
-    return picked
-  }, [listAnimeIds, cards, getProgress])
+  const { items: watching, isLoading } = useProfileWatchingItems()
 
   if (!isLoading && watching.length === 0) return null
 
