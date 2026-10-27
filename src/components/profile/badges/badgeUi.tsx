@@ -10,6 +10,31 @@ export const BADGE_RARITY_LABEL: Record<string, string> = {
   legendary: 'افسانه‌ای',
 }
 
+export const BADGE_RARITY_TEXT_CLASS: Record<string, string> = {
+  common: 'text-slate-400',
+  rare: 'text-sky-400',
+  epic: 'text-violet-400',
+  legendary: 'text-amber-400',
+}
+
+export const BadgeRarityLabel = ({
+  rarity,
+  className,
+}: {
+  rarity: string
+  className?: string
+}) => (
+  <span
+    className={cn(
+      'font-medium',
+      BADGE_RARITY_TEXT_CLASS[rarity] ?? BADGE_RARITY_TEXT_CLASS.common,
+      className
+    )}
+  >
+    {BADGE_RARITY_LABEL[rarity] ?? rarity}
+  </span>
+)
+
 export const formatBadgeProgress = (current: number, target: number): string => {
   if (target <= 0) return ''
   return `${toPersianDigits(current)} از ${toPersianDigits(target)}`
@@ -26,15 +51,19 @@ type BadgeVisualProps = {
   imageUrl?: string | null
   title?: string
   rarity?: string
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg' | 'profile' | 'showcase'
   className?: string
 }
 
 const sizeClass = {
   sm: 'h-16 w-16 text-lg',
+  profile: 'h-[5.25rem] w-[5.25rem] text-2xl',
+  showcase: 'h-[6.25rem] w-[6.25rem] text-2xl',
   md: 'h-[5rem] w-[5rem] text-2xl',
   lg: 'h-32 w-32 text-4xl',
 }
+
+const compactArtSizes = new Set(['sm', 'md', 'profile', 'showcase'])
 
 /**
  * Earned: transparent cutout art. Locked: empty circle; «?» only for hidden badges.
@@ -49,7 +78,8 @@ export const BadgeVisual = ({
   className,
 }: BadgeVisualProps) => {
   const showHidden = hidden && !earned
-  const src = badgeImageSrc(imageUrl, size)
+  const artSize = compactArtSizes.has(size) ? 'sm' : 'lg'
+  const src = badgeImageSrc(imageUrl, artSize === 'lg' ? 'lg' : 'sm')
   const hasArt = earned && Boolean(src)
   const glow =
     BADGE_ART_DROP_SHADOW[rarity] ?? BADGE_ART_DROP_SHADOW.common

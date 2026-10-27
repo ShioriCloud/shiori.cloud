@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link, Navigate, useSearchParams } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { UserIcon } from 'hugeicons-react'
 import { Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -12,12 +12,16 @@ import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslation
 import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
 import { ProfilePersonalPanel } from '@/components/profile/ProfilePersonalPanel'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
-import { ProfileStatsTabPanel } from '@/components/profile/ProfileStatsTabPanel'
-import { ProfileBadgesSection } from '@/components/profile/ProfileBadgesSection'
-import { buildOwnProfileTabs, parseProfileTab, type ProfileTabId } from '@/components/profile/profileTabs'
+import { ProfileHeaderBadgeOrbit } from '@/components/profile/ProfileHeaderBadgeOrbit'
+import { ProfileDualRowTabBar } from '@/components/profile/ProfileDualRowTabBar'
+import { ProfileActivityTabPanel } from '@/components/profile/ProfileActivityTabPanel'
+import { ProfileStatsOverviewPanel } from '@/components/profile/ProfileStatsOverviewPanel'
+import { ProfileWatchingTabPanel } from '@/components/profile/ProfileWatchingTabPanel'
+import { ProfileFavoritesTabPanel } from '@/components/profile/ProfileFavoritesTabPanel'
+import { isAllowedProfileTab } from '@/components/profile/profileTabs'
+import { useProfileTabParam } from '@/hooks/useProfileTabParam'
 import { ProfilePlaylistsTabPanel } from '@/components/profile/ProfilePlaylistsTabPanel'
 import { useCustomLists } from '@/hooks/useCustomLists'
-import { ExploreTabBar } from '@/components/explore/ExploreUi'
 import { mergeOwnProfileHeaderStats } from '@/lib/ownProfileStats'
 import { formatProfileMemberSince } from '@/lib/profileMemberSince'
 import { toPersianDigits } from '@/lib/persianDigits'
@@ -42,28 +46,12 @@ const Profile = () => {
     () => customLists.some((list) => list.isPublic === true),
     [customLists]
   )
-  const profileTabs = useMemo(() => buildOwnProfileTabs(hasPublicPlaylists), [hasPublicPlaylists])
   const { data: favoriteCards = [] } = useFavoriteAnimeCardsQuery(favoriteAnime)
   const { data: socialProfile, isLoading: socialProfileLoading } = useSocialProfileMe(
     Boolean(user)
   )
-  const [searchParams, setSearchParams] = useSearchParams()
+  const { rawTab, activeTab, setActiveTab } = useProfileTabParam()
   const [avatarFailed, setAvatarFailed] = useState(false)
-
-  const rawTab = searchParams.get('tab')
-  const activeTab = parseProfileTab(rawTab)
-
-  const setActiveTab = (tab: ProfileTabId) => {
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev)
-        if (tab === 'stats') next.delete('tab')
-        else next.set('tab', tab)
-        return next
-      },
-      { replace: true }
-    )
-  }
 
   const displayName =
     socialProfile?.profile?.display_name?.trim() || user?.displayName || 'کاربر'
@@ -113,10 +101,10 @@ const Profile = () => {
     return <Navigate to="/feed" replace />
   }
 
-  const tabAllowed =
-    activeTab === 'stats' ||
-    activeTab === 'personal' ||
-    (activeTab === 'playlists' && hasPublicPlaylists)
+  const tabAllowed = isAllowedProfileTab(activeTab, {
+    isOwnProfile: true,
+    hasPublicPlaylists,
+  })
 
   if (!isReady) {
     return <ProfilePageSkeleton />
@@ -133,6 +121,29 @@ const Profile = () => {
       </div>
     )
   }
+
+  const avatarBlock = (
+    <div className="media-card-skeuo h-24 w-24 rounded-2xl shrink-0">
+      <div className="media-card-skeuo-face bg-muted">
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt={displayName}
+            className="h-full w-full object-cover"
+            onError={() => setAvatarFailed(true)}
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-primary-400/15">
+            {initials ? (
+              <span className="text-2xl font-bold text-primary-400">{initials}</span>
+            ) : (
+              <UserIcon className="h-10 w-10 text-muted-foreground/50" />
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
 
   return (
     <div className="bg-background pb-24 text-foreground">
@@ -170,26 +181,13 @@ const Profile = () => {
               </Link>
             </Button>
 
-            <div className="media-card-skeuo h-24 w-24 rounded-2xl">
-              <div className="media-card-skeuo-face bg-muted">
-                {avatarUrl ? (
-                  <img
-                    src={avatarUrl}
-                    alt={displayName}
-                    className="h-full w-full object-cover"
-                    onError={() => setAvatarFailed(true)}
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-primary-400/15">
-                    {initials ? (
-                      <span className="text-2xl font-bold text-primary-400">{initials}</span>
-                    ) : (
-                      <UserIcon className="h-10 w-10 text-muted-foreground/50" />
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
+            <ProfileHeaderBadgeOrbit
+              variant="own"
+              previewBadges={socialProfile?.badges}
+              displayName={displayName}
+            >
+              {avatarBlock}
+            </ProfileHeaderBadgeOrbit>
           </div>
 
           <h1 className="mt-3 line-clamp-2 px-2 text-center text-lg font-bold text-foreground">
@@ -251,34 +249,38 @@ const Profile = () => {
         />
       ) : null}
 
-      <div className="mx-4 mt-5">
-        <ProfileBadgesSection
-          variant="own"
-          badgesSummary={socialProfile?.badges_summary}
-          previewBadges={socialProfile?.badges}
+      <div className="mx-4 mt-6">
+        <ProfileDualRowTabBar
+          active={activeTab}
+          onChange={setActiveTab}
+          isOwnProfile
+          hasPublicPlaylists={hasPublicPlaylists}
         />
       </div>
 
-      <div className="mx-4 mt-6">
-        <ExploreTabBar tabs={[...profileTabs]} active={activeTab} onChange={setActiveTab} />
-      </div>
-
       <div className="mx-4 mt-4">
+        {activeTab === 'activity' ? (
+          <ProfileActivityTabPanel
+            variant="own"
+            watchedItems={showSocialWatch ? watchedItems : []}
+            recentRestoreKey="own-profile-recent"
+          />
+        ) : null}
         {activeTab === 'stats' ? (
-          showSocialWatch ? (
-            <ProfileStatsTabPanel
-              variant="own"
-              overview={overview}
-              fullStatsTo="/profile/stats"
-              watchedItems={watchedItems}
-              favoriteListItems={favoriteListItems}
-              favoriteOrderIds={favoriteAnime}
-              profileBase="/profile"
-              recentRestoreKey="own-profile-recent"
-            />
-          ) : (
-            <ProfileStatsTabPanel variant="own" overview={overview} fullStatsTo="/profile/stats" />
-          )
+          <ProfileStatsOverviewPanel
+            variant="own"
+            overview={overview}
+            fullStatsTo="/profile/stats"
+          />
+        ) : null}
+        {activeTab === 'watching' ? <ProfileWatchingTabPanel variant="own" /> : null}
+        {activeTab === 'favorites' ? (
+          <ProfileFavoritesTabPanel
+            variant="own"
+            items={favoriteListItems}
+            orderedIds={favoriteAnime}
+            profileBase="/profile"
+          />
         ) : null}
         {activeTab === 'playlists' && user?.id != null ? (
           <ProfilePlaylistsTabPanel

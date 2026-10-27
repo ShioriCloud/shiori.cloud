@@ -4,8 +4,8 @@ import { ChevronRight } from 'lucide-react'
 import { ContentLoadingSkeleton } from '@/components/RouteFallback'
 import { BadgeDetailDialog } from '@/components/profile/badges/BadgeDetailDialog'
 import {
-  BADGE_RARITY_LABEL,
   BadgeProgressBar,
+  BadgeRarityLabel,
   BadgeVisual,
   formatBadgeProgress,
 } from '@/components/profile/badges/badgeUi'
@@ -66,6 +66,13 @@ const ProfileBadges = () => {
     showcaseMutation.mutate(draftShowcase)
   }
 
+  const showcasePreview = useMemo(() => {
+    const pool = showcaseEdit
+      ? earnedBadges
+      : earnedBadges.filter((b) => showcaseSet.has(b.id))
+    return pool.slice(0, 3)
+  }, [showcaseEdit, earnedBadges, showcaseSet])
+
   if (isLoading) return <ContentLoadingSkeleton />
 
   return (
@@ -93,54 +100,53 @@ const ProfileBadges = () => {
       ) : (
         <div className="space-y-8 px-4 pt-5">
           {earnedBadges.length > 0 ? (
-            <section className="rounded-2xl border border-border/55 bg-card/80 p-4">
-              <div className="mb-3 flex items-center justify-between gap-2">
-                <h2 className="text-sm font-semibold">نشان‌های پروفایل</h2>
+            <section className="rounded-2xl border border-border/55 bg-card/80 p-5">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <h2 className="text-base font-semibold">نشان‌های پروفایل</h2>
                 <button
                   type="button"
                   onClick={() =>
                     showcaseEdit ? finishShowcaseEdit() : setShowcaseEdit(true)
                   }
-                  className="text-xs font-medium text-primary-400 active:opacity-80"
+                  className="text-sm font-medium text-primary-400 active:opacity-80"
                 >
                   {showcaseEdit ? 'ذخیره' : 'ویرایش'}
                 </button>
               </div>
-              <p className="mb-3 text-xs text-muted-foreground">
+              <p className="mb-4 text-xs text-muted-foreground">
                 حداکثر ۳ نشان دریافت‌شده در پروفایل نمایش داده می‌شود.
               </p>
-              <div className="flex flex-wrap justify-center gap-3">
-                {(showcaseEdit ? earnedBadges : earnedBadges.filter((b) => showcaseSet.has(b.id)))
-                  .slice(0, 3)
-                  .map((badge) => (
-                    <button
-                      key={badge.id}
-                      type="button"
-                      disabled={!showcaseEdit}
-                      onClick={() => showcaseEdit && toggleShowcaseDraft(badge.id)}
-                      className={cn(
-                        'flex flex-col items-center gap-1 rounded-xl p-2',
-                        showcaseEdit && 'active:scale-[0.98]',
-                        showcaseSet.has(badge.id) && showcaseEdit
-                          ? 'ring-2 ring-primary-400/60'
-                          : ''
-                      )}
-                    >
-                      <BadgeVisual
-                        earned
-                        imageUrl={badge.image_url}
-                        title={badge.title}
-                        rarity={badge.rarity}
-                        size="sm"
-                      />
-                      <span className="max-w-[4.5rem] truncate text-[10px]">
-                        {badge.display_title}
-                      </span>
-                    </button>
-                  ))}
+              <div className="flex flex-wrap justify-center gap-5">
+                {showcasePreview.map((badge) => (
+                  <button
+                    key={badge.id}
+                    type="button"
+                    disabled={showcaseEdit}
+                    onClick={() => !showcaseEdit && setSelected(badge)}
+                    className={cn(
+                      'flex max-w-[7rem] flex-col items-center gap-2 rounded-xl p-2',
+                      !showcaseEdit && 'active:scale-[0.98]',
+                      showcaseSet.has(badge.id) && showcaseEdit
+                        ? 'ring-2 ring-primary-400/60'
+                        : ''
+                    )}
+                  >
+                    <BadgeVisual
+                      earned
+                      imageUrl={badge.image_url}
+                      title={badge.title}
+                      rarity={badge.rarity}
+                      size="showcase"
+                    />
+                    <span className="line-clamp-2 text-center text-xs font-semibold leading-snug">
+                      {badge.display_title}
+                    </span>
+                    <BadgeRarityLabel rarity={badge.rarity} className="text-[11px]" />
+                  </button>
+                ))}
               </div>
               {showcaseEdit ? (
-                <div className="mt-4 grid grid-cols-3 gap-2">
+                <div className="mt-5 grid grid-cols-3 gap-2">
                   {earnedBadges.map((badge) => {
                     const picked = showcaseSet.has(badge.id)
                     const full = draftShowcase.length >= 3 && !picked
@@ -151,7 +157,7 @@ const ProfileBadges = () => {
                         disabled={full}
                         onClick={() => toggleShowcaseDraft(badge.id)}
                         className={cn(
-                          'rounded-xl border border-border/50 p-2 text-center text-[10px]',
+                          'rounded-xl border border-border/50 p-2.5 text-center text-[11px] font-medium',
                           picked && 'border-primary-400/50 bg-primary-500/10',
                           full && 'opacity-40'
                         )}
@@ -169,63 +175,65 @@ const ProfileBadges = () => {
             <section key={category.id}>
               <h2 className="mb-3 text-sm font-semibold text-foreground">{category.label}</h2>
               <div className="grid grid-cols-3 gap-2.5">
-                {category.badges.map((badge) => (
-                  <button
-                    key={badge.id}
-                    type="button"
-                    onClick={() => setSelected(badge)}
-                    className={cn(
-                      'flex flex-col rounded-2xl border border-border/55 bg-card/90 p-2.5 text-center',
-                      'active:scale-[0.98] transition-transform min-h-[8.5rem]'
-                    )}
-                  >
-                    <div className="relative mb-2">
-                      <BadgeVisual
-                        earned={badge.earned}
-                        hidden={badge.hidden}
-                        imageUrl={badge.image_url}
-                        title={badge.title}
-                        rarity={badge.rarity}
-                        size="sm"
-                      />
-                      <p className="text-[9px] text-muted-foreground">
-                        {BADGE_RARITY_LABEL[badge.rarity] ?? badge.rarity}
-                      </p>
-                      {badge.is_new ? (
-                        <span
-                          className="absolute -right-1 -top-1 rounded-md bg-pink-500/90 px-1 py-0.5 text-[9px] font-bold text-white"
-                        >
-                          جدید
-                        </span>
-                      ) : null}
-                    </div>
-                    <p className="line-clamp-2 flex-1 text-[11px] font-medium leading-snug text-foreground">
-                      {badge.display_title}
-                    </p>
-                    {!badge.earned && badge.unlock_hint ? (
-                      <p className="mt-1 line-clamp-3 text-[9px] leading-tight text-muted-foreground">
-                        {badge.unlock_hint}
-                      </p>
-                    ) : null}
-                    {!(badge.hidden && !badge.earned) ? (
-                      <div className="mt-2 w-full">
-                        <BadgeProgressBar
-                          current={badge.progress.current}
-                          target={badge.progress.target}
+                {category.badges.map((badge) => {
+                  const showHidden = badge.hidden && !badge.earned
+                  const showProgress = !badge.earned && !showHidden
+
+                  return (
+                    <button
+                      key={badge.id}
+                      type="button"
+                      onClick={() => setSelected(badge)}
+                      className={cn(
+                        'flex flex-col rounded-2xl border border-border/55 bg-card/90 p-2.5 text-center',
+                        'active:scale-[0.98] transition-transform',
+                        badge.earned ? 'min-h-[7.5rem]' : 'min-h-[8.5rem]'
+                      )}
+                    >
+                      <div className="relative mb-1.5">
+                        <BadgeVisual
                           earned={badge.earned}
+                          hidden={badge.hidden}
+                          imageUrl={badge.image_url}
+                          title={badge.title}
+                          rarity={badge.rarity}
+                          size="sm"
                         />
-                        {!badge.earned && badge.progress.target > 0 ? (
-                          <p className="mt-1 text-[9px] text-muted-foreground">
-                            {formatBadgeProgress(
-                              badge.progress.current,
-                              badge.progress.target
-                            )}
-                          </p>
+                        {badge.is_new ? (
+                          <span
+                            className="absolute -right-1 -top-1 rounded-md bg-pink-500/90 px-1 py-0.5 text-[9px] font-bold text-white"
+                          >
+                            جدید
+                          </span>
                         ) : null}
                       </div>
-                    ) : null}
-                  </button>
-                ))}
+                      <p className="line-clamp-2 text-[11px] font-semibold leading-snug text-foreground">
+                        {badge.display_title}
+                      </p>
+                      <BadgeRarityLabel
+                        rarity={badge.rarity}
+                        className="mt-1 text-[10px]"
+                      />
+                      {showProgress ? (
+                        <div className="mt-2 w-full">
+                          <BadgeProgressBar
+                            current={badge.progress.current}
+                            target={badge.progress.target}
+                            earned={false}
+                          />
+                          {badge.progress.target > 0 ? (
+                            <p className="mt-1 text-[9px] text-muted-foreground">
+                              {formatBadgeProgress(
+                                badge.progress.current,
+                                badge.progress.target
+                              )}
+                            </p>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </button>
+                  )
+                })}
               </div>
             </section>
           ))}

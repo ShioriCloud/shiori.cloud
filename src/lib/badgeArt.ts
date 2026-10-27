@@ -6,6 +6,7 @@ export const badgeImageSrc = (
   const url = imageUrl?.trim()
   if (!url) return null
   if (size === 'lg') return url
+  // sm, md, profile, showcase → compact asset
   if (url.endsWith('.webp')) {
     return url.replace(/\.webp$/i, '-md.webp')
   }

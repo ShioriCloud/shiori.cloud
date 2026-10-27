@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { Link, Navigate, useParams } from 'react-router-dom'
 import { UserIcon } from 'hugeicons-react'
 import { MoreHorizontal } from 'lucide-react'
 import { useAppAuth } from '../hooks/useAppAuth'
@@ -7,20 +7,21 @@ import { useSocialProfileUser } from '../hooks/useSocialProfile'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
 import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
-import { ProfileStatsTabPanel } from '@/components/profile/ProfileStatsTabPanel'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
-import { ProfileBadgesSection } from '@/components/profile/ProfileBadgesSection'
+import { ProfileHeaderBadgeOrbit } from '@/components/profile/ProfileHeaderBadgeOrbit'
 import { ProfileShareButton } from '@/components/profile/ProfileShareButton'
 import { ProfileSocialActionsSheet } from '@/components/profile/ProfileSocialActionsSheet'
-import {
-  buildPublicProfileTabs,
-  parseProfileTab,
-  type ProfileTabId,
-} from '@/components/profile/profileTabs'
+import { ProfileDualRowTabBar } from '@/components/profile/ProfileDualRowTabBar'
+import { ProfileActivityTabPanel } from '@/components/profile/ProfileActivityTabPanel'
+import { ProfileStatsOverviewPanel } from '@/components/profile/ProfileStatsOverviewPanel'
+import { ProfileWatchingTabPanel } from '@/components/profile/ProfileWatchingTabPanel'
+import { ProfileFavoritesTabPanel } from '@/components/profile/ProfileFavoritesTabPanel'
+import { isAllowedProfileTab } from '@/components/profile/profileTabs'
+import { useProfileTabParam } from '@/hooks/useProfileTabParam'
 import { ProfilePlaylistsTabPanel } from '@/components/profile/ProfilePlaylistsTabPanel'
 import { usePublicCustomListsQuery } from '@/hooks/usePublicCustomLists'
 import { formatProfileMemberSince } from '@/lib/profileMemberSince'
-import { ExploreEmptyState, ExploreTabBar } from '@/components/explore/ExploreUi'
+import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
 
@@ -45,47 +46,14 @@ const PublicUserProfile = () => {
     telegramUserId,
     canFetchProfile
   )
-  const [searchParams, setSearchParams] = useSearchParams()
+  const { rawTab, activeTab, setActiveTab } = useProfileTabParam()
   const [avatarFailed, setAvatarFailed] = useState(false)
   const [actionsOpen, setActionsOpen] = useState(false)
-
-  const rawTab = searchParams.get('tab')
-  const parsedTab = parseProfileTab(rawTab)
   const { data: publicListsData } = usePublicCustomListsQuery(
     telegramUserId,
     canFetchProfile && telegramUserId.length > 0
   )
   const hasPublicPlaylists = (publicListsData?.lists?.length ?? 0) > 0
-  const profileTabs = useMemo(
-    () => buildPublicProfileTabs(hasPublicPlaylists),
-    [hasPublicPlaylists]
-  )
-  const activeTab: ProfileTabId =
-    parsedTab === 'personal' ? 'stats' : parsedTab
-
-  useEffect(() => {
-    if (rawTab !== 'personal') return
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev)
-        next.delete('tab')
-        return next
-      },
-      { replace: true }
-    )
-  }, [rawTab, setSearchParams])
-
-  const setActiveTab = (tab: ProfileTabId) => {
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev)
-        if (tab === 'stats') next.delete('tab')
-        else next.set('tab', tab)
-        return next
-      },
-      { replace: true }
-    )
-  }
 
   const profileBase = `/u/${encodeURIComponent(telegramUserId)}`
 
@@ -170,6 +138,15 @@ const PublicUserProfile = () => {
     return <ProfilePageSkeleton />
   }
 
+  if (
+    !isAllowedProfileTab(activeTab, {
+      isOwnProfile: false,
+      hasPublicPlaylists,
+    })
+  ) {
+    return <Navigate to={profileBase} replace />
+  }
+
   const followers = data.profile.followers_count ?? 0
   const following = data.profile.following_count ?? 0
   const animeWatched = data.summary?.anime_count ?? 0
@@ -178,6 +155,29 @@ const PublicUserProfile = () => {
   const watchedItems = data.watched?.items ?? []
   const memberSinceLabel = formatProfileMemberSince(data.profile.member_since)
   const watchVisible = !data.privacy?.watch_activity_hidden
+
+  const avatarBlock = (
+    <div className="media-card-skeuo h-24 w-24 rounded-2xl shrink-0">
+      <div className="media-card-skeuo-face bg-muted">
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt={displayName}
+            className="h-full w-full object-cover"
+            onError={() => setAvatarFailed(true)}
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-primary-400/15">
+            {initials ? (
+              <span className="text-2xl font-bold text-primary-400">{initials}</span>
+            ) : (
+              <UserIcon className="h-10 w-10 text-muted-foreground/50" />
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
 
   return (
     <div className="bg-background pb-24 text-foreground">
@@ -219,26 +219,14 @@ const PublicUserProfile = () => {
               </button>
             ) : null}
 
-            <div className="media-card-skeuo h-24 w-24 rounded-2xl">
-              <div className="media-card-skeuo-face bg-muted">
-                {avatarUrl ? (
-                  <img
-                    src={avatarUrl}
-                    alt={displayName}
-                    className="h-full w-full object-cover"
-                    onError={() => setAvatarFailed(true)}
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-primary-400/15">
-                    {initials ? (
-                      <span className="text-2xl font-bold text-primary-400">{initials}</span>
-                    ) : (
-                      <UserIcon className="h-10 w-10 text-muted-foreground/50" />
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
+            <ProfileHeaderBadgeOrbit
+              variant="public"
+              previewBadges={data.badges}
+              displayName={displayName}
+              targetUserId={telegramUserId}
+            >
+              {avatarBlock}
+            </ProfileHeaderBadgeOrbit>
           </div>
 
           <h1 className="mt-3 line-clamp-2 px-2 text-center text-lg font-bold text-foreground">
@@ -297,42 +285,29 @@ const PublicUserProfile = () => {
         />
       ) : null}
 
-      {watchVisible ? (
-        <div className="mx-4 mt-5">
-          <ProfileBadgesSection
-            variant="public"
-            badgesSummary={data.badges_summary}
-            previewBadges={data.badges}
-            displayName={displayName}
-            targetUserId={telegramUserId}
-          />
-        </div>
-      ) : null}
+      <div className="mx-4 mt-6">
+        <ProfileDualRowTabBar
+          active={activeTab}
+          onChange={setActiveTab}
+          isOwnProfile={false}
+          hasPublicPlaylists={hasPublicPlaylists}
+        />
+      </div>
 
-      {profileTabs.length > 1 ? (
-        <div className="mx-4 mt-6">
-          <ExploreTabBar tabs={[...profileTabs]} active={activeTab} onChange={setActiveTab} />
-        </div>
-      ) : null}
-
-      <div className={cn('mx-4', profileTabs.length > 1 ? 'mt-4' : 'mt-6')}>
-        {activeTab === 'playlists' ? (
-          <ProfilePlaylistsTabPanel
+      <div className="mx-4 mt-4">
+        {activeTab === 'activity' ? (
+          <ProfileActivityTabPanel
             variant="public"
             profileUserId={telegramUserId}
-            profileBase={profileBase}
+            watchedItems={watchedItems}
+            recentRestoreKey={`public-${telegramUserId}-recent`}
+            watchVisible={watchVisible}
           />
         ) : null}
         {activeTab === 'stats' ? (
-          <ProfileStatsTabPanel
+          <ProfileStatsOverviewPanel
             variant="public"
             overview={overview}
-            fullStatsTo={null}
-            watchedItems={watchedItems}
-            favoriteListItems={favoriteListItems}
-            profileBase={profileBase}
-            recentRestoreKey={`public-${telegramUserId}-recent`}
-            watchVisible={watchVisible}
             publicExtras={
               watchVisible
                 ? {
@@ -343,6 +318,28 @@ const PublicUserProfile = () => {
                   }
                 : undefined
             }
+          />
+        ) : null}
+        {activeTab === 'watching' ? (
+          <ProfileWatchingTabPanel
+            variant="public"
+            watchedItems={watchedItems}
+            watchVisible={watchVisible}
+          />
+        ) : null}
+        {activeTab === 'favorites' ? (
+          <ProfileFavoritesTabPanel
+            variant="public"
+            items={favoriteListItems}
+            profileBase={profileBase}
+            watchVisible={watchVisible}
+          />
+        ) : null}
+        {activeTab === 'playlists' ? (
+          <ProfilePlaylistsTabPanel
+            variant="public"
+            profileUserId={telegramUserId}
+            profileBase={profileBase}
           />
         ) : null}
       </div>

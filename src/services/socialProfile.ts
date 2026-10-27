@@ -29,6 +29,7 @@ export type SocialProfileMe = {
     id: string
     title: string
     image_url?: string | null
+    rarity?: SocialBadgeRarity
     is_new?: boolean
   }>
   badges_summary?: { earned_count: number; total_count: number }
