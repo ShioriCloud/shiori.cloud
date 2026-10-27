@@ -8,7 +8,9 @@ export const ProfilePageSkeleton = () => (
     <div className="relative h-44">
       <div className="absolute inset-x-0 top-0 h-full bg-muted/60" />
       <div className="relative z-10 flex flex-col items-center pt-24">
-        <div className="h-[6.5rem] w-[6.5rem] rounded-full bg-muted ring-[3px] ring-background/80" />
+        <div className="media-card-skeuo h-24 w-24 rounded-2xl">
+          <div className="media-card-skeuo-face bg-muted" />
+        </div>
         <div className="mt-4 h-6 w-36 rounded-md bg-muted" />
       </div>
     </div>

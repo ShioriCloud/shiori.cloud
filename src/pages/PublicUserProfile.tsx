@@ -8,7 +8,7 @@ import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
 import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
-import { ProfileCircleAvatar } from '@/components/profile/ProfileCircleAvatar'
+import { ProfileHeroAvatar } from '@/components/profile/ProfileCircleAvatar'
 import { ProfileHeaderBadgeOrbit } from '@/components/profile/ProfileHeaderBadgeOrbit'
 import { ProfileShareButton } from '@/components/profile/ProfileShareButton'
 import { ProfileSocialActionsSheet } from '@/components/profile/ProfileSocialActionsSheet'
@@ -165,7 +165,7 @@ const PublicUserProfile = () => {
   const watchVisible = !data.privacy?.watch_activity_hidden
 
   const avatarBlock = (
-    <ProfileCircleAvatar>
+    <ProfileHeroAvatar>
       {avatarUrl ? (
         <img
           src={avatarUrl}
@@ -182,7 +182,7 @@ const PublicUserProfile = () => {
           )}
         </div>
       )}
-    </ProfileCircleAvatar>
+    </ProfileHeroAvatar>
   )
 
   return (
@@ -236,7 +236,7 @@ const PublicUserProfile = () => {
             </ProfileHeaderBadgeOrbit>
           </div>
 
-          <h1 className="mt-3 line-clamp-2 px-2 text-center text-lg font-bold text-foreground">
+          <h1 className="mt-5 line-clamp-2 px-2 text-center text-lg font-bold text-foreground">
             {displayName}
           </h1>
 

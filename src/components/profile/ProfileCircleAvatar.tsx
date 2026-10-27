@@ -1,34 +1,19 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
-export const PROFILE_AVATAR_RING_CLASS =
-  'ring-[3px] ring-background/95 shadow-lg shadow-black/20'
-
-type ProfileCircleAvatarProps = {
+type ProfileHeroAvatarProps = {
   children: ReactNode
   className?: string
-  size?: 'md' | 'lg'
 }
 
-const sizeClass = {
-  md: 'h-24 w-24',
-  lg: 'h-[6.5rem] w-[6.5rem]',
-}
-
-/** Circular profile photo — used in orbit hero. */
-export const ProfileCircleAvatar = ({
-  children,
-  className,
-  size = 'lg',
-}: ProfileCircleAvatarProps) => (
-  <div
-    className={cn(
-      'relative shrink-0 overflow-hidden rounded-full bg-muted',
-      PROFILE_AVATAR_RING_CLASS,
-      sizeClass[size],
-      className
-    )}
-  >
-    {children}
+/** Square skeuo profile photo (hero). */
+export const ProfileHeroAvatar = ({ children, className }: ProfileHeroAvatarProps) => (
+  <div className={cn('media-card-skeuo h-24 w-24 shrink-0 rounded-2xl', className)}>
+    <div className="media-card-skeuo-face relative h-full w-full overflow-hidden bg-muted">
+      {children}
+    </div>
   </div>
 )
+
+/** @deprecated use ProfileHeroAvatar */
+export const ProfileCircleAvatar = ProfileHeroAvatar
