@@ -302,7 +302,7 @@ const PublicUserProfile = () => {
           translator={translator}
           profileUserId={telegramUserId}
           title="ترجمه‌هاش"
-          className="mt-3"
+          compact
         />
       ) : null}
 
@@ -312,6 +312,7 @@ const PublicUserProfile = () => {
         previewBadges={data.badges}
         displayName={displayName}
         targetUserId={telegramUserId}
+        className={translator ? 'mt-2.5' : 'mt-3'}
       />
 
       <ProfileTabSwipeShell tabs={profileTabs} active={activeTab} onChange={setActiveTab}>
@@ -341,7 +342,6 @@ const PublicUserProfile = () => {
             publicExtras={{
               profileUserId: telegramUserId,
               translator,
-              displayName,
               hideTranslatorDupes: Boolean(translator),
             }}
           />

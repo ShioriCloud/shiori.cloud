@@ -258,7 +258,7 @@ const Profile = () => {
           translator={socialProfile.translator}
           profileUserId={String(user.id)}
           title="ترجمه‌هام"
-          className="mt-3"
+          compact
         />
       ) : null}
 
@@ -266,6 +266,7 @@ const Profile = () => {
         variant="own"
         badgesSummary={socialProfile?.badges_summary}
         previewBadges={socialProfile?.badges}
+        className={socialProfile?.translator ? 'mt-2.5' : 'mt-3'}
       />
 
       <ProfileTabSwipeShell tabs={profileTabs} active={activeTab} onChange={setActiveTab}>

@@ -69,7 +69,6 @@ type ProfilePersonalPanelProps = {
   variant?: 'self' | 'public'
   profileUserId?: string
   memberSince?: string | null
-  displayName?: string
   /** When translations rail is on the profile hero, skip duplicate personal link. */
   hideTranslatorLink?: boolean
 }
@@ -79,10 +78,8 @@ export const ProfilePersonalPanel = ({
   variant = 'self',
   profileUserId,
   memberSince,
-  displayName: _displayName,
   hideTranslatorLink = false,
 }: ProfilePersonalPanelProps) => {
-  void _displayName
   const { user, isReady, inTelegram } = useAppAuth()
   const { data: commentsAccess } = useAnimeCommentsAccess(
     isReady && (inTelegram || Boolean(user))

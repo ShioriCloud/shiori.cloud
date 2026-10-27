@@ -9,18 +9,15 @@ import { cn } from '@/lib/utils'
 type ProfilePublicStatsExtrasProps = {
   profileUserId: string
   translator?: SocialProfileMe['translator']
-  displayName: string
-  /** When translations rail is already on the profile hero, hide duplicate links/bio here. */
+  /** When translations rail is already on the profile hero, hide duplicate links here. */
   hideTranslatorDupes?: boolean
 }
 
 export const ProfilePublicStatsExtras = ({
   profileUserId,
   translator,
-  displayName: _displayName,
   hideTranslatorDupes = false,
 }: ProfilePublicStatsExtrasProps) => {
-  void _displayName
   const showTranslatorLinks = Boolean(translator) && !hideTranslatorDupes
   const translationsPath = showTranslatorLinks
     ? `/u/${encodeURIComponent(profileUserId)}/translations`

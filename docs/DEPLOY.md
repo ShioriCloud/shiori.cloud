@@ -10,15 +10,29 @@ Self-hosted SPA behind HTTPS (required for Telegram Mini App).
 
 ## گزینه ۱ — Docker (پیشنهادی)
 
-Image از GitHub Actions روی GHCR:
+Image از GitHub Actions روی GHCR (`master` push → `docker-publish.yml`).
+
+### Production (`/opt/shiori.cloud`)
 
 ```bash
-docker pull ghcr.io/<owner>/shiori:latest
-docker run -d --name shiori -p 8080:80 \
-  ghcr.io/<owner>/shiori:latest
+cd /opt/shiori.cloud
+docker compose pull
+docker compose up -d
+docker compose ps
+docker compose logs -f --tail=50 web
 ```
 
-`VITE_SHIORI_API_URL` موقع **build** داخل image bake می‌شود. برای تغییر URL، repo variable `VITE_SHIORI_API_URL` را ست کنید و workflow را دوباره اجرا کنید.
+Compose نمونه در repo: `deploy/server/docker-compose.yaml` — image: `ghcr.io/shioricloud/shiori.cloud:latest`.
+
+### یک‌بار / بدون compose
+
+```bash
+docker pull ghcr.io/shioricloud/shiori.cloud:latest
+docker run -d --name shiori.cloud -p 8080:80 \
+  ghcr.io/shioricloud/shiori.cloud:latest
+```
+
+`VITE_SHIORI_API_URL` موقع **build** داخل image bake می‌شود. برای تغییر URL، repo variable `VITE_SHIORI_API_URL` را ست کنید و workflow را دوباره اجرا کنید (یا `workflow_dispatch`).
 
 ## گزینه ۲ — nginx + فایل‌های استاتیک
 
@@ -67,6 +81,18 @@ Bot Settings → Menu Button → URL مینی‌اپ = `https://app.example.com`
 - [ ] لیست من و اعلان‌ها کار می‌کنند
 - [ ] link-telegram در Profile
 - [ ] Mini App در Telegram با HTTPS باز می‌شود
+
+## وابستگی‌ها (npm audit)
+
+بعد از `npm ci` در dev:
+
+```bash
+npm audit fix
+```
+
+برای به‌روزرسانی `sharp` (اسکریپت badge): `^0.35.5` در devDependencies.
+
+موارد باقی‌مانده معمولاً نیاز به major bump دارند (`vite` 6، `react-router-dom` 7) — قبل از `--force` در production build تست کنید.
 
 ## Related
 
