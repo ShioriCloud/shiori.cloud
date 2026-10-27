@@ -46,13 +46,15 @@ export const ProfileActivityTabPanel = ({
     variant === 'own' || (variant === 'public' && watchVisible && watchedItems.length > 0)
 
   return (
-    <div className="-mx-4 space-y-1 pb-2">
+    <div className="space-y-1 pb-2">
       {showRecent ? (
-        <ProfileRecentEpisodesRail items={watchedItems} restoreKey={recentRestoreKey} />
+        <div className="-mx-4">
+          <ProfileRecentEpisodesRail items={watchedItems} restoreKey={recentRestoreKey} />
+        </div>
       ) : null}
 
       {!commentsEnabled ? (
-        <div className="px-4 pt-4">
+        <div className="pt-3">
           <ExploreEmptyState
             compact
             showImage={false}
@@ -61,11 +63,11 @@ export const ProfileActivityTabPanel = ({
           />
         </div>
       ) : commentsQuery.isLoading ? (
-        <div className="px-4 pt-2">
+        <div className="pt-2">
           <SocialListSkeleton rows={4} />
         </div>
       ) : commentsQuery.isError ? (
-        <div className="px-4 pt-4">
+        <div className="pt-3">
           <ExploreEmptyState
             title="بارگذاری ناموفق بود"
             actionLabel="تلاش مجدد"
@@ -73,7 +75,7 @@ export const ProfileActivityTabPanel = ({
           />
         </div>
       ) : !commentsQuery.data?.items.length ? (
-        <div className="px-4 pt-4">
+        <div className="pt-3">
           <ExploreEmptyState
             compact
             showImage={false}
@@ -86,7 +88,7 @@ export const ProfileActivityTabPanel = ({
           />
         </div>
       ) : (
-        <div className="px-4 pt-4">
+        <div className="pt-3">
           <h2 className="mb-3 text-sm font-semibold text-foreground">نظرات</h2>
           <ProfileCommentActivityList
             items={commentsQuery.data.items}

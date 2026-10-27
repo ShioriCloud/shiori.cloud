@@ -49,7 +49,7 @@ export const ProfileBadgeProgressTeaser = ({
   if (!enabled || isLoading) return null
 
   return (
-    <section className={cn('mx-4 mt-5', className)}>
+    <section className={cn('mt-5', className)}>
       <div className="mb-2 flex items-center justify-between gap-2 px-1">
         <h3 className="text-sm font-semibold text-foreground">نشان‌ها</h3>
         <Link

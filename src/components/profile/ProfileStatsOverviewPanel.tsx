@@ -21,19 +21,22 @@ export const ProfileStatsOverviewPanel = ({
   fullStatsTo,
   publicExtras,
 }: ProfileStatsOverviewPanelProps) => (
-  <div className="-mx-4 space-y-1 pb-2">
+  <div className="space-y-1 pb-2">
     <ProfileOverviewStrip
       data={overview}
       fullStatsTo={fullStatsTo ?? null}
       audience={variant}
+      className="mx-0 mt-0"
     />
     {variant === 'public' && publicExtras ? (
-      <ProfilePublicStatsExtras
-        profileUserId={publicExtras.profileUserId}
-        translator={publicExtras.translator}
-        displayName={publicExtras.displayName}
-        hideTranslatorDupes={publicExtras.hideTranslatorDupes}
-      />
+      <div className="mt-4">
+        <ProfilePublicStatsExtras
+          profileUserId={publicExtras.profileUserId}
+          translator={publicExtras.translator}
+          displayName={publicExtras.displayName}
+          hideTranslatorDupes={publicExtras.hideTranslatorDupes}
+        />
+      </div>
     ) : null}
   </div>
 )

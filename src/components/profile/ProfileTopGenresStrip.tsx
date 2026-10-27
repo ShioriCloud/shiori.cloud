@@ -14,7 +14,7 @@ export const ProfileTopGenresStrip = ({
   if (top.length === 0) return null
 
   return (
-    <section className={cn('mx-4 mt-4', className)}>
+    <section className={cn('mt-4', className)}>
       <h3 className="mb-2 px-1 text-sm font-semibold text-foreground">ژانرهای پرتکرار</h3>
       <div className="space-y-2 rounded-2xl border border-border/50 bg-card/50 p-3">
         {top.map((g) => (
