@@ -259,6 +259,8 @@ const Profile = () => {
           profileUserId={String(user.id)}
           title="ترجمه‌هام"
           className="mt-3"
+          bio={socialProfile.translator.bio}
+          bioAttribution={displayName}
         />
       ) : null}
 
@@ -297,6 +299,7 @@ const Profile = () => {
           <ProfilePersonalPanel
             translator={socialProfile?.translator ?? null}
             profileUserId={user?.id != null ? String(user.id) : undefined}
+            hideTranslatorLink={Boolean(socialProfile?.translator)}
           />
         ) : null}
       </ProfileTabSwipeShell>

@@ -1,7 +1,6 @@
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
 import { ProfileSectionMoreLink } from '@/components/profile/ProfileSectionMoreLink'
 import { BidiText } from '@/components/BidiText'
-import { FavoriteRankBadge } from '@/components/profile/FavoriteRankBadge'
 import { SOCIAL_SURFACE_CLASS } from '@/components/profile/social/socialUi'
 import type { SocialProfileMe } from '@/services/socialProfile'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
@@ -56,41 +55,33 @@ export const ProfileFavoritesPreview = ({
         ) : null}
       </div>
       <div className={cn(SOCIAL_SURFACE_CLASS, 'grid grid-cols-3 gap-2 p-2')}>
-        {preview.map((item, index) => {
-          const rank = index + 1
+        {preview.map((item) => {
           const routeRef = { id: item.anime_id, slug: item.slug, title: item.title }
           return (
             <AnimePrefetchLink
               key={item.anime_id}
               animeId={animePublicSegment(routeRef)}
               to={animeDetailPath(routeRef)}
-              className="group relative block overflow-hidden rounded-xl active:scale-[0.98] transition-transform"
+              className="group block overflow-hidden rounded-xl active:scale-[0.98] transition-transform"
             >
-              <div className="relative aspect-[2/3] bg-muted">
-                {item.image ? (
-                  <img
-                    src={item.image}
-                    alt=""
-                    className="h-full w-full object-cover"
-                    loading="lazy"
-                  />
-                ) : null}
-                <div className="absolute left-1.5 top-1.5 z-10">
-                  <FavoriteRankBadge rank={rank} />
-                </div>
-                {rank <= 3 ? (
-                  <div
-                    className="pointer-events-none absolute inset-0 ring-2 ring-inset ring-white/15"
-                    aria-hidden
-                  />
-                ) : null}
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-1.5 pt-6">
-                  <BidiText
-                    as="p"
-                    className="line-clamp-2 text-[9px] font-semibold leading-tight text-white"
-                  >
-                    {item.title}
-                  </BidiText>
+              <div className="media-card-skeuo rounded-xl">
+                <div className="media-card-skeuo-face relative aspect-square bg-muted">
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      alt=""
+                      className="absolute inset-0 h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : null}
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-1.5 pt-5">
+                    <BidiText
+                      as="p"
+                      className="line-clamp-2 text-[9px] font-semibold leading-tight text-white"
+                    >
+                      {item.title}
+                    </BidiText>
+                  </div>
                 </div>
               </div>
             </AnimePrefetchLink>

@@ -11,13 +11,19 @@ type Item = NonNullable<SocialProfileMe['watched']>['items'][number]
 type ProfileRecentEpisodesRailProps = {
   items: Item[]
   restoreKey?: string
+  maxItems?: number
 }
+
+const DEFAULT_MAX_RECENT = 6
 
 export const ProfileRecentEpisodesRail = ({
   items,
   restoreKey = 'profile-recent-episodes',
+  maxItems = DEFAULT_MAX_RECENT,
 }: ProfileRecentEpisodesRailProps) => {
-  const recent = items.filter((item) => (item.episodes_watched ?? 0) > 0)
+  const recent = items
+    .filter((item) => (item.episodes_watched ?? 0) > 0)
+    .slice(0, maxItems)
   if (recent.length === 0) return null
 
   return (

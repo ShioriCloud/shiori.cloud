@@ -71,6 +71,8 @@ type ProfilePersonalPanelProps = {
   profileUserId?: string
   memberSince?: string | null
   displayName?: string
+  /** When translations rail is on the profile hero, skip duplicate personal link. */
+  hideTranslatorLink?: boolean
 }
 
 export const ProfilePersonalPanel = ({
@@ -79,6 +81,7 @@ export const ProfilePersonalPanel = ({
   profileUserId,
   memberSince,
   displayName,
+  hideTranslatorLink = false,
 }: ProfilePersonalPanelProps) => {
   const { user, isReady, inTelegram } = useAppAuth()
   const { data: commentsAccess } = useAnimeCommentsAccess(
@@ -124,7 +127,7 @@ export const ProfilePersonalPanel = ({
     return (
       <div className="space-y-6">
         <PersonalLinksCard>
-          {translationsPath ? (
+          {translationsPath && !hideTranslatorLink ? (
             <PersonalRow
               to={translationsPath}
               icon={<Languages className="h-4 w-4" />}

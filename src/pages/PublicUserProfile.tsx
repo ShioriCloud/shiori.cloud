@@ -303,6 +303,8 @@ const PublicUserProfile = () => {
           profileUserId={telegramUserId}
           title="ترجمه‌هاش"
           className="mt-3"
+          bio={translator.bio}
+          bioAttribution={displayName}
         />
       ) : null}
 

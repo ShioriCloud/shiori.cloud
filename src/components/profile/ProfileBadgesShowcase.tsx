@@ -6,6 +6,7 @@ import { BadgeVisual } from '@/components/profile/badges/badgeUi'
 import { ProfileBadgesSheet } from '@/components/profile/badges/ProfileBadgesSheet'
 import { ProfileSectionMoreLink } from '@/components/profile/ProfileSectionMoreLink'
 import {
+  profileBadgeShowcaseSlotClass,
   profileHighlightGlowClass,
   profileHighlightSectionClass,
 } from '@/components/profile/profileHighlightCard'
@@ -44,17 +45,6 @@ type ProfileBadgesShowcaseProps = {
 }
 
 const PREVIEW_COUNT = 3
-
-const badgeShowcaseGlow = (rarity?: string) =>
-  cn(
-    'relative rounded-2xl p-1.5',
-    'before:pointer-events-none before:absolute before:inset-1 before:-z-10 before:rounded-full before:blur-2xl',
-    rarity === 'legendary' && 'before:bg-amber-400/55 shadow-[0_0_28px_-6px_rgba(251,191,36,0.65)]',
-    rarity === 'epic' && 'before:bg-violet-400/50 shadow-[0_0_26px_-6px_rgba(139,92,246,0.55)]',
-    rarity === 'rare' && 'before:bg-sky-400/45 shadow-[0_0_24px_-6px_rgba(56,189,248,0.5)]',
-    (!rarity || rarity === 'common') &&
-      'before:bg-amber-300/40 shadow-[0_0_22px_-6px_rgba(251,191,36,0.45)]'
-  )
 
 export const ProfileBadgesShowcase = ({
   variant,
@@ -155,7 +145,7 @@ export const ProfileBadgesShowcase = ({
             aria-hidden
           />
 
-          <div className="relative px-3.5 py-3">
+          <div className="relative px-4 py-4">
             <div className="flex items-start gap-2.5">
               <span
                 className={cn(
@@ -179,7 +169,7 @@ export const ProfileBadgesShowcase = ({
             </div>
 
             {preview.length > 0 ? (
-              <div className="mt-3 flex items-center justify-center gap-4">
+              <div className="mt-6 flex items-center justify-center gap-4 px-1">
                 {preview.map((badge) => (
                   <button
                     key={badge.id}
@@ -187,7 +177,7 @@ export const ProfileBadgesShowcase = ({
                     onClick={() => openPreview(badge)}
                     className={cn(
                       'active:scale-95 transition-transform',
-                      badgeShowcaseGlow(rarityForPreview(badge))
+                      profileBadgeShowcaseSlotClass(rarityForPreview(badge))
                     )}
                     aria-label={badge.title}
                   >
