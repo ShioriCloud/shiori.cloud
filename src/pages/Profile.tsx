@@ -259,8 +259,6 @@ const Profile = () => {
           profileUserId={String(user.id)}
           title="ترجمه‌هام"
           className="mt-3"
-          bio={socialProfile.translator.bio}
-          bioAttribution={displayName}
         />
       ) : null}
 

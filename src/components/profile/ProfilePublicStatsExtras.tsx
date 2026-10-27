@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Languages, ListMusic } from 'lucide-react'
 import { SOCIAL_DIVIDER_CLASS, SOCIAL_SURFACE_CLASS } from '@/components/profile/social/socialUi'
-import { TranslatorBioQuote } from '@/components/profile/TranslatorBioQuote'
 import { usePublicCustomListsQuery } from '@/hooks/usePublicCustomLists'
 import { toPersianDigits } from '@/lib/persianDigits'
 import type { SocialProfileMe } from '@/services/socialProfile'
@@ -18,9 +17,10 @@ type ProfilePublicStatsExtrasProps = {
 export const ProfilePublicStatsExtras = ({
   profileUserId,
   translator,
-  displayName,
+  displayName: _displayName,
   hideTranslatorDupes = false,
 }: ProfilePublicStatsExtrasProps) => {
+  void _displayName
   const showTranslatorLinks = Boolean(translator) && !hideTranslatorDupes
   const translationsPath = showTranslatorLinks
     ? `/u/${encodeURIComponent(profileUserId)}/translations`
@@ -33,8 +33,7 @@ export const ProfilePublicStatsExtras = ({
   const rowClass =
     'flex items-center gap-3 px-3 py-3 transition-colors hover:bg-muted/40 active:bg-muted/55'
 
-  const showBio = Boolean(translator?.bio) && !hideTranslatorDupes
-  if (!hasLinks && !showBio) return null
+  if (!hasLinks) return null
 
   return (
     <div className="mt-6 space-y-6">
@@ -81,10 +80,6 @@ export const ProfilePublicStatsExtras = ({
             </Link>
           ))}
         </div>
-      ) : null}
-
-      {showBio && translator?.bio ? (
-        <TranslatorBioQuote bio={translator.bio} attribution={displayName} />
       ) : null}
     </div>
   )

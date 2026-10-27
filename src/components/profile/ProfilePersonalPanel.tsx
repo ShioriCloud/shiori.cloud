@@ -12,7 +12,6 @@ import {
 import { ProfileCommentActivityList } from '@/components/profile/ProfileCommentActivityList'
 import { SocialSection } from '@/components/profile/social/SocialSection'
 import { SOCIAL_DIVIDER_CLASS, SOCIAL_SURFACE_CLASS } from '@/components/profile/social/socialUi'
-import { TranslatorBioQuote } from '@/components/profile/TranslatorBioQuote'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import { useAnimeCommentsAccess, useMyAnimeCommentsQuery, useUserAnimeCommentsQuery } from '@/hooks/useAnimeComments'
 import { usePublicCustomListsQuery } from '@/hooks/usePublicCustomLists'
@@ -80,9 +79,10 @@ export const ProfilePersonalPanel = ({
   variant = 'self',
   profileUserId,
   memberSince,
-  displayName,
+  displayName: _displayName,
   hideTranslatorLink = false,
 }: ProfilePersonalPanelProps) => {
+  void _displayName
   const { user, isReady, inTelegram } = useAppAuth()
   const { data: commentsAccess } = useAnimeCommentsAccess(
     isReady && (inTelegram || Boolean(user))
@@ -255,9 +255,6 @@ export const ProfilePersonalPanel = ({
         </SocialSection>
       ) : null}
 
-      {translator?.bio ? (
-        <TranslatorBioQuote bio={translator.bio} attribution={displayName} />
-      ) : null}
     </div>
   )
 }

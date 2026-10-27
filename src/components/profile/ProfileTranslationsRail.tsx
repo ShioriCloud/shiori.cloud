@@ -9,7 +9,6 @@ import {
   profileHighlightGlowClass,
   profileHighlightSectionClass,
 } from '@/components/profile/profileHighlightCard'
-import { TranslatorBioQuote } from '@/components/profile/TranslatorBioQuote'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
 
@@ -44,8 +43,6 @@ type ProfileTranslationsRailProps = {
   /** Section title — own profile vs another user. */
   title?: string
   className?: string
-  bio?: string | null
-  bioAttribution?: string
 }
 
 export const ProfileTranslationsRail = ({
@@ -54,8 +51,6 @@ export const ProfileTranslationsRail = ({
   maxVisible = DEFAULT_VISIBLE,
   title = 'ترجمه‌هاش',
   className,
-  bio,
-  bioAttribution,
 }: ProfileTranslationsRailProps) => {
   const total = translator.anime_count
   if (total === 0) return null
@@ -143,12 +138,6 @@ export const ProfileTranslationsRail = ({
             })}
           </HomeRailScroller>
         </div>
-
-        {bio?.trim() ? (
-          <div className="relative px-3.5 pb-3.5">
-            <TranslatorBioQuote bio={bio} attribution={bioAttribution} className="mt-0" />
-          </div>
-        ) : null}
       </section>
     </div>
   )
