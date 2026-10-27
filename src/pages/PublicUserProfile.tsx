@@ -8,9 +8,8 @@ import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
 import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
 import { ProfileStatsTabPanel } from '@/components/profile/ProfileStatsTabPanel'
 import { ProfileWatchTabPanel } from '@/components/profile/ProfileWatchTabPanel'
-import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
-import { ProfileBadgeTeaser } from '@/components/profile/ProfileBadgeTeaser'
-import { ProfileBadgesSection } from '@/components/profile/ProfileBadgesSection'
+import { ProfileBadgesShowcase } from '@/components/profile/ProfileBadgesShowcase'
+import { ProfileSocialStatsRow } from '@/components/profile/ProfileSocialStatsRow'
 import { ProfileShareButton } from '@/components/profile/ProfileShareButton'
 import { ProfileSocialActionsSheet } from '@/components/profile/ProfileSocialActionsSheet'
 import {
@@ -26,6 +25,7 @@ import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { ProfileTabSwipeShell } from '@/components/profile/ProfileTabSwipeShell'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
+import { withViewTransition } from '@/lib/viewTransition'
 
 const getInitials = (name: string): string => {
   const trimmed = name.trim()
@@ -79,15 +79,17 @@ const PublicUserProfile = () => {
   }, [rawTab, setSearchParams])
 
   const setActiveTab = (tab: ProfileTabId) => {
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev)
-        if (isDefaultProfileTab(tab)) next.delete('tab')
-        else next.set('tab', tab)
-        return next
-      },
-      { replace: true }
-    )
+    withViewTransition(() => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev)
+          if (isDefaultProfileTab(tab)) next.delete('tab')
+          else next.set('tab', tab)
+          return next
+        },
+        { replace: true }
+      )
+    })
   }
 
   const profileBase = `/u/${encodeURIComponent(telegramUserId)}`
@@ -269,21 +271,23 @@ const PublicUserProfile = () => {
         </div>
       </div>
 
-      <div className="mx-4 mt-4 grid grid-cols-3 gap-2">
-        <ProfileStatCell
-          to={`${profileBase}/followers`}
-          value={toPersianDigits(followers)}
-          label="دنبال‌کننده"
-        />
-        <ProfileStatCell
-          to={`${profileBase}/following`}
-          value={toPersianDigits(following)}
-          label="دنبال‌شده"
-        />
-        <ProfileStatCell value={toPersianDigits(animeWatched)} label="انیمه دیده" />
-      </div>
+      <ProfileSocialStatsRow
+        metrics={[
+          {
+            to: `${profileBase}/followers`,
+            value: toPersianDigits(followers),
+            label: 'دنبال‌کننده',
+          },
+          {
+            to: `${profileBase}/following`,
+            value: toPersianDigits(following),
+            label: 'دنبال‌شده',
+          },
+          { value: toPersianDigits(animeWatched), label: 'انیمه دیده' },
+        ]}
+      />
 
-      <div className="mx-4">
+      <div className="mx-4 mt-2">
         <ProfileFollowButton
           viewerId={user?.id}
           targetId={telegramUserId}
@@ -293,7 +297,7 @@ const PublicUserProfile = () => {
         />
       </div>
 
-      <ProfileBadgeTeaser
+      <ProfileBadgesShowcase
         variant="public"
         badgesSummary={data.badges_summary}
         previewBadges={data.badges}
@@ -325,15 +329,6 @@ const PublicUserProfile = () => {
             overview={overview}
             fullStatsTo={null}
             watchVisible={watchVisible}
-            badgesSection={
-              <ProfileBadgesSection
-                variant="public"
-                badgesSummary={data.badges_summary}
-                previewBadges={data.badges}
-                displayName={displayName}
-                targetUserId={telegramUserId}
-              />
-            }
             publicExtras={{
               profileUserId: telegramUserId,
               translator,

@@ -30,7 +30,13 @@ export const ProfileTabSwipeShell = ({
       onChange={onChange}
       className={cn('flex flex-col', TAB_SWIPE_FIXED_HEADER_CLASS)}
     >
-      <div className={cn('mx-4 mt-6 shrink-0', tabBarClassName)}>
+      <div
+        className={cn(
+          'sticky top-[var(--app-sticky-top)] z-10 mx-4 mt-5 shrink-0',
+          'bg-background/95 py-1 backdrop-blur-md supports-[backdrop-filter]:bg-background/80',
+          tabBarClassName
+        )}
+      >
         <ExploreTabBar tabs={[...tabs]} active={active} onChange={onChange} />
       </div>
       <div className={cn('mx-4 mt-4 flex-1 min-h-0', panelClassName)}>{children}</div>

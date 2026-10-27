@@ -10,11 +10,10 @@ import { useFavoriteAnimeCardsQuery } from '../hooks/queries/useAnimeQueries'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
 import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
 import { ProfilePersonalPanel } from '@/components/profile/ProfilePersonalPanel'
-import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
+import { ProfileBadgesShowcase } from '@/components/profile/ProfileBadgesShowcase'
+import { ProfileSocialStatsRow } from '@/components/profile/ProfileSocialStatsRow'
 import { ProfileStatsTabPanel } from '@/components/profile/ProfileStatsTabPanel'
 import { ProfileWatchTabPanel } from '@/components/profile/ProfileWatchTabPanel'
-import { ProfileBadgeTeaser } from '@/components/profile/ProfileBadgeTeaser'
-import { ProfileBadgesSection } from '@/components/profile/ProfileBadgesSection'
 import {
   buildOwnProfileTabs,
   isDefaultProfileTab,
@@ -27,6 +26,7 @@ import { ProfileTabSwipeShell } from '@/components/profile/ProfileTabSwipeShell'
 import { mergeOwnProfileHeaderStats } from '@/lib/ownProfileStats'
 import { formatProfileMemberSince } from '@/lib/profileMemberSince'
 import { toPersianDigits } from '@/lib/persianDigits'
+import { withViewTransition } from '@/lib/viewTransition'
 
 const getInitials = (name: string): string => {
   const trimmed = name.trim()
@@ -60,15 +60,17 @@ const Profile = () => {
   const activeTab = parseProfileTab(rawTab)
 
   const setActiveTab = (tab: ProfileTabId) => {
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev)
-        if (isDefaultProfileTab(tab)) next.delete('tab')
-        else next.set('tab', tab)
-        return next
-      },
-      { replace: true }
-    )
+    withViewTransition(() => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev)
+          if (isDefaultProfileTab(tab)) next.delete('tab')
+          else next.set('tab', tab)
+          return next
+        },
+        { replace: true }
+      )
+    })
   }
 
   const displayName =
@@ -228,29 +230,31 @@ const Profile = () => {
         </div>
       </div>
 
-      <div className="mx-4 mt-4 grid grid-cols-3 gap-2">
-        <ProfileStatCell
-          to="/profile/followers"
-          value={statDigits(mergedStats.followers)}
-          label="دنبال‌کننده"
-        />
-        <ProfileStatCell
-          to="/profile/following"
-          value={statDigits(mergedStats.following)}
-          label="دنبال‌شده"
-        />
-        <ProfileStatCell
-          to="/profile/stats"
-          value={statDigits(mergedStats.animeCount)}
-          label="انیمه دیده"
-        />
-      </div>
+      <ProfileSocialStatsRow
+        metrics={[
+          {
+            to: '/profile/followers',
+            value: statDigits(mergedStats.followers),
+            label: 'دنبال‌کننده',
+          },
+          {
+            to: '/profile/following',
+            value: statDigits(mergedStats.following),
+            label: 'دنبال‌شده',
+          },
+          {
+            to: '/profile/stats',
+            value: statDigits(mergedStats.animeCount),
+            label: 'انیمه دیده',
+          },
+        ]}
+      />
 
-      <div className="mx-4">
+      <div className="mx-4 mt-2">
         <ProfileFollowButton viewerId={user?.id} targetId={user?.id} />
       </div>
 
-      <ProfileBadgeTeaser
+      <ProfileBadgesShowcase
         variant="own"
         badgesSummary={socialProfile?.badges_summary}
         previewBadges={socialProfile?.badges}
@@ -272,13 +276,6 @@ const Profile = () => {
             variant="own"
             overview={overview}
             fullStatsTo="/profile/stats"
-            badgesSection={
-              <ProfileBadgesSection
-                variant="own"
-                badgesSummary={socialProfile?.badges_summary}
-                previewBadges={socialProfile?.badges}
-              />
-            }
           />
         ) : null}
         {activeTab === 'playlists' && user?.id != null ? (
