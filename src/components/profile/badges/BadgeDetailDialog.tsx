@@ -7,8 +7,8 @@ import {
 } from '@/components/ui/dialog'
 import type { SocialBadgeCatalogItem } from '@/services/socialProfile'
 import {
+  BADGE_RARITY_LABEL,
   BadgeProgressBar,
-  BadgeRarityLabel,
   BadgeVisual,
   formatBadgeProgress,
 } from './badgeUi'
@@ -42,7 +42,9 @@ export const BadgeDetailDialog = ({ badge, open, onOpenChange }: BadgeDetailDial
             <p className="text-xs leading-relaxed text-muted-foreground">{badge.hint}</p>
           ) : null}
           <DialogTitle className="text-lg">{title}</DialogTitle>
-          <BadgeRarityLabel rarity={badge.rarity} className="text-sm" />
+          <p className="text-xs text-primary-300/90">
+            {BADGE_RARITY_LABEL[badge.rarity] ?? badge.rarity}
+          </p>
           <DialogDescription className="text-sm leading-relaxed text-foreground/85">
             {badge.description}
           </DialogDescription>

@@ -6,7 +6,7 @@ const SocialProfile = () => {
   const next = new URLSearchParams(searchParams)
   next.set('tab', 'stats')
   const qs = next.toString()
-  return <Navigate to={qs ? `/profile?${qs}` : '/profile'} replace />
+  return <Navigate to={qs ? `/profile?${qs}` : '/profile?tab=stats'} replace />
 }
 
 export default SocialProfile

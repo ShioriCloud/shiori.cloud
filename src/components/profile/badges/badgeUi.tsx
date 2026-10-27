@@ -1,9 +1,5 @@
 import type { SocialBadgeCatalogItem } from '@/services/socialProfile'
-import {
-  BADGE_ART_DROP_SHADOW,
-  BADGE_PROFILE_HEADER_GLOW,
-  badgeImageSrc,
-} from '@/lib/badgeArt'
+import { BADGE_ART_DROP_SHADOW, badgeImageSrc } from '@/lib/badgeArt'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
 
@@ -13,31 +9,6 @@ export const BADGE_RARITY_LABEL: Record<string, string> = {
   epic: 'حماسی',
   legendary: 'افسانه‌ای',
 }
-
-export const BADGE_RARITY_TEXT_CLASS: Record<string, string> = {
-  common: 'text-slate-400',
-  rare: 'text-sky-400',
-  epic: 'text-violet-400',
-  legendary: 'text-amber-400',
-}
-
-export const BadgeRarityLabel = ({
-  rarity,
-  className,
-}: {
-  rarity: string
-  className?: string
-}) => (
-  <span
-    className={cn(
-      'font-medium',
-      BADGE_RARITY_TEXT_CLASS[rarity] ?? BADGE_RARITY_TEXT_CLASS.common,
-      className
-    )}
-  >
-    {BADGE_RARITY_LABEL[rarity] ?? rarity}
-  </span>
-)
 
 export const formatBadgeProgress = (current: number, target: number): string => {
   if (target <= 0) return ''
@@ -55,22 +26,15 @@ type BadgeVisualProps = {
   imageUrl?: string | null
   title?: string
   rarity?: string
-  size?: 'orbit' | 'sm' | 'md' | 'lg' | 'profile' | 'showcase'
-  /** Profile hero strip — stronger cutout glow, no circular frame. */
-  headerGlow?: boolean
+  size?: 'sm' | 'md' | 'lg'
   className?: string
 }
 
 const sizeClass = {
-  orbit: 'h-11 w-11 text-sm',
   sm: 'h-16 w-16 text-lg',
-  profile: 'h-[5.25rem] w-[5.25rem] text-2xl',
-  showcase: 'h-[6.25rem] w-[6.25rem] text-2xl',
   md: 'h-[5rem] w-[5rem] text-2xl',
   lg: 'h-32 w-32 text-4xl',
 }
-
-const compactArtSizes = new Set(['orbit', 'sm', 'md', 'profile', 'showcase'])
 
 /**
  * Earned: transparent cutout art. Locked: empty circle; «?» only for hidden badges.
@@ -82,22 +46,19 @@ export const BadgeVisual = ({
   title,
   rarity = 'common',
   size = 'md',
-  headerGlow = false,
   className,
 }: BadgeVisualProps) => {
   const showHidden = hidden && !earned
-  const artSize = compactArtSizes.has(size) ? 'sm' : 'lg'
-  const src = badgeImageSrc(imageUrl, artSize === 'lg' ? 'lg' : 'sm')
+  const src = badgeImageSrc(imageUrl, size)
   const hasArt = earned && Boolean(src)
-  const glowMap = headerGlow ? BADGE_PROFILE_HEADER_GLOW : BADGE_ART_DROP_SHADOW
-  const glow = glowMap[rarity] ?? glowMap.common
+  const glow =
+    BADGE_ART_DROP_SHADOW[rarity] ?? BADGE_ART_DROP_SHADOW.common
 
   if (hasArt) {
     return (
       <div
         className={cn(
-          'relative flex shrink-0 items-center justify-center',
-          size === 'orbit' || headerGlow ? '' : 'mx-auto',
+          'relative mx-auto flex shrink-0 items-center justify-center',
           sizeClass[size],
           className
         )}

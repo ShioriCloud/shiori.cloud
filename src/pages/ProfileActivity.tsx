@@ -27,8 +27,8 @@ const ProfileActivity = () => {
   const { data, isLoading, isError, refetch } = query
 
   const backTo = isPublic
-    ? `/u/${encodeURIComponent(targetId)}?tab=activity`
-    : '/profile?tab=activity'
+    ? `/u/${encodeURIComponent(targetId)}`
+    : '/profile?tab=personal'
 
   return (
     <div className="bg-background pb-24 text-foreground">

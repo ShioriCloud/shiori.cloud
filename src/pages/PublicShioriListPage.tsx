@@ -28,7 +28,7 @@ const PublicShioriListPage = () => {
   )
 
   const list = data?.list
-  const profileBack = `/u/${encodeURIComponent(telegramUserId)}?tab=library&lib=playlists`
+  const profileBack = `/u/${encodeURIComponent(telegramUserId)}?tab=playlists`
   const listIcon = list?.icon && isShioriListIcon(list.icon) ? list.icon : 'heart'
   const { Icon } = getListIcon(listIcon)
 

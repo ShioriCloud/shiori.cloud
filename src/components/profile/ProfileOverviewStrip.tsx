@@ -19,19 +19,17 @@ export const ProfileOverviewStrip = ({
   data,
   fullStatsTo = '/profile/stats',
   audience = 'own',
-  className,
 }: {
   data: OverviewModel
   /** Pass `null` to hide the full-stats link (e.g. public profiles). */
   fullStatsTo?: string | null
   audience?: 'own' | 'public'
-  className?: string
 }) => {
   const formats = sortFormats(data.byFormat).slice(0, 6)
   const hours = Math.max(0, Math.round(data.watchHours))
 
   return (
-    <div className={cn('mx-4 mt-5', className)}>
+    <div className="mx-4 mt-5">
       <section
         className={cn(
           'relative overflow-hidden rounded-2xl border border-border/50',

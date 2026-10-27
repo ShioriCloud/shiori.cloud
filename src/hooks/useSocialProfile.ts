@@ -78,7 +78,6 @@ export function useUpdateSocialBadgeShowcase() {
               id: b.id,
               title: b.title,
               image_url: b.image_url,
-              rarity: b.rarity,
               is_new: b.is_new,
             }
           }
