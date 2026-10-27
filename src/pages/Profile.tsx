@@ -13,6 +13,7 @@ import { ProfilePersonalPanel } from '@/components/profile/ProfilePersonalPanel'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
 import { ProfileStatsTabPanel } from '@/components/profile/ProfileStatsTabPanel'
 import { ProfileWatchTabPanel } from '@/components/profile/ProfileWatchTabPanel'
+import { ProfileBadgeTeaser } from '@/components/profile/ProfileBadgeTeaser'
 import { ProfileBadgesSection } from '@/components/profile/ProfileBadgesSection'
 import {
   buildOwnProfileTabs,
@@ -248,6 +249,12 @@ const Profile = () => {
       <div className="mx-4">
         <ProfileFollowButton viewerId={user?.id} targetId={user?.id} />
       </div>
+
+      <ProfileBadgeTeaser
+        variant="own"
+        badgesSummary={socialProfile?.badges_summary}
+        previewBadges={socialProfile?.badges}
+      />
 
       <div className="mx-4 mt-6">
         <ExploreTabBar tabs={[...profileTabs]} active={activeTab} onChange={setActiveTab} />

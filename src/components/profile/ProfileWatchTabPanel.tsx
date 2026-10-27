@@ -1,3 +1,4 @@
+import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { ProfileFavoritesPreview } from '@/components/profile/ProfileFavoritesPreview'
 import { ProfileRecentEpisodesRail } from '@/components/profile/ProfileRecentEpisodesRail'
 import { ProfileSocialWatchedRail } from '@/components/profile/ProfileSocialWatchedRail'
@@ -43,6 +44,21 @@ export const ProfileWatchTabPanel = ({
   }
 
   const watchingFromApi = filterCurrentlyWatching(watchedItems)
+  const recentCount = watchedItems.filter((item) => (item.episodes_watched ?? 0) > 0).length
+  const publicWatchEmpty =
+    variant === 'public' &&
+    recentCount === 0 &&
+    watchingFromApi.length === 0 &&
+    favoriteListItems.length === 0
+
+  if (publicWatchEmpty) {
+    return (
+      <ExploreEmptyState
+        title="هنوز فعالیت تماشایی نیست"
+        subtitle="وقتی این کاربر انیمه تماشا کند یا علاقه‌مندی عمومی داشته باشد، اینجا می‌بینی."
+      />
+    )
+  }
 
   return (
     <div className="-mx-4 space-y-1 pb-2">

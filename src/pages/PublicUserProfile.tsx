@@ -9,6 +9,7 @@ import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
 import { ProfileStatsTabPanel } from '@/components/profile/ProfileStatsTabPanel'
 import { ProfileWatchTabPanel } from '@/components/profile/ProfileWatchTabPanel'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
+import { ProfileBadgeTeaser } from '@/components/profile/ProfileBadgeTeaser'
 import { ProfileBadgesSection } from '@/components/profile/ProfileBadgesSection'
 import { ProfileShareButton } from '@/components/profile/ProfileShareButton'
 import { ProfileSocialActionsSheet } from '@/components/profile/ProfileSocialActionsSheet'
@@ -290,6 +291,14 @@ const PublicUserProfile = () => {
           followsYou={data.relationship?.follows_you === true}
         />
       </div>
+
+      <ProfileBadgeTeaser
+        variant="public"
+        badgesSummary={data.badges_summary}
+        previewBadges={data.badges}
+        displayName={displayName}
+        targetUserId={telegramUserId}
+      />
 
       <div className="mx-4 mt-6">
         <ExploreTabBar tabs={[...profileTabs]} active={activeTab} onChange={setActiveTab} />
