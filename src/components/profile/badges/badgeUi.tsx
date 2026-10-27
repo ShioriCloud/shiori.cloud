@@ -1,5 +1,9 @@
 import type { SocialBadgeCatalogItem } from '@/services/socialProfile'
-import { BADGE_ART_DROP_SHADOW, badgeImageSrc } from '@/lib/badgeArt'
+import {
+  BADGE_ART_DROP_SHADOW,
+  BADGE_PROFILE_HEADER_GLOW,
+  badgeImageSrc,
+} from '@/lib/badgeArt'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
 
@@ -52,6 +56,8 @@ type BadgeVisualProps = {
   title?: string
   rarity?: string
   size?: 'orbit' | 'sm' | 'md' | 'lg' | 'profile' | 'showcase'
+  /** Profile hero strip — stronger cutout glow, no circular frame. */
+  headerGlow?: boolean
   className?: string
 }
 
@@ -76,20 +82,22 @@ export const BadgeVisual = ({
   title,
   rarity = 'common',
   size = 'md',
+  headerGlow = false,
   className,
 }: BadgeVisualProps) => {
   const showHidden = hidden && !earned
   const artSize = compactArtSizes.has(size) ? 'sm' : 'lg'
   const src = badgeImageSrc(imageUrl, artSize === 'lg' ? 'lg' : 'sm')
   const hasArt = earned && Boolean(src)
-  const glow =
-    BADGE_ART_DROP_SHADOW[rarity] ?? BADGE_ART_DROP_SHADOW.common
+  const glowMap = headerGlow ? BADGE_PROFILE_HEADER_GLOW : BADGE_ART_DROP_SHADOW
+  const glow = glowMap[rarity] ?? glowMap.common
 
   if (hasArt) {
     return (
       <div
         className={cn(
-          'relative mx-auto flex shrink-0 items-center justify-center',
+          'relative flex shrink-0 items-center justify-center',
+          size === 'orbit' || headerGlow ? '' : 'mx-auto',
           sizeClass[size],
           className
         )}

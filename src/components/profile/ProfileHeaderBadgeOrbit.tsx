@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import type { SocialProfileMe } from '@/services/socialProfile'
 import { cn } from '@/lib/utils'
@@ -13,9 +13,7 @@ import {
   useSocialBadgeCatalogUser,
 } from '@/hooks/useSocialProfile'
 
-/** Badges on the ring; last slot is always «همه». */
-const ORBIT_BADGE_SLOTS = 3
-const ORBIT_RADIUS_PX = 54
+const HEADER_BADGE_SLOTS = 4
 
 type BadgePreview = NonNullable<SocialProfileMe['badges']>[number]
 
@@ -27,20 +25,6 @@ type ProfileHeaderBadgeOrbitProps = {
   targetUserId?: string
   className?: string
   children: ReactNode
-}
-
-const orbitStyle = (index: number, totalSlots: number): CSSProperties => {
-  const startDeg = -92
-  const step = 360 / totalSlots
-  const deg = startDeg + index * step
-  const rad = (deg * Math.PI) / 180
-  const x = ORBIT_RADIUS_PX * Math.cos(rad)
-  const y = ORBIT_RADIUS_PX * Math.sin(rad)
-  return {
-    left: `calc(50% + ${x}px)`,
-    top: `calc(50% + ${y}px)`,
-    transform: 'translate(-50%, -50%)',
-  }
 }
 
 export const ProfileHeaderBadgeOrbit = ({
@@ -62,13 +46,10 @@ export const ProfileHeaderBadgeOrbit = ({
     variant === 'public' && userId.length > 0
   )
 
-  const orbitBadges = previewBadges?.slice(0, ORBIT_BADGE_SLOTS) ?? []
+  const stripBadges = previewBadges?.slice(0, HEADER_BADGE_SLOTS) ?? []
   const earnedCount = badgesSummary?.earned_count ?? previewBadges?.length ?? 0
-  const hasEarned = earnedCount > 0 || orbitBadges.length > 0
-  const moreCount = Math.max(0, earnedCount - orbitBadges.length)
-
-  const satelliteCount = orbitBadges.length + 1
-  const moreSlotIndex = orbitBadges.length
+  const hasEarned = earnedCount > 0 || stripBadges.length > 0
+  const moreCount = Math.max(0, earnedCount - stripBadges.length)
 
   const detailBadge = useMemo(() => {
     if (!detailBadgeId) return null
@@ -81,12 +62,10 @@ export const ProfileHeaderBadgeOrbit = ({
   if (variant === 'own' && !hasEarned) {
     return (
       <div className={cn('flex flex-col items-center', className)}>
-        <div className="relative flex h-[9.75rem] w-[9.75rem] items-center justify-center">
-          {children}
-        </div>
+        {children}
         <Link
           to="/profile/badges"
-          className="mt-1 text-xs font-medium text-primary-400 active:opacity-80"
+          className="mt-2 text-xs font-medium text-primary-400 active:opacity-80"
         >
           نشان‌ها
         </Link>
@@ -95,65 +74,50 @@ export const ProfileHeaderBadgeOrbit = ({
   }
 
   if (variant === 'public' && !hasEarned) {
-    return (
-      <div
-        className={cn(
-          'relative flex h-[9.75rem] w-[9.75rem] items-center justify-center',
-          className
-        )}
-      >
-        {children}
-      </div>
-    )
+    return <div className={cn('flex flex-col items-center', className)}>{children}</div>
   }
 
   return (
     <>
       <div
-        className={cn(
-          'relative mx-auto h-[9.75rem] w-[9.75rem] shrink-0',
-          className
-        )}
+        className={cn('inline-flex items-center gap-3', className)}
         aria-label="نشان‌ها"
       >
-        <div className="absolute inset-0 flex items-center justify-center">{children}</div>
+        {children}
 
-        {orbitBadges.map((badge, index) => (
+        <div className="flex flex-col items-center gap-1.5">
+          {stripBadges.map((badge) => (
+            <button
+              key={badge.id}
+              type="button"
+              onClick={() => setDetailBadgeId(badge.id)}
+              className="block active:scale-95 transition-transform"
+              aria-label={badge.title}
+            >
+              <BadgeVisual
+                earned
+                imageUrl={badge.image_url}
+                title={badge.title}
+                rarity={badge.rarity ?? 'common'}
+                size="orbit"
+                headerGlow
+              />
+            </button>
+          ))}
+
           <button
-            key={badge.id}
             type="button"
-            onClick={() => setDetailBadgeId(badge.id)}
-            className="absolute z-10 rounded-full ring-2 ring-background/90 active:scale-95 transition-transform"
-            style={orbitStyle(index, satelliteCount)}
-            aria-label={badge.title}
+            onClick={() => setSheetOpen(true)}
+            className="min-h-8 px-1 text-[11px] font-semibold text-primary-400 active:opacity-75"
+            aria-label="همه نشان‌ها"
           >
-            <BadgeVisual
-              earned
-              imageUrl={badge.image_url}
-              title={badge.title}
-              rarity={badge.rarity ?? 'common'}
-              size="orbit"
-            />
+            {moreCount > 0 ? (
+              <span>+{toPersianDigits(moreCount)}</span>
+            ) : (
+              <span>همه</span>
+            )}
           </button>
-        ))}
-
-        <button
-          type="button"
-          onClick={() => setSheetOpen(true)}
-          className={cn(
-            'absolute z-10 flex h-10 w-10 flex-col items-center justify-center rounded-full',
-            'border border-border/60 bg-card/95 text-[10px] font-bold text-primary-400',
-            'shadow-md shadow-black/10 active:scale-95 transition-transform'
-          )}
-          style={orbitStyle(moreSlotIndex, satelliteCount)}
-          aria-label="همه نشان‌ها"
-        >
-          {moreCount > 0 ? (
-            <span className="leading-none">+{toPersianDigits(moreCount)}</span>
-          ) : (
-            <span className="text-[11px] font-semibold leading-none">همه</span>
-          )}
-        </button>
+        </div>
       </div>
 
       <BadgeDetailDialog
