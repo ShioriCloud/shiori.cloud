@@ -8,6 +8,7 @@ import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
 import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
+import { ProfileCircleAvatar } from '@/components/profile/ProfileCircleAvatar'
 import { ProfileHeaderBadgeOrbit } from '@/components/profile/ProfileHeaderBadgeOrbit'
 import { ProfileShareButton } from '@/components/profile/ProfileShareButton'
 import { ProfileSocialActionsSheet } from '@/components/profile/ProfileSocialActionsSheet'
@@ -157,26 +158,24 @@ const PublicUserProfile = () => {
   const watchVisible = !data.privacy?.watch_activity_hidden
 
   const avatarBlock = (
-    <div className="media-card-skeuo h-24 w-24 rounded-2xl shrink-0">
-      <div className="media-card-skeuo-face bg-muted">
-        {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt={displayName}
-            className="h-full w-full object-cover"
-            onError={() => setAvatarFailed(true)}
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-primary-400/15">
-            {initials ? (
-              <span className="text-2xl font-bold text-primary-400">{initials}</span>
-            ) : (
-              <UserIcon className="h-10 w-10 text-muted-foreground/50" />
-            )}
-          </div>
-        )}
-      </div>
-    </div>
+    <ProfileCircleAvatar>
+      {avatarUrl ? (
+        <img
+          src={avatarUrl}
+          alt={displayName}
+          className="h-full w-full object-cover"
+          onError={() => setAvatarFailed(true)}
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center bg-primary-400/15">
+          {initials ? (
+            <span className="text-2xl font-bold text-primary-400">{initials}</span>
+          ) : (
+            <UserIcon className="h-10 w-10 text-muted-foreground/50" />
+          )}
+        </div>
+      )}
+    </ProfileCircleAvatar>
   )
 
   return (
@@ -222,6 +221,7 @@ const PublicUserProfile = () => {
             <ProfileHeaderBadgeOrbit
               variant="public"
               previewBadges={data.badges}
+              badgesSummary={data.badges_summary}
               displayName={displayName}
               targetUserId={telegramUserId}
             >

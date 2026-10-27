@@ -51,11 +51,12 @@ type BadgeVisualProps = {
   imageUrl?: string | null
   title?: string
   rarity?: string
-  size?: 'sm' | 'md' | 'lg' | 'profile' | 'showcase'
+  size?: 'orbit' | 'sm' | 'md' | 'lg' | 'profile' | 'showcase'
   className?: string
 }
 
 const sizeClass = {
+  orbit: 'h-11 w-11 text-sm',
   sm: 'h-16 w-16 text-lg',
   profile: 'h-[5.25rem] w-[5.25rem] text-2xl',
   showcase: 'h-[6.25rem] w-[6.25rem] text-2xl',
@@ -63,7 +64,7 @@ const sizeClass = {
   lg: 'h-32 w-32 text-4xl',
 }
 
-const compactArtSizes = new Set(['sm', 'md', 'profile', 'showcase'])
+const compactArtSizes = new Set(['orbit', 'sm', 'md', 'profile', 'showcase'])
 
 /**
  * Earned: transparent cutout art. Locked: empty circle; «?» only for hidden badges.
