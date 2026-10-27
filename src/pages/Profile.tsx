@@ -8,13 +8,18 @@ import { useUserAnimeList } from '../hooks/useUserAnimeList'
 import { useSocialProfileMe } from '../hooks/useSocialProfile'
 import { useFavoriteAnimeCardsQuery } from '../hooks/queries/useAnimeQueries'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
-import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
 import { ProfilePersonalPanel } from '@/components/profile/ProfilePersonalPanel'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
 import { ProfileStatsTabPanel } from '@/components/profile/ProfileStatsTabPanel'
+import { ProfileWatchTabPanel } from '@/components/profile/ProfileWatchTabPanel'
 import { ProfileBadgesSection } from '@/components/profile/ProfileBadgesSection'
-import { buildOwnProfileTabs, parseProfileTab, type ProfileTabId } from '@/components/profile/profileTabs'
+import {
+  buildOwnProfileTabs,
+  isDefaultProfileTab,
+  parseProfileTab,
+  type ProfileTabId,
+} from '@/components/profile/profileTabs'
 import { ProfilePlaylistsTabPanel } from '@/components/profile/ProfilePlaylistsTabPanel'
 import { useCustomLists } from '@/hooks/useCustomLists'
 import { ExploreTabBar } from '@/components/explore/ExploreUi'
@@ -57,7 +62,7 @@ const Profile = () => {
     setSearchParams(
       (prev) => {
         const next = new URLSearchParams(prev)
-        if (tab === 'stats') next.delete('tab')
+        if (isDefaultProfileTab(tab)) next.delete('tab')
         else next.set('tab', tab)
         return next
       },
@@ -114,6 +119,7 @@ const Profile = () => {
   }
 
   const tabAllowed =
+    activeTab === 'watch' ||
     activeTab === 'stats' ||
     activeTab === 'personal' ||
     (activeTab === 'playlists' && hasPublicPlaylists)
@@ -243,42 +249,34 @@ const Profile = () => {
         <ProfileFollowButton viewerId={user?.id} targetId={user?.id} />
       </div>
 
-      {socialProfile?.translator && user?.id != null ? (
-        <ProfileTranslationsRail
-          translator={socialProfile.translator}
-          profileUserId={String(user.id)}
-          title="ترجمه‌هام"
-        />
-      ) : null}
-
-      <div className="mx-4 mt-5">
-        <ProfileBadgesSection
-          variant="own"
-          badgesSummary={socialProfile?.badges_summary}
-          previewBadges={socialProfile?.badges}
-        />
-      </div>
-
       <div className="mx-4 mt-6">
         <ExploreTabBar tabs={[...profileTabs]} active={activeTab} onChange={setActiveTab} />
       </div>
 
       <div className="mx-4 mt-4">
+        {activeTab === 'watch' ? (
+          <ProfileWatchTabPanel
+            variant="own"
+            watchedItems={showSocialWatch ? watchedItems : []}
+            favoriteListItems={favoriteListItems}
+            favoriteOrderIds={favoriteAnime}
+            profileBase="/profile"
+            recentRestoreKey="own-profile-recent"
+          />
+        ) : null}
         {activeTab === 'stats' ? (
-          showSocialWatch ? (
-            <ProfileStatsTabPanel
-              variant="own"
-              overview={overview}
-              fullStatsTo="/profile/stats"
-              watchedItems={watchedItems}
-              favoriteListItems={favoriteListItems}
-              favoriteOrderIds={favoriteAnime}
-              profileBase="/profile"
-              recentRestoreKey="own-profile-recent"
-            />
-          ) : (
-            <ProfileStatsTabPanel variant="own" overview={overview} fullStatsTo="/profile/stats" />
-          )
+          <ProfileStatsTabPanel
+            variant="own"
+            overview={overview}
+            fullStatsTo="/profile/stats"
+            badgesSection={
+              <ProfileBadgesSection
+                variant="own"
+                badgesSummary={socialProfile?.badges_summary}
+                previewBadges={socialProfile?.badges}
+              />
+            }
+          />
         ) : null}
         {activeTab === 'playlists' && user?.id != null ? (
           <ProfilePlaylistsTabPanel

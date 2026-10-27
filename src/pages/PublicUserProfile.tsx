@@ -5,15 +5,16 @@ import { MoreHorizontal } from 'lucide-react'
 import { useAppAuth } from '../hooks/useAppAuth'
 import { useSocialProfileUser } from '../hooks/useSocialProfile'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
-import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
 import { ProfileStatsTabPanel } from '@/components/profile/ProfileStatsTabPanel'
+import { ProfileWatchTabPanel } from '@/components/profile/ProfileWatchTabPanel'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
 import { ProfileBadgesSection } from '@/components/profile/ProfileBadgesSection'
 import { ProfileShareButton } from '@/components/profile/ProfileShareButton'
 import { ProfileSocialActionsSheet } from '@/components/profile/ProfileSocialActionsSheet'
 import {
   buildPublicProfileTabs,
+  isDefaultProfileTab,
   parseProfileTab,
   type ProfileTabId,
 } from '@/components/profile/profileTabs'
@@ -61,7 +62,7 @@ const PublicUserProfile = () => {
     [hasPublicPlaylists]
   )
   const activeTab: ProfileTabId =
-    parsedTab === 'personal' ? 'stats' : parsedTab
+    parsedTab === 'personal' ? 'watch' : parsedTab
 
   useEffect(() => {
     if (rawTab !== 'personal') return
@@ -79,7 +80,7 @@ const PublicUserProfile = () => {
     setSearchParams(
       (prev) => {
         const next = new URLSearchParams(prev)
-        if (tab === 'stats') next.delete('tab')
+        if (isDefaultProfileTab(tab)) next.delete('tab')
         else next.set('tab', tab)
         return next
       },
@@ -290,32 +291,21 @@ const PublicUserProfile = () => {
         />
       </div>
 
-      {data.translator ? (
-        <ProfileTranslationsRail
-          translator={data.translator}
-          profileUserId={telegramUserId}
-        />
-      ) : null}
+      <div className="mx-4 mt-6">
+        <ExploreTabBar tabs={[...profileTabs]} active={activeTab} onChange={setActiveTab} />
+      </div>
 
-      {watchVisible ? (
-        <div className="mx-4 mt-5">
-          <ProfileBadgesSection
+      <div className="mx-4 mt-4">
+        {activeTab === 'watch' ? (
+          <ProfileWatchTabPanel
             variant="public"
-            badgesSummary={data.badges_summary}
-            previewBadges={data.badges}
-            displayName={displayName}
-            targetUserId={telegramUserId}
+            watchedItems={watchedItems}
+            favoriteListItems={favoriteListItems}
+            profileBase={profileBase}
+            recentRestoreKey={`public-${telegramUserId}-recent`}
+            watchVisible={watchVisible}
           />
-        </div>
-      ) : null}
-
-      {profileTabs.length > 1 ? (
-        <div className="mx-4 mt-6">
-          <ExploreTabBar tabs={[...profileTabs]} active={activeTab} onChange={setActiveTab} />
-        </div>
-      ) : null}
-
-      <div className={cn('mx-4', profileTabs.length > 1 ? 'mt-4' : 'mt-6')}>
+        ) : null}
         {activeTab === 'playlists' ? (
           <ProfilePlaylistsTabPanel
             variant="public"
@@ -328,21 +318,21 @@ const PublicUserProfile = () => {
             variant="public"
             overview={overview}
             fullStatsTo={null}
-            watchedItems={watchedItems}
-            favoriteListItems={favoriteListItems}
-            profileBase={profileBase}
-            recentRestoreKey={`public-${telegramUserId}-recent`}
             watchVisible={watchVisible}
-            publicExtras={
-              watchVisible
-                ? {
-                    profileUserId: telegramUserId,
-                    translator,
-                    displayName,
-                    hideTranslatorDupes: Boolean(translator),
-                  }
-                : undefined
+            badgesSection={
+              <ProfileBadgesSection
+                variant="public"
+                badgesSummary={data.badges_summary}
+                previewBadges={data.badges}
+                displayName={displayName}
+                targetUserId={telegramUserId}
+              />
             }
+            publicExtras={{
+              profileUserId: telegramUserId,
+              translator,
+              displayName,
+            }}
           />
         ) : null}
       </div>

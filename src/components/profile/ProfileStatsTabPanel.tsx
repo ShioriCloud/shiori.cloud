@@ -1,24 +1,15 @@
-import { ProfileFavoritesPreview } from '@/components/profile/ProfileFavoritesPreview'
+import type { ReactNode } from 'react'
 import { ProfileOverviewStrip } from '@/components/profile/ProfileOverviewStrip'
 import { ProfilePublicStatsExtras } from '@/components/profile/ProfilePublicStatsExtras'
-import { ProfileRecentEpisodesRail } from '@/components/profile/ProfileRecentEpisodesRail'
-import { ProfileSocialWatchedRail } from '@/components/profile/ProfileSocialWatchedRail'
-import { ProfileWatchingRail } from '@/components/profile/ProfileWatchingRail'
 import type { SocialProfileMe } from '@/services/socialProfile'
 import type { FormatBreakdownRow } from '@/components/profile/profileFormats'
-
-type WatchedItem = NonNullable<SocialProfileMe['watched']>['items'][number]
 
 type ProfileStatsTabPanelProps = {
   variant: 'own' | 'public'
   overview: { watchHours: number; byFormat: FormatBreakdownRow[] }
   fullStatsTo?: string | null
-  watchedItems?: WatchedItem[]
-  favoriteListItems?: WatchedItem[]
-  favoriteOrderIds?: Array<string | number>
-  profileBase?: string
-  recentRestoreKey?: string
   watchVisible?: boolean
+  badgesSection?: ReactNode
   publicExtras?: {
     profileUserId: string
     translator?: SocialProfileMe['translator']
@@ -27,36 +18,21 @@ type ProfileStatsTabPanelProps = {
   }
 }
 
-const filterCurrentlyWatching = (items: WatchedItem[]): WatchedItem[] =>
-  items.filter((item) => {
-    const watched = item.episodes_watched ?? 0
-    const total = item.episodes_total ?? 0
-    if (watched <= 0) return false
-    if (total <= 0) return true
-    return watched < total
-  })
-
 export const ProfileStatsTabPanel = ({
   variant,
   overview,
   fullStatsTo,
-  watchedItems = [],
-  favoriteListItems = [],
-  favoriteOrderIds,
-  profileBase = '/profile',
-  recentRestoreKey = 'profile-stats-recent',
   watchVisible = true,
+  badgesSection,
   publicExtras,
 }: ProfileStatsTabPanelProps) => {
-  if (variant === 'public' && !watchVisible) {
+  if (variant === 'public' && !watchVisible && !badgesSection && !publicExtras) {
     return (
       <p className="rounded-2xl border border-border/50 bg-muted/30 px-4 py-5 text-center text-sm text-muted-foreground">
-        لیست تماشا خصوصی است.
+        آمار این پروفایل در دسترس نیست.
       </p>
     )
   }
-
-  const watchingFromApi = filterCurrentlyWatching(watchedItems)
 
   return (
     <div className="-mx-4 space-y-1 pb-2">
@@ -66,21 +42,7 @@ export const ProfileStatsTabPanel = ({
         audience={variant}
       />
 
-      <ProfileRecentEpisodesRail items={watchedItems} restoreKey={recentRestoreKey} />
-
-      {variant === 'own' ? (
-        <ProfileWatchingRail />
-      ) : (
-        <ProfileSocialWatchedRail items={watchingFromApi} title="در حال تماشا" />
-      )}
-
-      <ProfileFavoritesPreview
-        items={favoriteListItems}
-        total={favoriteListItems.length}
-        orderedIds={favoriteOrderIds}
-        profileBase={profileBase}
-        className="mt-2"
-      />
+      {badgesSection ? <div className="mx-4 mt-4">{badgesSection}</div> : null}
 
       {variant === 'public' && publicExtras ? (
         <ProfilePublicStatsExtras
