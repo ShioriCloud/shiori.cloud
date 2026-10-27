@@ -32,7 +32,7 @@ export const ProfileFavoritesTabPanel = ({
   }
 
   const sortHref =
-    variant === 'own' ? '/profile/favorites' : `${profileBase}?tab=favorites`
+    variant === 'own' ? '/profile/favorites' : `${profileBase}?tab=library&lib=favorites`
 
   return (
     <div className="space-y-3">

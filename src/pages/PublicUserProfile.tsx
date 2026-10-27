@@ -12,14 +12,16 @@ import { ProfileCircleAvatar } from '@/components/profile/ProfileCircleAvatar'
 import { ProfileHeaderBadgeOrbit } from '@/components/profile/ProfileHeaderBadgeOrbit'
 import { ProfileShareButton } from '@/components/profile/ProfileShareButton'
 import { ProfileSocialActionsSheet } from '@/components/profile/ProfileSocialActionsSheet'
-import { ProfileDualRowTabBar } from '@/components/profile/ProfileDualRowTabBar'
+import { ProfileMainTabBar } from '@/components/profile/ProfileMainTabBar'
 import { ProfileActivityTabPanel } from '@/components/profile/ProfileActivityTabPanel'
-import { ProfileStatsOverviewPanel } from '@/components/profile/ProfileStatsOverviewPanel'
-import { ProfileWatchingTabPanel } from '@/components/profile/ProfileWatchingTabPanel'
-import { ProfileFavoritesTabPanel } from '@/components/profile/ProfileFavoritesTabPanel'
-import { isAllowedProfileTab } from '@/components/profile/profileTabs'
+import { ProfileStatsAndBadgesTabPanel } from '@/components/profile/ProfileStatsAndBadgesTabPanel'
+import { ProfileLibraryTabPanel } from '@/components/profile/ProfileLibraryTabPanel'
+import {
+  isAllowedProfileTab,
+  isLegacyProfileTab,
+  legacyProfileRedirectPath,
+} from '@/components/profile/profileTabs'
 import { useProfileTabParam } from '@/hooks/useProfileTabParam'
-import { ProfilePlaylistsTabPanel } from '@/components/profile/ProfilePlaylistsTabPanel'
 import { usePublicCustomListsQuery } from '@/hooks/usePublicCustomLists'
 import { formatProfileMemberSince } from '@/lib/profileMemberSince'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
@@ -47,7 +49,8 @@ const PublicUserProfile = () => {
     telegramUserId,
     canFetchProfile
   )
-  const { rawTab, activeTab, setActiveTab } = useProfileTabParam()
+  const { rawTab, activeTab, librarySection, setActiveTab, setLibrarySection } =
+    useProfileTabParam()
   const [avatarFailed, setAvatarFailed] = useState(false)
   const [actionsOpen, setActionsOpen] = useState(false)
   const { data: publicListsData } = usePublicCustomListsQuery(
@@ -81,6 +84,10 @@ const PublicUserProfile = () => {
 
   if (rawTab === 'feed') {
     return <Navigate to="/feed" replace />
+  }
+
+  if (isLegacyProfileTab(rawTab)) {
+    return <Navigate to={legacyProfileRedirectPath(rawTab, profileBase)} replace />
   }
 
   const initialProfileLoad = canFetchProfile && isLoading && !data
@@ -286,15 +293,23 @@ const PublicUserProfile = () => {
       ) : null}
 
       <div className="mx-4 mt-6">
-        <ProfileDualRowTabBar
-          active={activeTab}
-          onChange={setActiveTab}
-          isOwnProfile={false}
-          hasPublicPlaylists={hasPublicPlaylists}
-        />
+        <ProfileMainTabBar active={activeTab} onChange={setActiveTab} />
       </div>
 
       <div className="mx-4 mt-4">
+        {activeTab === 'library' ? (
+          <ProfileLibraryTabPanel
+            variant="public"
+            section={librarySection}
+            onSectionChange={setLibrarySection}
+            showPlaylistsChip={hasPublicPlaylists}
+            profileUserId={telegramUserId}
+            profileBase={profileBase}
+            watchedItems={watchedItems}
+            favoriteListItems={favoriteListItems}
+            watchVisible={watchVisible}
+          />
+        ) : null}
         {activeTab === 'activity' ? (
           <ProfileActivityTabPanel
             variant="public"
@@ -305,9 +320,10 @@ const PublicUserProfile = () => {
           />
         ) : null}
         {activeTab === 'stats' ? (
-          <ProfileStatsOverviewPanel
+          <ProfileStatsAndBadgesTabPanel
             variant="public"
             overview={overview}
+            topGenres={data.top_genres ?? []}
             publicExtras={
               watchVisible
                 ? {
@@ -318,28 +334,6 @@ const PublicUserProfile = () => {
                   }
                 : undefined
             }
-          />
-        ) : null}
-        {activeTab === 'watching' ? (
-          <ProfileWatchingTabPanel
-            variant="public"
-            watchedItems={watchedItems}
-            watchVisible={watchVisible}
-          />
-        ) : null}
-        {activeTab === 'favorites' ? (
-          <ProfileFavoritesTabPanel
-            variant="public"
-            items={favoriteListItems}
-            profileBase={profileBase}
-            watchVisible={watchVisible}
-          />
-        ) : null}
-        {activeTab === 'playlists' ? (
-          <ProfilePlaylistsTabPanel
-            variant="public"
-            profileUserId={telegramUserId}
-            profileBase={profileBase}
           />
         ) : null}
       </div>

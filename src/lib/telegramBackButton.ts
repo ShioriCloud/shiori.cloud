@@ -49,7 +49,7 @@ export const fallbackBackPath = (pathname: string): string => {
     pathname.startsWith('/profile/playlists') ||
     pathname.startsWith('/profile/badges')
   ) {
-    return '/profile?tab=personal'
+    return '/profile'
   }
   if (pathname.startsWith('/profile/activity')) return '/profile?tab=activity'
   if (pathname.startsWith('/notifications')) return '/profile'

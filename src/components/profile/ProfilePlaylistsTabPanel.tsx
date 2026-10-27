@@ -112,14 +112,14 @@ export const ProfilePlaylistsTabPanel = ({
 
       {variant === 'own' ? (
         <Link
-          to="/profile?tab=personal"
+          to="/profile"
           className="block text-center text-sm font-medium text-primary-400"
         >
           مدیریت پلی‌لیست‌ها در تب شخصی
         </Link>
       ) : (
         <Link
-          to={`${profileBase}?tab=playlists`}
+          to={`${profileBase}?tab=library&lib=playlists`}
           className="sr-only"
         >
           playlists

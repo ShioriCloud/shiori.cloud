@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { UserIcon } from 'hugeicons-react'
-import { Settings } from 'lucide-react'
+import { LayoutGrid, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAppAuth } from '../hooks/useAppAuth'
 import { useUserAnimeList } from '../hooks/useUserAnimeList'
@@ -10,18 +10,17 @@ import { useFavoriteAnimeCardsQuery } from '../hooks/queries/useAnimeQueries'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
 import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
-import { ProfilePersonalPanel } from '@/components/profile/ProfilePersonalPanel'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
 import { ProfileCircleAvatar } from '@/components/profile/ProfileCircleAvatar'
 import { ProfileHeaderBadgeOrbit } from '@/components/profile/ProfileHeaderBadgeOrbit'
-import { ProfileDualRowTabBar } from '@/components/profile/ProfileDualRowTabBar'
+import { ProfileMainTabBar } from '@/components/profile/ProfileMainTabBar'
 import { ProfileActivityTabPanel } from '@/components/profile/ProfileActivityTabPanel'
-import { ProfileStatsOverviewPanel } from '@/components/profile/ProfileStatsOverviewPanel'
-import { ProfileWatchingTabPanel } from '@/components/profile/ProfileWatchingTabPanel'
-import { ProfileFavoritesTabPanel } from '@/components/profile/ProfileFavoritesTabPanel'
-import { isAllowedProfileTab } from '@/components/profile/profileTabs'
+import { ProfileStatsAndBadgesTabPanel } from '@/components/profile/ProfileStatsAndBadgesTabPanel'
+import { ProfileLibraryTabPanel } from '@/components/profile/ProfileLibraryTabPanel'
+import { ProfileWatchingRail } from '@/components/profile/ProfileWatchingRail'
+import { ProfileToolsSheet } from '@/components/profile/ProfileToolsSheet'
+import { isAllowedProfileTab, isLegacyProfileTab, legacyProfileRedirectPath } from '@/components/profile/profileTabs'
 import { useProfileTabParam } from '@/hooks/useProfileTabParam'
-import { ProfilePlaylistsTabPanel } from '@/components/profile/ProfilePlaylistsTabPanel'
 import { useCustomLists } from '@/hooks/useCustomLists'
 import { mergeOwnProfileHeaderStats } from '@/lib/ownProfileStats'
 import { formatProfileMemberSince } from '@/lib/profileMemberSince'
@@ -51,8 +50,10 @@ const Profile = () => {
   const { data: socialProfile, isLoading: socialProfileLoading } = useSocialProfileMe(
     Boolean(user)
   )
-  const { rawTab, activeTab, setActiveTab } = useProfileTabParam()
+  const { rawTab, activeTab, librarySection, setActiveTab, setLibrarySection } =
+    useProfileTabParam()
   const [avatarFailed, setAvatarFailed] = useState(false)
+  const [toolsOpen, setToolsOpen] = useState(false)
 
   const displayName =
     socialProfile?.profile?.display_name?.trim() || user?.displayName || 'کاربر'
@@ -100,6 +101,10 @@ const Profile = () => {
 
   if (rawTab === 'feed') {
     return <Navigate to="/feed" replace />
+  }
+
+  if (isLegacyProfileTab(rawTab)) {
+    return <Navigate to={legacyProfileRedirectPath(rawTab)} replace />
   }
 
   const tabAllowed = isAllowedProfileTab(activeTab, {
@@ -180,6 +185,17 @@ const Profile = () => {
               </Link>
             </Button>
 
+            <Button
+              type="button"
+              variant="outline"
+              size="icon-sm"
+              className="absolute right-0 top-0 z-20 surface-skeuo border-border/60 text-muted-foreground hover:text-foreground"
+              aria-label="ابزارهای پروفایل"
+              onClick={() => setToolsOpen(true)}
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+
             <ProfileHeaderBadgeOrbit
               variant="own"
               previewBadges={socialProfile?.badges}
@@ -249,16 +265,28 @@ const Profile = () => {
         />
       ) : null}
 
+      <div className="mt-4">
+        <ProfileWatchingRail />
+      </div>
+
       <div className="mx-4 mt-6">
-        <ProfileDualRowTabBar
-          active={activeTab}
-          onChange={setActiveTab}
-          isOwnProfile
-          hasPublicPlaylists={hasPublicPlaylists}
-        />
+        <ProfileMainTabBar active={activeTab} onChange={setActiveTab} />
       </div>
 
       <div className="mx-4 mt-4">
+        {activeTab === 'library' && user?.id != null ? (
+          <ProfileLibraryTabPanel
+            variant="own"
+            section={librarySection}
+            onSectionChange={setLibrarySection}
+            showPlaylistsChip
+            profileUserId={String(user.id)}
+            profileBase="/profile"
+            watchedItems={watchedItems}
+            favoriteListItems={favoriteListItems}
+            favoriteOrderIds={favoriteAnime}
+          />
+        ) : null}
         {activeTab === 'activity' ? (
           <ProfileActivityTabPanel
             variant="own"
@@ -267,35 +295,22 @@ const Profile = () => {
           />
         ) : null}
         {activeTab === 'stats' ? (
-          <ProfileStatsOverviewPanel
+          <ProfileStatsAndBadgesTabPanel
             variant="own"
             overview={overview}
+            topGenres={mergedStats.topGenres}
             fullStatsTo="/profile/stats"
-          />
-        ) : null}
-        {activeTab === 'watching' ? <ProfileWatchingTabPanel variant="own" /> : null}
-        {activeTab === 'favorites' ? (
-          <ProfileFavoritesTabPanel
-            variant="own"
-            items={favoriteListItems}
-            orderedIds={favoriteAnime}
-            profileBase="/profile"
-          />
-        ) : null}
-        {activeTab === 'playlists' && user?.id != null ? (
-          <ProfilePlaylistsTabPanel
-            variant="own"
-            profileUserId={String(user.id)}
-            profileBase="/profile"
-          />
-        ) : null}
-        {activeTab === 'personal' ? (
-          <ProfilePersonalPanel
-            translator={socialProfile?.translator ?? null}
-            profileUserId={user?.id != null ? String(user.id) : undefined}
+            showBadgeTeaser
           />
         ) : null}
       </div>
+
+      <ProfileToolsSheet
+        open={toolsOpen}
+        onOpenChange={setToolsOpen}
+        translator={socialProfile?.translator ?? null}
+        profileUserId={user?.id != null ? String(user.id) : undefined}
+      />
     </div>
   )
 }

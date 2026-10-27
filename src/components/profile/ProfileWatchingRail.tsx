@@ -51,7 +51,7 @@ export const ProfileWatchingRail = () => {
 
   return (
     <div>
-      <h2 className="mb-3 px-4 text-sm font-semibold text-foreground">در حال تماشا</h2>
+      <h2 className="mb-3 px-4 text-sm font-semibold text-foreground">ادامه تماشا</h2>
       {isLoading && watching.length === 0 ? (
         <div className="mx-4 flex gap-2 overflow-hidden">
           {Array.from({ length: 3 }).map((_, i) => (

@@ -18,7 +18,7 @@ export const ProfilePersonalSubpageLayout = ({
       <div className="flex flex-col gap-1 px-4 py-3.5">
         <div className="flex items-center gap-2">
           <Link
-            to="/profile?tab=personal"
+            to="/profile"
             className="inline-flex items-center gap-1 text-sm text-muted-foreground active:opacity-80"
           >
             <ChevronRight className="h-4 w-4" aria-hidden />
