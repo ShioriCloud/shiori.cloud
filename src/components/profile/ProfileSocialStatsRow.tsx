@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { Users } from 'lucide-react'
 import {
   profileHighlightGlowClass,
   profileHighlightSectionClass,
@@ -17,7 +16,12 @@ type ProfileSocialStatsRowProps = {
   className?: string
 }
 
-const MetricCell = ({ value, label, to }: Metric) => {
+const MetricCell = ({
+  value,
+  label,
+  to,
+  dividerAfter,
+}: Metric & { dividerAfter?: boolean }) => {
   const body = (
     <>
       <p className="text-sm font-bold tabular-nums leading-none text-foreground">{value}</p>
@@ -27,6 +31,7 @@ const MetricCell = ({ value, label, to }: Metric) => {
 
   const cellClass = cn(
     'flex min-w-0 flex-1 flex-col items-center justify-center px-1 py-2.5 text-center',
+    dividerAfter && 'border-e border-border/45',
     to && 'active:opacity-80 transition-opacity'
   )
 
@@ -46,21 +51,9 @@ export const ProfileSocialStatsRow = ({ metrics, className }: ProfileSocialStats
       <div className={profileHighlightGlowClass('right', 'sky')} aria-hidden />
 
       <div className="relative flex items-stretch">
-        <div
-          className={cn(
-            'flex w-9 shrink-0 items-center justify-center border-e border-border/40',
-            'text-primary-400'
-          )}
-          aria-hidden
-        >
-          <Users className="h-4 w-4 opacity-80" />
-        </div>
-
-        <div className="flex min-w-0 flex-1 divide-x divide-border/40">
-          {metrics.map((metric) => (
-            <MetricCell key={metric.label} {...metric} />
-          ))}
-        </div>
+        {metrics.map((metric, index) => (
+          <MetricCell key={metric.label} {...metric} dividerAfter={index === 0} />
+        ))}
       </div>
     </section>
   </div>

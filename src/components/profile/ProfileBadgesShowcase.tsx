@@ -6,6 +6,7 @@ import { BadgeVisual } from '@/components/profile/badges/badgeUi'
 import { ProfileBadgesSheet } from '@/components/profile/badges/ProfileBadgesSheet'
 import { ProfileSectionMoreLink } from '@/components/profile/ProfileSectionMoreLink'
 import {
+  profileBadgeShowcaseAuraClass,
   profileBadgeShowcaseFaceClass,
   profileBadgeShowcaseOuterClass,
   profileHighlightGlowClass,
@@ -171,26 +172,32 @@ export const ProfileBadgesShowcase = ({
 
             {preview.length > 0 ? (
               <div className="mt-6 flex flex-wrap items-center justify-center gap-3 px-1">
-                {preview.map((badge) => (
-                  <button
-                    key={badge.id}
-                    type="button"
-                    onClick={() => openPreview(badge)}
-                    className={profileBadgeShowcaseOuterClass}
-                    aria-label={badge.title}
-                  >
-                    <div className={profileBadgeShowcaseFaceClass(rarityForPreview(badge))}>
-                      <BadgeVisual
-                        earned
-                        imageUrl={badge.image_url}
-                        title={badge.title}
-                        rarity={rarityForPreview(badge)}
-                        size="sm"
-                        className="h-11 w-11 drop-shadow-[0_0_18px_rgba(251,191,36,0.35)]"
-                      />
-                    </div>
-                  </button>
-                ))}
+                {preview.map((badge) => {
+                  const rarity = rarityForPreview(badge)
+                  return (
+                    <button
+                      key={badge.id}
+                      type="button"
+                      onClick={() => openPreview(badge)}
+                      className="relative shrink-0"
+                      aria-label={badge.title}
+                    >
+                      <span className={profileBadgeShowcaseAuraClass(rarity)} aria-hidden />
+                      <div className={profileBadgeShowcaseOuterClass(rarity)}>
+                        <div className={profileBadgeShowcaseFaceClass()}>
+                          <BadgeVisual
+                            earned
+                            imageUrl={badge.image_url}
+                            title={badge.title}
+                            rarity={rarity}
+                            size="sm"
+                            className="drop-shadow-[0_0_20px_rgba(251,191,36,0.4)]"
+                          />
+                        </div>
+                      </div>
+                    </button>
+                  )
+                })}
               </div>
             ) : variant === 'own' ? (
               <Link

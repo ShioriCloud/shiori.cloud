@@ -17,6 +17,8 @@ import type { SocialBadgeCatalogItem } from '@/services/socialProfile'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
 
+const SHOWCASE_MAX = 4
+
 const ProfileBadges = () => {
   const { data, isLoading, isError } = useSocialBadgeCatalogMe(true)
   const showcaseMutation = useUpdateSocialBadgeShowcase()
@@ -54,7 +56,7 @@ const ProfileBadges = () => {
     const has = draftShowcase.includes(badgeId)
     if (has) {
       setDraftShowcase(draftShowcase.filter((id) => id !== badgeId))
-    } else if (draftShowcase.length >= 3) {
+    } else if (draftShowcase.length >= SHOWCASE_MAX) {
       return
     } else {
       setDraftShowcase([...draftShowcase, badgeId])
@@ -107,11 +109,11 @@ const ProfileBadges = () => {
                 </button>
               </div>
               <p className="mb-3 text-xs text-muted-foreground">
-                حداکثر ۳ نشان دریافت‌شده در پروفایل نمایش داده می‌شود.
+                حداکثر {toPersianDigits(SHOWCASE_MAX)} نشان دریافت‌شده در پروفایل نمایش داده می‌شود.
               </p>
               <div className="flex flex-wrap justify-center gap-3">
                 {(showcaseEdit ? earnedBadges : earnedBadges.filter((b) => showcaseSet.has(b.id)))
-                  .slice(0, 3)
+                  .slice(0, SHOWCASE_MAX)
                   .map((badge) => (
                     <button
                       key={badge.id}
@@ -143,7 +145,7 @@ const ProfileBadges = () => {
                 <div className="mt-4 grid grid-cols-3 gap-2">
                   {earnedBadges.map((badge) => {
                     const picked = showcaseSet.has(badge.id)
-                    const full = draftShowcase.length >= 3 && !picked
+                    const full = draftShowcase.length >= SHOWCASE_MAX && !picked
                     return (
                       <button
                         key={badge.id}

@@ -34,7 +34,7 @@ export const ProfileBadgesSection = ({
       ? `${toPersianDigits(earned)} از ${toPersianDigits(total)}`
       : toPersianDigits(earned)
 
-  const preview = previewBadges?.slice(0, 3) ?? []
+  const preview = previewBadges?.slice(0, 4) ?? []
 
   const headerLink =
     variant === 'own' ? (
