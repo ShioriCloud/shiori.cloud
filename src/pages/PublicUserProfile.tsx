@@ -302,7 +302,7 @@ const PublicUserProfile = () => {
           translator={translator}
           profileUserId={telegramUserId}
           title="ترجمه‌هاش"
-          compact
+          className="!mt-3"
         />
       ) : null}
 

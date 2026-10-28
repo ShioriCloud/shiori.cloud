@@ -258,7 +258,7 @@ const Profile = () => {
           translator={socialProfile.translator}
           profileUserId={String(user.id)}
           title="ترجمه‌هام"
-          compact
+          className="!mt-3"
         />
       ) : null}
 

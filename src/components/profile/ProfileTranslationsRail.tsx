@@ -13,7 +13,6 @@ import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
 
 const DEFAULT_VISIBLE = 5
-const PROFILE_COMPACT_VISIBLE = 4
 
 const joinRolesFa = (roles: string[]): string => {
   if (roles.length === 0) return 'مترجم'
@@ -44,8 +43,6 @@ type ProfileTranslationsRailProps = {
   /** Section title — own profile vs another user. */
   title?: string
   className?: string
-  /** Tighter rail for profile hero (fewer/smaller posters). */
-  compact?: boolean
 }
 
 export const ProfileTranslationsRail = ({
@@ -54,19 +51,16 @@ export const ProfileTranslationsRail = ({
   maxVisible = DEFAULT_VISIBLE,
   title = 'ترجمه‌هاش',
   className,
-  compact = false,
 }: ProfileTranslationsRailProps) => {
   const total = translator.anime_count
   if (total === 0) return null
 
-  const cap = compact ? Math.min(maxVisible, PROFILE_COMPACT_VISIBLE) : maxVisible
-  const visible = translator.anime.slice(0, cap)
-  const slideWidth = compact ? 'w-[76px] sm:w-[84px]' : 'w-[100px]'
+  const visible = translator.anime.slice(0, maxVisible)
   const allPath = `/u/${encodeURIComponent(profileUserId)}/translations`
   const roleLine = formatTranslatorRoleLine(translator.anime)
 
   return (
-    <div className={cn(compact ? 'mx-4 mt-3' : 'mx-4 mt-6', className)}>
+    <div className={cn('mx-4 mt-6', className)}>
       <section className={profileHighlightSectionClass('sky')}>
         <div className={profileHighlightGlowClass('right', 'sky')} aria-hidden />
         <div
@@ -74,7 +68,7 @@ export const ProfileTranslationsRail = ({
           aria-hidden
         />
 
-        <div className={cn('relative px-3.5', compact ? 'pt-3 pb-2' : 'pt-3.5 pb-2.5')}>
+        <div className="relative px-3.5 pt-3.5 pb-2.5">
           <div className="flex items-start gap-2.5">
             <span
               className={cn(
@@ -98,7 +92,7 @@ export const ProfileTranslationsRail = ({
           </div>
         </div>
 
-        <div className={cn('relative', compact ? 'pb-2.5' : 'pb-3.5')}>
+        <div className="relative pb-3.5">
           <HomeRailScroller
             restoreKey={`profile-translations:${profileUserId}`}
             className="px-3.5"
@@ -107,7 +101,7 @@ export const ProfileTranslationsRail = ({
               const routeRef = { id: item.anime_id, slug: item.slug, title: item.title }
               const roleLabel = String(item.role ?? '').trim() || 'مترجم'
               return (
-                <HomeRailSlide key={item.anime_id} className={slideWidth}>
+                <HomeRailSlide key={item.anime_id} className="w-[100px]">
                   <AnimePrefetchLink
                     animeId={animePublicSegment(routeRef)}
                     to={animeDetailPath(routeRef)}
@@ -115,12 +109,7 @@ export const ProfileTranslationsRail = ({
                     aria-label={`مشاهده ${item.title}`}
                   >
                     <div className="media-card-skeuo rounded-xl">
-                      <div
-                        className={cn(
-                          'media-card-skeuo-face relative bg-muted',
-                          compact ? 'aspect-square' : 'aspect-[2/3]'
-                        )}
-                      >
+                      <div className="media-card-skeuo-face relative aspect-[2/3] bg-muted">
                         {item.image ? (
                           <img
                             src={item.image}

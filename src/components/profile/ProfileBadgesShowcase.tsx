@@ -6,7 +6,8 @@ import { BadgeVisual } from '@/components/profile/badges/badgeUi'
 import { ProfileBadgesSheet } from '@/components/profile/badges/ProfileBadgesSheet'
 import { ProfileSectionMoreLink } from '@/components/profile/ProfileSectionMoreLink'
 import {
-  profileBadgeShowcaseSlotClass,
+  profileBadgeShowcaseFaceClass,
+  profileBadgeShowcaseOuterClass,
   profileHighlightGlowClass,
   profileHighlightSectionClass,
 } from '@/components/profile/profileHighlightCard'
@@ -44,7 +45,7 @@ type ProfileBadgesShowcaseProps = {
   className?: string
 }
 
-const PREVIEW_COUNT = 3
+const PREVIEW_COUNT = 4
 
 export const ProfileBadgesShowcase = ({
   variant,
@@ -169,26 +170,25 @@ export const ProfileBadgesShowcase = ({
             </div>
 
             {preview.length > 0 ? (
-              <div className="mt-6 flex items-center justify-center gap-4 px-1">
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3 px-1">
                 {preview.map((badge) => (
                   <button
                     key={badge.id}
                     type="button"
                     onClick={() => openPreview(badge)}
-                    className={cn(
-                      'active:scale-95 transition-transform',
-                      profileBadgeShowcaseSlotClass(rarityForPreview(badge))
-                    )}
+                    className={profileBadgeShowcaseOuterClass}
                     aria-label={badge.title}
                   >
-                    <BadgeVisual
-                      earned
-                      imageUrl={badge.image_url}
-                      title={badge.title}
-                      rarity={rarityForPreview(badge)}
-                      size="sm"
-                      className="h-12 w-12 drop-shadow-[0_0_20px_rgba(251,191,36,0.35)]"
-                    />
+                    <div className={profileBadgeShowcaseFaceClass(rarityForPreview(badge))}>
+                      <BadgeVisual
+                        earned
+                        imageUrl={badge.image_url}
+                        title={badge.title}
+                        rarity={rarityForPreview(badge)}
+                        size="sm"
+                        className="h-11 w-11 drop-shadow-[0_0_18px_rgba(251,191,36,0.35)]"
+                      />
+                    </div>
                   </button>
                 ))}
               </div>
