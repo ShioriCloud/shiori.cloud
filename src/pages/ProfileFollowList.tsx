@@ -1,5 +1,4 @@
-import { Link, useLocation, useParams } from 'react-router-dom'
-import { ChevronRight } from 'lucide-react'
+import { useLocation, useParams } from 'react-router-dom'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { ProfileFollowListRow } from '@/components/profile/ProfileFollowListRow'
 import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
@@ -19,9 +18,6 @@ const ProfileFollowList = () => {
   const title = isFollowing ? 'دنبال‌شده‌ها' : 'دنبال‌کننده‌ها'
 
   const subjectId = routeUserId?.trim() || (user?.id != null ? String(user.id) : '')
-  const profileBack = routeUserId
-    ? `/u/${encodeURIComponent(routeUserId)}`
-    : '/profile'
 
   const viewingOther = Boolean(routeUserId?.trim())
   const socialBlocked = !viewingOther && socialMe?.enabled === false
@@ -41,21 +37,8 @@ const ProfileFollowList = () => {
 
   return (
     <div className="bg-background pb-24 text-foreground">
-      <div className="sticky top-[var(--app-header-offset)] z-10 border-b border-border/60 bg-background/95 backdrop-blur-sm">
-        <div className="flex items-center gap-2 px-4 py-3.5">
-          <Link
-            to={profileBack}
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground active:opacity-80"
-          >
-            <ChevronRight className="h-4 w-4" aria-hidden />
-            پروفایل
-          </Link>
-          <h1 className="flex-1 text-center text-lg font-semibold">{title}</h1>
-          <span className="w-12" aria-hidden />
-        </div>
-      </div>
-
       <div className="space-y-3 px-4 pt-4">
+        <h1 className="text-lg font-semibold">{title}</h1>
         {!viewingOther && socialMeLoading ? (
           <SocialListSkeleton rows={2} />
         ) : socialBlocked ? (

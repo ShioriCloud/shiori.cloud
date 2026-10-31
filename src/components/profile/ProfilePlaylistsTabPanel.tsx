@@ -1,21 +1,75 @@
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft } from 'lucide-react'
-import AnimePrefetchLink from '@/components/AnimePrefetchLink'
-import { BidiText } from '@/components/BidiText'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
-import { getListIcon } from '@/components/my-list/listIcons'
 import { usePublicCustomListQuery, usePublicCustomListsQuery } from '@/hooks/usePublicCustomLists'
-import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
-import { SOCIAL_DIVIDER_CLASS, SOCIAL_SURFACE_CLASS } from '@/components/profile/social/socialUi'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { cn } from '@/lib/utils'
-import { useState } from 'react'
 
 type ProfilePlaylistsTabPanelProps = {
   profileUserId: string
   profileBase: string
   variant: 'own' | 'public'
+}
+
+const ListPosterGrid = ({ images }: { images: string[] }) => {
+  const cells = Array.from({ length: 4 }, (_, i) => images[i] ?? null)
+  return (
+    <div className="grid aspect-square grid-cols-2 grid-rows-2 gap-0.5 overflow-hidden rounded-lg bg-muted/60">
+      {cells.map((src, i) => (
+        <div key={src ? `${src}-${i}` : `empty-${i}`} className="relative min-h-0 min-w-0 overflow-hidden">
+          {src ? (
+            <img
+              src={src}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-background/80" />
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+const PlaylistCard = ({
+  profileUserId,
+  listId,
+  name,
+  itemCount,
+}: {
+  profileUserId: string
+  listId: string
+  name: string
+  itemCount: number
+}) => {
+  const detail = usePublicCustomListQuery(profileUserId, listId, true)
+  const images = useMemo(() => {
+    const items = detail.data?.list?.items ?? []
+    return items
+      .map((item) => item.image)
+      .filter((src): src is string => Boolean(src))
+      .slice(0, 4)
+  }, [detail.data?.list?.items])
+
+  return (
+    <Link
+      to={`/u/${encodeURIComponent(profileUserId)}/lists/${encodeURIComponent(listId)}`}
+      className={cn(
+        'w-[7.25rem] shrink-0 rounded-xl border border-border/70 bg-card p-2 text-start',
+        'transition-colors active:bg-muted/30'
+      )}
+    >
+      <ListPosterGrid images={images} />
+      <p className="mt-2 line-clamp-1 text-sm font-semibold text-foreground">{name}</p>
+      <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
+        {toPersianDigits(itemCount)} انیمه
+      </p>
+    </Link>
+  )
 }
 
 export const ProfilePlaylistsTabPanel = ({
@@ -25,9 +79,6 @@ export const ProfilePlaylistsTabPanel = ({
 }: ProfilePlaylistsTabPanelProps) => {
   const { data, isLoading } = usePublicCustomListsQuery(profileUserId, true)
   const lists = data?.lists ?? []
-  const [expandedId, setExpandedId] = useState<string | null>(lists[0]?.id ?? null)
-
-  const detail = usePublicCustomListQuery(profileUserId, expandedId ?? '', Boolean(expandedId))
 
   if (isLoading) {
     return <SocialListSkeleton rows={3} />
@@ -48,67 +99,19 @@ export const ProfilePlaylistsTabPanel = ({
 
   return (
     <div className="space-y-4">
-      <div className={cn(SOCIAL_SURFACE_CLASS, SOCIAL_DIVIDER_CLASS, 'overflow-hidden')}>
-        {lists.map((list) => {
-          const { Icon } = getListIcon(
-            (list.icon as 'heart' | 'star' | 'fire' | 'bookmark' | 'sparkle') ?? 'heart'
-          )
-          const active = expandedId === list.id
-          return (
-            <button
+      <div className="-mx-4 overflow-x-auto px-4 pb-1 scrollbar-none">
+        <div className="flex w-max gap-2.5">
+          {lists.map((list) => (
+            <PlaylistCard
               key={list.id}
-              type="button"
-              onClick={() => setExpandedId(list.id)}
-              className={cn(
-                'flex w-full items-center gap-3 px-3 py-3 text-right transition-colors',
-                active ? 'bg-violet-400/10' : 'hover:bg-muted/30'
-              )}
-            >
-              <span
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-violet-400/25 bg-violet-400/10 text-violet-600 dark:text-violet-300"
-              >
-                <Icon className="h-5 w-5" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold text-foreground">{list.name}</span>
-                <span className="mt-0.5 block text-xs text-muted-foreground">
-                  {toPersianDigits(list.item_count)} انیمه
-                </span>
-              </span>
-              <ChevronLeft
-                className={cn('h-4 w-4 shrink-0 transition-transform', active && 'rotate-90')}
-              />
-            </button>
-          )
-        })}
-      </div>
-
-      {expandedId && detail.data?.list?.items?.length ? (
-        <div className={cn(SOCIAL_SURFACE_CLASS, 'grid grid-cols-3 gap-2 p-2')}>
-          {detail.data.list.items.map((item) => {
-            const routeRef = { id: item.anime_id, slug: item.slug, title: item.title }
-            return (
-              <AnimePrefetchLink
-                key={item.anime_id}
-                animeId={animePublicSegment(routeRef)}
-                to={animeDetailPath(routeRef)}
-                className="block overflow-hidden rounded-xl active:scale-[0.98]"
-              >
-                <div className="relative aspect-[2/3] bg-muted">
-                  {item.image ? (
-                    <img src={item.image} alt="" className="h-full w-full object-cover" loading="lazy" />
-                  ) : null}
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-1.5">
-                    <BidiText as="p" className="line-clamp-2 text-[9px] font-semibold text-white">
-                      {item.title}
-                    </BidiText>
-                  </div>
-                </div>
-              </AnimePrefetchLink>
-            )
-          })}
+              profileUserId={profileUserId}
+              listId={list.id}
+              name={list.name}
+              itemCount={list.item_count}
+            />
+          ))}
         </div>
-      ) : null}
+      </div>
 
       {variant === 'own' ? (
         <Link
@@ -118,12 +121,7 @@ export const ProfilePlaylistsTabPanel = ({
           مدیریت پلی‌لیست‌ها در تب شخصی
         </Link>
       ) : (
-        <Link
-          to={`${profileBase}?tab=playlists`}
-          className="sr-only"
-        >
-          playlists
-        </Link>
+        <span className="sr-only">{profileBase}</span>
       )}
     </div>
   )

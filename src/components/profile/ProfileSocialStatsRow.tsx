@@ -52,7 +52,11 @@ export const ProfileSocialStatsRow = ({ metrics, className }: ProfileSocialStats
 
       <div className="relative flex items-stretch">
         {metrics.map((metric, index) => (
-          <MetricCell key={metric.label} {...metric} dividerAfter={index === 0} />
+          <MetricCell
+            key={metric.label}
+            {...metric}
+            dividerAfter={index < metrics.length - 1}
+          />
         ))}
       </div>
     </section>

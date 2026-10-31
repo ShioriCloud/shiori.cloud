@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { AlarmClockIcon, CustomerServiceIcon } from 'hugeicons-react'
-import { Ban, ChevronLeft, ChevronRight, Crown, Moon, Sun } from 'lucide-react'
+import { Ban, ChevronLeft, Crown, Moon, Sun } from 'lucide-react'
 import { useAppAuth } from '../hooks/useAppAuth'
 import { useNotifications } from '../hooks/useNotifications'
 import { useSubscriptionMe } from '../hooks/useSubscription'
@@ -114,21 +114,8 @@ const ProfileSettings = () => {
 
   return (
     <div className="bg-background pb-24 text-foreground">
-      <div className="sticky top-[var(--app-header-offset)] z-10 border-b border-border/60 bg-background/95 backdrop-blur-sm">
-        <div className="flex items-center gap-2 px-4 py-3.5">
-          <Link
-            to="/profile"
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground active:opacity-80"
-          >
-            <ChevronRight className="h-4 w-4" aria-hidden />
-            پروفایل
-          </Link>
-          <h1 className="flex-1 text-center text-lg font-semibold">تنظیمات</h1>
-          <span className="w-12" aria-hidden />
-        </div>
-      </div>
-
       <div className="px-4 pt-4">
+        <h1 className="mb-4 text-lg font-semibold">تنظیمات</h1>
         {showIdentitySettings ? (
           <div className="mt-2">
             <SectionTitle>نام نمایشی</SectionTitle>

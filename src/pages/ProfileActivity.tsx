@@ -1,5 +1,4 @@
-import { Link, useParams } from 'react-router-dom'
-import { ChevronRight } from 'lucide-react'
+import { useParams } from 'react-router-dom'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { ProfileCommentActivityList } from '@/components/profile/ProfileCommentActivityList'
 import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
@@ -26,26 +25,12 @@ const ProfileActivity = () => {
   const query = isPublic ? theirs : mine
   const { data, isLoading, isError, refetch } = query
 
-  const backTo = isPublic
-    ? `/u/${encodeURIComponent(targetId)}`
-    : '/profile?tab=personal'
 
   return (
     <div className="bg-background pb-24 text-foreground">
-      <div className="sticky top-[var(--app-header-offset)] z-10 border-b border-border/60 bg-background/95 backdrop-blur-sm">
-        <div className="flex items-center gap-2 px-4 py-3.5">
-          <Link
-            to={backTo}
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground active:opacity-80"
-          >
-            <ChevronRight className="h-4 w-4" aria-hidden />
-            پروفایل
-          </Link>
-          <h1 className="flex-1 text-center text-lg font-semibold">نظرات و فعالیت</h1>
-          <span className="w-12" aria-hidden />
-        </div>
+      <div className="px-4 pt-4 pb-2">
+        <h1 className="text-lg font-semibold">{isPublic ? 'نظرات' : 'نظرات من'}</h1>
       </div>
-
       <div className="space-y-3 px-4 pt-4">
         {!enabled ? (
           <ExploreEmptyState

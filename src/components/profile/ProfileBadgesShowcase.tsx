@@ -191,7 +191,7 @@ export const ProfileBadgesShowcase = ({
                             title={badge.title}
                             rarity={rarity}
                             size="sm"
-                            className="drop-shadow-[0_0_20px_rgba(251,191,36,0.4)]"
+                            className="h-11 w-11 drop-shadow-[0_0_16px_rgba(251,191,36,0.35)]"
                           />
                         </div>
                       </div>

@@ -1,5 +1,3 @@
-import { Link } from 'react-router-dom'
-import { ChevronRight } from 'lucide-react'
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
 import { BidiText } from '@/components/BidiText'
 import { MyListCompactCard } from '@/components/my-list/MyListUi'
@@ -27,21 +25,9 @@ const ProfileFullStats = () => {
 
   return (
     <div className="bg-background pb-24 text-foreground">
-      <div className="sticky top-[var(--app-header-offset)] z-10 border-b border-border/60 bg-background/95 backdrop-blur-sm">
-        <div className="flex items-center gap-2 px-4 py-3.5">
-          <Link
-            to="/profile"
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground active:opacity-80"
-          >
-            <ChevronRight className="h-4 w-4" aria-hidden />
-            پروفایل
-          </Link>
-          <h1 className="flex-1 text-center text-lg font-semibold">آمار کامل</h1>
-          <span className="w-12" aria-hidden />
-        </div>
-      </div>
 
       <div className="space-y-6 px-4 pt-4">
+        <h1 className="text-lg font-semibold">آمار کامل</h1>
         {!enabled ? (
           <>
             <div className="grid grid-cols-3 gap-2">

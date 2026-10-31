@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { ChevronRight } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
 import { SocialPeopleSearchField } from '@/components/profile/social/SocialPeopleSearchField'
@@ -12,28 +11,17 @@ import { useSocialProfileMe, useSocialUserSearch } from '@/hooks/useSocialProfil
 
 const ProfilePeopleSearch = () => {
   const { user } = useAppAuth()
+  const [searchParams] = useSearchParams()
   const { data: socialMe } = useSocialProfileMe(Boolean(user))
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(() => searchParams.get('q')?.trim() ?? '')
   const enabled = socialMe?.enabled === true
   const { data, isFetching, isError } = useSocialUserSearch(query, enabled && Boolean(user))
 
   return (
     <div className="bg-background pb-24 text-foreground">
-      <div className="sticky top-[var(--app-header-offset)] z-10 border-b border-border/60 bg-background/95 backdrop-blur-sm">
-        <div className="flex items-center gap-2 px-4 py-3.5">
-          <Link
-            to="/feed"
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground active:opacity-80"
-          >
-            <ChevronRight className="h-4 w-4" aria-hidden />
-            فید
-          </Link>
-          <h1 className="flex-1 text-center text-lg font-semibold">جست‌وجوی کاربران</h1>
-          <span className="w-12" aria-hidden />
-        </div>
-      </div>
 
       <div className="space-y-4 px-4 pt-4">
+        <h1 className="text-lg font-semibold">جست‌وجوی کاربران</h1>
         {!enabled ? (
           <ExploreEmptyState
             compact

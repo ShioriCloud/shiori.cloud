@@ -1,5 +1,5 @@
-import { Link, useParams } from 'react-router-dom'
-import { ChevronRight, Languages } from 'lucide-react'
+import { useParams } from 'react-router-dom'
+import { Languages } from 'lucide-react'
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
 import { BidiText } from '@/components/BidiText'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
@@ -16,7 +16,6 @@ const UserTranslationsPage = () => {
   const { user, isReady } = useAppAuth()
   const { data, isLoading, isError } = useSocialProfileUser(telegramUserId, Boolean(user), 1, 100)
 
-  const profilePath = `/u/${encodeURIComponent(telegramUserId)}`
   const translator = data?.translator ?? null
   const displayName = data?.profile?.display_name ?? 'کاربر'
 
@@ -25,8 +24,8 @@ const UserTranslationsPage = () => {
   if (!telegramUserId || isError || (!isLoading && !translator)) {
     return (
       <div className="bg-background pb-24 text-foreground">
-        <Header backTo={profilePath} title="ترجمه‌ها" />
-        <div className="px-4 pt-8">
+        <div className="px-4 pt-4">
+          <h1 className="mb-6 text-lg font-semibold">ترجمه‌ها</h1>
           <ExploreEmptyState title="ترجمه‌ای نیست" subtitle="این کاربر مترجم متصل ندارد." />
         </div>
       </div>
@@ -35,17 +34,16 @@ const UserTranslationsPage = () => {
 
   return (
     <div className="bg-background pb-24 text-foreground">
-      <Header backTo={profilePath} title="ترجمه‌ها" />
-
       <div className="px-4 pt-4">
+        <h1 className="mb-4 text-lg font-semibold">ترجمه‌ها</h1>
         <div
           className={cn(
-            'mb-5 overflow-hidden rounded-2xl border border-violet-500/25',
-            'bg-gradient-to-br from-violet-500/18 via-background to-fuchsia-500/12 p-4'
+            'mb-5 overflow-hidden rounded-2xl border border-border/60',
+            'bg-gradient-to-br from-primary-400/[0.08] via-background to-sky-400/[0.06] p-4'
           )}
         >
           <div className="flex items-start gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-violet-400/30 bg-violet-500/15 text-violet-300">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-primary-400/25 bg-primary-400/10 text-primary-400">
               <Languages className="h-5 w-5" aria-hidden />
             </span>
             <div className="min-w-0 flex-1 text-right">
@@ -116,21 +114,5 @@ const UserTranslationsPage = () => {
     </div>
   )
 }
-
-const Header = ({ backTo, title }: { backTo: string; title: string }) => (
-  <div className="sticky top-[var(--app-header-offset)] z-10 border-b border-border/60 bg-background/95 backdrop-blur-sm">
-    <div className="flex items-center gap-2 px-4 py-3.5">
-      <Link
-        to={backTo}
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground active:opacity-80"
-      >
-        <ChevronRight className="h-4 w-4" aria-hidden />
-        پروفایل
-      </Link>
-      <h1 className="flex-1 text-center text-lg font-semibold">{title}</h1>
-      <span className="w-12" aria-hidden />
-    </div>
-  </div>
-)
 
 export default UserTranslationsPage

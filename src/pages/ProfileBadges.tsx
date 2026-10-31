@@ -1,6 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { ChevronRight } from 'lucide-react'
 import { ContentLoadingSkeleton } from '@/components/RouteFallback'
 import { BadgeDetailDialog } from '@/components/profile/badges/BadgeDetailDialog'
 import {
@@ -72,20 +70,11 @@ const ProfileBadges = () => {
 
   return (
     <div className="bg-background pb-24 text-foreground">
-      <div className="sticky top-[var(--app-header-offset)] z-10 border-b border-border/60 bg-background/95 backdrop-blur-sm">
-        <div className="flex items-center gap-2 px-4 py-3.5">
-          <Link
-            to="/profile"
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground active:opacity-80"
-          >
-            <ChevronRight className="h-4 w-4" aria-hidden />
-            پروفایل
-          </Link>
-          <h1 className="flex-1 text-center text-lg font-semibold">نشان‌ها</h1>
-          <span className="min-w-[3.5rem] text-left text-sm font-medium text-primary-400">
-            {toPersianDigits(earned)} از {toPersianDigits(total)}
-          </span>
-        </div>
+      <div className="flex items-end justify-between gap-3 px-4 pt-4">
+        <h1 className="text-lg font-semibold">نشان‌ها</h1>
+        <span className="text-sm font-medium text-primary-400">
+          {toPersianDigits(earned)} از {toPersianDigits(total)}
+        </span>
       </div>
 
       {isError || data?.enabled === false ? (
@@ -204,28 +193,29 @@ const ProfileBadges = () => {
                     <p className="line-clamp-2 flex-1 text-[11px] font-medium leading-snug text-foreground">
                       {badge.display_title}
                     </p>
-                    {!badge.earned && badge.unlock_hint ? (
-                      <p className="mt-1 line-clamp-3 text-[9px] leading-tight text-muted-foreground">
-                        {badge.unlock_hint}
-                      </p>
-                    ) : null}
-                    {!(badge.hidden && !badge.earned) ? (
-                      <div className="mt-2 w-full">
-                        <BadgeProgressBar
-                          current={badge.progress.current}
-                          target={badge.progress.target}
-                          earned={badge.earned}
-                        />
-                        {!badge.earned && badge.progress.target > 0 ? (
+                    {(() => {
+                      const progressDone =
+                        badge.earned ||
+                        (badge.progress.target > 0 &&
+                          badge.progress.current >= badge.progress.target)
+                      if (progressDone || (badge.hidden && !badge.earned)) return null
+                      if (badge.progress.target <= 0) return null
+                      return (
+                        <div className="mt-2 w-full">
+                          <BadgeProgressBar
+                            current={badge.progress.current}
+                            target={badge.progress.target}
+                            earned={false}
+                          />
                           <p className="mt-1 text-[9px] text-muted-foreground">
                             {formatBadgeProgress(
                               badge.progress.current,
                               badge.progress.target
                             )}
                           </p>
-                        ) : null}
-                      </div>
-                    ) : null}
+                        </div>
+                      )
+                    })()}
                   </button>
                 ))}
               </div>

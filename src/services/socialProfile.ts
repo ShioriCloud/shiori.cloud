@@ -102,8 +102,19 @@ export type SocialProfileFollowSuggestions = {
   items: SocialProfileFollowSuggestionItem[]
 }
 
+export type SocialFeedEngagement = {
+  activity_key: string
+  like_count: number
+  liked_by_me: boolean
+  my_note: string | null
+}
+
+type SocialFeedItemBase = {
+  engagement?: SocialFeedEngagement
+}
+
 export type SocialProfileFeedItem =
-  | {
+  | (SocialFeedItemBase & {
       type: 'watch_progress' | 'rating' | 'list_add'
       actor: SocialProfileUserListItem
       anime_id: string
@@ -114,8 +125,8 @@ export type SocialProfileFeedItem =
       episodes_total: number | null
       user_rating?: number | null
       updated_at: string
-    }
-  | {
+    })
+  | (SocialFeedItemBase & {
       type: 'anime_comment'
       actor: SocialProfileUserListItem
       comment_id: string
@@ -125,8 +136,8 @@ export type SocialProfileFeedItem =
       title: string
       image: string
       updated_at: string
-    }
-  | {
+    })
+  | (SocialFeedItemBase & {
       type: 'public_list_add'
       actor: SocialProfileUserListItem
       list_id: string
@@ -136,13 +147,25 @@ export type SocialProfileFeedItem =
       title: string
       image: string
       updated_at: string
-    }
-  | {
+    })
+  | (SocialFeedItemBase & {
       type: 'user_follow'
       actor: SocialProfileUserListItem
       target: SocialProfileUserListItem
       updated_at: string
-    }
+    })
+
+export const socialFeedActivityKey = (item: SocialProfileFeedItem): string => {
+  if (item.engagement?.activity_key) return item.engagement.activity_key
+  if (item.type === 'anime_comment') return `c:${item.comment_id}`
+  if (item.type === 'user_follow') {
+    return `f:${item.actor.telegram_user_id}:${item.target.telegram_user_id}`
+  }
+  if (item.type === 'public_list_add') {
+    return `pl:${item.list_id}:${item.anime_id}`
+  }
+  return `${item.type}:${item.actor.telegram_user_id}:${item.anime_id}`
+}
 
 export type SocialProfileFeed = {
   enabled: boolean
@@ -280,6 +303,35 @@ export const fetchSocialFeed = async (page = 1, limit = 30): Promise<SocialProfi
   shioriFetch<SocialProfileFeed>(
     `/user-social-profile/feed?page=${encodeURIComponent(String(page))}&limit=${encodeURIComponent(String(limit))}`
   )
+
+export const toggleSocialFeedLike = async (
+  activityKey: string,
+  activityType?: string
+): Promise<SocialFeedEngagement> =>
+  shioriFetch<SocialFeedEngagement>('/user-social-profile/feed/like', {
+    method: 'POST',
+    body: JSON.stringify({
+      activity_key: activityKey,
+      activity_type: activityType,
+    }),
+  })
+
+export const upsertSocialFeedNote = async (
+  activityKey: string,
+  body: string
+): Promise<SocialFeedEngagement> =>
+  shioriFetch<SocialFeedEngagement>('/user-social-profile/feed/note', {
+    method: 'PUT',
+    body: JSON.stringify({ activity_key: activityKey, body }),
+  })
+
+export const deleteSocialFeedNote = async (
+  activityKey: string
+): Promise<SocialFeedEngagement> =>
+  shioriFetch<SocialFeedEngagement>('/user-social-profile/feed/note', {
+    method: 'DELETE',
+    body: JSON.stringify({ activity_key: activityKey }),
+  })
 
 export const fetchSocialFollowSuggestions = async (limit = 8): Promise<SocialProfileFollowSuggestions> =>
   shioriFetch<SocialProfileFollowSuggestions>(
