@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { Bell, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ButtonGroup } from '@/components/ui/button-group'
 import { useAppAuth } from '../hooks/useAppAuth'
 import { useNotifications } from '../hooks/useNotifications'
 import { useUserAnimeList } from '../hooks/useUserAnimeList'
@@ -148,7 +149,7 @@ const Profile = () => {
         roleBadges={roleBadges}
         onAvatarError={() => setAvatarFailed(true)}
         leftAction={
-          <div className="flex items-center gap-2">
+          <ButtonGroup orientation="vertical" aria-label="میانبرهای پروفایل">
             <Button
               asChild
               type="button"
@@ -183,7 +184,7 @@ const Profile = () => {
                 <Settings className="h-4 w-4" />
               </Link>
             </Button>
-          </div>
+          </ButtonGroup>
         }
         subtitle={
           user?.email && !inTelegram ? (
