@@ -163,7 +163,7 @@ const PublicUserProfile = () => {
       <div className="px-4 pt-10 pb-24">
         <ExploreEmptyState
           title="پروفایل در دسترس نیست"
-          subtitle="این پروفایل اجتماعی را نمی‌توانی ببینی؛ ممکن است برای تو هنوز شبکه اجتماعی فعال نشده باشد."
+          subtitle="این پروفایل را نمی‌توانی ببینی؛ ممکن است حساب مسدود باشد یا برای تو قابل نمایش نباشد."
         />
         <Link to="/profile" className="mt-6 block text-center text-sm font-medium text-primary-400">
           برگشت به پروفایل من

@@ -21,6 +21,7 @@ import {
   fetchBlockedSocialUsers,
 } from '../services/socialProfile'
 import { queryKeys } from './queries/keys'
+import { showAppToast } from '@/store/appFeedbackStore'
 
 function useSocialAuthReady(enabled: boolean) {
   const [authReady, setAuthReady] = useState(() => hasAppUserAuth())
@@ -57,10 +58,16 @@ export function useUpdateSocialBadgeShowcase() {
   return useMutation({
     mutationFn: (badgeIds: string[]) => updateSocialBadgeShowcase(badgeIds),
     onMutate: async (badgeIds) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.socialBadgeCatalogMe })
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: queryKeys.socialBadgeCatalogMe }),
+        queryClient.cancelQueries({ queryKey: queryKeys.socialProfileMe }),
+      ])
       const prevCatalog = queryClient.getQueryData<Awaited<
         ReturnType<typeof fetchSocialBadgeCatalogMe>
       >>(queryKeys.socialBadgeCatalogMe)
+      const prevProfiles = queryClient.getQueriesData({
+        queryKey: queryKeys.socialProfileMe,
+      })
 
       if (prevCatalog) {
         queryClient.setQueryData(queryKeys.socialBadgeCatalogMe, {
@@ -97,12 +104,18 @@ export function useUpdateSocialBadgeShowcase() {
         }
       )
 
-      return { prevCatalog }
+      return { prevCatalog, prevProfiles }
     },
     onError: (_err, _ids, ctx) => {
       if (ctx?.prevCatalog) {
         queryClient.setQueryData(queryKeys.socialBadgeCatalogMe, ctx.prevCatalog)
       }
+      if (ctx?.prevProfiles) {
+        for (const [key, data] of ctx.prevProfiles) {
+          queryClient.setQueryData(key, data)
+        }
+      }
+      showAppToast('ذخیره نشان‌های پروفایل ناموفق بود', 'error')
     },
     onSuccess: (result) => {
       queryClient.setQueryData(
@@ -110,6 +123,9 @@ export function useUpdateSocialBadgeShowcase() {
         (old: Awaited<ReturnType<typeof fetchSocialBadgeCatalogMe>> | undefined) =>
           old ? { ...old, showcase: result.showcase } : old
       )
+      void queryClient.invalidateQueries({ queryKey: queryKeys.socialProfileMe })
+      void queryClient.invalidateQueries({ queryKey: queryKeys.socialBadgeCatalogMe })
+      showAppToast('نشان‌های پروفایل ذخیره شد', 'success')
     },
   })
 }
