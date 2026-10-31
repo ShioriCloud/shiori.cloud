@@ -221,14 +221,15 @@ const PublicUserProfile = () => {
         ]}
       />
 
-      <ProfileFollowButton
-        viewerId={user?.id}
-        targetId={telegramUserId}
-        apiEnabled
-        isFollowing={data.relationship?.is_following === true}
-        followsYou={data.relationship?.follows_you === true}
-        className="mx-4"
-      />
+      <div className="px-4">
+        <ProfileFollowButton
+          viewerId={user?.id}
+          targetId={telegramUserId}
+          apiEnabled
+          isFollowing={data.relationship?.is_following === true}
+          followsYou={data.relationship?.follows_you === true}
+        />
+      </div>
 
       {translator ? (
         <ProfileTranslationsRail

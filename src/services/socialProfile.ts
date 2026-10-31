@@ -228,6 +228,7 @@ export type SocialBadgePublicList = {
     is_new?: boolean
     rarity?: SocialBadgeRarity
     image_url: string | null
+    unlock_hint?: string | null
   }>
 }
 
@@ -310,6 +311,7 @@ export const toggleSocialFeedLike = async (
 ): Promise<SocialFeedEngagement> =>
   shioriFetch<SocialFeedEngagement>('/user-social-profile/feed/like', {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       activity_key: activityKey,
       activity_type: activityType,
@@ -322,6 +324,7 @@ export const upsertSocialFeedNote = async (
 ): Promise<SocialFeedEngagement> =>
   shioriFetch<SocialFeedEngagement>('/user-social-profile/feed/note', {
     method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ activity_key: activityKey, body }),
   })
 
@@ -330,6 +333,7 @@ export const deleteSocialFeedNote = async (
 ): Promise<SocialFeedEngagement> =>
   shioriFetch<SocialFeedEngagement>('/user-social-profile/feed/note', {
     method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ activity_key: activityKey }),
   })
 

@@ -11,13 +11,8 @@ import type { SocialBadgePublicList } from '@/services/socialProfile'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { BadgeVisual } from './badgeUi'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { BadgeDetailBody } from './BadgeDetailDialog'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 
 type ProfileBadgesSheetProps = {
   open: boolean
@@ -83,6 +78,7 @@ export const ProfileBadgesSheet = ({
                       earned
                       imageUrl={badge.image_url}
                       title={badge.title}
+                      rarity={badge.rarity}
                       size="sm"
                     />
                     {badge.is_new ? (
@@ -105,20 +101,18 @@ export const ProfileBadgesSheet = ({
 
       <Dialog open={detail != null} onOpenChange={(v) => !v && setDetail(null)}>
         {detail ? (
-          <DialogContent className="max-w-sm border-border/60 bg-card">
-            <DialogHeader className="items-center text-center">
-              <BadgeVisual
-                earned
-                imageUrl={detail.image_url}
-                title={detail.title}
-                size="lg"
-                className="mb-2"
-              />
-              <DialogTitle>{detail.title}</DialogTitle>
-              <DialogDescription className="text-sm leading-relaxed text-foreground/85">
-                {detail.description}
-              </DialogDescription>
-            </DialogHeader>
+          <DialogContent className="max-w-sm border-0 bg-transparent p-0 shadow-none sm:rounded-2xl">
+            <BadgeDetailBody
+              badge={{
+                title: detail.title,
+                description: detail.description,
+                rarity: detail.rarity,
+                image_url: detail.image_url,
+                earned: true,
+                unlock_hint: detail.unlock_hint ?? null,
+                earned_at: detail.earned_at,
+              }}
+            />
           </DialogContent>
         ) : null}
       </Dialog>

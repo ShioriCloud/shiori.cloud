@@ -48,7 +48,7 @@ export const profileBadgeShowcaseOuterClass = (rarity?: string) =>
 
 export const profileBadgeShowcaseAuraClass = (rarity?: string) =>
   cn(
-    'pointer-events-none absolute left-1/2 top-1/2 z-0 h-14 w-14 -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl',
+    'pointer-events-none absolute left-1/2 top-1/2 z-0 h-[4.5rem] w-[4.5rem] -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl',
     rarity === 'legendary' && 'bg-amber-400/55',
     rarity === 'epic' && 'bg-violet-400/50',
     rarity === 'rare' && 'bg-sky-400/45',
@@ -57,5 +57,5 @@ export const profileBadgeShowcaseAuraClass = (rarity?: string) =>
 
 export const profileBadgeShowcaseFaceClass = () =>
   cn(
-    'media-card-skeuo-face flex h-[4.25rem] w-[4.25rem] items-center justify-center bg-muted/20'
+    'media-card-skeuo-face flex h-[5.25rem] w-[5.25rem] items-center justify-center bg-muted/20 p-2.5'
   )

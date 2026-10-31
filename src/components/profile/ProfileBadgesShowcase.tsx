@@ -1,7 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Award, ChevronLeft } from 'lucide-react'
-import { BadgeDetailDialog } from '@/components/profile/badges/BadgeDetailDialog'
+import {
+  BadgeDetailBody,
+  BadgeDetailDialog,
+} from '@/components/profile/badges/BadgeDetailDialog'
 import { BadgeVisual } from '@/components/profile/badges/badgeUi'
 import { ProfileBadgesSheet } from '@/components/profile/badges/ProfileBadgesSheet'
 import { ProfileSectionMoreLink } from '@/components/profile/ProfileSectionMoreLink'
@@ -12,13 +15,7 @@ import {
   profileHighlightGlowClass,
   profileHighlightSectionClass,
 } from '@/components/profile/profileHighlightCard'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import {
   useSocialBadgeCatalogMe,
   useSocialBadgeCatalogUser,
@@ -35,6 +32,7 @@ type PublicBadge = {
   is_new?: boolean
   rarity?: string
   image_url: string | null
+  unlock_hint?: string | null
 }
 
 type ProfileBadgesShowcaseProps = {
@@ -191,7 +189,7 @@ export const ProfileBadgesShowcase = ({
                             title={badge.title}
                             rarity={rarity}
                             size="sm"
-                            className="h-11 w-11 drop-shadow-[0_0_16px_rgba(251,191,36,0.35)]"
+                            className="h-9 w-9 drop-shadow-[0_0_16px_rgba(251,191,36,0.35)]"
                           />
                         </div>
                       </div>
@@ -226,21 +224,18 @@ export const ProfileBadgesShowcase = ({
         }}
       >
         {selectedPublic ? (
-          <DialogContent className="max-w-sm border-border/60 bg-card">
-            <DialogHeader className="items-center text-center">
-              <BadgeVisual
-                earned
-                imageUrl={selectedPublic.image_url}
-                title={selectedPublic.title}
-                rarity={selectedPublic.rarity}
-                size="lg"
-                className="mb-2"
-              />
-              <DialogTitle>{selectedPublic.title}</DialogTitle>
-              <DialogDescription className="text-sm leading-relaxed text-foreground/85">
-                {selectedPublic.description}
-              </DialogDescription>
-            </DialogHeader>
+          <DialogContent className="max-w-sm border-0 bg-transparent p-0 shadow-none sm:rounded-2xl">
+            <BadgeDetailBody
+              badge={{
+                title: selectedPublic.title,
+                description: selectedPublic.description,
+                rarity: selectedPublic.rarity,
+                image_url: selectedPublic.image_url,
+                earned: true,
+                unlock_hint: selectedPublic.unlock_hint ?? null,
+                earned_at: selectedPublic.earned_at,
+              }}
+            />
           </DialogContent>
         ) : null}
       </Dialog>
