@@ -102,11 +102,21 @@ export type SocialProfileFollowSuggestions = {
   items: SocialProfileFollowSuggestionItem[]
 }
 
+export type SocialFeedPublicNote = {
+  telegram_user_id: string
+  display_name: string
+  photo_url: string | null
+  body: string
+  created_at: string
+}
+
 export type SocialFeedEngagement = {
   activity_key: string
   like_count: number
   liked_by_me: boolean
   my_note: string | null
+  my_note_is_private?: boolean
+  public_notes?: SocialFeedPublicNote[]
 }
 
 type SocialFeedItemBase = {
@@ -320,12 +330,17 @@ export const toggleSocialFeedLike = async (
 
 export const upsertSocialFeedNote = async (
   activityKey: string,
-  body: string
+  body: string,
+  isPrivate = false
 ): Promise<SocialFeedEngagement> =>
   shioriFetch<SocialFeedEngagement>('/user-social-profile/feed/note', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ activity_key: activityKey, body }),
+    body: JSON.stringify({
+      activity_key: activityKey,
+      body,
+      is_private: isPrivate,
+    }),
   })
 
 export const deleteSocialFeedNote = async (

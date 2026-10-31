@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Heart, StickyNote } from 'lucide-react'
+import { EyeOff, Heart, Lock, StickyNote } from 'lucide-react'
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
 import { BidiText } from '@/components/BidiText'
 import { Button } from '@/components/ui/button'
@@ -29,6 +29,15 @@ import {
 import { SocialUserAvatar } from './SocialUserAvatar'
 import { SOCIAL_SURFACE_CLASS } from './socialUi'
 import { socialFeedMeta } from './socialFeedMeta'
+
+const emptyEngagement = (item: SocialProfileFeedItem): SocialFeedEngagement => ({
+  activity_key: socialFeedActivityKey(item),
+  like_count: 0,
+  liked_by_me: false,
+  my_note: null,
+  my_note_is_private: false,
+  public_notes: [],
+})
 
 const activityDetail = (item: SocialProfileFeedItem): string => {
   if (item.type === 'anime_comment') return item.comment_preview
@@ -62,8 +71,12 @@ const FeedEngagementBar = ({
 }) => {
   const [noteOpen, setNoteOpen] = useState(false)
   const [noteDraft, setNoteDraft] = useState(engagement.my_note ?? '')
+  const [notePrivate, setNotePrivate] = useState(engagement.my_note_is_private === true)
   const [busy, setBusy] = useState(false)
   const key = engagement.activity_key || socialFeedActivityKey(item)
+  const publicNotes = engagement.public_notes ?? []
+  const myPrivateOnly =
+    Boolean(engagement.my_note) && engagement.my_note_is_private === true
 
   const onToggleLike = async () => {
     if (busy) return
@@ -81,6 +94,7 @@ const FeedEngagementBar = ({
 
   const openNote = () => {
     setNoteDraft(engagement.my_note ?? '')
+    setNotePrivate(engagement.my_note_is_private === true)
     setNoteOpen(true)
   }
 
@@ -92,7 +106,7 @@ const FeedEngagementBar = ({
         const next = await deleteSocialFeedNote(key)
         onEngagement(next)
       } else {
-        const next = await upsertSocialFeedNote(key, text)
+        const next = await upsertSocialFeedNote(key, text, notePrivate)
         onEngagement(next)
       }
       setNoteOpen(false)
@@ -138,12 +152,48 @@ const FeedEngagementBar = ({
         >
           <StickyNote className="h-3.5 w-3.5" aria-hidden />
           {engagement.my_note ? 'نوت' : 'یادداشت'}
+          {myPrivateOnly ? <Lock className="h-3 w-3 opacity-70" aria-hidden /> : null}
         </button>
       </div>
 
-      {engagement.my_note ? (
-        <p className="border-t border-border/25 px-3 py-2 text-[11px] leading-5 text-muted-foreground">
-          یادداشت تو: {engagement.my_note}
+      {publicNotes.length > 0 ? (
+        <ul className="space-y-2 border-t border-border/25 px-3 py-2.5">
+          {publicNotes.map((note) => (
+            <li key={`${note.telegram_user_id}:${note.created_at}`} className="flex gap-2">
+              <Link
+                to={`/u/${encodeURIComponent(note.telegram_user_id)}`}
+                className="shrink-0 active:opacity-85"
+              >
+                <SocialUserAvatar
+                  photoUrl={note.photo_url}
+                  displayName={note.display_name}
+                  size="sm"
+                  className="!h-7 !w-7 ring-0"
+                />
+              </Link>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] leading-4">
+                  <Link
+                    to={`/u/${encodeURIComponent(note.telegram_user_id)}`}
+                    className="font-semibold text-foreground active:opacity-85"
+                  >
+                    {note.display_name}
+                  </Link>
+                </p>
+                <p className="mt-0.5 text-[11px] leading-5 text-foreground/85">{note.body}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      {myPrivateOnly && engagement.my_note ? (
+        <p className="flex items-start gap-1.5 border-t border-border/25 px-3 py-2 text-[11px] leading-5 text-muted-foreground">
+          <EyeOff className="mt-0.5 h-3 w-3 shrink-0 opacity-70" aria-hidden />
+          <span>
+            <span className="font-medium text-foreground/80">یادداشت خصوصی تو: </span>
+            {engagement.my_note}
+          </span>
         </p>
       ) : null}
 
@@ -155,10 +205,38 @@ const FeedEngagementBar = ({
           <Textarea
             value={noteDraft}
             onChange={(e) => setNoteDraft(e.target.value)}
-            placeholder="فقط برای خودت دیده می‌شود…"
+            placeholder={
+              notePrivate ? 'فقط برای خودت دیده می‌شود…' : 'برای صاحب فعالیت و بقیه قابل‌دیدن است…'
+            }
             maxLength={280}
             className="min-h-[6rem]"
           />
+          <button
+            type="button"
+            onClick={() => setNotePrivate((v) => !v)}
+            className={cn(
+              'flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-start text-xs transition-colors',
+              notePrivate
+                ? 'border-amber-400/35 bg-amber-400/10 text-amber-900 dark:text-amber-100'
+                : 'border-border/55 bg-muted/30 text-foreground'
+            )}
+          >
+            {notePrivate ? (
+              <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            ) : (
+              <StickyNote className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            )}
+            <span className="min-w-0 flex-1">
+              <span className="block font-semibold">
+                {notePrivate ? 'خصوصی' : 'عمومی'}
+              </span>
+              <span className="mt-0.5 block text-[11px] opacity-80">
+                {notePrivate
+                  ? 'فقط خودت این یادداشت را می‌بینی'
+                  : 'صاحب فعالیت مطلع می‌شود و دیگران هم می‌بینند'}
+              </span>
+            </span>
+          </button>
           <DialogFooter className="gap-2 sm:justify-between">
             {engagement.my_note ? (
               <Button
@@ -199,13 +277,7 @@ const FeedEngagementBar = ({
 
 export const SocialActivityCard = ({ item }: SocialActivityCardProps) => {
   const [engagement, setEngagement] = useState<SocialFeedEngagement>(
-    () =>
-      item.engagement ?? {
-        activity_key: socialFeedActivityKey(item),
-        like_count: 0,
-        liked_by_me: false,
-        my_note: null,
-      }
+    () => item.engagement ?? emptyEngagement(item)
   )
   const meta = socialFeedMeta[item.type]
   const when = formatRelativeTimeFa(item.updated_at)

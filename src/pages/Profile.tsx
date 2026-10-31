@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router-dom'
-import { Settings } from 'lucide-react'
+import { Bell, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAppAuth } from '../hooks/useAppAuth'
+import { useNotifications } from '../hooks/useNotifications'
 import { useUserAnimeList } from '../hooks/useUserAnimeList'
 import { useSocialProfileMe } from '../hooks/useSocialProfile'
 import { useFavoriteAnimeCardsQuery } from '../hooks/queries/useAnimeQueries'
@@ -37,6 +38,7 @@ const Profile = () => {
   const { user, isReady, inTelegram, login, register } = useAppAuth()
   const { stats, favoriteAnime } = useUserAnimeList({ syncRemoteList: false })
   const { customLists } = useCustomLists({ syncRemote: false })
+  const { unreadCount } = useNotifications()
   const hasPublicPlaylists = useMemo(
     () => customLists.some((list) => list.isPublic === true),
     [customLists]
@@ -146,17 +148,42 @@ const Profile = () => {
         roleBadges={roleBadges}
         onAvatarError={() => setAvatarFailed(true)}
         leftAction={
-          <Button
-            asChild
-            type="button"
-            variant="outline"
-            size="icon-sm"
-            className="surface-skeuo border-border/60 text-muted-foreground hover:text-foreground"
-          >
-            <Link to="/profile/settings" aria-label="تنظیمات">
-              <Settings className="h-4 w-4" />
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              asChild
+              type="button"
+              variant="outline"
+              size="icon-sm"
+              className="relative surface-skeuo border-border/60 text-muted-foreground hover:text-foreground"
+            >
+              <Link
+                to="/notifications"
+                aria-label={
+                  unreadCount > 0
+                    ? `اعلان‌ها، ${toPersianDigits(unreadCount)} خوانده‌نشده`
+                    : 'اعلان‌ها'
+                }
+              >
+                <Bell className="h-4 w-4" />
+                {unreadCount > 0 ? (
+                  <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary-500 px-1 text-[9px] font-bold leading-none text-white">
+                    {unreadCount > 9 ? '۹+' : toPersianDigits(unreadCount)}
+                  </span>
+                ) : null}
+              </Link>
+            </Button>
+            <Button
+              asChild
+              type="button"
+              variant="outline"
+              size="icon-sm"
+              className="surface-skeuo border-border/60 text-muted-foreground hover:text-foreground"
+            >
+              <Link to="/profile/settings" aria-label="تنظیمات">
+                <Settings className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
         }
         subtitle={
           user?.email && !inTelegram ? (
