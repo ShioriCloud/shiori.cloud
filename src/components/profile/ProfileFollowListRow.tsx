@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { SocialUserRow } from '@/components/profile/social/SocialUserRow'
 import { useSocialFollowMutation } from '@/hooks/useSocialProfile'
@@ -6,29 +7,44 @@ import type { SocialProfileUserListItem } from '@/services/socialProfile'
 
 type ProfileFollowListRowProps = {
   user: SocialProfileUserListItem
-  showUnfollow?: boolean
+  /** Show follow / unfollow control (hidden for the viewer's own row). */
+  showFollowActions?: boolean
 }
 
-export const ProfileFollowListRow = ({ user, showUnfollow = false }: ProfileFollowListRowProps) => {
-  const { unfollow, isPending } = useSocialFollowMutation(user.telegram_user_id)
+export const ProfileFollowListRow = ({
+  user,
+  showFollowActions = false,
+}: ProfileFollowListRowProps) => {
+  const [following, setFollowing] = useState(user.is_following === true)
+  const { follow, unfollow, isPending } = useSocialFollowMutation(user.telegram_user_id)
+
+  useEffect(() => {
+    setFollowing(user.is_following === true)
+  }, [user.is_following, user.telegram_user_id])
+
+  const onToggle = () => {
+    hapticSelection()
+    if (following) {
+      void unfollow.mutateAsync().then(() => setFollowing(false))
+    } else {
+      void follow.mutateAsync().then(() => setFollowing(true))
+    }
+  }
 
   return (
     <SocialUserRow
       user={user}
       trailing={
-        showUnfollow ? (
+        showFollowActions ? (
           <Button
             type="button"
-            variant="secondary"
+            variant={following ? 'secondary' : 'default'}
             size="sm"
             className="ui-elevated shrink-0 text-xs"
             disabled={isPending}
-            onClick={() => {
-              hapticSelection()
-              unfollow.mutate()
-            }}
+            onClick={onToggle}
           >
-            لغو
+            {following ? 'آنفالو' : 'فالو'}
           </Button>
         ) : undefined
       }

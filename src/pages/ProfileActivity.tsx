@@ -8,8 +8,6 @@ import {
   useMyAnimeCommentsQuery,
   useUserAnimeCommentsQuery,
 } from '@/hooks/useAnimeComments'
-import { useSocialProfileMe } from '@/hooks/useSocialProfile'
-
 const ProfileActivity = () => {
   const { telegramUserId: rawId } = useParams<{ telegramUserId: string }>()
   const targetId = rawId?.trim() ?? ''
@@ -18,8 +16,7 @@ const ProfileActivity = () => {
   const canCheckComments = isReady && (inTelegram || Boolean(user))
   const { data: commentsAccess } = useAnimeCommentsAccess(canCheckComments)
   const commentsRollout = commentsAccess?.enabled === true
-  const { data: socialMe } = useSocialProfileMe(Boolean(user) && !isPublic)
-  const enabled = commentsRollout && (isPublic || socialMe?.enabled === true)
+  const enabled = commentsRollout
   const mine = useMyAnimeCommentsQuery(Boolean(user) && enabled && !isPublic)
   const theirs = useUserAnimeCommentsQuery(targetId, Boolean(user) && enabled && isPublic)
   const query = isPublic ? theirs : mine
@@ -36,8 +33,8 @@ const ProfileActivity = () => {
           <ExploreEmptyState
             compact
             showImage={false}
-            title="به‌زودی"
-            subtitle="وقتی سوشال برایت فعال شود، نظرات اینجا جمع می‌شود."
+            title="نظرات فعال نیست"
+            subtitle="بخش نظرات فعلاً برای حساب تو در دسترس نیست."
           />
         ) : isLoading ? (
           <SocialListSkeleton rows={4} />

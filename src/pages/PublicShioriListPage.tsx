@@ -38,8 +38,8 @@ const PublicShioriListPage = () => {
           <ExploreEmptyState
             compact
             showImage={false}
-            title="به‌زودی"
-            subtitle="پلی‌لیست عمومی وقتی سوشال برایت فعال باشد دیده می‌شود."
+            title="لیست در دسترس نیست"
+            subtitle="این پلی‌لیست عمومی فعلاً قابل مشاهده نیست."
           />
         ) : isLoading ? (
           <div className="space-y-2 animate-pulse">

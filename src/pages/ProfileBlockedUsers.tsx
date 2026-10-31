@@ -6,7 +6,6 @@ import { useAppAuth } from '@/hooks/useAppAuth'
 import {
   useBlockedSocialUsers,
   useSocialModerationMutations,
-  useSocialProfileMe,
 } from '@/hooks/useSocialProfile'
 import { hapticSelection } from '@/lib/telegramHaptics'
 import type { SocialProfileUserListItem } from '@/services/socialProfile'
@@ -38,9 +37,7 @@ const BlockedRow = ({ user }: { user: SocialProfileUserListItem }) => {
 
 const ProfileBlockedUsers = () => {
   const { user } = useAppAuth()
-  const { data: socialMe } = useSocialProfileMe(Boolean(user))
-  const enabled = socialMe?.enabled === true
-  const { data, isLoading } = useBlockedSocialUsers(Boolean(user) && enabled)
+  const { data, isLoading } = useBlockedSocialUsers(Boolean(user))
 
   return (
     <div className="bg-background pb-24 text-foreground">
@@ -49,14 +46,7 @@ const ProfileBlockedUsers = () => {
       </div>
 
       <div className="px-4 pt-4">
-        {!enabled ? (
-          <ExploreEmptyState
-            compact
-            showImage={false}
-            title="به‌زودی"
-            subtitle="وقتی سوشال فعال شود این بخش در دسترس است."
-          />
-        ) : isLoading ? (
+        {isLoading ? (
           <div className="space-y-2 animate-pulse">
             {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="h-16 rounded-xl bg-muted/70" />

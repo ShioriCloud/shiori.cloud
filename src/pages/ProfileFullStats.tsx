@@ -44,7 +44,7 @@ const ProfileFullStats = () => {
               />
             </div>
             <MyListCompactCard className="p-4 text-center text-sm leading-7 text-muted-foreground">
-              آمار تفصیلی و دیده‌شده‌ها به‌زودی برای همه فعال می‌شود.
+              هنوز آمار تفصیلی برای نمایش نیست. با تماشا و امتیاز دادن این بخش پر می‌شود.
             </MyListCompactCard>
           </>
         ) : (

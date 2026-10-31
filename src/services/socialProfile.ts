@@ -81,6 +81,7 @@ export type SocialProfileUserListItem = {
   username: string | null
   photo_url: string | null
   role_badges?: Array<{ id: string; title: string }>
+  is_following?: boolean
 }
 
 export type SocialProfileUserList = {

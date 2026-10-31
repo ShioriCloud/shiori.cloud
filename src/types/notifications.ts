@@ -18,6 +18,8 @@ export type NotificationPreferences = {
   notify_comment_reply: boolean
   notify_comment_like: boolean
   notify_following_comment: boolean
+  notify_feed_activity_like: boolean
+  notify_feed_activity_note: boolean
   hide_telegram_username: boolean
   hide_watch_activity: boolean
 }

@@ -94,6 +94,8 @@ const ProfileSettings = () => {
     updatingNotifyCommentReply,
     updatingNotifyCommentLike,
     updatingNotifyFollowingComment,
+    updatingNotifyFeedActivityLike,
+    updatingNotifyFeedActivityNote,
     updatingHideWatchActivity,
   } = useNotifications()
   const { preference, setPreference, isDarkMode } = useTheme()
@@ -384,6 +386,50 @@ const ProfileSettings = () => {
                     onCheckedChange={(checked) => {
                       hapticSelection()
                       void updatePreferences({ notify_social_follow: checked })
+                    }}
+                  />
+                </div>
+                <div className="flex items-center justify-between gap-3 px-3 py-3">
+                  <div className="min-w-0 text-right">
+                    <Label
+                      htmlFor="notify-feed-activity-like"
+                      className="text-sm font-medium text-foreground"
+                    >
+                      پسند فعالیت فید
+                    </Label>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      وقتی کسی فعالیتت در فید را پسندید
+                    </p>
+                  </div>
+                  <Switch
+                    id="notify-feed-activity-like"
+                    checked={preferences?.notify_feed_activity_like ?? true}
+                    disabled={preferencesLoading || updatingNotifyFeedActivityLike}
+                    onCheckedChange={(checked) => {
+                      hapticSelection()
+                      void updatePreferences({ notify_feed_activity_like: checked })
+                    }}
+                  />
+                </div>
+                <div className="flex items-center justify-between gap-3 px-3 py-3">
+                  <div className="min-w-0 text-right">
+                    <Label
+                      htmlFor="notify-feed-activity-note"
+                      className="text-sm font-medium text-foreground"
+                    >
+                      یادداشت روی فعالیت فید
+                    </Label>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      وقتی کسی روی فعالیتت یادداشت عمومی گذاشت
+                    </p>
+                  </div>
+                  <Switch
+                    id="notify-feed-activity-note"
+                    checked={preferences?.notify_feed_activity_note ?? true}
+                    disabled={preferencesLoading || updatingNotifyFeedActivityNote}
+                    onCheckedChange={(checked) => {
+                      hapticSelection()
+                      void updatePreferences({ notify_feed_activity_note: checked })
                     }}
                   />
                 </div>

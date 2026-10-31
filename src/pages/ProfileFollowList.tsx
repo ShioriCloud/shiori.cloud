@@ -6,49 +6,31 @@ import { SOCIAL_DIVIDER_CLASS, SOCIAL_SURFACE_CLASS } from '@/components/profile
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useAppAuth } from '@/hooks/useAppAuth'
-import { useSocialFollowListInfinite, useSocialProfileMe } from '@/hooks/useSocialProfile'
+import { useSocialFollowListInfinite } from '@/hooks/useSocialProfile'
 
 const ProfileFollowList = () => {
   const { pathname } = useLocation()
   const { telegramUserId: routeUserId } = useParams<{ telegramUserId?: string }>()
   const { user } = useAppAuth()
-  const { data: socialMe, isLoading: socialMeLoading } = useSocialProfileMe(Boolean(user))
 
   const isFollowing = pathname.endsWith('/following')
   const title = isFollowing ? 'دنبال‌شده‌ها' : 'دنبال‌کننده‌ها'
 
   const subjectId = routeUserId?.trim() || (user?.id != null ? String(user.id) : '')
+  const viewerId = user?.id != null ? String(user.id) : ''
 
-  const viewingOther = Boolean(routeUserId?.trim())
-  const socialBlocked = !viewingOther && socialMe?.enabled === false
   const listQuery = useSocialFollowListInfinite(
     subjectId,
     isFollowing ? 'following' : 'followers',
-    Boolean(user) &&
-      subjectId.length > 0 &&
-      (viewingOther || (!socialMeLoading && socialMe !== undefined && !socialBlocked))
+    Boolean(user) && subjectId.length > 0
   )
   const items = listQuery.data?.pages.flatMap((page) => page.items) ?? []
-  const showUnfollow =
-    isFollowing &&
-    subjectId.length > 0 &&
-    user?.id != null &&
-    String(user.id) === subjectId
 
   return (
     <div className="bg-background pb-24 text-foreground">
       <div className="space-y-3 px-4 pt-4">
         <h1 className="text-lg font-semibold">{title}</h1>
-        {!viewingOther && socialMeLoading ? (
-          <SocialListSkeleton rows={2} />
-        ) : socialBlocked ? (
-          <ExploreEmptyState
-            compact
-            showImage={false}
-            title="به‌زودی"
-            subtitle="شبکه اجتماعی شیوری برای حساب تو هنوز فعال نشده."
-          />
-        ) : listQuery.isLoading ? (
+        {listQuery.isLoading ? (
           <SocialListSkeleton rows={3} />
         ) : items.length ? (
           <>
@@ -57,7 +39,9 @@ const ProfileFollowList = () => {
                 <ProfileFollowListRow
                   key={row.telegram_user_id}
                   user={row}
-                  showUnfollow={showUnfollow}
+                  showFollowActions={
+                    viewerId.length > 0 && row.telegram_user_id !== viewerId
+                  }
                 />
               ))}
             </div>
