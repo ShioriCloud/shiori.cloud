@@ -271,7 +271,9 @@ const PublicUserProfile = () => {
           <ProfileStatsTabPanel
             variant="public"
             overview={overview}
-            fullStatsTo={null}
+            fullStatsTo={
+              watchVisible ? `${profileBase}/stats` : null
+            }
             watchVisible={watchVisible}
             publicExtras={{
               profileUserId: telegramUserId,
