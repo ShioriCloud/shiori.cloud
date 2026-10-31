@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { EyeOff, Heart, Lock, StickyNote } from 'lucide-react'
+import { Heart, Lock, StickyNote } from 'lucide-react'
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
 import { BidiText } from '@/components/BidiText'
 import { Button } from '@/components/ui/button'
@@ -36,6 +36,7 @@ const emptyEngagement = (item: SocialProfileFeedItem): SocialFeedEngagement => (
   liked_by_me: false,
   my_note: null,
   my_note_is_private: false,
+  notes: [],
   public_notes: [],
 })
 
@@ -74,7 +75,10 @@ const FeedEngagementBar = ({
   const [notePrivate, setNotePrivate] = useState(engagement.my_note_is_private === true)
   const [busy, setBusy] = useState(false)
   const key = engagement.activity_key || socialFeedActivityKey(item)
-  const publicNotes = engagement.public_notes ?? []
+  const visibleNotes =
+    engagement.notes ??
+    engagement.public_notes ??
+    []
   const myPrivateOnly =
     Boolean(engagement.my_note) && engagement.my_note_is_private === true
 
@@ -156,9 +160,9 @@ const FeedEngagementBar = ({
         </button>
       </div>
 
-      {publicNotes.length > 0 ? (
+      {visibleNotes.length > 0 ? (
         <ul className="space-y-2 border-t border-border/25 px-3 py-2.5">
-          {publicNotes.map((note) => (
+          {visibleNotes.map((note) => (
             <li key={`${note.telegram_user_id}:${note.created_at}`} className="flex gap-2">
               <Link
                 to={`/u/${encodeURIComponent(note.telegram_user_id)}`}
@@ -172,29 +176,25 @@ const FeedEngagementBar = ({
                 />
               </Link>
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] leading-4">
+                <p className="flex items-center gap-1 text-[11px] leading-4">
                   <Link
                     to={`/u/${encodeURIComponent(note.telegram_user_id)}`}
                     className="font-semibold text-foreground active:opacity-85"
                   >
                     {note.display_name}
                   </Link>
+                  {note.is_private ? (
+                    <span className="inline-flex items-center gap-0.5 rounded-md bg-amber-400/15 px-1 py-0.5 text-[9px] font-medium text-amber-800 dark:text-amber-200">
+                      <Lock className="h-2.5 w-2.5" aria-hidden />
+                      خصوصی
+                    </span>
+                  ) : null}
                 </p>
                 <p className="mt-0.5 text-[11px] leading-5 text-foreground/85">{note.body}</p>
               </div>
             </li>
           ))}
         </ul>
-      ) : null}
-
-      {myPrivateOnly && engagement.my_note ? (
-        <p className="flex items-start gap-1.5 border-t border-border/25 px-3 py-2 text-[11px] leading-5 text-muted-foreground">
-          <EyeOff className="mt-0.5 h-3 w-3 shrink-0 opacity-70" aria-hidden />
-          <span>
-            <span className="font-medium text-foreground/80">یادداشت خصوصی تو: </span>
-            {engagement.my_note}
-          </span>
-        </p>
       ) : null}
 
       <Dialog open={noteOpen} onOpenChange={setNoteOpen}>
@@ -206,7 +206,9 @@ const FeedEngagementBar = ({
             value={noteDraft}
             onChange={(e) => setNoteDraft(e.target.value)}
             placeholder={
-              notePrivate ? 'فقط برای خودت دیده می‌شود…' : 'برای صاحب فعالیت و بقیه قابل‌دیدن است…'
+              notePrivate
+                ? 'فقط تو و صاحب فعالیت می‌بینید…'
+                : 'همه می‌توانند ببینند…'
             }
             maxLength={280}
             className="min-h-[6rem]"
@@ -232,8 +234,8 @@ const FeedEngagementBar = ({
               </span>
               <span className="mt-0.5 block text-[11px] opacity-80">
                 {notePrivate
-                  ? 'فقط خودت این یادداشت را می‌بینی'
-                  : 'صاحب فعالیت مطلع می‌شود و دیگران هم می‌بینند'}
+                  ? 'فقط ارسال‌کننده و صاحب فعالیت می‌بینند'
+                  : 'همه در فید می‌بینند؛ صاحب فعالیت هم مطلع می‌شود'}
               </span>
             </span>
           </button>

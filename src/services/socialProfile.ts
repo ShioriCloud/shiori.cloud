@@ -103,12 +103,13 @@ export type SocialProfileFollowSuggestions = {
   items: SocialProfileFollowSuggestionItem[]
 }
 
-export type SocialFeedPublicNote = {
+export type SocialFeedVisibleNote = {
   telegram_user_id: string
   display_name: string
   photo_url: string | null
   body: string
   created_at: string
+  is_private?: boolean
 }
 
 export type SocialFeedEngagement = {
@@ -117,7 +118,9 @@ export type SocialFeedEngagement = {
   liked_by_me: boolean
   my_note: string | null
   my_note_is_private?: boolean
-  public_notes?: SocialFeedPublicNote[]
+  notes?: SocialFeedVisibleNote[]
+  /** Public-only subset; prefer `notes`. */
+  public_notes?: SocialFeedVisibleNote[]
 }
 
 type SocialFeedItemBase = {

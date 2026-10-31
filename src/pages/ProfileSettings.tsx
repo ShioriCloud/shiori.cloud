@@ -420,7 +420,7 @@ const ProfileSettings = () => {
                       یادداشت روی فعالیت فید
                     </Label>
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      وقتی کسی روی فعالیتت یادداشت عمومی گذاشت
+                      وقتی کسی روی فعالیتت یادداشت (عمومی یا خصوصی) گذاشت
                     </p>
                   </div>
                   <Switch
