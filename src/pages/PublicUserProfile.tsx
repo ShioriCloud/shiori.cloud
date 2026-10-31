@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
-import { UserIcon } from 'hugeicons-react'
 import { MoreHorizontal } from 'lucide-react'
 import { useAppAuth } from '../hooks/useAppAuth'
 import { useSocialProfileUser } from '../hooks/useSocialProfile'
@@ -9,6 +8,10 @@ import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
 import { ProfileStatsTabPanel } from '@/components/profile/ProfileStatsTabPanel'
 import { ProfileWatchTabPanel } from '@/components/profile/ProfileWatchTabPanel'
 import { ProfileBadgesShowcase } from '@/components/profile/ProfileBadgesShowcase'
+import {
+  getProfileInitials,
+  ProfileHeroHeader,
+} from '@/components/profile/ProfileHeroHeader'
 import { ProfileSocialStatsRow } from '@/components/profile/ProfileSocialStatsRow'
 import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import { ProfileShareButton } from '@/components/profile/ProfileShareButton'
@@ -24,21 +27,9 @@ import { usePublicCustomListsQuery } from '@/hooks/usePublicCustomLists'
 import { formatProfileMemberSince } from '@/lib/profileMemberSince'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { ProfileTabSwipeShell } from '@/components/profile/ProfileTabSwipeShell'
-import { cn } from '@/lib/utils'
+import { ProfilePageSkeleton } from '@/components/profile/ProfilePageSkeleton'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { withViewTransition } from '@/lib/viewTransition'
-
-const getInitials = (name: string): string => {
-  const trimmed = name.trim()
-  if (!trimmed) return 'ک'
-  const parts = trimmed.split(/\s+/).filter(Boolean)
-  if (parts.length >= 2) {
-    return `${parts[0].charAt(0)}${parts[1].charAt(0)}`
-  }
-  return trimmed.charAt(0)
-}
-
-import { ProfilePageSkeleton } from '@/components/profile/ProfilePageSkeleton'
 
 const PublicUserProfile = () => {
   const { telegramUserId: rawId } = useParams<{ telegramUserId: string }>()
@@ -96,7 +87,7 @@ const PublicUserProfile = () => {
   const profileBase = `/u/${encodeURIComponent(telegramUserId)}`
 
   const displayName = data?.profile?.display_name ?? 'کاربر'
-  const initials = useMemo(() => getInitials(displayName), [displayName])
+  const initials = useMemo(() => getProfileInitials(displayName), [displayName])
   const avatarUrl =
     data?.profile?.photo_url && !avatarFailed ? data.profile.photo_url : null
   const showWebAuth = !inTelegram && !user
@@ -187,90 +178,32 @@ const PublicUserProfile = () => {
 
   return (
     <div className="bg-background pb-24 text-foreground">
-      <div className="relative">
-        <div className="absolute inset-x-0 top-0 h-44 overflow-hidden">
-          {avatarUrl ? (
-            <>
-              <img
-                src={avatarUrl}
-                alt=""
-                className="absolute inset-0 h-full w-full scale-110 object-cover opacity-50 blur-md"
-                aria-hidden
-              />
-              <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-background/40 to-background" />
-            </>
-          ) : (
-            <>
-              <div className="absolute inset-0 bg-gradient-to-b from-primary-400/30 via-primary-400/10 to-background" />
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary-400/20 via-transparent to-transparent" />
-            </>
-          )}
-        </div>
-
-        <div className="relative z-10 flex flex-col items-center px-4 pb-2 pt-24">
-          <div className="relative flex w-full justify-center">
-            <ProfileShareButton
-              telegramUserId={telegramUserId}
-              displayName={displayName}
-              className="absolute left-0 top-0 z-20"
-            />
-            {user ? (
-              <button
-                type="button"
-                aria-label="گزینه‌های کاربر"
-                className="absolute right-0 top-0 z-20 flex h-9 w-9 items-center justify-center rounded-lg border border-border/60 bg-card/90 text-muted-foreground active:scale-95"
-                onClick={() => setActionsOpen(true)}
-              >
-                <MoreHorizontal className="h-5 w-5" />
-              </button>
-            ) : null}
-
-            <div className="media-card-skeuo h-24 w-24 rounded-2xl">
-              <div className="media-card-skeuo-face bg-muted">
-                {avatarUrl ? (
-                  <img
-                    src={avatarUrl}
-                    alt={displayName}
-                    className="h-full w-full object-cover"
-                    onError={() => setAvatarFailed(true)}
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-primary-400/15">
-                    {initials ? (
-                      <span className="text-2xl font-bold text-primary-400">{initials}</span>
-                    ) : (
-                      <UserIcon className="h-10 w-10 text-muted-foreground/50" />
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <h1 className="mt-3 line-clamp-2 px-2 text-center text-lg font-bold text-foreground">
-            {displayName}
-          </h1>
-
-          {memberSinceLabel ? (
-            <p className="mt-1 text-center text-xs text-muted-foreground">{memberSinceLabel}</p>
-          ) : null}
-
-          {roleBadges.length > 0 ? (
-            <div className="mt-2 flex flex-wrap justify-center gap-1.5">
-              {roleBadges.map((badge) => (
-                <span
-                  key={badge.id}
-                  className={cn(
-                    'inline-flex items-center rounded-full border border-primary-400/30 bg-primary-400/10 px-2.5 py-0.5 text-[11px] font-medium text-primary-400'
-                  )}
-                >
-                  {badge.title}
-                </span>
-              ))}
-            </div>
-          ) : null}
-        </div>
-      </div>
+      <ProfileHeroHeader
+        displayName={displayName}
+        initials={initials}
+        avatarUrl={avatarUrl}
+        memberSinceLabel={memberSinceLabel}
+        roleBadges={roleBadges}
+        onAvatarError={() => setAvatarFailed(true)}
+        leftAction={
+          <ProfileShareButton
+            telegramUserId={telegramUserId}
+            displayName={displayName}
+          />
+        }
+        rightAction={
+          user ? (
+            <button
+              type="button"
+              aria-label="گزینه‌های کاربر"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-border/60 bg-card/90 text-muted-foreground active:scale-95"
+              onClick={() => setActionsOpen(true)}
+            >
+              <MoreHorizontal className="h-5 w-5" />
+            </button>
+          ) : null
+        }
+      />
 
       <ProfileSocialStatsRow
         metrics={[
