@@ -8,6 +8,7 @@ import {
   Languages,
   ListMusic,
   MessageSquareText,
+  Rss,
 } from 'lucide-react'
 import { ProfileCommentActivityList } from '@/components/profile/ProfileCommentActivityList'
 import { SocialSection } from '@/components/profile/social/SocialSection'
@@ -170,11 +171,18 @@ export const ProfilePersonalPanel = ({
             <PersonalRow
               to="/profile/activity"
               icon={<MessageSquareText className="h-4 w-4" />}
-              label="اجتماعی"
+              label="نظرات من"
               hint={commentHint}
               iconClass="border-emerald-400/30 bg-emerald-400/10 text-emerald-700 dark:text-emerald-300"
             />
           ) : null}
+          <PersonalRow
+            to="/feed"
+            icon={<Rss className="h-4 w-4" />}
+            label="فید"
+            hint="فعالیت کسانی که دنبال می‌کنی"
+            iconClass="border-primary-400/30 bg-primary-400/10 text-primary-400"
+          />
         </PersonalLinksCard>
       </div>
     )

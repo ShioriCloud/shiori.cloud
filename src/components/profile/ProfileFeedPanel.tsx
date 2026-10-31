@@ -33,7 +33,7 @@ export const ProfileFeedPanel = ({ enabled = true }: { enabled?: boolean }) => {
         compact
         showImage={false}
         title="فید اجتماعی"
-        subtitle="وقتی شبکه اجتماعی شیوری برای حسابت باز شود، فعالیت دوستانی که دنبال می‌کنی اینجا نمایش داده می‌شود."
+        subtitle="برای دیدن فعالیت کسانی که دنبال می‌کنی باید وارد حساب شیوری شوی."
         actionLabel="رفتن به پروفایل"
         onAction={() => navigate('/profile')}
       />
@@ -50,7 +50,7 @@ export const ProfileFeedPanel = ({ enabled = true }: { enabled?: boolean }) => {
         compact
         showImage={false}
         title="فید در دسترس نیست"
-        subtitle="شبکه اجتماعی برای حسابت هنوز فعال نشده. بعداً دوباره سر بزن."
+        subtitle="الان نمی‌توان فید را بارگذاری کرد. کمی بعد دوباره امتحان کن یا از پروفایل وارد شو."
         actionLabel="پروفایل من"
         onAction={() => navigate('/profile')}
       />
