@@ -122,6 +122,7 @@ export const ProfilePersonalPanel = ({
 
     return (
       <div className="space-y-6">
+        <p className="px-1 text-xs font-medium text-muted-foreground">حساب و فعالیت</p>
         <PersonalLinksCard>
           {translationsPath && !hideTranslatorLink ? (
             <PersonalRow

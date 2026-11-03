@@ -5,6 +5,7 @@ import type { SocialProfileMe } from '@/services/socialProfile'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
 import { formatRelativeTimeFa } from '@/lib/myListUtils'
 import { toPersianDigits } from '@/lib/persianDigits'
+import { ProfileAnimeRailSkeleton } from '@/components/profile/ProfileSectionSkeletons'
 
 type Item = NonNullable<SocialProfileMe['watched']>['items'][number]
 
@@ -12,6 +13,7 @@ type ProfileRecentEpisodesRailProps = {
   items: Item[]
   restoreKey?: string
   maxItems?: number
+  isLoading?: boolean
 }
 
 const DEFAULT_MAX_RECENT = 6
@@ -20,7 +22,14 @@ export const ProfileRecentEpisodesRail = ({
   items,
   restoreKey = 'profile-recent-episodes',
   maxItems = DEFAULT_MAX_RECENT,
+  isLoading = false,
 }: ProfileRecentEpisodesRailProps) => {
+  if (isLoading) {
+    return (
+      <ProfileAnimeRailSkeleton titleClassName="w-48" className="mt-6" />
+    )
+  }
+
   const recent = items
     .filter((item) => (item.episodes_watched ?? 0) > 0)
     .slice(0, maxItems)

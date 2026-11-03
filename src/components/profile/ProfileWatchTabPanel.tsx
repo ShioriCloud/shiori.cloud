@@ -6,6 +6,7 @@ import { ProfileSocialWatchedRail } from '@/components/profile/ProfileSocialWatc
 import { ProfileWatchingRail } from '@/components/profile/ProfileWatchingRail'
 import { useProfileWatchingItems } from '@/hooks/useProfileWatchingItems'
 import type { SocialProfileMe } from '@/services/socialProfile'
+import { ProfileAnimeRailSkeleton } from '@/components/profile/ProfileSectionSkeletons'
 
 type WatchedItem = NonNullable<SocialProfileMe['watched']>['items'][number]
 
@@ -17,6 +18,8 @@ type ProfileWatchTabPanelProps = {
   profileBase?: string
   recentRestoreKey?: string
   watchVisible?: boolean
+  watchLoading?: boolean
+  favoritesLoading?: boolean
 }
 
 const filterCurrentlyWatching = (items: WatchedItem[]): WatchedItem[] =>
@@ -36,6 +39,8 @@ export const ProfileWatchTabPanel = ({
   profileBase = '/profile',
   recentRestoreKey = 'profile-watch-recent',
   watchVisible = true,
+  watchLoading = false,
+  favoritesLoading = false,
 }: ProfileWatchTabPanelProps) => {
   const navigate = useNavigate()
   const { items: localWatching, isLoading: localWatchingLoading } = useProfileWatchingItems()
@@ -63,7 +68,9 @@ export const ProfileWatchTabPanel = ({
 
   const ownWatchEmpty =
     variant === 'own' &&
+    !watchLoading &&
     !localWatchingLoading &&
+    !favoritesLoading &&
     recentCount === 0 &&
     localWatching.length === 0 &&
     favoriteCount === 0
@@ -90,10 +97,16 @@ export const ProfileWatchTabPanel = ({
 
   return (
     <div className="-mx-4 space-y-1 pb-2">
-      <ProfileRecentEpisodesRail items={watchedItems} restoreKey={recentRestoreKey} />
+      <ProfileRecentEpisodesRail
+        items={watchedItems}
+        restoreKey={recentRestoreKey}
+        isLoading={watchLoading}
+      />
 
       {variant === 'own' ? (
         <ProfileWatchingRail />
+      ) : watchLoading ? (
+        <ProfileAnimeRailSkeleton titleClassName="w-32" />
       ) : (
         <ProfileSocialWatchedRail items={watchingFromApi} title="در حال تماشا" />
       )}
@@ -104,6 +117,7 @@ export const ProfileWatchTabPanel = ({
         orderedIds={favoriteOrderIds}
         profileBase={profileBase}
         className="mt-2"
+        isLoading={favoritesLoading}
       />
     </div>
   )

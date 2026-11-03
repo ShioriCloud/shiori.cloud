@@ -1,7 +1,8 @@
 import { MyListCompactCard } from '@/components/my-list/MyListUi'
 import { ProfileFullStatsView } from '@/components/profile/ProfileFullStatsView'
+import { ProfilePersonalSubpageLayout } from '@/components/profile/ProfilePersonalSubpageLayout'
+import { ProfileOverviewStripSkeleton } from '@/components/profile/ProfileSectionSkeletons'
 import { ProfileStatCell } from '@/components/profile/ProfileStatCell'
-import { RouteFallback } from '@/components/RouteFallback'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import { useSocialProfileMe } from '@/hooks/useSocialProfile'
 import { useUserAnimeList } from '@/hooks/useUserAnimeList'
@@ -15,14 +16,18 @@ const ProfileFullStats = () => {
 
   const merged = mergeOwnProfileHeaderStats(social, stats, isLoading)
 
-  if (!isReady || isLoading) return <RouteFallback />
+  if (!isReady || isLoading) {
+    return (
+      <ProfilePersonalSubpageLayout title="آمار کامل" contentClassName="space-y-6">
+        <ProfileOverviewStripSkeleton className="!mx-0 !mt-0" />
+      </ProfilePersonalSubpageLayout>
+    )
+  }
 
   const enabled = merged.socialEnabled || stats.animeCount > 0
 
   return (
-    <div className="bg-background pb-24 text-foreground">
-      <div className="space-y-6 px-4 pt-4">
-        <h1 className="text-lg font-semibold">آمار کامل</h1>
+    <ProfilePersonalSubpageLayout title="آمار کامل" contentClassName="space-y-6">
         {!enabled ? (
           <>
             <div className="grid grid-cols-3 gap-2">
@@ -63,8 +68,7 @@ const ProfileFullStats = () => {
             emptyWatchedLabel="هنوز انیمه‌ای در لیست تماشا نداری."
           />
         )}
-      </div>
-    </div>
+    </ProfilePersonalSubpageLayout>
   )
 }
 

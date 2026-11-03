@@ -29,6 +29,7 @@ import { ProfilePlaylistsTabPanel } from '@/components/profile/ProfilePlaylistsT
 import { useCustomLists } from '@/hooks/useCustomLists'
 import { ProfileTabSwipeShell } from '@/components/profile/ProfileTabSwipeShell'
 import { ProfilePageSkeleton } from '@/components/profile/ProfilePageSkeleton'
+import { ProfileTranslationsRailSkeleton } from '@/components/profile/ProfileSectionSkeletons'
 import { mergeOwnProfileHeaderStats } from '@/lib/ownProfileStats'
 import { formatProfileMemberSince } from '@/lib/profileMemberSince'
 import { toPersianDigits } from '@/lib/persianDigits'
@@ -44,7 +45,8 @@ const Profile = () => {
     [customLists]
   )
   const profileTabs = useMemo(() => buildOwnProfileTabs(hasPublicPlaylists), [hasPublicPlaylists])
-  const { data: favoriteCards = [] } = useFavoriteAnimeCardsQuery(favoriteAnime)
+  const { data: favoriteCards = [], isLoading: favoriteCardsLoading } =
+    useFavoriteAnimeCardsQuery(favoriteAnime)
   const { data: socialProfile, isLoading: socialProfileLoading } = useSocialProfileMe(
     Boolean(user)
   )
@@ -112,6 +114,9 @@ const Profile = () => {
     [mergedStats.watchHours, mergedStats.byFormat]
   )
 
+  const showTranslationsRailSkeleton =
+    Boolean(user) && socialProfileLoading && socialProfile == null
+
   if (rawTab === 'feed') {
     return <Navigate to="/feed" replace />
   }
@@ -136,11 +141,6 @@ const Profile = () => {
         <ProfileAuthPanel login={login} register={register} layout="page" />
       </div>
     )
-  }
-
-  // Wait for first social payload so badges/translations/stats don't pop in and shift layout.
-  if (user && socialProfileLoading && !socialProfile) {
-    return <ProfilePageSkeleton />
   }
 
   return (
@@ -219,7 +219,9 @@ const Profile = () => {
         ]}
       />
 
-      {socialProfile?.translator && user?.id != null ? (
+      {showTranslationsRailSkeleton ? (
+        <ProfileTranslationsRailSkeleton className="!mt-2.5" />
+      ) : socialProfile?.translator && user?.id != null ? (
         <ProfileTranslationsRail
           translator={socialProfile.translator}
           profileUserId={String(user.id)}
@@ -245,6 +247,8 @@ const Profile = () => {
             favoriteOrderIds={favoriteAnime}
             profileBase="/profile"
             recentRestoreKey="own-profile-recent"
+            watchLoading={socialProfileLoading && showSocialWatch}
+            favoritesLoading={favoriteAnime.length > 0 && favoriteCardsLoading}
           />
         ) : null}
         {activeTab === 'stats' ? (

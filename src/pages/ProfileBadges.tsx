@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ContentLoadingSkeleton } from '@/components/RouteFallback'
 import { BadgeDetailDialog } from '@/components/profile/badges/BadgeDetailDialog'
+import { ProfilePersonalSubpageLayout } from '@/components/profile/ProfilePersonalSubpageLayout'
 import {
   BADGE_RARITY_LABEL,
   BadgeProgressBar,
@@ -66,23 +67,30 @@ const ProfileBadges = () => {
     showcaseMutation.mutate(draftShowcase)
   }
 
-  if (isLoading) return <ContentLoadingSkeleton />
+  if (isLoading) {
+    return (
+      <ProfilePersonalSubpageLayout title="نشان‌ها">
+        <ContentLoadingSkeleton />
+      </ProfilePersonalSubpageLayout>
+    )
+  }
 
   return (
-    <div className="bg-background pb-24 text-foreground">
-      <div className="flex items-end justify-between gap-3 px-4 pt-4">
-        <h1 className="text-lg font-semibold">نشان‌ها</h1>
+    <ProfilePersonalSubpageLayout
+      title="نشان‌ها"
+      titleAddon={
         <span className="text-sm font-medium text-primary-400">
           {toPersianDigits(earned)} از {toPersianDigits(total)}
         </span>
-      </div>
-
+      }
+      contentClassName="space-y-8 pt-5"
+    >
       {isError || data?.enabled === false ? (
-        <p className="px-4 py-10 text-center text-sm text-muted-foreground">
+        <p className="py-6 text-center text-sm text-muted-foreground">
           نشان‌ها برای حساب شما فعال نیست.
         </p>
       ) : (
-        <div className="space-y-8 px-4 pt-5">
+        <>
           {earnedBadges.length > 0 ? (
             <section className="rounded-2xl border border-border/55 bg-card/80 p-4">
               <div className="mb-3 flex items-center justify-between gap-2">
@@ -221,7 +229,7 @@ const ProfileBadges = () => {
               </div>
             </section>
           ))}
-        </div>
+        </>
       )}
 
       <BadgeDetailDialog
@@ -229,7 +237,7 @@ const ProfileBadges = () => {
         open={selected != null}
         onOpenChange={(open) => !open && setSelected(null)}
       />
-    </div>
+    </ProfilePersonalSubpageLayout>
   )
 }
 

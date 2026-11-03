@@ -70,6 +70,37 @@ export const ProfileTranslationsRailSkeleton = ({ className }: { className?: str
   </div>
 )
 
+export const ProfileAnimeRailSkeleton = ({
+  className,
+  titleClassName = 'w-44',
+}: {
+  className?: string
+  titleClassName?: string
+}) => (
+  <div className={cn('mt-6', className)} aria-hidden>
+    <Pulse className={cn('mb-3 mr-4 h-4', titleClassName)} />
+    <div className="flex gap-2.5 overflow-hidden px-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="w-[100px] shrink-0 space-y-2">
+          <Pulse className="aspect-[2/3] w-full rounded-xl" />
+          <Pulse className="h-3 w-16" />
+        </div>
+      ))}
+    </div>
+  </div>
+)
+
+export const ProfileFavoritesGridSkeleton = ({ className }: { className?: string }) => (
+  <div className={cn('mt-6 px-4', className)} aria-hidden>
+    <Pulse className="mb-3 h-4 w-28" />
+    <div className="grid grid-cols-3 gap-2">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <Pulse key={i} className="aspect-[2/3] w-full rounded-xl" />
+      ))}
+    </div>
+  </div>
+)
+
 export const ProfileOverviewStripSkeleton = ({ className }: { className?: string }) => (
   <div className={cn('mx-4 mt-5', className)} aria-hidden>
     <section className={profileHighlightSectionClass('primary')}>

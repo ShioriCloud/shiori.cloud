@@ -65,7 +65,7 @@ export const ProfileHeroHeader = ({
           <div className="absolute right-0 top-0 z-20">{rightAction}</div>
         ) : null}
 
-        <div className="media-card-skeuo h-20 w-20 rounded-2xl">
+        <div className="media-card-skeuo h-20 w-20 rounded-2xl shadow-[0_0_28px_-6px] shadow-primary-400/20 ring-2 ring-primary-400/25 ring-offset-2 ring-offset-background">
           <div className="media-card-skeuo-face bg-muted">
             {avatarUrl ? (
               <img

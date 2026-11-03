@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { ProfileCommentActivityList } from '@/components/profile/ProfileCommentActivityList'
+import { ProfilePersonalSubpageLayout } from '@/components/profile/ProfilePersonalSubpageLayout'
 import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import {
@@ -8,6 +9,7 @@ import {
   useMyAnimeCommentsQuery,
   useUserAnimeCommentsQuery,
 } from '@/hooks/useAnimeComments'
+
 const ProfileActivity = () => {
   const { telegramUserId: rawId } = useParams<{ telegramUserId: string }>()
   const targetId = rawId?.trim() ?? ''
@@ -22,47 +24,41 @@ const ProfileActivity = () => {
   const query = isPublic ? theirs : mine
   const { data, isLoading, isError, refetch } = query
 
-
   return (
-    <div className="bg-background pb-24 text-foreground">
-      <div className="px-4 pt-4 pb-2">
-        <h1 className="text-lg font-semibold">{isPublic ? 'نظرات' : 'نظرات من'}</h1>
-      </div>
-      <div className="space-y-3 px-4 pt-4">
-        {!enabled ? (
-          <ExploreEmptyState
-            compact
-            showImage={false}
-            title="نظرات فعال نیست"
-            subtitle="بخش نظرات فعلاً برای حساب تو در دسترس نیست."
-          />
-        ) : isLoading ? (
-          <SocialListSkeleton rows={4} />
-        ) : isError ? (
-          <ExploreEmptyState
-            title="بارگذاری ناموفق بود"
-            actionLabel="تلاش مجدد"
-            onAction={() => void refetch()}
-          />
-        ) : !data?.items.length ? (
-          <ExploreEmptyState
-            compact
-            showImage={false}
-            title={isPublic ? 'هنوز نظری ندارد' : 'هنوز نظری نداری'}
-            subtitle={
-              isPublic
-                ? 'وقتی نظری بنویسد اینجا دیده می‌شود.'
-                : 'از صفحهٔ انیمه اولین نظرت را بنویس.'
-            }
-          />
-        ) : (
-          <ProfileCommentActivityList
-            items={data.items}
-            tone={isPublic ? 'public' : 'self'}
-          />
-        )}
-      </div>
-    </div>
+    <ProfilePersonalSubpageLayout title={isPublic ? 'نظرات' : 'نظرات من'}>
+      {!enabled ? (
+        <ExploreEmptyState
+          compact
+          showImage={false}
+          title="نظرات فعال نیست"
+          subtitle="بخش نظرات فعلاً برای حساب تو در دسترس نیست."
+        />
+      ) : isLoading ? (
+        <SocialListSkeleton rows={4} />
+      ) : isError ? (
+        <ExploreEmptyState
+          title="بارگذاری ناموفق بود"
+          actionLabel="تلاش مجدد"
+          onAction={() => void refetch()}
+        />
+      ) : !data?.items.length ? (
+        <ExploreEmptyState
+          compact
+          showImage={false}
+          title={isPublic ? 'هنوز نظری ندارد' : 'هنوز نظری نداری'}
+          subtitle={
+            isPublic
+              ? 'وقتی نظری بنویسد اینجا دیده می‌شود.'
+              : 'از صفحهٔ انیمه اولین نظرت را بنویس.'
+          }
+        />
+      ) : (
+        <ProfileCommentActivityList
+          items={data.items}
+          tone={isPublic ? 'public' : 'self'}
+        />
+      )}
+    </ProfilePersonalSubpageLayout>
   )
 }
 

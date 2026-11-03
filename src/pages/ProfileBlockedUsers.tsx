@@ -1,5 +1,7 @@
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
+import { ProfilePersonalSubpageLayout } from '@/components/profile/ProfilePersonalSubpageLayout'
 import { ProfileUserListRow } from '@/components/profile/ProfileUserListRow'
+import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
 import { MyListCompactCard } from '@/components/my-list/MyListUi'
 import { Button } from '@/components/ui/button'
 import { useAppAuth } from '@/hooks/useAppAuth'
@@ -40,34 +42,27 @@ const ProfileBlockedUsers = () => {
   const { data, isLoading } = useBlockedSocialUsers(Boolean(user))
 
   return (
-    <div className="bg-background pb-24 text-foreground">
-      <div className="px-4 pt-4 pb-2">
-        <h1 className="text-lg font-semibold">کاربران مسدود</h1>
-      </div>
-
-      <div className="px-4 pt-4">
-        {isLoading ? (
-          <div className="space-y-2 animate-pulse">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-16 rounded-xl bg-muted/70" />
-            ))}
-          </div>
-        ) : !data?.items.length ? (
-          <ExploreEmptyState
-            compact
-            showImage={false}
-            title="کسی مسدود نیست"
-            subtitle="از منوی پروفایل دیگران می‌توانی مسدود کنی."
-          />
-        ) : (
-          <MyListCompactCard className="overflow-hidden divide-y divide-border/40">
-            {data.items.map((row) => (
-              <BlockedRow key={row.telegram_user_id} user={row} />
-            ))}
-          </MyListCompactCard>
-        )}
-      </div>
-    </div>
+    <ProfilePersonalSubpageLayout
+      title="کاربران مسدود"
+      description="از منوی پروفایل دیگران می‌توانی مسدود کنی."
+    >
+      {isLoading ? (
+        <SocialListSkeleton rows={3} />
+      ) : !data?.items.length ? (
+        <ExploreEmptyState
+          compact
+          showImage={false}
+          title="کسی مسدود نیست"
+          subtitle="لیست مسدودیت‌ها خالی است."
+        />
+      ) : (
+        <MyListCompactCard className="overflow-hidden divide-y divide-border/40">
+          {data.items.map((row) => (
+            <BlockedRow key={row.telegram_user_id} user={row} />
+          ))}
+        </MyListCompactCard>
+      )}
+    </ProfilePersonalSubpageLayout>
   )
 }
 

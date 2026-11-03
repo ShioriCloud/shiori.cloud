@@ -5,6 +5,7 @@ import { SOCIAL_SURFACE_CLASS } from '@/components/profile/social/socialUi'
 import type { SocialProfileMe } from '@/services/socialProfile'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
 import { cn } from '@/lib/utils'
+import { ProfileFavoritesGridSkeleton } from '@/components/profile/ProfileSectionSkeletons'
 
 const PREVIEW_COUNT = 9
 
@@ -17,6 +18,7 @@ type ProfileFavoritesPreviewProps = {
   orderedIds?: Array<string | number>
   profileBase: string
   className?: string
+  isLoading?: boolean
 }
 
 export const ProfileFavoritesPreview = ({
@@ -25,7 +27,12 @@ export const ProfileFavoritesPreview = ({
   orderedIds,
   profileBase,
   className,
+  isLoading = false,
 }: ProfileFavoritesPreviewProps) => {
+  if (isLoading) {
+    return <ProfileFavoritesGridSkeleton className={className} />
+  }
+
   if (items.length === 0 && (!orderedIds || orderedIds.length === 0)) return null
 
   const byId = new Map(items.map((item) => [String(item.anime_id), item]))

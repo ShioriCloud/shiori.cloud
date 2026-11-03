@@ -1,3 +1,4 @@
+import { ProfilePersonalSubpageLayout } from '@/components/profile/ProfilePersonalSubpageLayout'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { AlarmClockIcon, CustomerServiceIcon } from 'hugeicons-react'
@@ -115,9 +116,8 @@ const ProfileSettings = () => {
   }, [currentSocialName])
 
   return (
-    <div className="bg-background pb-24 text-foreground">
-      <div className="px-4 pt-4">
-        <h1 className="mb-4 text-lg font-semibold">تنظیمات</h1>
+    <>
+      <ProfilePersonalSubpageLayout title="تنظیمات">
         {showIdentitySettings ? (
           <div className="mt-2">
             <SectionTitle>نام نمایشی</SectionTitle>
@@ -523,7 +523,7 @@ const ProfileSettings = () => {
             </a>
           </p>
         </footer>
-      </div>
+      </ProfilePersonalSubpageLayout>
 
       {tokenRecharge.walletEnabled ? (
         <TokenRechargeSheet
@@ -537,7 +537,7 @@ const ProfileSettings = () => {
           checkingPayment={tokenRecharge.checkingPayment}
         />
       ) : null}
-    </div>
+    </>
   )
 }
 
