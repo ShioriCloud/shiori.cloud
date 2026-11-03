@@ -7,7 +7,7 @@ import { SOCIAL_DIVIDER_CLASS, SOCIAL_SURFACE_CLASS } from '@/components/profile
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useAppAuth } from '@/hooks/useAppAuth'
-import { useSocialFollowListInfinite } from '@/hooks/useSocialProfile'
+import { useSocialFollowListInfinite, useSocialProfileUser } from '@/hooks/useSocialProfile'
 
 const ProfileFollowList = () => {
   const { pathname } = useLocation()
@@ -19,6 +19,17 @@ const ProfileFollowList = () => {
 
   const subjectId = routeUserId?.trim() || (user?.id != null ? String(user.id) : '')
   const viewerId = user?.id != null ? String(user.id) : ''
+  const isPublicSubject = Boolean(routeUserId?.trim())
+
+  const { data: subjectSocial } = useSocialProfileUser(
+    subjectId,
+    isPublicSubject && Boolean(user) && subjectId.length > 0,
+    1,
+    1
+  )
+  const subjectName = subjectSocial?.profile?.display_name?.trim()
+  const layoutDescription =
+    isPublicSubject && subjectName ? `پروفایل ${subjectName}` : undefined
 
   const listQuery = useSocialFollowListInfinite(
     subjectId,
@@ -27,8 +38,24 @@ const ProfileFollowList = () => {
   )
   const items = listQuery.data?.pages.flatMap((page) => page.items) ?? []
 
+  const emptyTitle = isFollowing
+    ? isPublicSubject
+      ? 'هنوز کسی را دنبال نکرده'
+      : 'هنوز کسی را دنبال نکرده‌ای'
+    : isPublicSubject
+      ? 'هنوز دنبال‌کننده‌ای نیست'
+      : 'هنوز دنبال‌کننده‌ای نداری'
+
+  const emptySubtitle = isPublicSubject
+    ? isFollowing
+      ? 'وقتی کاربران دیگر را دنبال کند اینجا دیده می‌شود.'
+      : 'اولین دنبال‌کننده می‌تواند از پروفایل عمومی او باشد.'
+    : isFollowing
+      ? 'از جست‌وجوی کاربران یا فید، دوستانت را دنبال کن.'
+      : 'اولین نفر باش یا دوستانت را دعوت کن.'
+
   return (
-    <ProfilePersonalSubpageLayout title={title}>
+    <ProfilePersonalSubpageLayout title={title} description={layoutDescription}>
       {listQuery.isLoading ? (
         <SocialListSkeleton rows={3} />
       ) : items.length ? (
@@ -58,12 +85,7 @@ const ProfileFollowList = () => {
           ) : null}
         </>
       ) : (
-        <ExploreEmptyState
-          compact
-          showImage={false}
-          title={isFollowing ? 'هنوز کسی را دنبال نکرده' : 'هنوز دنبال‌کننده‌ای نیست'}
-          subtitle="اولین نفر باش یا دوستانت را دعوت کن."
-        />
+        <ExploreEmptyState compact showImage={false} title={emptyTitle} subtitle={emptySubtitle} />
       )}
     </ProfilePersonalSubpageLayout>
   )

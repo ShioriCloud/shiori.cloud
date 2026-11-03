@@ -20,7 +20,7 @@ const TranslatorProfile = () => {
     )
   }
 
-  if (isLoading) {
+  if (isLoading && !data) {
     return <ProfilePageSkeleton />
   }
 

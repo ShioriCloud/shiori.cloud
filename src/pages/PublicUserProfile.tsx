@@ -41,7 +41,7 @@ const PublicUserProfile = () => {
   const telegramUserId = rawId?.trim() ?? ''
   const { user, isReady, inTelegram, login, register } = useAppAuth()
   const canFetchProfile = isReady && (inTelegram || Boolean(user))
-  const { data, isError } = useSocialProfileUser(
+  const { data, isError, isLoading } = useSocialProfileUser(
     telegramUserId,
     canFetchProfile
   )
@@ -164,7 +164,8 @@ const PublicUserProfile = () => {
     canFetchProfile &&
     !isError &&
     !(data && data.enabled === false) &&
-    !profileReady
+    !profileReady &&
+    isLoading
 
   if (!profileReady && !profileLoading) {
     return <ProfilePageSkeleton />

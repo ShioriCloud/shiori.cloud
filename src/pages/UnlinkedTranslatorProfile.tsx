@@ -4,7 +4,10 @@ import { BidiText } from '../components/BidiText'
 import { UserIcon } from 'hugeicons-react'
 import type { AnimeCard, GenreItem } from '../types/catalog'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
-import { ProfilePageSkeleton } from '@/components/profile/ProfilePageSkeleton'
+import {
+  ProfileFavoritesGridSkeleton,
+  ProfileSocialStatsRowSkeleton,
+} from '@/components/profile/ProfileSectionSkeletons'
 import { useTranslatorProfileQuery } from '@/hooks/queries/useAnimeQueries'
 import { animeDetailPath, animePublicSegment } from '../lib/animePaths'
 import { Badge } from '@/components/ui/badge'
@@ -76,7 +79,24 @@ export default function UnlinkedTranslatorProfile({ slug }: { slug: string }) {
     )
   }, [translator?.cover_url, translator?.avatar_url, animeList])
 
-  if (isLoading) return <ProfilePageSkeleton />
+  if (isLoading && !data) {
+    return (
+      <div className="bg-background pb-24 text-foreground">
+        <div className="relative animate-pulse">
+          <div className="absolute inset-x-0 top-0 h-44 overflow-hidden bg-muted/50" />
+          <div className="relative z-10 flex flex-col items-center px-4 pb-2 pt-24">
+            <div className="media-card-skeuo h-24 w-24 rounded-2xl ring-2 ring-primary-400/20 ring-offset-2 ring-offset-background">
+              <div className="media-card-skeuo-face bg-muted/80" />
+            </div>
+            <div className="mt-3 h-5 w-36 rounded-md bg-muted/70" />
+            <div className="mt-2 h-6 w-20 rounded-full bg-muted/60" />
+          </div>
+        </div>
+        <ProfileSocialStatsRowSkeleton />
+        <ProfileFavoritesGridSkeleton className="mt-6" />
+      </div>
+    )
+  }
 
   if (isError || !translator) {
     return (
@@ -121,7 +141,7 @@ export default function UnlinkedTranslatorProfile({ slug }: { slug: string }) {
         </div>
 
         <div className="relative z-10 flex flex-col items-center px-4 pb-2 pt-24">
-          <div className="media-card-skeuo h-24 w-24 rounded-2xl">
+          <div className="media-card-skeuo h-24 w-24 rounded-2xl shadow-[0_0_28px_-6px] shadow-primary-400/20 ring-2 ring-primary-400/25 ring-offset-2 ring-offset-background">
             <div className="media-card-skeuo-face bg-muted">
               {avatarUrl ? (
                 <img
