@@ -185,6 +185,16 @@ const PublicUserProfile = () => {
         memberSinceLabel={memberSinceLabel}
         roleBadges={roleBadges}
         onAvatarError={() => setAvatarFailed(true)}
+        subtitle={
+          animeWatched > 0 ? (
+            <p className="mt-0.5 text-center text-[11px] text-muted-foreground">
+              {toPersianDigits(animeWatched)} انیمه دیده
+              {(data.badges_summary?.earned_count ?? 0) > 0
+                ? ` · ${toPersianDigits(data.badges_summary?.earned_count ?? 0)} نشان`
+                : ''}
+            </p>
+          ) : null
+        }
         leftAction={
           <ProfileShareButton
             telegramUserId={telegramUserId}
@@ -221,7 +231,7 @@ const PublicUserProfile = () => {
         ]}
       />
 
-      <div className="px-4">
+      <div className="px-4 pt-0.5">
         <ProfileFollowButton
           viewerId={user?.id}
           targetId={telegramUserId}
@@ -236,7 +246,7 @@ const PublicUserProfile = () => {
           translator={translator}
           profileUserId={telegramUserId}
           title="ترجمه‌هاش"
-          className="!mt-3"
+          className="!mt-2.5"
         />
       ) : null}
 
@@ -246,7 +256,7 @@ const PublicUserProfile = () => {
         previewBadges={data.badges}
         displayName={displayName}
         targetUserId={telegramUserId}
-        className={translator ? 'mt-2.5' : 'mt-3'}
+        className={translator ? 'mt-2' : 'mt-2.5'}
       />
 
       <ProfileTabSwipeShell tabs={profileTabs} active={activeTab} onChange={setActiveTab}>

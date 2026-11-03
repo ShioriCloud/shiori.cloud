@@ -45,7 +45,7 @@ const MetricCell = ({
 }
 
 export const ProfileSocialStatsRow = ({ metrics, className }: ProfileSocialStatsRowProps) => (
-  <div className={cn('mx-4 mt-3', className)}>
+  <div className={cn('mx-4 mt-2', className)}>
     <section className={profileHighlightSectionClass('primary')}>
       <div className={profileHighlightGlowClass('left', 'primary')} aria-hidden />
       <div className={profileHighlightGlowClass('right', 'sky')} aria-hidden />

@@ -60,7 +60,7 @@ export const ProfileTranslationsRail = ({
   const roleLine = formatTranslatorRoleLine(translator.anime)
 
   return (
-    <div className={cn('mx-4 mt-6', className)}>
+    <div className={cn('mx-4 mt-2.5', className)}>
       <section className={profileHighlightSectionClass('sky')}>
         <div className={profileHighlightGlowClass('right', 'sky')} aria-hidden />
         <div

@@ -72,7 +72,7 @@ export const ProfileWatchTabPanel = ({
     return (
       <ExploreEmptyState
         title="هنوز فعالیت تماشایی نیست"
-        subtitle="وقتی این کاربر انیمه تماشا کند یا علاقه‌مندی عمومی داشته باشد، اینجا می‌بینی."
+        subtitle="وقتی این کاربر انیمه ببیند یا علاقه‌مندی عمومی داشته باشد، اینجا نمایش داده می‌شود."
       />
     )
   }
@@ -80,9 +80,9 @@ export const ProfileWatchTabPanel = ({
   if (ownWatchEmpty) {
     return (
       <ExploreEmptyState
-        title="هنوز چیزی اینجا نیست"
-        subtitle="از اکتشاف شروع کن یا انیمه‌ای را به لیستت اضافه کن؛ پیشرفت تماشا و علاقه‌مندی‌ها اینجا دیده می‌شوند."
-        actionLabel="رفتن به اکتشاف"
+        title="هنوز تماشایی ثبت نشده"
+        subtitle="از اکتشاف یک انیمه باز کن، پیشرفت بزن یا به علاقه‌مندی‌ها اضافه کن تا اینجا پر شود."
+        actionLabel="شروع از اکتشاف"
         onAction={() => navigate('/explore')}
       />
     )

@@ -15,6 +15,10 @@ import {
   profileHighlightGlowClass,
   profileHighlightSectionClass,
 } from '@/components/profile/profileHighlightCard'
+import {
+  PROFILE_BADGES_SHOWCASE_GRID_MIN_H,
+  ProfileBadgesShowcaseSkeleton,
+} from '@/components/profile/ProfileSectionSkeletons'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import {
   useSocialBadgeCatalogMe,
@@ -42,6 +46,8 @@ type ProfileBadgesShowcaseProps = {
   displayName?: string
   targetUserId?: string
   className?: string
+  /** When true, reserve showcase height instead of popping content in. */
+  isLoading?: boolean
 }
 
 const PREVIEW_COUNT = 4
@@ -53,6 +59,7 @@ export const ProfileBadgesShowcase = ({
   displayName = 'کاربر',
   targetUserId,
   className,
+  isLoading = false,
 }: ProfileBadgesShowcaseProps) => {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [selectedOwn, setSelectedOwn] = useState<SocialBadgeCatalogItem | null>(null)
@@ -61,6 +68,10 @@ export const ProfileBadgesShowcase = ({
   const earned = badgesSummary?.earned_count ?? previewBadges?.length ?? 0
   const preview = previewBadges?.slice(0, PREVIEW_COUNT) ?? []
   const title = variant === 'own' ? 'نشان‌هام' : 'نشان‌هاش'
+
+  if (isLoading) {
+    return <ProfileBadgesShowcaseSkeleton className={className} />
+  }
 
   const { data: ownCatalog } = useSocialBadgeCatalogMe(variant === 'own')
   const ownCatalogMap = useMemo(() => {
@@ -169,7 +180,12 @@ export const ProfileBadgesShowcase = ({
             </div>
 
             {preview.length > 0 ? (
-              <div className="mt-6 flex flex-wrap items-center justify-center gap-3 px-1">
+              <div
+                className={cn(
+                  'mt-6 flex flex-wrap items-center justify-center gap-3 px-1',
+                  PROFILE_BADGES_SHOWCASE_GRID_MIN_H
+                )}
+              >
                 {preview.map((badge) => {
                   const rarity = rarityForPreview(badge)
                   return (
@@ -198,13 +214,34 @@ export const ProfileBadgesShowcase = ({
                 })}
               </div>
             ) : variant === 'own' ? (
-              <Link
-                to="/profile/badges"
-                className="mt-3 block text-center text-xs font-medium text-primary-400 active:opacity-80"
+              <div
+                className={cn(
+                  'mt-6 flex flex-col items-center justify-center gap-2 px-1',
+                  PROFILE_BADGES_SHOWCASE_GRID_MIN_H
+                )}
               >
-                مشاهده نشان‌ها
-              </Link>
-            ) : null}
+                <p className="text-center text-xs leading-5 text-muted-foreground">
+                  هنوز نشانی نگرفته‌ای — با تماشا و فعالیت باز می‌شوند.
+                </p>
+                <Link
+                  to="/profile/badges"
+                  className="text-xs font-medium text-primary-400 active:opacity-80"
+                >
+                  مشاهده نشان‌ها
+                </Link>
+              </div>
+            ) : (
+              <div
+                className={cn(
+                  'mt-6 flex items-center justify-center px-1',
+                  PROFILE_BADGES_SHOWCASE_GRID_MIN_H
+                )}
+              >
+                <p className="text-center text-xs leading-5 text-muted-foreground">
+                  هنوز نشانی برای نمایش نیست.
+                </p>
+              </div>
+            )}
           </div>
         </section>
       </div>

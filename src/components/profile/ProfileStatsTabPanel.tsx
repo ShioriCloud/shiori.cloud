@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { ProfileOverviewStrip } from '@/components/profile/ProfileOverviewStrip'
 import { ProfilePublicStatsExtras } from '@/components/profile/ProfilePublicStatsExtras'
+import { ProfileOverviewStripSkeleton } from '@/components/profile/ProfileSectionSkeletons'
 import type { SocialProfileMe } from '@/services/socialProfile'
 import type { FormatBreakdownRow } from '@/components/profile/profileFormats'
 
@@ -10,6 +11,7 @@ type ProfileStatsTabPanelProps = {
   fullStatsTo?: string | null
   watchVisible?: boolean
   badgesSection?: ReactNode
+  isLoading?: boolean
   publicExtras?: {
     profileUserId: string
     translator?: SocialProfileMe['translator']
@@ -23,6 +25,7 @@ export const ProfileStatsTabPanel = ({
   fullStatsTo,
   watchVisible = true,
   badgesSection,
+  isLoading = false,
   publicExtras,
 }: ProfileStatsTabPanelProps) => {
   if (variant === 'public' && !watchVisible && !badgesSection && !publicExtras) {
@@ -35,11 +38,15 @@ export const ProfileStatsTabPanel = ({
 
   return (
     <div className="-mx-4 space-y-1 pb-2">
-      <ProfileOverviewStrip
-        data={overview}
-        fullStatsTo={fullStatsTo ?? null}
-        audience={variant}
-      />
+      {isLoading ? (
+        <ProfileOverviewStripSkeleton />
+      ) : (
+        <ProfileOverviewStrip
+          data={overview}
+          fullStatsTo={fullStatsTo ?? null}
+          audience={variant}
+        />
+      )}
 
       {badgesSection ? <div className="mx-4 mt-4">{badgesSection}</div> : null}
 

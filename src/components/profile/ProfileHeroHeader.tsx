@@ -37,26 +37,26 @@ export const ProfileHeroHeader = ({
   onAvatarError,
 }: ProfileHeroHeaderProps) => (
   <div className="relative">
-    <div className="absolute inset-x-0 top-0 h-44 overflow-hidden">
+    <div className="absolute inset-x-0 top-0 h-36 overflow-hidden">
       {avatarUrl ? (
         <>
           <img
             src={avatarUrl}
             alt=""
-            className="absolute inset-0 h-full w-full scale-110 object-cover opacity-50 blur-md"
+            className="absolute inset-0 h-full w-full scale-110 object-cover opacity-45 blur-md"
             aria-hidden
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-background/40 to-background" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-background/45 to-background" />
         </>
       ) : (
         <>
-          <div className="absolute inset-0 bg-gradient-to-b from-primary-400/30 via-primary-400/10 to-background" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary-400/20 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-primary-400/28 via-primary-400/10 to-background" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary-400/18 via-transparent to-transparent" />
         </>
       )}
     </div>
 
-    <div className="relative z-10 flex flex-col items-center px-4 pb-2 pt-24">
+    <div className="relative z-10 flex flex-col items-center px-4 pb-1.5 pt-[4.75rem]">
       <div className="relative flex w-full justify-center">
         {leftAction ? (
           <div className="absolute left-0 top-0 z-20">{leftAction}</div>
@@ -65,7 +65,7 @@ export const ProfileHeroHeader = ({
           <div className="absolute right-0 top-0 z-20">{rightAction}</div>
         ) : null}
 
-        <div className="media-card-skeuo h-24 w-24 rounded-2xl">
+        <div className="media-card-skeuo h-20 w-20 rounded-2xl">
           <div className="media-card-skeuo-face bg-muted">
             {avatarUrl ? (
               <img
@@ -77,9 +77,9 @@ export const ProfileHeroHeader = ({
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-primary-400/15">
                 {initials ? (
-                  <span className="text-2xl font-bold text-primary-400">{initials}</span>
+                  <span className="text-xl font-bold text-primary-400">{initials}</span>
                 ) : (
-                  <UserIcon className="h-10 w-10 text-muted-foreground/50" />
+                  <UserIcon className="h-9 w-9 text-muted-foreground/50" />
                 )}
               </div>
             )}
@@ -87,18 +87,18 @@ export const ProfileHeroHeader = ({
         </div>
       </div>
 
-      <h1 className="mt-3 line-clamp-2 px-2 text-center text-lg font-bold text-foreground">
+      <h1 className="mt-2.5 line-clamp-2 px-2 text-center text-base font-bold text-foreground">
         {displayName}
       </h1>
 
       {memberSinceLabel ? (
-        <p className="mt-1 text-center text-xs text-muted-foreground">{memberSinceLabel}</p>
+        <p className="mt-0.5 text-center text-[11px] text-muted-foreground">{memberSinceLabel}</p>
       ) : null}
 
       {subtitle}
 
       {roleBadges.length > 0 ? (
-        <div className="mt-2 flex flex-wrap justify-center gap-1.5">
+        <div className="mt-1.5 flex flex-wrap justify-center gap-1.5">
           {roleBadges.map((badge) => (
             <span
               key={badge.id}

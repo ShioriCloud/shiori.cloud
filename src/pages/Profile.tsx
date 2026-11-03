@@ -9,7 +9,6 @@ import { useUserAnimeList } from '../hooks/useUserAnimeList'
 import { useSocialProfileMe } from '../hooks/useSocialProfile'
 import { useFavoriteAnimeCardsQuery } from '../hooks/queries/useAnimeQueries'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
-import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
 import { ProfilePersonalPanel } from '@/components/profile/ProfilePersonalPanel'
 import { ProfileBadgesShowcase } from '@/components/profile/ProfileBadgesShowcase'
 import {
@@ -139,6 +138,11 @@ const Profile = () => {
     )
   }
 
+  // Wait for first social payload so badges/translations/stats don't pop in and shift layout.
+  if (user && socialProfileLoading && !socialProfile) {
+    return <ProfilePageSkeleton />
+  }
+
   return (
     <div className="bg-background pb-24 text-foreground">
       <ProfileHeroHeader
@@ -215,14 +219,12 @@ const Profile = () => {
         ]}
       />
 
-      <ProfileFollowButton viewerId={user?.id} targetId={user?.id} className="mx-4" />
-
       {socialProfile?.translator && user?.id != null ? (
         <ProfileTranslationsRail
           translator={socialProfile.translator}
           profileUserId={String(user.id)}
           title="ترجمه‌هام"
-          className="!mt-3"
+          className="!mt-2.5"
         />
       ) : null}
 
@@ -230,7 +232,8 @@ const Profile = () => {
         variant="own"
         badgesSummary={socialProfile?.badges_summary}
         previewBadges={socialProfile?.badges}
-        className={socialProfile?.translator ? 'mt-2.5' : 'mt-3'}
+        isLoading={socialProfileLoading}
+        className={socialProfile?.translator ? 'mt-2' : 'mt-2.5'}
       />
 
       <ProfileTabSwipeShell tabs={profileTabs} active={activeTab} onChange={setActiveTab}>
@@ -249,6 +252,7 @@ const Profile = () => {
             variant="own"
             overview={overview}
             fullStatsTo="/profile/stats"
+            isLoading={socialProfileLoading}
           />
         ) : null}
         {activeTab === 'playlists' && user?.id != null ? (

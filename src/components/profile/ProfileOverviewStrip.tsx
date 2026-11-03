@@ -88,7 +88,7 @@ export const ProfileOverviewStrip = ({
                 <p className="text-xs leading-6 text-muted-foreground">
                   {audience === 'public'
                     ? 'هنوز آمار تماشایی برای نمایش نیست.'
-                    : 'هنوز انیمه‌ای در لیست تماشا نداری.'}
+                    : 'با تماشای انیمه، خلاصه ساعت و ژانر/فرمت اینجا شکل می‌گیرد.'}
                 </p>
               )}
             </div>

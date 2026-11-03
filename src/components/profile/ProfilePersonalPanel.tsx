@@ -4,11 +4,9 @@ import {
   Archive,
   CalendarDays,
   ChevronLeft,
-  Heart,
   Languages,
   ListMusic,
   MessageSquareText,
-  Rss,
 } from 'lucide-react'
 import { ProfileCommentActivityList } from '@/components/profile/ProfileCommentActivityList'
 import { SocialSection } from '@/components/profile/social/SocialSection'
@@ -86,7 +84,7 @@ export const ProfilePersonalPanel = ({
     isReady && (inTelegram || Boolean(user))
   )
   const commentsEnabled = commentsAccess?.enabled === true
-  const { favoriteAnime, favoriteProgress } = useUserAnimeList({ syncRemoteList: false })
+  const { favoriteProgress } = useUserAnimeList({ syncRemoteList: false })
   const { customLists } = useCustomLists({ syncRemote: false })
   const myComments = useMyAnimeCommentsQuery(Boolean(user) && commentsEnabled && variant === 'self', 1, 1)
 
@@ -135,17 +133,6 @@ export const ProfilePersonalPanel = ({
             />
           ) : null}
           <PersonalRow
-            to="/profile/favorites"
-            icon={<Heart className="h-4 w-4" />}
-            label="علاقه‌مندی‌ها"
-            hint={
-              favoriteAnime.length > 0
-                ? `${toPersianDigits(favoriteAnime.length)} انیمه · مرتب‌سازی و مدال`
-                : 'قلب در جزئیات انیمه'
-            }
-            iconClass="border-rose-400/30 bg-rose-400/10 text-rose-600 dark:text-rose-300"
-          />
-          <PersonalRow
             to="/profile/watch-archive"
             icon={<Archive className="h-4 w-4" />}
             label="آرشیو تماشای من"
@@ -163,7 +150,7 @@ export const ProfilePersonalPanel = ({
             hint={
               customLists.length > 0
                 ? `${toPersianDigits(customLists.length)} لیست${publicListCount > 0 ? ` · ${toPersianDigits(publicListCount)} عمومی` : ''}`
-                : 'لیست‌های شخصی شیوری'
+                : 'ساخت و مدیریت لیست‌های شخصی'
             }
             iconClass="border-violet-400/30 bg-violet-400/10 text-violet-700 dark:text-violet-300"
           />
@@ -176,13 +163,6 @@ export const ProfilePersonalPanel = ({
               iconClass="border-emerald-400/30 bg-emerald-400/10 text-emerald-700 dark:text-emerald-300"
             />
           ) : null}
-          <PersonalRow
-            to="/feed"
-            icon={<Rss className="h-4 w-4" />}
-            label="فید"
-            hint="فعالیت کسانی که دنبال می‌کنی"
-            iconClass="border-primary-400/30 bg-primary-400/10 text-primary-400"
-          />
         </PersonalLinksCard>
       </div>
     )
