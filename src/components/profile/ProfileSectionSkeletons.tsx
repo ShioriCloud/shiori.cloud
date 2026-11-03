@@ -35,7 +35,7 @@ export const ProfileBadgesShowcaseSkeleton = ({ className }: { className?: strin
           )}
         >
           {Array.from({ length: 4 }).map((_, i) => (
-            <Pulse key={i} className="aspect-[4/5] w-full min-h-[4.5rem] rounded-xl" />
+            <Pulse key={i} className="aspect-square w-full rounded-xl" />
           ))}
         </div>
       </div>

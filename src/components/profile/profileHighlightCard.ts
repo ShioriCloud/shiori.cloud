@@ -57,5 +57,5 @@ export const profileBadgeShowcaseAuraClass = (rarity?: string) =>
 
 export const profileBadgeShowcaseFaceClass = () =>
   cn(
-    'media-card-skeuo-face flex aspect-[4/5] w-full min-h-[4.5rem] items-center justify-center bg-muted/20 p-2'
+    'media-card-skeuo-face flex aspect-square w-full items-center justify-center bg-muted/20 p-2'
   )
