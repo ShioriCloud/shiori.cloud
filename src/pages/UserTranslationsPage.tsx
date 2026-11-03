@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { Languages } from 'lucide-react'
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
@@ -9,6 +10,7 @@ import { TranslatorBioQuote } from '@/components/profile/TranslatorBioQuote'
 import { useSocialProfileUser } from '@/hooks/useSocialProfile'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
+import { sortTranslatorWorksNewestFirst } from '@/lib/translatorWorksSort'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { ProfilePageSkeleton } from '@/components/profile/ProfilePageSkeleton'
@@ -28,6 +30,10 @@ const UserTranslationsPage = () => {
   const translator = data?.translator ?? null
   const displayName = data?.profile?.display_name?.trim() || 'کاربر'
   const initialLoad = canFetch && isLoading && !data
+  const sortedWorks = useMemo(
+    () => sortTranslatorWorksNewestFirst(translator?.anime ?? []),
+    [translator?.anime]
+  )
 
   if (!isReady) {
     return <ProfilePageSkeleton />
@@ -35,7 +41,7 @@ const UserTranslationsPage = () => {
 
   if (!telegramUserId) {
     return (
-      <ProfilePersonalSubpageLayout title="ترجمه‌ها">
+      <ProfilePersonalSubpageLayout hideHeader title="">
         <ExploreEmptyState title="ترجمه‌ای نیست" subtitle="شناسه کاربر نامعتبر است." />
       </ProfilePersonalSubpageLayout>
     )
@@ -43,18 +49,14 @@ const UserTranslationsPage = () => {
 
   if (isError || (!isLoading && !translator)) {
     return (
-      <ProfilePersonalSubpageLayout title="ترجمه‌ها">
+      <ProfilePersonalSubpageLayout hideHeader title="">
         <ExploreEmptyState title="ترجمه‌ای نیست" subtitle="این کاربر مترجم متصل ندارد." />
       </ProfilePersonalSubpageLayout>
     )
   }
 
   return (
-    <ProfilePersonalSubpageLayout
-      title="ترجمه‌ها"
-      description={initialLoad ? undefined : displayName}
-      contentClassName="space-y-5"
-    >
+    <ProfilePersonalSubpageLayout hideHeader title="" contentClassName="space-y-5">
       {initialLoad ? (
         <>
           <div className="animate-pulse overflow-hidden rounded-2xl border border-border/60 bg-muted/30 p-4">
@@ -93,9 +95,9 @@ const UserTranslationsPage = () => {
             ) : null}
           </div>
 
-          {translator && translator.anime.length > 0 ? (
+          {sortedWorks.length > 0 ? (
             <div className="grid grid-cols-3 gap-2">
-              {translator.anime.map((item) => {
+              {sortedWorks.map((item) => {
                 const routeRef = { id: item.anime_id, slug: item.slug, title: item.title }
                 return (
                   <AnimePrefetchLink

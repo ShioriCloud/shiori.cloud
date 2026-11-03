@@ -8,6 +8,8 @@ type ProfilePersonalSubpageLayoutProps = {
   titleAddon?: ReactNode
   headerAfter?: ReactNode
   stickyHeader?: boolean
+  /** Skip duplicate page title (mini-app already shows back + context). */
+  hideHeader?: boolean
   children: ReactNode
   contentClassName?: string
 }
@@ -24,8 +26,8 @@ const SubpageHeader = ({
 >) => (
   <>
     <div className="flex items-end justify-between gap-3">
-      <div className="min-w-0 flex-1 text-right">
-        <div className="flex items-center justify-end gap-2">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
           {titleLeading}
           <h1 className="text-lg font-semibold text-foreground">{title}</h1>
         </div>
@@ -33,7 +35,7 @@ const SubpageHeader = ({
           <p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p>
         ) : null}
       </div>
-      {titleAddon ? <div className="shrink-0">{titleAddon}</div> : null}
+      {titleAddon ? <div className="shrink-0 text-left">{titleAddon}</div> : null}
     </div>
     {headerAfter ? <div className="mt-4">{headerAfter}</div> : null}
   </>
@@ -46,13 +48,26 @@ export const ProfilePersonalSubpageLayout = ({
   titleAddon,
   headerAfter,
   stickyHeader = false,
+  hideHeader = false,
   children,
   contentClassName,
 }: ProfilePersonalSubpageLayoutProps) => (
-  <div className="bg-background pb-24 text-foreground">
-    {stickyHeader ? (
-      <div className="sticky top-[var(--app-header-offset)] z-10 border-b border-border/40 bg-background/95 backdrop-blur-sm">
-        <div className="px-4 pt-4 pb-3">
+  <div className="bg-background pb-24 text-foreground" dir="rtl">
+    {!hideHeader ? (
+      stickyHeader ? (
+        <div className="sticky top-[var(--app-header-offset)] z-10 border-b border-border/40 bg-background/95 backdrop-blur-sm">
+          <div className="px-4 pt-4 pb-3">
+            <SubpageHeader
+              title={title}
+              description={description}
+              titleLeading={titleLeading}
+              titleAddon={titleAddon}
+              headerAfter={headerAfter}
+            />
+          </div>
+        </div>
+      ) : (
+        <header className="border-b border-border/40 px-4 pt-4 pb-3">
           <SubpageHeader
             title={title}
             description={description}
@@ -60,19 +75,11 @@ export const ProfilePersonalSubpageLayout = ({
             titleAddon={titleAddon}
             headerAfter={headerAfter}
           />
-        </div>
-      </div>
-    ) : (
-      <header className="border-b border-border/40 px-4 pt-4 pb-3">
-        <SubpageHeader
-          title={title}
-          description={description}
-          titleLeading={titleLeading}
-          titleAddon={titleAddon}
-          headerAfter={headerAfter}
-        />
-      </header>
-    )}
-    <div className={cn('px-4 pt-4', contentClassName)}>{children}</div>
+        </header>
+      )
+    ) : null}
+    <div className={cn(hideHeader ? 'px-4 pt-4' : 'px-4 pt-4', contentClassName)}>
+      {children}
+    </div>
   </div>
 )

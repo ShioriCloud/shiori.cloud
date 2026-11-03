@@ -15,6 +15,7 @@ import {
 import type { SocialBadgeCatalogItem } from '@/services/socialProfile'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
+import { isBadgeNew } from '@/lib/badgeFreshness'
 
 const SHOWCASE_MAX = 4
 
@@ -108,7 +109,7 @@ const ProfileBadges = () => {
               <p className="mb-3 text-xs text-muted-foreground">
                 حداکثر {toPersianDigits(SHOWCASE_MAX)} نشان دریافت‌شده در پروفایل نمایش داده می‌شود.
               </p>
-              <div className="flex flex-wrap justify-center gap-3">
+              <div className="grid grid-cols-4 gap-2">
                 {(showcaseEdit ? earnedBadges : earnedBadges.filter((b) => showcaseSet.has(b.id)))
                   .slice(0, SHOWCASE_MAX)
                   .map((badge) => (
@@ -118,7 +119,7 @@ const ProfileBadges = () => {
                       disabled={!showcaseEdit}
                       onClick={() => showcaseEdit && toggleShowcaseDraft(badge.id)}
                       className={cn(
-                        'flex flex-col items-center gap-1 rounded-xl p-2',
+                        'flex min-w-0 flex-col items-center gap-1 rounded-xl p-1.5',
                         showcaseEdit && 'active:scale-[0.98]',
                         showcaseSet.has(badge.id) && showcaseEdit
                           ? 'ring-2 ring-primary-400/60'
@@ -131,8 +132,9 @@ const ProfileBadges = () => {
                         title={badge.title}
                         rarity={badge.rarity}
                         size="sm"
+                        className="h-14 w-14"
                       />
-                      <span className="max-w-[4.5rem] truncate text-[10px]">
+                      <span className="max-w-full truncate text-[10px]">
                         {badge.display_title}
                       </span>
                     </button>
@@ -190,7 +192,7 @@ const ProfileBadges = () => {
                       <p className="text-[9px] text-muted-foreground">
                         {BADGE_RARITY_LABEL[badge.rarity] ?? badge.rarity}
                       </p>
-                      {badge.is_new ? (
+                      {isBadgeNew(badge) ? (
                         <span
                           className="absolute -right-1 -top-1 rounded-md bg-pink-500/90 px-1 py-0.5 text-[9px] font-bold text-white"
                         >

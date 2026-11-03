@@ -35,7 +35,7 @@ export const profileHighlightGlowClass = (
 /** Skeuo frame + glow for each badge on profile showcase. */
 export const profileBadgeShowcaseOuterClass = (rarity?: string) =>
   cn(
-    'media-card-skeuo relative z-[1] rounded-xl active:scale-95 transition-transform shrink-0',
+    'media-card-skeuo relative z-[1] w-full rounded-xl active:scale-95 transition-transform',
     rarity === 'legendary' &&
       'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_3px_10px_-4px_rgba(0,0,0,0.2),0_0_28px_-6px_rgba(251,191,36,0.55)]',
     rarity === 'epic' &&
@@ -48,7 +48,7 @@ export const profileBadgeShowcaseOuterClass = (rarity?: string) =>
 
 export const profileBadgeShowcaseAuraClass = (rarity?: string) =>
   cn(
-    'pointer-events-none absolute left-1/2 top-1/2 z-0 h-[4.5rem] w-[4.5rem] -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl',
+    'pointer-events-none absolute inset-0 z-0 m-auto h-[85%] w-[85%] max-h-[4.5rem] max-w-[4.5rem] rounded-full blur-2xl',
     rarity === 'legendary' && 'bg-amber-400/55',
     rarity === 'epic' && 'bg-violet-400/50',
     rarity === 'rare' && 'bg-sky-400/45',
@@ -57,5 +57,5 @@ export const profileBadgeShowcaseAuraClass = (rarity?: string) =>
 
 export const profileBadgeShowcaseFaceClass = () =>
   cn(
-    'media-card-skeuo-face flex h-[5.25rem] w-[5.25rem] items-center justify-center bg-muted/20 p-2.5'
+    'media-card-skeuo-face flex aspect-[4/5] w-full min-h-[4.5rem] items-center justify-center bg-muted/20 p-2'
   )

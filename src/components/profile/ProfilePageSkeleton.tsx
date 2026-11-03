@@ -12,7 +12,7 @@ export const ProfilePageSkeleton = () => (
     <div className="animate-pulse">
       <div className="relative h-36">
         <div className="absolute inset-x-0 top-0 h-full bg-muted/60" />
-        <div className="relative z-10 flex flex-col items-center pt-[4.75rem]">
+        <div className="relative z-10 flex flex-col items-center pt-[5.75rem]">
           <div className="media-card-skeuo h-20 w-20 rounded-2xl">
             <div className="media-card-skeuo-face bg-muted" />
           </div>

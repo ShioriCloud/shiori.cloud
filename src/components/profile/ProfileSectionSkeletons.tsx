@@ -9,7 +9,7 @@ const Pulse = ({ className }: { className?: string }) => (
 )
 
 /** Reserved height for the 4-slot badge showcase grid (aura + face). */
-export const PROFILE_BADGES_SHOWCASE_GRID_MIN_H = 'min-h-[5.75rem]'
+export const PROFILE_BADGES_SHOWCASE_GRID_MIN_H = 'min-h-[5rem]'
 
 /** Reserved height for the translations poster rail. */
 export const PROFILE_TRANSLATIONS_RAIL_MIN_H = 'min-h-[10.5rem]'
@@ -30,12 +30,12 @@ export const ProfileBadgesShowcaseSkeleton = ({ className }: { className?: strin
         </div>
         <div
           className={cn(
-            'mt-6 flex flex-wrap items-center justify-center gap-3 px-1',
+            'mt-3 grid grid-cols-4 gap-2 px-0',
             PROFILE_BADGES_SHOWCASE_GRID_MIN_H
           )}
         >
           {Array.from({ length: 4 }).map((_, i) => (
-            <Pulse key={i} className="h-[4.25rem] w-[4.25rem] rounded-2xl" />
+            <Pulse key={i} className="aspect-[4/5] w-full min-h-[4.5rem] rounded-xl" />
           ))}
         </div>
       </div>

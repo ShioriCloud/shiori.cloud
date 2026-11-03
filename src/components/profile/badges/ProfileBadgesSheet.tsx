@@ -10,6 +10,7 @@ import { useSocialBadgeCatalogUser } from '@/hooks/useSocialProfile'
 import type { SocialBadgePublicList } from '@/services/socialProfile'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
+import { isBadgeNew } from '@/lib/badgeFreshness'
 import { BadgeVisual } from './badgeUi'
 import { BadgeDetailBody } from './BadgeDetailDialog'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
@@ -81,7 +82,7 @@ export const ProfileBadgesSheet = ({
                       rarity={badge.rarity}
                       size="sm"
                     />
-                    {badge.is_new ? (
+                    {isBadgeNew(badge) ? (
                       <span
                         className="absolute -right-0.5 -top-0.5 rounded-md bg-pink-500/90 px-1 py-0.5 text-[9px] font-bold text-white"
                       >

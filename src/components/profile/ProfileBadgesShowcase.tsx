@@ -167,7 +167,7 @@ export const ProfileBadgesShowcase = ({
                 <Award className="h-4 w-4" aria-hidden />
               </span>
 
-              <div className="min-w-0 flex-1 text-start">
+              <div className="min-w-0 flex-1">
                 <h2 className="text-sm font-semibold text-foreground">{title}</h2>
                 <p className="mt-0.5 text-xs text-muted-foreground">
                   {earned > 0
@@ -182,7 +182,7 @@ export const ProfileBadgesShowcase = ({
             {preview.length > 0 ? (
               <div
                 className={cn(
-                  'mt-6 flex flex-wrap items-center justify-center gap-3 px-1',
+                  'mt-3 grid grid-cols-4 gap-2',
                   PROFILE_BADGES_SHOWCASE_GRID_MIN_H
                 )}
               >
@@ -193,7 +193,7 @@ export const ProfileBadgesShowcase = ({
                       key={badge.id}
                       type="button"
                       onClick={() => openPreview(badge)}
-                      className="relative shrink-0"
+                      className="relative w-full min-w-0"
                       aria-label={badge.title}
                     >
                       <span className={profileBadgeShowcaseAuraClass(rarity)} aria-hidden />
@@ -205,7 +205,7 @@ export const ProfileBadgesShowcase = ({
                             title={badge.title}
                             rarity={rarity}
                             size="sm"
-                            className="h-9 w-9 drop-shadow-[0_0_16px_rgba(251,191,36,0.35)]"
+                            className="h-11 w-11 drop-shadow-[0_0_16px_rgba(251,191,36,0.35)]"
                           />
                         </div>
                       </div>
@@ -216,7 +216,7 @@ export const ProfileBadgesShowcase = ({
             ) : variant === 'own' ? (
               <div
                 className={cn(
-                  'mt-6 flex flex-col items-center justify-center gap-2 px-1',
+                  'mt-3 flex flex-col items-center justify-center gap-2',
                   PROFILE_BADGES_SHOWCASE_GRID_MIN_H
                 )}
               >
@@ -233,7 +233,7 @@ export const ProfileBadgesShowcase = ({
             ) : (
               <div
                 className={cn(
-                  'mt-6 flex items-center justify-center px-1',
+                  'mt-3 flex items-center justify-center',
                   PROFILE_BADGES_SHOWCASE_GRID_MIN_H
                 )}
               >

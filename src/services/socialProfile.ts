@@ -62,6 +62,8 @@ export type SocialProfileMe = {
       title: string
       image: string
       role: string | null
+      start_date?: string | null
+      year?: number | null
     }>
   } | null
   relationship?: {

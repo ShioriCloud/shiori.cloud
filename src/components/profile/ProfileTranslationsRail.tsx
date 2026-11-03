@@ -11,6 +11,7 @@ import {
 } from '@/components/profile/profileHighlightCard'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
+import { sortTranslatorWorksNewestFirst } from '@/lib/translatorWorksSort'
 
 const DEFAULT_VISIBLE = 5
 
@@ -55,7 +56,7 @@ export const ProfileTranslationsRail = ({
   const total = translator.anime_count
   if (total === 0) return null
 
-  const visible = translator.anime.slice(0, maxVisible)
+  const visible = sortTranslatorWorksNewestFirst(translator.anime).slice(0, maxVisible)
   const allPath = `/u/${encodeURIComponent(profileUserId)}/translations`
   const roleLine = formatTranslatorRoleLine(translator.anime)
 
@@ -79,7 +80,7 @@ export const ProfileTranslationsRail = ({
               <Languages className="h-4 w-4" aria-hidden />
             </span>
 
-            <div className="min-w-0 flex-1 text-start">
+            <div className="min-w-0 flex-1">
               <h2 className="text-sm font-semibold text-foreground">{title}</h2>
               <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
                 <span>{roleLine} شیوری</span>
