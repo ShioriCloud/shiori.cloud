@@ -101,6 +101,33 @@ export const ProfileFavoritesGridSkeleton = ({ className }: { className?: string
   </div>
 )
 
+export const ProfileSocialStatsRowSkeleton = ({ className }: { className?: string }) => (
+  <div className={cn('mx-4 mt-2', className)} aria-hidden>
+    <section className={profileHighlightSectionClass('primary')}>
+      <div className={profileHighlightGlowClass('left', 'primary')} />
+      <div className={profileHighlightGlowClass('right', 'sky')} />
+      <div className="relative flex items-stretch px-1 py-2.5">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={i}
+            className={cn(
+              'flex min-w-0 flex-1 flex-col items-center gap-2 px-1 py-1',
+              i < 2 && 'border-e border-border/45'
+            )}
+          >
+            <Pulse className="h-4 w-8" />
+            <Pulse className="h-2.5 w-12" />
+          </div>
+        ))}
+      </div>
+    </section>
+  </div>
+)
+
+export const ProfileFollowButtonSkeleton = ({ className }: { className?: string }) => (
+  <Pulse className={cn('mx-4 h-11 w-auto rounded-xl', className)} aria-hidden />
+)
+
 export const ProfileOverviewStripSkeleton = ({ className }: { className?: string }) => (
   <div className={cn('mx-4 mt-5', className)} aria-hidden>
     <section className={profileHighlightSectionClass('primary')}>

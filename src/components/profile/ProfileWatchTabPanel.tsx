@@ -62,6 +62,7 @@ export const ProfileWatchTabPanel = ({
 
   const publicWatchEmpty =
     variant === 'public' &&
+    !watchLoading &&
     recentCount === 0 &&
     watchingFromApi.length === 0 &&
     favoriteCount === 0

@@ -28,6 +28,11 @@ import { formatProfileMemberSince } from '@/lib/profileMemberSince'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { ProfileTabSwipeShell } from '@/components/profile/ProfileTabSwipeShell'
 import { ProfilePageSkeleton } from '@/components/profile/ProfilePageSkeleton'
+import {
+  ProfileFollowButtonSkeleton,
+  ProfileSocialStatsRowSkeleton,
+  ProfileTranslationsRailSkeleton,
+} from '@/components/profile/ProfileSectionSkeletons'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { withViewTransition } from '@/lib/viewTransition'
 
@@ -36,7 +41,7 @@ const PublicUserProfile = () => {
   const telegramUserId = rawId?.trim() ?? ''
   const { user, isReady, inTelegram, login, register } = useAppAuth()
   const canFetchProfile = isReady && (inTelegram || Boolean(user))
-  const { data, isLoading, isError } = useSocialProfileUser(
+  const { data, isError } = useSocialProfileUser(
     telegramUserId,
     canFetchProfile
   )
@@ -85,11 +90,6 @@ const PublicUserProfile = () => {
   }
 
   const profileBase = `/u/${encodeURIComponent(telegramUserId)}`
-
-  const displayName = data?.profile?.display_name ?? 'کاربر'
-  const initials = useMemo(() => getProfileInitials(displayName), [displayName])
-  const avatarUrl =
-    data?.profile?.photo_url && !avatarFailed ? data.profile.photo_url : null
   const showWebAuth = !inTelegram && !user
 
   const overview = useMemo(() => {
@@ -111,13 +111,7 @@ const PublicUserProfile = () => {
     return <Navigate to="/feed" replace />
   }
 
-  const initialProfileLoad = canFetchProfile && isLoading && !data
-
   if (!isReady) {
-    return <ProfilePageSkeleton />
-  }
-
-  if (initialProfileLoad) {
     return <ProfilePageSkeleton />
   }
 
@@ -135,10 +129,6 @@ const PublicUserProfile = () => {
         <ExploreEmptyState title="پروفایل پیدا نشد" subtitle="شناسه کاربر نامعتبر است." />
       </div>
     )
-  }
-
-  if (data?.enabled && data.is_self) {
-    return <Navigate to="/profile" replace />
   }
 
   if (isError) {
@@ -163,34 +153,51 @@ const PublicUserProfile = () => {
     )
   }
 
-  if (!data?.enabled || !data.profile) {
+  const profileReady = Boolean(data?.enabled && data.profile)
+
+  if (profileReady && data!.is_self) {
+    return <Navigate to="/profile" replace />
+  }
+
+  const profileLoading =
+    Boolean(telegramUserId) &&
+    canFetchProfile &&
+    !isError &&
+    !(data && data.enabled === false) &&
+    !profileReady
+
+  if (!profileReady && !profileLoading) {
     return <ProfilePageSkeleton />
   }
 
-  const followers = data.profile.followers_count ?? 0
-  const following = data.profile.following_count ?? 0
-  const animeWatched = data.summary?.anime_count ?? 0
-  const roleBadges = data.profile.role_badges ?? []
-  const translator = data.translator ?? null
-  const watchedItems = data.watched?.items ?? []
-  const memberSinceLabel = formatProfileMemberSince(data.profile.member_since)
-  const watchVisible = !data.privacy?.watch_activity_hidden
+  const followers = data?.profile?.followers_count ?? 0
+  const following = data?.profile?.following_count ?? 0
+  const animeWatched = data?.summary?.anime_count ?? 0
+  const roleBadges = data?.profile?.role_badges ?? []
+  const translator = data?.translator ?? null
+  const watchedItems = data?.watched?.items ?? []
+  const memberSinceLabel = formatProfileMemberSince(data?.profile?.member_since)
+  const watchVisible = data ? !data.privacy?.watch_activity_hidden : true
+  const heroName = data?.profile?.display_name?.trim() || 'کاربر'
+  const heroInitials = getProfileInitials(heroName)
+  const heroAvatar =
+    data?.profile?.photo_url && !avatarFailed ? data.profile.photo_url : null
 
   return (
     <div className="bg-background pb-24 text-foreground">
       <ProfileHeroHeader
-        displayName={displayName}
-        initials={initials}
-        avatarUrl={avatarUrl}
+        displayName={heroName}
+        initials={heroInitials}
+        avatarUrl={heroAvatar}
         memberSinceLabel={memberSinceLabel}
         roleBadges={roleBadges}
         onAvatarError={() => setAvatarFailed(true)}
         subtitle={
-          animeWatched > 0 ? (
+          profileReady && animeWatched > 0 ? (
             <p className="mt-0.5 text-center text-[11px] text-muted-foreground">
               {toPersianDigits(animeWatched)} انیمه دیده
-              {(data.badges_summary?.earned_count ?? 0) > 0
-                ? ` · ${toPersianDigits(data.badges_summary?.earned_count ?? 0)} نشان`
+              {(data!.badges_summary?.earned_count ?? 0) > 0
+                ? ` · ${toPersianDigits(data!.badges_summary?.earned_count ?? 0)} نشان`
                 : ''}
             </p>
           ) : null
@@ -198,11 +205,11 @@ const PublicUserProfile = () => {
         leftAction={
           <ProfileShareButton
             telegramUserId={telegramUserId}
-            displayName={displayName}
+            displayName={heroName}
           />
         }
         rightAction={
-          user ? (
+          profileReady && user ? (
             <button
               type="button"
               aria-label="گزینه‌های کاربر"
@@ -215,33 +222,43 @@ const PublicUserProfile = () => {
         }
       />
 
-      <ProfileSocialStatsRow
-        metrics={[
-          {
-            to: `${profileBase}/followers`,
-            value: toPersianDigits(followers),
-            label: 'دنبال‌کننده',
-          },
-          {
-            to: `${profileBase}/following`,
-            value: toPersianDigits(following),
-            label: 'دنبال‌شده',
-          },
-          { value: toPersianDigits(animeWatched), label: 'انیمه دیده' },
-        ]}
-      />
+      {profileLoading ? (
+        <ProfileSocialStatsRowSkeleton />
+      ) : (
+        <ProfileSocialStatsRow
+          metrics={[
+            {
+              to: `${profileBase}/followers`,
+              value: toPersianDigits(followers),
+              label: 'دنبال‌کننده',
+            },
+            {
+              to: `${profileBase}/following`,
+              value: toPersianDigits(following),
+              label: 'دنبال‌شده',
+            },
+            { value: toPersianDigits(animeWatched), label: 'انیمه دیده' },
+          ]}
+        />
+      )}
 
       <div className="px-4 pt-0.5">
-        <ProfileFollowButton
-          viewerId={user?.id}
-          targetId={telegramUserId}
-          apiEnabled
-          isFollowing={data.relationship?.is_following === true}
-          followsYou={data.relationship?.follows_you === true}
-        />
+        {profileLoading ? (
+          <ProfileFollowButtonSkeleton />
+        ) : (
+          <ProfileFollowButton
+            viewerId={user?.id}
+            targetId={telegramUserId}
+            apiEnabled
+            isFollowing={data!.relationship?.is_following === true}
+            followsYou={data!.relationship?.follows_you === true}
+          />
+        )}
       </div>
 
-      {translator ? (
+      {profileLoading && data == null ? (
+        <ProfileTranslationsRailSkeleton className="!mt-2.5" />
+      ) : translator ? (
         <ProfileTranslationsRail
           translator={translator}
           profileUserId={telegramUserId}
@@ -252,11 +269,12 @@ const PublicUserProfile = () => {
 
       <ProfileBadgesShowcase
         variant="public"
-        badgesSummary={data.badges_summary}
-        previewBadges={data.badges}
-        displayName={displayName}
+        badgesSummary={data?.badges_summary}
+        previewBadges={data?.badges}
+        displayName={heroName}
         targetUserId={telegramUserId}
-        className={translator ? 'mt-2' : 'mt-2.5'}
+        isLoading={profileLoading}
+        className={translator || profileLoading ? 'mt-2' : 'mt-2.5'}
       />
 
       <ProfileTabSwipeShell tabs={profileTabs} active={activeTab} onChange={setActiveTab}>
@@ -268,6 +286,7 @@ const PublicUserProfile = () => {
             profileBase={profileBase}
             recentRestoreKey={`public-${telegramUserId}-recent`}
             watchVisible={watchVisible}
+            watchLoading={profileLoading}
           />
         ) : null}
         {activeTab === 'playlists' ? (
@@ -281,10 +300,9 @@ const PublicUserProfile = () => {
           <ProfileStatsTabPanel
             variant="public"
             overview={overview}
-            fullStatsTo={
-              watchVisible ? `${profileBase}/stats` : null
-            }
+            fullStatsTo={watchVisible ? `${profileBase}/stats` : null}
             watchVisible={watchVisible}
+            isLoading={profileLoading}
             publicExtras={{
               profileUserId: telegramUserId,
               translator,
@@ -294,14 +312,14 @@ const PublicUserProfile = () => {
         ) : null}
       </ProfileTabSwipeShell>
 
-      {user ? (
+      {profileReady && user ? (
         <ProfileSocialActionsSheet
           open={actionsOpen}
           onOpenChange={setActionsOpen}
           targetTelegramUserId={telegramUserId}
-          displayName={displayName}
-          isMuted={data.relationship?.is_muted === true}
-          blockedByYou={data.relationship?.blocked_by_you === true}
+          displayName={heroName}
+          isMuted={data!.relationship?.is_muted === true}
+          blockedByYou={data!.relationship?.blocked_by_you === true}
         />
       ) : null}
     </div>

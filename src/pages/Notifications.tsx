@@ -3,6 +3,7 @@ import { AlarmClockIcon, UserIcon } from 'hugeicons-react'
 import { BidiText } from '../components/BidiText'
 import { RequireAppAuth } from '../components/RequireAppAuth'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
+import { ProfilePersonalSubpageLayout } from '@/components/profile/ProfilePersonalSubpageLayout'
 import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
 import { SOCIAL_SURFACE_CLASS } from '@/components/profile/social/socialUi'
 import { useNotifications } from '../hooks/useNotifications'
@@ -20,14 +21,13 @@ const NotificationsPage = () => {
     useNotifications()
 
   return (
-    <div className="pb-24" dir="rtl">
-      <div className="sticky top-[var(--app-header-offset)] z-10 border-b border-border/60 bg-background/95 backdrop-blur-sm">
-        <div className="flex items-center justify-between gap-3 px-4 py-4">
-          <div className="flex items-center gap-2">
-            <AlarmClockIcon className="h-6 w-6 text-muted-foreground" />
-            <h1 className="text-lg font-semibold text-foreground">اعلان‌ها</h1>
-            {unreadCount > 0 ? <span className={unreadBadgeClass}>جدید</span> : null}
-          </div>
+    <ProfilePersonalSubpageLayout
+      stickyHeader
+      title="اعلان‌ها"
+      titleLeading={<AlarmClockIcon className="h-6 w-6 text-muted-foreground" aria-hidden />}
+      titleAddon={
+        <div className="flex items-center gap-2">
+          {unreadCount > 0 ? <span className={unreadBadgeClass}>جدید</span> : null}
           {notifications.length > 0 ? (
             <button
               type="button"
@@ -41,23 +41,20 @@ const NotificationsPage = () => {
             </button>
           ) : null}
         </div>
-      </div>
-
+      }
+      contentClassName="pt-4"
+    >
       {isLoading ? (
-        <div className="p-4">
-          <SocialListSkeleton rows={4} />
-        </div>
+        <SocialListSkeleton rows={4} />
       ) : isError && notifications.length === 0 ? (
-        <div className="p-4">
-          <ExploreEmptyState
-            title="خطا در بارگذاری اعلان‌ها"
-            subtitle="درخواست انجام نشد. دوباره تلاش کنید."
-            actionLabel="تلاش مجدد"
-            onAction={() => void refetch()}
-          />
-        </div>
+        <ExploreEmptyState
+          title="خطا در بارگذاری اعلان‌ها"
+          subtitle="درخواست انجام نشد. دوباره تلاش کنید."
+          actionLabel="تلاش مجدد"
+          onAction={() => void refetch()}
+        />
       ) : notifications.length > 0 ? (
-        <div className="space-y-3 p-4">
+        <div className="space-y-3">
           {notifications.map((notification) => {
             const coverSrc = resolveMediaServeUrl(notification.anime_cover_image)
             const isSocialInbox =
@@ -129,7 +126,9 @@ const NotificationsPage = () => {
                     {formatNotificationTime(notification.created_at)}
                     {notification.episode_number != null ? (
                       <>
-                        <span className="mx-1.5 text-border" aria-hidden>·</span>
+                        <span className="mx-1.5 text-border" aria-hidden>
+                          ·
+                        </span>
                         قسمت {toPersianDigits(notification.episode_number)}
                       </>
                     ) : null}
@@ -164,14 +163,12 @@ const NotificationsPage = () => {
           })}
         </div>
       ) : (
-        <div className="mt-8 px-4">
-          <ExploreEmptyState
-            title="اعلانی وجود ندارد"
-            subtitle="قسمت جدید، پاسخ نظر، دنبال‌کننده و پسند اینجا نمایش داده می‌شود."
-          />
-        </div>
+        <ExploreEmptyState
+          title="اعلانی وجود ندارد"
+          subtitle="قسمت جدید، پاسخ نظر، دنبال‌کننده و پسند اینجا نمایش داده می‌شود."
+        />
       )}
-    </div>
+    </ProfilePersonalSubpageLayout>
   )
 }
 

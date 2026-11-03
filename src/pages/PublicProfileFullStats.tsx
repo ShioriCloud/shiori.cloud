@@ -1,7 +1,8 @@
 import { Navigate, useParams } from 'react-router-dom'
 import { MyListCompactCard } from '@/components/my-list/MyListUi'
 import { ProfileFullStatsView } from '@/components/profile/ProfileFullStatsView'
-import { RouteFallback } from '@/components/RouteFallback'
+import { ProfilePersonalSubpageLayout } from '@/components/profile/ProfilePersonalSubpageLayout'
+import { ProfileOverviewStripSkeleton } from '@/components/profile/ProfileSectionSkeletons'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import { useSocialProfileUser } from '@/hooks/useSocialProfile'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
@@ -13,7 +14,13 @@ const PublicProfileFullStats = () => {
   const canFetch = isReady && (inTelegram || Boolean(user)) && telegramUserId.length > 0
   const { data, isLoading, isError } = useSocialProfileUser(telegramUserId, canFetch)
 
-  if (!isReady) return <RouteFallback />
+  if (!isReady) {
+    return (
+      <ProfilePersonalSubpageLayout title="آمار کامل" contentClassName="space-y-6">
+        <ProfileOverviewStripSkeleton className="!mx-0 !mt-0" />
+      </ProfilePersonalSubpageLayout>
+    )
+  }
 
   if (!inTelegram && !user) {
     return (
@@ -27,27 +34,31 @@ const PublicProfileFullStats = () => {
     return <Navigate to="/feed" replace />
   }
 
-  if (isLoading && !data) return <RouteFallback />
+  if (isLoading && !data) {
+    return (
+      <ProfilePersonalSubpageLayout title="آمار کامل" contentClassName="space-y-6">
+        <ProfileOverviewStripSkeleton className="!mx-0 !mt-0" />
+      </ProfilePersonalSubpageLayout>
+    )
+  }
 
   if (isError || !data || data.enabled === false) {
     return (
-      <div className="bg-background px-4 pb-24 pt-4 text-foreground">
-        <h1 className="mb-4 text-lg font-semibold">آمار کامل</h1>
+      <ProfilePersonalSubpageLayout title="آمار کامل">
         <MyListCompactCard className="p-4 text-center text-sm text-muted-foreground">
           آمار این پروفایل در دسترس نیست.
         </MyListCompactCard>
-      </div>
+      </ProfilePersonalSubpageLayout>
     )
   }
 
   if (data.privacy?.watch_activity_hidden) {
     return (
-      <div className="bg-background px-4 pb-24 pt-4 text-foreground">
-        <h1 className="mb-4 text-lg font-semibold">آمار کامل</h1>
+      <ProfilePersonalSubpageLayout title="آمار کامل">
         <MyListCompactCard className="p-4 text-center text-sm text-muted-foreground">
           آمار تماشای این کاربر خصوصی است.
         </MyListCompactCard>
-      </div>
+      </ProfilePersonalSubpageLayout>
     )
   }
 
@@ -55,28 +66,26 @@ const PublicProfileFullStats = () => {
   const displayName = data.profile?.display_name?.trim() || 'کاربر'
 
   return (
-    <div className="bg-background pb-24 text-foreground">
-      <div className="space-y-6 px-4 pt-4">
-        <div>
-          <h1 className="text-lg font-semibold">آمار کامل</h1>
-          <p className="mt-0.5 text-xs text-muted-foreground">{displayName}</p>
-        </div>
-        <ProfileFullStatsView
-          model={{
-            animeCount: summary?.anime_count ?? 0,
-            episodesWatched: summary?.episodes_watched ?? 0,
-            watchHours: Math.round(summary?.estimated_watch_hours ?? 0),
-            averageRating: summary?.average_rating ?? null,
-            ratingsCount: summary?.ratings_count ?? 0,
-            activeDays: summary?.active_days ?? 0,
-            topGenres: data.top_genres ?? [],
-            byFormat: data.by_format ?? [],
-            watchedItems: data.watched?.items ?? [],
-          }}
-          emptyWatchedLabel="هنوز انیمه‌ای برای نمایش نیست."
-        />
-      </div>
-    </div>
+    <ProfilePersonalSubpageLayout
+      title="آمار کامل"
+      description={displayName}
+      contentClassName="space-y-6"
+    >
+      <ProfileFullStatsView
+        model={{
+          animeCount: summary?.anime_count ?? 0,
+          episodesWatched: summary?.episodes_watched ?? 0,
+          watchHours: Math.round(summary?.estimated_watch_hours ?? 0),
+          averageRating: summary?.average_rating ?? null,
+          ratingsCount: summary?.ratings_count ?? 0,
+          activeDays: summary?.active_days ?? 0,
+          topGenres: data.top_genres ?? [],
+          byFormat: data.by_format ?? [],
+          watchedItems: data.watched?.items ?? [],
+        }}
+        emptyWatchedLabel="هنوز انیمه‌ای برای نمایش نیست."
+      />
+    </ProfilePersonalSubpageLayout>
   )
 }
 
