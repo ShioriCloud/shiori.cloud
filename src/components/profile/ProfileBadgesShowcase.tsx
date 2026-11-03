@@ -69,11 +69,7 @@ export const ProfileBadgesShowcase = ({
   const preview = previewBadges?.slice(0, PREVIEW_COUNT) ?? []
   const title = variant === 'own' ? 'نشان‌هام' : 'نشان‌هاش'
 
-  if (isLoading) {
-    return <ProfileBadgesShowcaseSkeleton className={className} />
-  }
-
-  const { data: ownCatalog } = useSocialBadgeCatalogMe(variant === 'own')
+  const { data: ownCatalog } = useSocialBadgeCatalogMe(variant === 'own' && !isLoading)
   const ownCatalogMap = useMemo(() => {
     const map = new Map<string, SocialBadgeCatalogItem>()
     for (const cat of ownCatalog?.categories ?? []) {
@@ -84,13 +80,17 @@ export const ProfileBadgesShowcase = ({
 
   const { data: publicCatalog } = useSocialBadgeCatalogUser(
     targetUserId ?? '',
-    variant === 'public' && Boolean(targetUserId)
+    variant === 'public' && Boolean(targetUserId) && !isLoading
   )
   const publicCatalogMap = useMemo(() => {
     const map = new Map<string, PublicBadge>()
     for (const badge of publicCatalog?.badges ?? []) map.set(badge.id, badge)
     return map
   }, [publicCatalog?.badges])
+
+  if (isLoading) {
+    return <ProfileBadgesShowcaseSkeleton className={className} />
+  }
 
   const headerMore =
     variant === 'own' ? (
