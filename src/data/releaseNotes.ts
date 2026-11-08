@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.112',
+    items: ['بالای پروفایل و تاریخچه تماشا به چیدمان طرح جدید نزدیک‌تر شد'],
+  },
+  {
     version: '0.2.111',
     items: ['چیدمان تب آمار و ترجمه‌ها در پروفایل راست‌چین شد'],
   },

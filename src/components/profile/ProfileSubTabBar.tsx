@@ -8,7 +8,7 @@ type ProfileSubTabBarProps<T extends string> = {
   className?: string
 }
 
-/** زیرتب‌ها — همان زبان بصری segmented control خانه/اکتشاف. */
+/** زیرتب‌های پروفایل — قرص‌های فیگما v3، چسبیده به شروع ردیف. */
 export const ProfileSubTabBar = <T extends string>({
   tabs,
   active,
@@ -16,10 +16,9 @@ export const ProfileSubTabBar = <T extends string>({
   className,
 }: ProfileSubTabBarProps<T>) => (
   <div
-    className={cn('home-type-tabs relative flex rounded-xl p-1', className)}
+    className={cn('flex flex-wrap items-center gap-2', className)}
     role="tablist"
     aria-label="زیرتب‌های پروفایل"
-    dir="rtl"
   >
     {tabs.map((tab) => {
       const isActive = tab.id === active
@@ -35,14 +34,13 @@ export const ProfileSubTabBar = <T extends string>({
             onChange(tab.id)
           }}
           className={cn(
-            'relative min-h-9 flex-1 rounded-[10px] py-2 text-xs font-medium transition-all duration-200',
-            isActive ? 'text-foreground font-semibold' : 'text-muted-foreground hover:text-foreground'
+            'rounded-full px-3 py-1 text-[12.5px] leading-[18px] transition-colors',
+            isActive
+              ? 'bg-primary-500/15 font-semibold text-[#a78bfa]'
+              : 'border border-border/80 font-normal text-muted-foreground'
           )}
         >
-          {isActive ? (
-            <span aria-hidden className="home-type-tabs-thumb absolute inset-0 rounded-[10px]" />
-          ) : null}
-          <span className="relative z-10">{tab.label}</span>
+          {tab.label}
         </button>
       )
     })}

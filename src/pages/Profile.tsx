@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { Bell, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { ButtonGroup } from '@/components/ui/button-group'
 import { useAppAuth } from '../hooks/useAppAuth'
 import { useNotifications } from '../hooks/useNotifications'
 import { useUserAnimeList } from '../hooks/useUserAnimeList'
@@ -200,13 +199,13 @@ const Profile = () => {
         roleBadges={roleBadges}
         onAvatarError={() => setAvatarFailed(true)}
         leftAction={
-          <ButtonGroup orientation="vertical" aria-label="میانبرهای پروفایل">
+          <>
             <Button
               asChild
               type="button"
               variant="outline"
-              size="icon-sm"
-              className="relative surface-skeuo border-border/60 text-muted-foreground hover:text-foreground"
+              size="icon"
+              className="relative size-[38px] rounded-xl border-border/70 bg-card text-foreground/80 dark:border-[#1e1e24] dark:bg-[#141418]"
             >
               <Link
                 to="/notifications"
@@ -216,25 +215,23 @@ const Profile = () => {
                     : 'اعلان‌ها'
                 }
               >
-                <Bell className="h-4 w-4" />
+                <Bell className="h-5 w-5" />
                 {unreadCount > 0 ? (
-                  <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary-500 px-1 text-[9px] font-bold leading-none text-white">
-                    {unreadCount > 9 ? '۹+' : toPersianDigits(unreadCount)}
-                  </span>
+                  <span className="absolute end-1.5 top-1.5 size-2 rounded-full bg-primary-400" />
                 ) : null}
               </Link>
             </Button>
             <Button
               type="button"
               variant="outline"
-              size="icon-sm"
-              className="surface-skeuo border-border/60 text-muted-foreground hover:text-foreground"
+              size="icon"
+              className="size-[38px] rounded-xl border-border/70 bg-card text-foreground/80 dark:border-[#1e1e24] dark:bg-[#141418]"
               aria-label="حساب من و تنظیمات"
               onClick={() => setAccountOpen(true)}
             >
-              <Settings className="h-4 w-4" />
+              <Settings className="h-5 w-5" />
             </Button>
-          </ButtonGroup>
+          </>
         }
         subtitle={
           user?.email && !inTelegram ? (

@@ -1,23 +1,13 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Award, ChevronLeft } from 'lucide-react'
+import { ChevronLeft } from 'lucide-react'
 import {
   BadgeDetailBody,
   BadgeDetailDialog,
 } from '@/components/profile/badges/BadgeDetailDialog'
-import { BadgeNewPill, BadgeVisual, badgeShowsAsNew } from '@/components/profile/badges/badgeUi'
+import { BadgeVisual } from '@/components/profile/badges/badgeUi'
 import { ProfileBadgesSheet } from '@/components/profile/badges/ProfileBadgesSheet'
-import {
-  profileBadgeShowcaseAuraClass,
-  profileBadgeShowcaseFaceClass,
-  profileBadgeShowcaseOuterClass,
-  profileHighlightGlowClass,
-  profileHighlightSectionClass,
-} from '@/components/profile/profileHighlightCard'
-import {
-  PROFILE_BADGES_SHOWCASE_GRID_MIN_H,
-  ProfileBadgesShowcaseSkeleton,
-} from '@/components/profile/ProfileSectionSkeletons'
+import { ProfileBadgesShowcaseSkeleton } from '@/components/profile/ProfileSectionSkeletons'
 import {
   useSocialBadgeCatalogMe,
   useSocialBadgeCatalogUser,
@@ -66,9 +56,7 @@ export const ProfileBadgesHeaderStrip = ({
   >(null)
 
   const earned = badgesSummary?.earned_count ?? previewBadges?.length ?? 0
-  const total = badgesSummary?.total_count ?? earned
-  const preview = previewBadges?.slice(0, PREVIEW_COUNT) ?? []
-  const title = variant === 'own' ? 'نشان‌هام' : 'نشان‌هاش'
+  const title = 'نشان‌ها'
 
   const { data: ownCatalog } = useSocialBadgeCatalogMe(variant === 'own' && !isLoading)
   const ownCatalogMap = useMemo(() => {
@@ -111,7 +99,7 @@ export const ProfileBadgesHeaderStrip = ({
         to="/profile/badges"
         className="inline-flex shrink-0 items-center gap-0.5 text-xs font-medium text-primary-400 active:opacity-75"
       >
-        همه
+        نمایش همه
         <ChevronLeft className="h-3.5 w-3.5 opacity-80" aria-hidden />
       </Link>
     ) : (
@@ -120,7 +108,7 @@ export const ProfileBadgesHeaderStrip = ({
         onClick={() => setSheetOpen(true)}
         className="inline-flex shrink-0 items-center gap-0.5 text-xs font-medium text-primary-400 active:opacity-75"
       >
-        همه
+        نمایش همه
         <ChevronLeft className="h-3.5 w-3.5 opacity-80" aria-hidden />
       </button>
     )
@@ -141,44 +129,41 @@ export const ProfileBadgesHeaderStrip = ({
     return publicCatalogMap.get(badge.id)?.rarity
   }
 
+  const rarityRank: Record<string, number> = {
+    legendary: 0,
+    epic: 1,
+    rare: 2,
+    uncommon: 3,
+    common: 4,
+  }
+  const preview = [...(previewBadges ?? [])]
+    .sort((a, b) => {
+      const ra = rarityRank[rarityForPreview(a) ?? 'common'] ?? 4
+      const rb = rarityRank[rarityForPreview(b) ?? 'common'] ?? 4
+      return ra - rb
+    })
+    .slice(0, PREVIEW_COUNT)
+
   return (
     <>
-      <div className={cn('mx-4 mt-3', className)}>
-        <section className={profileHighlightSectionClass('amber')}>
-          <div className={profileHighlightGlowClass('right', 'amber')} aria-hidden />
-          <div
-            className={cn(profileHighlightGlowClass('left', 'primary'), 'bottom-0 top-auto')}
-            aria-hidden
-          />
-
-          <div className="relative px-3.5 py-3.5 text-right" dir="rtl">
-            <div className="flex items-start gap-2.5">
-              <span
-                className={cn(
-                  'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl',
-                  'border border-amber-400/30 bg-amber-400/15 text-amber-700 dark:text-amber-200'
-                )}
-              >
-                <Award className="h-4 w-4" aria-hidden />
-              </span>
-
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <h2 className="text-sm font-semibold text-foreground">{title}</h2>
-                  {(earned > 0 || preview.length > 0) && headerMore}
-                </div>
-                <p className="mt-0.5 text-[11px] text-muted-foreground">
-                  {earned > 0
-                    ? `${toPersianDigits(earned)} از ${toPersianDigits(total)} نشان`
-                    : 'با تماشا و فعالیت در شیوری باز می‌شوند'}
-                </p>
+      <div className={cn('mx-4 mt-4', className)}>
+        <section className="flex items-center justify-between gap-3 rounded-[14px] border border-border/70 bg-card px-3 py-3.5 dark:border-[#1e1e24] dark:bg-[#141418]">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className="shrink-0 text-right">
+              <div className="flex items-center gap-1.5">
+                <h2 className="text-sm font-bold text-foreground">{title}</h2>
+                {earned > 0 ? (
+                  <span className="rounded-full bg-[#a78bfa] px-1.5 text-[11.5px] font-semibold leading-5 text-[#8b5cf6]">
+                    {toPersianDigits(earned)}
+                  </span>
+                ) : null}
               </div>
+              <p className="text-[11px] text-muted-foreground">
+                {earned > 0 ? 'کمیاب‌ترین‌ها' : 'با تماشا و فعالیت در شیوری باز می‌شوند'}
+              </p>
             </div>
-
             {preview.length > 0 ? (
-              <div
-                className={cn('mt-3 grid grid-cols-4 gap-2', PROFILE_BADGES_SHOWCASE_GRID_MIN_H)}
-              >
+              <div className="flex items-center gap-1.5">
                 {preview.map((badge) => {
                   const rarity = rarityForPreview(badge)
                   return (
@@ -186,36 +171,24 @@ export const ProfileBadgesHeaderStrip = ({
                       key={badge.id}
                       type="button"
                       onClick={() => openPreview(badge)}
-                      className="relative w-full min-w-0"
+                      className="relative size-9 shrink-0"
                       aria-label={badge.title}
                     >
-                      <span className={profileBadgeShowcaseAuraClass(rarity)} aria-hidden />
-                      <div className={profileBadgeShowcaseOuterClass(rarity)}>
-                        <div className={profileBadgeShowcaseFaceClass()}>
-                          <BadgeVisual
-                            earned
-                            imageUrl={badge.image_url}
-                            title={badge.title}
-                            rarity={rarity}
-                            size="sm"
-                            className="h-11 w-11 drop-shadow-[0_0_16px_rgba(251,191,36,0.35)]"
-                          />
-                        </div>
-                      </div>
-                      {badgeShowsAsNew(badge) ? (
-                        <BadgeNewPill className="absolute -left-0.5 -top-0.5 z-10" />
-                      ) : null}
+                      <BadgeVisual
+                        earned
+                        imageUrl={badge.image_url}
+                        title={badge.title}
+                        rarity={rarity}
+                        size="sm"
+                        className="!h-9 !w-9"
+                      />
                     </button>
                   )
                 })}
               </div>
-            ) : (
-              <p className="mt-3 rounded-xl border border-dashed border-border/55 bg-muted/20 px-3 py-4 text-center text-xs text-muted-foreground">
-                هنوز نشانی کسب نکرده‌ای — با تماشا و تعامل در شیوری باز می‌شوند.
-              </p>
-            )}
-
+            ) : null}
           </div>
+          {(earned > 0 || preview.length > 0) && headerMore}
         </section>
       </div>
 

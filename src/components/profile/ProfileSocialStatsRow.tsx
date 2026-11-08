@@ -1,9 +1,5 @@
 import { Link } from 'react-router-dom'
 import { ChevronLeft } from 'lucide-react'
-import {
-  profileHighlightGlowClass,
-  profileHighlightSectionClass,
-} from '@/components/profile/profileHighlightCard'
 import { cn } from '@/lib/utils'
 
 type Metric = {
@@ -17,49 +13,37 @@ type ProfileSocialStatsRowProps = {
   className?: string
 }
 
+const chipClass = cn(
+  'flex min-w-0 flex-1 items-center justify-between gap-1 rounded-xl',
+  'border border-border/70 bg-card py-2 pl-2.5 pr-3',
+  'dark:border-[#1e1e24] dark:bg-[#141418]',
+  'active:opacity-85'
+)
+
 const MetricCard = ({ value, label, to }: Metric) => {
   const inner = (
-    <div className="relative px-3 py-3.5 text-center">
-      {to ? (
-        <ChevronLeft
-          className="absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70"
-          aria-hidden
-        />
-      ) : null}
-      <p className="text-lg font-bold tabular-nums leading-none tracking-tight text-foreground">
-        {value}
-      </p>
-      <p className="mt-1.5 text-[10px] font-medium leading-tight text-muted-foreground">{label}</p>
-    </div>
+    <>
+      <div className="min-w-0 text-right">
+        <p className="text-[17px] font-bold leading-6 tabular-nums text-foreground">{value}</p>
+        <p className="text-[11.5px] leading-4 text-muted-foreground">{label}</p>
+      </div>
+      {to ? <ChevronLeft className="size-4 shrink-0 opacity-35" aria-hidden /> : <span className="size-4" />}
+    </>
   )
 
   if (to) {
     return (
-      <Link
-        to={to}
-        className={cn(
-          profileHighlightSectionClass('primary'),
-          'block flex-1 active:opacity-85 transition-opacity'
-        )}
-      >
-        <div className={profileHighlightGlowClass('left', 'primary')} aria-hidden />
-        <div className={cn(profileHighlightGlowClass('right', 'sky'), 'opacity-60')} aria-hidden />
-        <div className="relative">{inner}</div>
+      <Link to={to} className={chipClass}>
+        {inner}
       </Link>
     )
   }
 
-  return (
-    <div className={cn(profileHighlightSectionClass('primary'), 'flex-1')}>
-      <div className={profileHighlightGlowClass('left', 'primary')} aria-hidden />
-      <div className={cn(profileHighlightGlowClass('right', 'sky'), 'opacity-60')} aria-hidden />
-      <div className="relative">{inner}</div>
-    </div>
-  )
+  return <div className={chipClass}>{inner}</div>
 }
 
 export const ProfileSocialStatsRow = ({ metrics, className }: ProfileSocialStatsRowProps) => (
-  <div className={cn('mx-4 mt-3 flex gap-2', className)} dir="rtl">
+  <div className={cn('mx-4 mt-4 flex gap-2', className)}>
     {metrics.map((metric) => (
       <MetricCard key={metric.label} {...metric} />
     ))}

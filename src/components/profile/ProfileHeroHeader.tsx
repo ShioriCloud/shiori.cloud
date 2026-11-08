@@ -21,12 +21,13 @@ type ProfileHeroHeaderProps = {
   memberSinceLabel?: string | null
   subtitle?: ReactNode
   roleBadges?: RoleBadge[]
+  /** کنار هویت، سمت چپ ردیف (زنگوله / تنظیمات). */
   leftAction?: ReactNode
   rightAction?: ReactNode
   onAvatarError?: () => void
 }
 
-/** v3 identity row — avatar at inline-start (راست در RTL)، متن روبه‌رو. */
+/** v3 compact identity — آواتار راست، اکشن‌ها چپ. صفحه از قبل راست‌به‌چپ است. */
 export const ProfileHeroHeader = ({
   displayName,
   initials,
@@ -38,77 +39,54 @@ export const ProfileHeroHeader = ({
   rightAction,
   onAvatarError,
 }: ProfileHeroHeaderProps) => (
-  <div className="relative overflow-hidden border-b border-border/40">
-    <div className="absolute inset-x-0 top-0 h-28 overflow-hidden" aria-hidden>
-      {avatarUrl ? (
-        <>
-          <img src={avatarUrl} alt="" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-lg" />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/5 via-background/55 to-background" />
-        </>
-      ) : (
-        <>
-          <div className="absolute inset-0 bg-gradient-to-b from-primary-400/22 via-primary-400/8 to-background" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary-400/16 via-transparent to-transparent" />
-        </>
-      )}
-    </div>
-
-    <div className="relative z-10 px-4 pb-3 pt-3">
-      {(leftAction || rightAction) && (
-        <div className="mb-2 flex min-h-9 items-center justify-between gap-2" dir="rtl">
-          <div className="flex items-center gap-2">{leftAction}</div>
-          <div className="flex items-center gap-2">{rightAction}</div>
-        </div>
-      )}
-
-      <div className="flex items-center gap-3.5" dir="rtl">
+  <div className="px-4 pt-4">
+    <div className="flex items-start justify-between gap-3">
+      <div className="flex min-w-0 items-center gap-3">
         <div
           className={cn(
-            'media-card-skeuo h-[4.5rem] w-[4.5rem] shrink-0 rounded-2xl',
-            'shadow-[0_0_24px_-6px] shadow-primary-400/25 ring-2 ring-primary-400/20 ring-offset-2 ring-offset-background'
+            'flex size-[60px] shrink-0 items-center justify-center overflow-hidden rounded-full',
+            'border-2 border-white/12 bg-gradient-to-br from-violet-500 to-[#3b1f73]'
           )}
         >
-          <div className="media-card-skeuo-face bg-muted">
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt={displayName}
-                className="h-full w-full object-cover"
-                onError={onAvatarError}
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-primary-400/15">
-                {initials ? (
-                  <span className="text-lg font-bold text-primary-400">{initials}</span>
-                ) : (
-                  <UserIcon className="h-8 w-8 text-muted-foreground/50" />
-                )}
-              </div>
-            )}
-          </div>
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={displayName}
+              className="h-full w-full object-cover"
+              onError={onAvatarError}
+            />
+          ) : initials ? (
+            <span className="text-[22px] font-bold text-white">{initials}</span>
+          ) : (
+            <UserIcon className="h-7 w-7 text-white/80" />
+          )}
         </div>
 
-        <div className="min-w-0 flex-1 text-right">
-          {/* فیگما v3: اسم چسبیده به آواتار؛ بج مترجم بلافاصله سمت چپ اسم */}
-          <div className="flex flex-wrap items-center gap-1.5" dir="rtl">
-            <h1 className="line-clamp-2 min-w-0 text-base font-bold leading-snug text-foreground">
-              {displayName}
-            </h1>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <h1 className="truncate text-xl font-bold leading-7 text-foreground">{displayName}</h1>
             {roleBadges.map((badge) => (
               <span
                 key={badge.id}
-                className="inline-flex shrink-0 items-center rounded-md border border-primary-400/35 bg-primary-400/12 px-1.5 py-0.5 text-[10px] font-semibold text-primary-300"
+                className="inline-flex h-[22px] shrink-0 items-center rounded-full border border-[#3a2766] bg-[#26193f] px-2 text-[11px] font-semibold text-[#a78bfa]"
               >
                 {badge.title}
               </span>
             ))}
           </div>
           {memberSinceLabel ? (
-            <p className="mt-0.5 text-[11px] text-muted-foreground">{memberSinceLabel}</p>
+            <p className="mt-0.5 text-xs leading-[18px] text-muted-foreground">{memberSinceLabel}</p>
           ) : null}
           {subtitle}
         </div>
       </div>
+
+      {leftAction || rightAction ? (
+        <div className="flex shrink-0 items-center gap-2">
+          {leftAction}
+          {rightAction}
+        </div>
+      ) : null}
     </div>
   </div>
 )
