@@ -7,7 +7,9 @@ const profileHighlightElevation = cn(
 )
 
 /** Shared shell for profile highlight cards (stats, badges, translations). */
-export const profileHighlightSectionClass = (accent?: 'primary' | 'amber' | 'sky') =>
+export const profileHighlightSectionClass = (
+  accent?: 'primary' | 'amber' | 'sky' | 'emerald'
+) =>
   cn(
     'relative overflow-hidden rounded-2xl border',
     profileHighlightElevation,
@@ -15,13 +17,15 @@ export const profileHighlightSectionClass = (accent?: 'primary' | 'amber' | 'sky
       'bg-gradient-to-br from-amber-400/[0.12] via-background to-primary-400/[0.06]',
     accent === 'sky' &&
       'bg-gradient-to-br from-sky-400/[0.10] via-background to-primary-400/[0.08]',
+    accent === 'emerald' &&
+      'bg-gradient-to-br from-emerald-400/[0.10] via-background to-primary-400/[0.06]',
     (!accent || accent === 'primary') &&
       'bg-gradient-to-br from-primary-400/[0.08] via-background to-sky-400/[0.06]'
   )
 
 export const profileHighlightGlowClass = (
   position: 'left' | 'right',
-  color: 'primary' | 'amber' | 'sky'
+  color: 'primary' | 'amber' | 'sky' | 'emerald'
 ) =>
   cn(
     'pointer-events-none absolute rounded-full blur-3xl',
@@ -29,7 +33,8 @@ export const profileHighlightGlowClass = (
     position === 'right' && '-right-10 top-0 h-32 w-32',
     color === 'primary' && 'bg-primary-400/15',
     color === 'amber' && 'bg-amber-400/15',
-    color === 'sky' && 'bg-sky-400/15'
+    color === 'sky' && 'bg-sky-400/15',
+    color === 'emerald' && 'bg-emerald-400/15'
   )
 
 /** Skeuo frame + glow for each badge on profile showcase. */

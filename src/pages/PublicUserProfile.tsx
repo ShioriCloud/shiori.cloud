@@ -350,6 +350,7 @@ const PublicUserProfile = () => {
               favoriteListItems={favoriteListItems}
               profileBase={profileBase}
               favoritesLoading={profileLoading}
+              topGenres={data?.top_genres ?? []}
               publicExtras={{
                 profileUserId: telegramUserId,
                 translator,

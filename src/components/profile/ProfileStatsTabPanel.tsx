@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
 import { ProfileFavoritesPreview } from '@/components/profile/ProfileFavoritesPreview'
 import { ProfileOverviewStrip } from '@/components/profile/ProfileOverviewStrip'
+import { ProfilePopularGenres } from '@/components/profile/ProfilePopularGenres'
 import { ProfilePublicStatsExtras } from '@/components/profile/ProfilePublicStatsExtras'
+import { ProfileStatsMonthlyStrip } from '@/components/profile/ProfileStatsMonthlyStrip'
 import { ProfileOverviewStripSkeleton } from '@/components/profile/ProfileSectionSkeletons'
 import type { ProfileStatsSubTabId } from '@/components/profile/profileSubTabs'
 import type { SocialProfileMe } from '@/services/socialProfile'
@@ -21,6 +23,7 @@ type ProfileStatsTabPanelProps = {
   favoriteOrderIds?: Array<string | number>
   profileBase?: string
   favoritesLoading?: boolean
+  topGenres?: NonNullable<SocialProfileMe['top_genres']>
   publicExtras?: {
     profileUserId: string
     translator?: SocialProfileMe['translator']
@@ -40,6 +43,7 @@ export const ProfileStatsTabPanel = ({
   favoriteOrderIds,
   profileBase = '/profile',
   favoritesLoading = false,
+  topGenres = [],
   publicExtras,
 }: ProfileStatsTabPanelProps) => {
   if (variant === 'public' && !watchVisible && !badgesSection && !publicExtras) {
@@ -52,7 +56,7 @@ export const ProfileStatsTabPanel = ({
 
   if (subTab === 'favorites') {
     return (
-      <div className="-mx-4 pb-2 pt-1">
+      <div className="-mx-4 space-y-1 pb-2 pt-1">
         <ProfileFavoritesPreview
           items={favoriteListItems}
           total={favoriteListItems.length}
@@ -60,7 +64,9 @@ export const ProfileStatsTabPanel = ({
           profileBase={profileBase}
           className="mt-0"
           isLoading={favoritesLoading}
+          gridVariant="profile"
         />
+        <ProfilePopularGenres genres={topGenres} className="!pt-4" />
       </div>
     )
   }
@@ -70,11 +76,15 @@ export const ProfileStatsTabPanel = ({
       {isLoading ? (
         <ProfileOverviewStripSkeleton />
       ) : (
-        <ProfileOverviewStrip
-          data={overview}
-          fullStatsTo={fullStatsTo ?? null}
-          audience={variant}
-        />
+        <>
+          <ProfileOverviewStrip
+            data={overview}
+            fullStatsTo={fullStatsTo ?? null}
+            audience={variant}
+            sectionTitle="مرور تماشا"
+          />
+          <ProfileStatsMonthlyStrip watchHours={overview.watchHours} />
+        </>
       )}
 
       {badgesSection ? <div className="mx-4 mt-4">{badgesSection}</div> : null}

@@ -19,6 +19,8 @@ type ProfileFavoritesPreviewProps = {
   profileBase: string
   className?: string
   isLoading?: boolean
+  /** `profile` = فیگما v3 دو ستونه پستر عمودی */
+  gridVariant?: 'default' | 'profile'
 }
 
 export const ProfileFavoritesPreview = ({
@@ -28,6 +30,7 @@ export const ProfileFavoritesPreview = ({
   profileBase,
   className,
   isLoading = false,
+  gridVariant = 'default',
 }: ProfileFavoritesPreviewProps) => {
   if (isLoading) {
     return <ProfileFavoritesGridSkeleton className={className} />
@@ -63,7 +66,13 @@ export const ProfileFavoritesPreview = ({
           />
         ) : null}
       </div>
-      <div className={cn(SOCIAL_SURFACE_CLASS, 'grid grid-cols-3 gap-2 p-2')}>
+      <div
+        className={cn(
+          SOCIAL_SURFACE_CLASS,
+          'grid gap-2 p-2',
+          gridVariant === 'profile' ? 'grid-cols-2' : 'grid-cols-3'
+        )}
+      >
         {preview.map((item) => {
           const routeRef = { id: item.anime_id, slug: item.slug, title: item.title }
           return (
@@ -74,7 +83,12 @@ export const ProfileFavoritesPreview = ({
               className="group block overflow-hidden rounded-xl active:scale-[0.98] transition-transform"
             >
               <div className="media-card-skeuo rounded-xl">
-                <div className="media-card-skeuo-face relative aspect-square bg-muted">
+                <div
+                  className={cn(
+                    'media-card-skeuo-face relative bg-muted',
+                    gridVariant === 'profile' ? 'aspect-[2/3]' : 'aspect-square'
+                  )}
+                >
                   {item.image ? (
                     <img
                       src={item.image}

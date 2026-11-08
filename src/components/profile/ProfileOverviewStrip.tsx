@@ -23,11 +23,13 @@ export const ProfileOverviewStrip = ({
   data,
   fullStatsTo = '/profile/stats',
   audience = 'own',
+  sectionTitle = 'مرور تماشا',
 }: {
   data: OverviewModel
   /** Pass `null` to hide the full-stats link (e.g. public profiles). */
   fullStatsTo?: string | null
   audience?: 'own' | 'public'
+  sectionTitle?: string
 }) => {
   const formats = sortFormats(data.byFormat).slice(0, 6)
   const hours = Math.max(0, Math.round(data.watchHours))
@@ -51,7 +53,7 @@ export const ProfileOverviewStrip = ({
             >
               <ChartPie className="h-4 w-4" aria-hidden />
             </span>
-            <h2 className="text-sm font-semibold text-foreground">خلاصه آمار تماشا</h2>
+            <h2 className="text-sm font-semibold text-foreground">{sectionTitle}</h2>
           </div>
 
           <div className="flex items-center gap-4">

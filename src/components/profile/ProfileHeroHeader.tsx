@@ -89,18 +89,19 @@ export const ProfileHeroHeader = ({
         </div>
 
         <div className="min-w-0 flex-1 text-right">
-          <div className="flex flex-wrap items-center justify-end gap-1.5">
+          {/* فیگما v3: اسم چسبیده به آواتار؛ بج مترجم بلافاصله سمت چپ اسم */}
+          <div className="flex flex-wrap items-center gap-1.5" dir="rtl">
+            <h1 className="line-clamp-2 min-w-0 text-base font-bold leading-snug text-foreground">
+              {displayName}
+            </h1>
             {roleBadges.map((badge) => (
               <span
                 key={badge.id}
-                className="inline-flex shrink-0 items-center rounded-full border border-primary-400/30 bg-primary-400/10 px-2 py-0.5 text-[10px] font-medium text-primary-400"
+                className="inline-flex shrink-0 items-center rounded-md border border-primary-400/35 bg-primary-400/12 px-1.5 py-0.5 text-[10px] font-semibold text-primary-300"
               >
                 {badge.title}
               </span>
             ))}
-            <h1 className="line-clamp-2 min-w-0 text-base font-bold leading-snug text-foreground">
-              {displayName}
-            </h1>
           </div>
           {memberSinceLabel ? (
             <p className="mt-0.5 text-[11px] text-muted-foreground">{memberSinceLabel}</p>

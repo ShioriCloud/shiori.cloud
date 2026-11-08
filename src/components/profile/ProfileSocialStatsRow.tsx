@@ -22,7 +22,7 @@ const MetricCard = ({ value, label, to }: Metric) => {
     <div className="relative px-3 py-3.5 text-center">
       {to ? (
         <ChevronLeft
-          className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70"
+          className="absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70"
           aria-hidden
         />
       ) : null}

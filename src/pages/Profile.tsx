@@ -312,6 +312,7 @@ const Profile = () => {
               favoriteOrderIds={favoriteAnime}
               profileBase="/profile"
               favoritesLoading={favoriteAnime.length > 0 && favoriteCardsLoading}
+              topGenres={mergedStats.topGenres}
             />
           </div>
         ) : null}
