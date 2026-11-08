@@ -32,7 +32,6 @@ import {
   type ProfilePrimaryTabId,
   type ProfileTabQuery,
 } from '@/components/profile/profileTabs'
-import { useCustomLists } from '@/hooks/useCustomLists'
 import { ProfileTabSwipeShell } from '@/components/profile/ProfileTabSwipeShell'
 import { ProfilePageSkeleton } from '@/components/profile/ProfilePageSkeleton'
 import { mergeOwnProfileHeaderStats } from '@/lib/ownProfileStats'
@@ -43,12 +42,7 @@ import { withViewTransition } from '@/lib/viewTransition'
 const Profile = () => {
   const { user, isReady, inTelegram, login, register } = useAppAuth()
   const { stats, favoriteAnime } = useUserAnimeList({ syncRemoteList: false })
-  const { customLists } = useCustomLists({ syncRemote: false })
   const { unreadCount } = useNotifications()
-  const hasPublicPlaylists = useMemo(
-    () => customLists.some((list) => list.isPublic === true),
-    [customLists]
-  )
   const { data: favoriteCards = [], isLoading: favoriteCardsLoading } =
     useFavoriteAnimeCardsQuery(favoriteAnime)
   const { data: socialProfile, isLoading: socialProfileLoading } = useSocialProfileMe(
@@ -61,8 +55,8 @@ const Profile = () => {
   const hasTranslator = Boolean(socialProfile?.translator)
   const profileTabs = useMemo(() => buildOwnProfileTabs(hasTranslator), [hasTranslator])
   const activitiesSubTabs = useMemo(
-    () => buildActivitiesSubTabs({ includePlaylists: hasPublicPlaylists }),
-    [hasPublicPlaylists]
+    () => buildActivitiesSubTabs(),
+    []
   )
   const statsSubTabs = useMemo(() => buildStatsSubTabs(), [])
 
@@ -164,14 +158,6 @@ const Profile = () => {
   }
 
   if (activeTab === 'translations' && !hasTranslator) {
-    return <Navigate to="/profile" replace />
-  }
-
-  if (
-    activeTab === 'activities' &&
-    activitiesSub === 'playlists' &&
-    !hasPublicPlaylists
-  ) {
     return <Navigate to="/profile" replace />
   }
 

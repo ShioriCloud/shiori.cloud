@@ -30,7 +30,6 @@ import {
   type ProfilePrimaryTabId,
   type ProfileTabQuery,
 } from '@/components/profile/profileTabs'
-import { usePublicCustomListsQuery } from '@/hooks/usePublicCustomLists'
 import { formatProfileMemberSince } from '@/lib/profileMemberSince'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { ProfileTabSwipeShell } from '@/components/profile/ProfileTabSwipeShell'
@@ -55,19 +54,14 @@ const PublicUserProfile = () => {
   const [avatarFailed, setAvatarFailed] = useState(false)
   const [actionsOpen, setActionsOpen] = useState(false)
 
-  const { data: publicListsData } = usePublicCustomListsQuery(
-    telegramUserId,
-    canFetchProfile && telegramUserId.length > 0
-  )
-  const hasPublicPlaylists = (publicListsData?.lists?.length ?? 0) > 0
   const hasTranslator = Boolean(data?.translator)
   const profileTabs = useMemo(
     () => buildPublicProfileTabs(hasTranslator),
     [hasTranslator]
   )
   const activitiesSubTabs = useMemo(
-    () => buildActivitiesSubTabs({ includePlaylists: hasPublicPlaylists }),
-    [hasPublicPlaylists]
+    () => buildActivitiesSubTabs(),
+    []
   )
   const statsSubTabs = useMemo(() => buildStatsSubTabs(), [])
 
@@ -143,14 +137,6 @@ const PublicUserProfile = () => {
   }
 
   if (activeTab === 'translations' && !hasTranslator) {
-    return <Navigate to={profileBase} replace />
-  }
-
-  if (
-    activeTab === 'activities' &&
-    activitiesSub === 'playlists' &&
-    !hasPublicPlaylists
-  ) {
     return <Navigate to={profileBase} replace />
   }
 

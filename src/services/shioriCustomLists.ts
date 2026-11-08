@@ -77,9 +77,15 @@ export const createUserCustomList = async (payload: {
   })
 }
 
+export type PublicListsVisibility = 'public' | 'private' | 'none'
+
 export const fetchPublicCustomLists = async (
   telegramUserId: string
-): Promise<{ enabled: boolean; lists: PublicCustomListSummary[] }> =>
+): Promise<{
+  enabled: boolean
+  lists: PublicCustomListSummary[]
+  visibility?: PublicListsVisibility
+}> =>
   withListAuth(() =>
     shioriFetch(
       `/user-custom-lists/users/${encodeURIComponent(telegramUserId)}/public`

@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.122',
+    items: ['بخش پلی‌لیست همیشه هست و اگر لیستی نباشد یا خصوصی باشد جدا گفته می‌شود'],
+  },
+  {
     version: '0.2.121',
     items: ['آثار برتر مترجم بر اساس نمرهٔ انی‌لیست چیده می‌شود'],
   },

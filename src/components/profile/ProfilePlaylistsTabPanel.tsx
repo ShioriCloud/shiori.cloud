@@ -4,7 +4,10 @@ import { Plus } from 'lucide-react'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { CreateShioriListSheet } from '@/components/my-list/CreateShioriListSheet'
 import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
+import { useCustomLists } from '@/hooks/useCustomLists'
 import { usePublicCustomListQuery, usePublicCustomListsQuery } from '@/hooks/usePublicCustomLists'
+import { useFavoriteAnimeCardsQuery } from '@/hooks/queries/useAnimeQueries'
+import type { ShioriCustomList } from '@/store/myListStore'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { cn } from '@/lib/utils'
 
@@ -75,14 +78,46 @@ const PlaylistCard = ({
   )
 }
 
+const OwnPlaylistCard = ({ list }: { list: ShioriCustomList }) => {
+  const { data: cards = [] } = useFavoriteAnimeCardsQuery(list.animeIds.slice(0, 8))
+  const images = useMemo(
+    () => cards.map((card) => card.image).filter((src): src is string => Boolean(src)).slice(0, 4),
+    [cards]
+  )
+
+  return (
+    <Link
+      to={`/my-list/lists/${encodeURIComponent(list.id)}`}
+      className={cn(
+        'min-w-0 rounded-2xl border border-border/70 bg-card p-2.5 text-right',
+        'dark:border-[#1e1e24] dark:bg-[#141418]',
+        'active:opacity-85'
+      )}
+    >
+      <ListPosterGrid images={images} />
+      <p className="mt-2 line-clamp-1 text-sm font-semibold text-foreground">{list.name}</p>
+      <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
+        {toPersianDigits(list.animeIds.length)} انیمه
+      </p>
+    </Link>
+  )
+}
+
 export const ProfilePlaylistsTabPanel = ({
   profileUserId,
   variant,
 }: ProfilePlaylistsTabPanelProps) => {
-  const { data, isLoading } = usePublicCustomListsQuery(profileUserId, true)
-  const lists = data?.lists ?? []
+  const { data, isLoading } = usePublicCustomListsQuery(profileUserId, variant === 'public')
+  const { customLists } = useCustomLists({ syncRemote: variant === 'own' })
+  const publicLists = data?.lists ?? []
+  const ownLists = useMemo(
+    () => [...customLists].sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt)),
+    [customLists]
+  )
   const [createOpen, setCreateOpen] = useState(false)
   const title = variant === 'own' ? 'پلی‌لیست‌های من' : 'پلی‌لیست‌ها'
+  const publicVisibility =
+    publicLists.length > 0 ? 'public' : (data?.visibility ?? 'none')
 
   return (
     <section className="mx-4 mt-5 min-w-0">
@@ -100,22 +135,38 @@ export const ProfilePlaylistsTabPanel = ({
         ) : null}
       </div>
 
-      {isLoading ? (
+      {variant === 'own' ? (
+        ownLists.length === 0 ? (
+          <ExploreEmptyState
+            compact
+            showImage={false}
+            title="پلی‌لیستی نداری"
+            subtitle="اولین پلی‌لیستت را بساز."
+            actionLabel="ایجاد پلی‌لیست"
+            onAction={() => setCreateOpen(true)}
+          />
+        ) : (
+          <div className="grid min-w-0 grid-cols-2 gap-3">
+            {ownLists.map((list) => (
+              <OwnPlaylistCard key={list.id} list={list} />
+            ))}
+          </div>
+        )
+      ) : isLoading ? (
         <SocialListSkeleton rows={3} />
-      ) : lists.length === 0 ? (
+      ) : publicLists.length === 0 ? (
         <ExploreEmptyState
           compact
           showImage={false}
-          title="پلی‌لیست عمومی نیست"
-          subtitle={
-            variant === 'own'
-              ? 'با دکمهٔ جدید یک لیست بساز و عمومی‌اش کن تا اینجا دیده شود.'
-              : 'این کاربر هنوز لیست عمومی ندارد.'
+          title={
+            publicVisibility === 'private'
+              ? 'لیست‌های این کاربر خصوصی است'
+              : 'پلی‌لیستی وجود ندارد'
           }
         />
       ) : (
         <div className="grid min-w-0 grid-cols-2 gap-3">
-          {lists.map((list) => (
+          {publicLists.map((list) => (
             <PlaylistCard
               key={list.id}
               profileUserId={profileUserId}

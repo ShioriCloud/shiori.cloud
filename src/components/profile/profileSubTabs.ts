@@ -19,16 +19,11 @@ export const PROFILE_STATS_SUB_FAVORITES = { id: 'favorites' as const, label: 'Ø
 
 export type ProfileSubTabConfig<T extends string> = { id: T; label: string }
 
-export const buildActivitiesSubTabs = (opts: {
-  includePlaylists: boolean
-}): ProfileSubTabConfig<ProfileActivitiesSubTabId>[] => {
-  const tabs: ProfileSubTabConfig<ProfileActivitiesSubTabId>[] = [PROFILE_ACTIVITIES_SUB_WATCH]
-  if (opts.includePlaylists) {
-    tabs.push(PROFILE_ACTIVITIES_SUB_PLAYLISTS)
-  }
-  tabs.push(PROFILE_ACTIVITIES_SUB_COMMENTS)
-  return tabs
-}
+export const buildActivitiesSubTabs = (): ProfileSubTabConfig<ProfileActivitiesSubTabId>[] => [
+  PROFILE_ACTIVITIES_SUB_WATCH,
+  PROFILE_ACTIVITIES_SUB_PLAYLISTS,
+  PROFILE_ACTIVITIES_SUB_COMMENTS,
+]
 
 export const buildStatsSubTabs = (): ProfileSubTabConfig<ProfileStatsSubTabId>[] => [
   PROFILE_STATS_SUB_VIEWING,
