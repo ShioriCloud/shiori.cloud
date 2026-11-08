@@ -23,18 +23,18 @@ export const buildActivitiesSubTabs = (opts: {
   includePlaylists: boolean
 }): ProfileSubTabConfig<ProfileActivitiesSubTabId>[] => {
   const tabs: ProfileSubTabConfig<ProfileActivitiesSubTabId>[] = [
-    PROFILE_ACTIVITIES_SUB_WATCH,
     PROFILE_ACTIVITIES_SUB_COMMENTS,
   ]
   if (opts.includePlaylists) {
-    tabs.splice(1, 0, PROFILE_ACTIVITIES_SUB_PLAYLISTS)
+    tabs.push(PROFILE_ACTIVITIES_SUB_PLAYLISTS)
   }
+  tabs.push(PROFILE_ACTIVITIES_SUB_WATCH)
   return tabs
 }
 
 export const buildStatsSubTabs = (): ProfileSubTabConfig<ProfileStatsSubTabId>[] => [
-  PROFILE_STATS_SUB_VIEWING,
   PROFILE_STATS_SUB_FAVORITES,
+  PROFILE_STATS_SUB_VIEWING,
 ]
 
 export const parseActivitiesSubTab = (raw: string | null): ProfileActivitiesSubTabId => {
@@ -44,8 +44,8 @@ export const parseActivitiesSubTab = (raw: string | null): ProfileActivitiesSubT
 
 export const parseStatsSubTab = (raw: string | null): ProfileStatsSubTabId => {
   if (raw === 'favorites' || raw === 'viewing') return raw
-  return 'viewing'
+  return 'favorites'
 }
 
 export const defaultActivitiesSubTab = (): ProfileActivitiesSubTabId => 'watch'
-export const defaultStatsSubTab = (): ProfileStatsSubTabId => 'viewing'
+export const defaultStatsSubTab = (): ProfileStatsSubTabId => 'favorites'

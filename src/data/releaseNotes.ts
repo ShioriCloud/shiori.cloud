@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.106',
+    items: ['پروفایل: ترتیب تب‌ها و زیرتب‌ها مطابق طرح جدید'],
+  },
+  {
     version: '0.2.100',
     items: [
       'باتم‌شیت نشان‌ها دیگر اسکلتون پروفایل نشان نمی‌دهد',
