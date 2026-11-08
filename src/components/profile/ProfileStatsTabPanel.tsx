@@ -1,17 +1,26 @@
 import type { ReactNode } from 'react'
+import { ProfileFavoritesPreview } from '@/components/profile/ProfileFavoritesPreview'
 import { ProfileOverviewStrip } from '@/components/profile/ProfileOverviewStrip'
 import { ProfilePublicStatsExtras } from '@/components/profile/ProfilePublicStatsExtras'
 import { ProfileOverviewStripSkeleton } from '@/components/profile/ProfileSectionSkeletons'
+import type { ProfileStatsSubTabId } from '@/components/profile/profileSubTabs'
 import type { SocialProfileMe } from '@/services/socialProfile'
 import type { FormatBreakdownRow } from '@/components/profile/profileFormats'
 
+type WatchedItem = NonNullable<SocialProfileMe['watched']>['items'][number]
+
 type ProfileStatsTabPanelProps = {
   variant: 'own' | 'public'
+  subTab: ProfileStatsSubTabId
   overview: { watchHours: number; byFormat: FormatBreakdownRow[] }
   fullStatsTo?: string | null
   watchVisible?: boolean
   badgesSection?: ReactNode
   isLoading?: boolean
+  favoriteListItems?: WatchedItem[]
+  favoriteOrderIds?: Array<string | number>
+  profileBase?: string
+  favoritesLoading?: boolean
   publicExtras?: {
     profileUserId: string
     translator?: SocialProfileMe['translator']
@@ -21,11 +30,16 @@ type ProfileStatsTabPanelProps = {
 
 export const ProfileStatsTabPanel = ({
   variant,
+  subTab,
   overview,
   fullStatsTo,
   watchVisible = true,
   badgesSection,
   isLoading = false,
+  favoriteListItems = [],
+  favoriteOrderIds,
+  profileBase = '/profile',
+  favoritesLoading = false,
   publicExtras,
 }: ProfileStatsTabPanelProps) => {
   if (variant === 'public' && !watchVisible && !badgesSection && !publicExtras) {
@@ -33,6 +47,21 @@ export const ProfileStatsTabPanel = ({
       <p className="rounded-2xl border border-border/50 bg-muted/30 px-4 py-5 text-center text-sm text-muted-foreground">
         آمار این پروفایل در دسترس نیست.
       </p>
+    )
+  }
+
+  if (subTab === 'favorites') {
+    return (
+      <div className="-mx-4 pb-2 pt-1">
+        <ProfileFavoritesPreview
+          items={favoriteListItems}
+          total={favoriteListItems.length}
+          orderedIds={favoriteOrderIds}
+          profileBase={profileBase}
+          className="mt-0"
+          isLoading={favoritesLoading}
+        />
+      </div>
     )
   }
 

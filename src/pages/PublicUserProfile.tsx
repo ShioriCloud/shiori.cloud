@@ -1,28 +1,35 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
 import { MoreHorizontal } from 'lucide-react'
 import { useAppAuth } from '../hooks/useAppAuth'
 import { useSocialProfileUser } from '../hooks/useSocialProfile'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
 import { ProfileFollowButton } from '@/components/profile/ProfileFollowButton'
+import { ProfileActivitiesTabPanel } from '@/components/profile/ProfileActivitiesTabPanel'
+import { ProfileBadgesHeaderStrip } from '@/components/profile/ProfileBadgesHeaderStrip'
 import { ProfileStatsTabPanel } from '@/components/profile/ProfileStatsTabPanel'
-import { ProfileWatchTabPanel } from '@/components/profile/ProfileWatchTabPanel'
-import { ProfileBadgesShowcase } from '@/components/profile/ProfileBadgesShowcase'
+import { ProfileSubTabBar } from '@/components/profile/ProfileSubTabBar'
+import { ProfileTranslationsTabPanel } from '@/components/profile/ProfileTranslationsTabPanel'
 import {
   getProfileInitials,
   ProfileHeroHeader,
 } from '@/components/profile/ProfileHeroHeader'
 import { ProfileSocialStatsRow } from '@/components/profile/ProfileSocialStatsRow'
-import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import { ProfileShareButton } from '@/components/profile/ProfileShareButton'
 import { ProfileSocialActionsSheet } from '@/components/profile/ProfileSocialActionsSheet'
 import {
+  buildActivitiesSubTabs,
+  buildStatsSubTabs,
+  type ProfileActivitiesSubTabId,
+  type ProfileStatsSubTabId,
+} from '@/components/profile/profileSubTabs'
+import {
   buildPublicProfileTabs,
-  isDefaultProfileTab,
-  parseProfileTab,
-  type ProfileTabId,
+  parseProfileTabQuery,
+  serializeProfileTabQuery,
+  type ProfilePrimaryTabId,
+  type ProfileTabQuery,
 } from '@/components/profile/profileTabs'
-import { ProfilePlaylistsTabPanel } from '@/components/profile/ProfilePlaylistsTabPanel'
 import { usePublicCustomListsQuery } from '@/hooks/usePublicCustomLists'
 import { formatProfileMemberSince } from '@/lib/profileMemberSince'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
@@ -31,7 +38,6 @@ import { ProfilePageSkeleton } from '@/components/profile/ProfilePageSkeleton'
 import {
   ProfileFollowButtonSkeleton,
   ProfileSocialStatsRowSkeleton,
-  ProfileTranslationsRailSkeleton,
 } from '@/components/profile/ProfileSectionSkeletons'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { withViewTransition } from '@/lib/viewTransition'
@@ -49,43 +55,68 @@ const PublicUserProfile = () => {
   const [avatarFailed, setAvatarFailed] = useState(false)
   const [actionsOpen, setActionsOpen] = useState(false)
 
-  const rawTab = searchParams.get('tab')
-  const parsedTab = parseProfileTab(rawTab)
   const { data: publicListsData } = usePublicCustomListsQuery(
     telegramUserId,
     canFetchProfile && telegramUserId.length > 0
   )
   const hasPublicPlaylists = (publicListsData?.lists?.length ?? 0) > 0
+  const hasTranslator = Boolean(data?.translator)
   const profileTabs = useMemo(
-    () => buildPublicProfileTabs(hasPublicPlaylists),
+    () => buildPublicProfileTabs(hasTranslator),
+    [hasTranslator]
+  )
+  const activitiesSubTabs = useMemo(
+    () => buildActivitiesSubTabs({ includePlaylists: hasPublicPlaylists }),
     [hasPublicPlaylists]
   )
-  const activeTab: ProfileTabId =
-    parsedTab === 'personal' ? 'watch' : parsedTab
+  const statsSubTabs = useMemo(() => buildStatsSubTabs(), [])
 
-  useEffect(() => {
-    if (rawTab !== 'personal') return
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev)
-        next.delete('tab')
-        return next
-      },
-      { replace: true }
-    )
-  }, [rawTab, setSearchParams])
+  const tabQuery = parseProfileTabQuery(
+    searchParams.get('tab'),
+    searchParams.get('sub')
+  )
+  const activeTab = tabQuery.primary
+  const activitiesSub = tabQuery.activitiesSub
+  const statsSub = tabQuery.statsSub
 
-  const setActiveTab = (tab: ProfileTabId) => {
+  const applyTabQuery = (next: ProfileTabQuery) => {
     withViewTransition(() => {
       setSearchParams(
         (prev) => {
-          const next = new URLSearchParams(prev)
-          if (isDefaultProfileTab(tab)) next.delete('tab')
-          else next.set('tab', tab)
-          return next
+          const params = new URLSearchParams(prev)
+          params.delete('tab')
+          params.delete('sub')
+          const serialized = serializeProfileTabQuery(next, { hasTranslator })
+          if (serialized.tab) params.set('tab', serialized.tab)
+          if (serialized.sub) params.set('sub', serialized.sub)
+          return params
         },
         { replace: true }
       )
+    })
+  }
+
+  const setActiveTab = (tab: ProfilePrimaryTabId) => {
+    applyTabQuery({
+      primary: tab,
+      activitiesSub,
+      statsSub,
+    })
+  }
+
+  const setActivitiesSub = (sub: ProfileActivitiesSubTabId) => {
+    applyTabQuery({
+      primary: 'activities',
+      activitiesSub: sub,
+      statsSub,
+    })
+  }
+
+  const setStatsSub = (sub: ProfileStatsSubTabId) => {
+    applyTabQuery({
+      primary: 'stats',
+      activitiesSub,
+      statsSub: sub,
     })
   }
 
@@ -107,8 +138,20 @@ const PublicUserProfile = () => {
     [data?.watched?.items]
   )
 
-  if (rawTab === 'feed') {
+  if (searchParams.get('tab') === 'feed') {
     return <Navigate to="/feed" replace />
+  }
+
+  if (activeTab === 'translations' && !hasTranslator) {
+    return <Navigate to={profileBase} replace />
+  }
+
+  if (
+    activeTab === 'activities' &&
+    activitiesSub === 'playlists' &&
+    !hasPublicPlaylists
+  ) {
+    return <Navigate to={profileBase} replace />
   }
 
   if (!isReady) {
@@ -257,58 +300,70 @@ const PublicUserProfile = () => {
         )}
       </div>
 
-      {profileLoading && data == null ? (
-        <ProfileTranslationsRailSkeleton className="!mt-2.5" />
-      ) : translator ? (
-        <ProfileTranslationsRail
-          translator={translator}
-          profileUserId={telegramUserId}
-          title="ترجمه‌هاش"
-          className="!mt-2.5"
-        />
-      ) : null}
-
-      <ProfileBadgesShowcase
+      <ProfileBadgesHeaderStrip
         variant="public"
         badgesSummary={data?.badges_summary}
         previewBadges={data?.badges}
         displayName={heroName}
         targetUserId={telegramUserId}
         isLoading={profileLoading}
-        className={translator || profileLoading ? 'mt-2' : 'mt-2.5'}
+        className="mt-2.5"
       />
 
-      <ProfileTabSwipeShell tabs={profileTabs} active={activeTab} onChange={setActiveTab}>
-        {activeTab === 'watch' ? (
-          <ProfileWatchTabPanel
-            variant="public"
-            watchedItems={watchedItems}
-            favoriteListItems={favoriteListItems}
-            profileBase={profileBase}
-            recentRestoreKey={`public-${telegramUserId}-recent`}
-            watchVisible={watchVisible}
-            watchLoading={profileLoading}
-          />
-        ) : null}
-        {activeTab === 'playlists' ? (
-          <ProfilePlaylistsTabPanel
-            variant="public"
-            profileUserId={telegramUserId}
-            profileBase={profileBase}
-          />
+      <ProfileTabSwipeShell
+        tabs={profileTabs}
+        active={activeTab}
+        onChange={setActiveTab}
+        panelClassName="!mx-0"
+      >
+        {activeTab === 'activities' ? (
+          <div className="space-y-3">
+            <div className="mx-4">
+              <ProfileSubTabBar
+                tabs={activitiesSubTabs}
+                active={activitiesSub}
+                onChange={setActivitiesSub}
+              />
+            </div>
+            <ProfileActivitiesTabPanel
+              variant="public"
+              subTab={activitiesSub}
+              profileUserId={telegramUserId}
+              profileBase={profileBase}
+              watchedItems={watchedItems}
+              watchLoading={profileLoading}
+              watchVisible={watchVisible}
+            />
+          </div>
         ) : null}
         {activeTab === 'stats' ? (
-          <ProfileStatsTabPanel
-            variant="public"
-            overview={overview}
-            fullStatsTo={watchVisible ? `${profileBase}/stats` : null}
-            watchVisible={watchVisible}
+          <div className="space-y-3">
+            <div className="mx-4">
+              <ProfileSubTabBar tabs={statsSubTabs} active={statsSub} onChange={setStatsSub} />
+            </div>
+            <ProfileStatsTabPanel
+              variant="public"
+              subTab={statsSub}
+              overview={overview}
+              fullStatsTo={watchVisible ? `${profileBase}/stats` : null}
+              watchVisible={watchVisible}
+              isLoading={profileLoading}
+              favoriteListItems={favoriteListItems}
+              profileBase={profileBase}
+              favoritesLoading={profileLoading}
+              publicExtras={{
+                profileUserId: telegramUserId,
+                translator,
+                hideTranslatorDupes: Boolean(translator),
+              }}
+            />
+          </div>
+        ) : null}
+        {activeTab === 'translations' && translator ? (
+          <ProfileTranslationsTabPanel
+            translator={translator}
+            displayName={heroName}
             isLoading={profileLoading}
-            publicExtras={{
-              profileUserId: telegramUserId,
-              translator,
-              hideTranslatorDupes: Boolean(translator),
-            }}
           />
         ) : null}
       </ProfileTabSwipeShell>

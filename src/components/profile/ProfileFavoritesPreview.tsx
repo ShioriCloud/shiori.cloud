@@ -46,7 +46,9 @@ export const ProfileFavoritesPreview = ({
   const preview = orderedItems.slice(0, PREVIEW_COUNT)
   const showMore = total > PREVIEW_COUNT
   const moreHref =
-    profileBase === '/profile' ? '/profile/favorites' : `${profileBase}?tab=watch`
+    profileBase === '/profile'
+      ? '/profile/favorites'
+      : `${profileBase}?tab=stats&sub=favorites`
 
   if (preview.length === 0) return null
 

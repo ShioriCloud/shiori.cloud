@@ -9,27 +9,33 @@ import { useUserAnimeList } from '../hooks/useUserAnimeList'
 import { useSocialProfileMe } from '../hooks/useSocialProfile'
 import { useFavoriteAnimeCardsQuery } from '../hooks/queries/useAnimeQueries'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
-import { ProfilePersonalPanel } from '@/components/profile/ProfilePersonalPanel'
-import { ProfileBadgesShowcase } from '@/components/profile/ProfileBadgesShowcase'
+import { ProfileAccountSheet } from '@/components/profile/ProfileAccountSheet'
+import { ProfileActivitiesTabPanel } from '@/components/profile/ProfileActivitiesTabPanel'
+import { ProfileBadgesHeaderStrip } from '@/components/profile/ProfileBadgesHeaderStrip'
 import {
   getProfileInitials,
   ProfileHeroHeader,
 } from '@/components/profile/ProfileHeroHeader'
-import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
 import { ProfileSocialStatsRow } from '@/components/profile/ProfileSocialStatsRow'
 import { ProfileStatsTabPanel } from '@/components/profile/ProfileStatsTabPanel'
-import { ProfileWatchTabPanel } from '@/components/profile/ProfileWatchTabPanel'
+import { ProfileSubTabBar } from '@/components/profile/ProfileSubTabBar'
+import { ProfileTranslationsTabPanel } from '@/components/profile/ProfileTranslationsTabPanel'
+import {
+  buildActivitiesSubTabs,
+  buildStatsSubTabs,
+  type ProfileActivitiesSubTabId,
+  type ProfileStatsSubTabId,
+} from '@/components/profile/profileSubTabs'
 import {
   buildOwnProfileTabs,
-  isDefaultProfileTab,
-  parseProfileTab,
-  type ProfileTabId,
+  parseProfileTabQuery,
+  serializeProfileTabQuery,
+  type ProfilePrimaryTabId,
+  type ProfileTabQuery,
 } from '@/components/profile/profileTabs'
-import { ProfilePlaylistsTabPanel } from '@/components/profile/ProfilePlaylistsTabPanel'
 import { useCustomLists } from '@/hooks/useCustomLists'
 import { ProfileTabSwipeShell } from '@/components/profile/ProfileTabSwipeShell'
 import { ProfilePageSkeleton } from '@/components/profile/ProfilePageSkeleton'
-import { ProfileTranslationsRailSkeleton } from '@/components/profile/ProfileSectionSkeletons'
 import { mergeOwnProfileHeaderStats } from '@/lib/ownProfileStats'
 import { formatProfileMemberSince } from '@/lib/profileMemberSince'
 import { toPersianDigits } from '@/lib/persianDigits'
@@ -44,7 +50,6 @@ const Profile = () => {
     () => customLists.some((list) => list.isPublic === true),
     [customLists]
   )
-  const profileTabs = useMemo(() => buildOwnProfileTabs(hasPublicPlaylists), [hasPublicPlaylists])
   const { data: favoriteCards = [], isLoading: favoriteCardsLoading } =
     useFavoriteAnimeCardsQuery(favoriteAnime)
   const { data: socialProfile, isLoading: socialProfileLoading } = useSocialProfileMe(
@@ -52,21 +57,62 @@ const Profile = () => {
   )
   const [searchParams, setSearchParams] = useSearchParams()
   const [avatarFailed, setAvatarFailed] = useState(false)
+  const [accountOpen, setAccountOpen] = useState(false)
 
-  const rawTab = searchParams.get('tab')
-  const activeTab = parseProfileTab(rawTab)
+  const hasTranslator = Boolean(socialProfile?.translator)
+  const profileTabs = useMemo(() => buildOwnProfileTabs(hasTranslator), [hasTranslator])
+  const activitiesSubTabs = useMemo(
+    () => buildActivitiesSubTabs({ includePlaylists: hasPublicPlaylists }),
+    [hasPublicPlaylists]
+  )
+  const statsSubTabs = useMemo(() => buildStatsSubTabs(), [])
 
-  const setActiveTab = (tab: ProfileTabId) => {
+  const tabQuery = parseProfileTabQuery(
+    searchParams.get('tab'),
+    searchParams.get('sub')
+  )
+  const activeTab = tabQuery.primary
+  const activitiesSub = tabQuery.activitiesSub
+  const statsSub = tabQuery.statsSub
+
+  const applyTabQuery = (next: ProfileTabQuery) => {
     withViewTransition(() => {
       setSearchParams(
         (prev) => {
-          const next = new URLSearchParams(prev)
-          if (isDefaultProfileTab(tab)) next.delete('tab')
-          else next.set('tab', tab)
-          return next
+          const params = new URLSearchParams(prev)
+          params.delete('tab')
+          params.delete('sub')
+          const serialized = serializeProfileTabQuery(next, { hasTranslator })
+          if (serialized.tab) params.set('tab', serialized.tab)
+          if (serialized.sub) params.set('sub', serialized.sub)
+          return params
         },
         { replace: true }
       )
+    })
+  }
+
+  const setActiveTab = (tab: ProfilePrimaryTabId) => {
+    applyTabQuery({
+      primary: tab,
+      activitiesSub,
+      statsSub,
+    })
+  }
+
+  const setActivitiesSub = (sub: ProfileActivitiesSubTabId) => {
+    applyTabQuery({
+      primary: 'activities',
+      activitiesSub: sub,
+      statsSub,
+    })
+  }
+
+  const setStatsSub = (sub: ProfileStatsSubTabId) => {
+    applyTabQuery({
+      primary: 'stats',
+      activitiesSub,
+      statsSub: sub,
     })
   }
 
@@ -114,25 +160,24 @@ const Profile = () => {
     [mergedStats.watchHours, mergedStats.byFormat]
   )
 
-  const showTranslationsRailSkeleton =
-    Boolean(user) && socialProfileLoading && socialProfile == null
-
-  if (rawTab === 'feed') {
+  if (searchParams.get('tab') === 'feed') {
     return <Navigate to="/feed" replace />
   }
 
-  const tabAllowed =
-    activeTab === 'watch' ||
-    activeTab === 'stats' ||
-    activeTab === 'personal' ||
-    (activeTab === 'playlists' && hasPublicPlaylists)
+  if (activeTab === 'translations' && !hasTranslator) {
+    return <Navigate to="/profile" replace />
+  }
+
+  if (
+    activeTab === 'activities' &&
+    activitiesSub === 'playlists' &&
+    !hasPublicPlaylists
+  ) {
+    return <Navigate to="/profile" replace />
+  }
 
   if (!isReady) {
     return <ProfilePageSkeleton variant="own" />
-  }
-
-  if (!tabAllowed) {
-    return <Navigate to="/profile" replace />
   }
 
   if (showWebAuth) {
@@ -142,6 +187,8 @@ const Profile = () => {
       </div>
     )
   }
+
+  const profileUserId = user?.id != null ? String(user.id) : ''
 
   return (
     <div className="bg-background pb-24 text-foreground">
@@ -178,15 +225,14 @@ const Profile = () => {
               </Link>
             </Button>
             <Button
-              asChild
               type="button"
               variant="outline"
               size="icon-sm"
               className="surface-skeuo border-border/60 text-muted-foreground hover:text-foreground"
+              aria-label="حساب من و تنظیمات"
+              onClick={() => setAccountOpen(true)}
             >
-              <Link to="/profile/settings" aria-label="تنظیمات">
-                <Settings className="h-4 w-4" />
-              </Link>
+              <Settings className="h-4 w-4" />
             </Button>
           </ButtonGroup>
         }
@@ -219,61 +265,72 @@ const Profile = () => {
         ]}
       />
 
-      {showTranslationsRailSkeleton ? (
-        <ProfileTranslationsRailSkeleton className="!mt-2.5" />
-      ) : socialProfile?.translator && user?.id != null ? (
-        <ProfileTranslationsRail
-          translator={socialProfile.translator}
-          profileUserId={String(user.id)}
-          title="ترجمه‌هام"
-          className="!mt-2.5"
-        />
-      ) : null}
-
-      <ProfileBadgesShowcase
+      <ProfileBadgesHeaderStrip
         variant="own"
         badgesSummary={socialProfile?.badges_summary}
         previewBadges={socialProfile?.badges}
         isLoading={socialProfileLoading}
-        className={socialProfile?.translator ? 'mt-2' : 'mt-2.5'}
+        className="mt-2.5"
       />
 
-      <ProfileTabSwipeShell tabs={profileTabs} active={activeTab} onChange={setActiveTab}>
-        {activeTab === 'watch' ? (
-          <ProfileWatchTabPanel
-            variant="own"
-            watchedItems={showSocialWatch ? watchedItems : []}
-            favoriteListItems={favoriteListItems}
-            favoriteOrderIds={favoriteAnime}
-            profileBase="/profile"
-            recentRestoreKey="own-profile-recent"
-            watchLoading={socialProfileLoading && showSocialWatch}
-            favoritesLoading={favoriteAnime.length > 0 && favoriteCardsLoading}
-          />
+      <ProfileTabSwipeShell
+        tabs={profileTabs}
+        active={activeTab}
+        onChange={setActiveTab}
+        panelClassName="!mx-0"
+      >
+        {activeTab === 'activities' ? (
+          <div className="space-y-3">
+            <div className="mx-4">
+              <ProfileSubTabBar
+                tabs={activitiesSubTabs}
+                active={activitiesSub}
+                onChange={setActivitiesSub}
+              />
+            </div>
+            <ProfileActivitiesTabPanel
+              variant="own"
+              subTab={activitiesSub}
+              profileUserId={profileUserId}
+              profileBase="/profile"
+              watchedItems={showSocialWatch ? watchedItems : []}
+              watchLoading={socialProfileLoading && showSocialWatch}
+            />
+          </div>
         ) : null}
         {activeTab === 'stats' ? (
-          <ProfileStatsTabPanel
-            variant="own"
-            overview={overview}
-            fullStatsTo="/profile/stats"
+          <div className="space-y-3">
+            <div className="mx-4">
+              <ProfileSubTabBar tabs={statsSubTabs} active={statsSub} onChange={setStatsSub} />
+            </div>
+            <ProfileStatsTabPanel
+              variant="own"
+              subTab={statsSub}
+              overview={overview}
+              fullStatsTo="/profile/stats"
+              isLoading={socialProfileLoading}
+              favoriteListItems={favoriteListItems}
+              favoriteOrderIds={favoriteAnime}
+              profileBase="/profile"
+              favoritesLoading={favoriteAnime.length > 0 && favoriteCardsLoading}
+            />
+          </div>
+        ) : null}
+        {activeTab === 'translations' && socialProfile?.translator ? (
+          <ProfileTranslationsTabPanel
+            translator={socialProfile.translator}
+            displayName={displayName}
             isLoading={socialProfileLoading}
           />
         ) : null}
-        {activeTab === 'playlists' && user?.id != null ? (
-          <ProfilePlaylistsTabPanel
-            variant="own"
-            profileUserId={String(user.id)}
-            profileBase="/profile"
-          />
-        ) : null}
-        {activeTab === 'personal' ? (
-          <ProfilePersonalPanel
-            translator={socialProfile?.translator ?? null}
-            profileUserId={user?.id != null ? String(user.id) : undefined}
-            hideTranslatorLink={Boolean(socialProfile?.translator)}
-          />
-        ) : null}
       </ProfileTabSwipeShell>
+
+      <ProfileAccountSheet
+        open={accountOpen}
+        onOpenChange={setAccountOpen}
+        displayName={displayName}
+        roleLabel={socialProfile?.translator?.name ?? null}
+      />
     </div>
   )
 }

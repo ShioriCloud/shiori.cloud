@@ -1,33 +1,102 @@
-export type ProfileTabId = 'watch' | 'stats' | 'playlists' | 'personal'
+import {
+  defaultActivitiesSubTab,
+  parseActivitiesSubTab,
+  parseStatsSubTab,
+  type ProfileActivitiesSubTabId,
+  type ProfileStatsSubTabId,
+} from '@/components/profile/profileSubTabs'
 
-/** `personal` is included only in `buildOwnProfileTabs` — never on public `/u/:id` profiles. */
+/** v3 primary tabs — layout ref: Figma MiniApp Profile Redesign (v3 only). */
+export type ProfilePrimaryTabId = 'activities' | 'stats' | 'translations'
 
-export const PROFILE_TAB_WATCH = { id: 'watch' as const, label: 'تماشا' }
+export const PROFILE_TAB_ACTIVITIES = {
+  id: 'activities' as const,
+  label: 'آخرین فعالیت‌ها',
+}
 export const PROFILE_TAB_STATS = { id: 'stats' as const, label: 'آمار' }
-export const PROFILE_TAB_PLAYLISTS = { id: 'playlists' as const, label: 'پلی‌لیست‌ها' }
-export const PROFILE_TAB_PERSONAL = { id: 'personal' as const, label: 'شخصی' }
+export const PROFILE_TAB_TRANSLATIONS = { id: 'translations' as const, label: 'ترجمه‌ها' }
 
-export type ProfileTabConfig = { id: ProfileTabId; label: string }
+export type ProfileTabConfig = { id: ProfilePrimaryTabId; label: string }
 
-export const buildOwnProfileTabs = (hasPublicPlaylists: boolean): ProfileTabConfig[] => {
-  const tabs: ProfileTabConfig[] = [PROFILE_TAB_WATCH, PROFILE_TAB_STATS]
-  if (hasPublicPlaylists) tabs.push(PROFILE_TAB_PLAYLISTS)
-  tabs.push(PROFILE_TAB_PERSONAL)
+export type ProfileTabQuery = {
+  primary: ProfilePrimaryTabId
+  activitiesSub: ProfileActivitiesSubTabId
+  statsSub: ProfileStatsSubTabId
+}
+
+/** @deprecated — use ProfilePrimaryTabId */
+export type ProfileTabId = ProfilePrimaryTabId
+
+export const buildOwnProfileTabs = (hasTranslator: boolean): ProfileTabConfig[] => {
+  const tabs: ProfileTabConfig[] = [PROFILE_TAB_ACTIVITIES, PROFILE_TAB_STATS]
+  if (hasTranslator) tabs.push(PROFILE_TAB_TRANSLATIONS)
   return tabs
 }
 
-export const buildPublicProfileTabs = (hasPublicPlaylists: boolean): ProfileTabConfig[] => {
-  const tabs: ProfileTabConfig[] = [PROFILE_TAB_WATCH, PROFILE_TAB_STATS]
-  if (hasPublicPlaylists) tabs.push(PROFILE_TAB_PLAYLISTS)
+export const buildPublicProfileTabs = (hasTranslator: boolean): ProfileTabConfig[] => {
+  const tabs: ProfileTabConfig[] = [PROFILE_TAB_ACTIVITIES, PROFILE_TAB_STATS]
+  if (hasTranslator) tabs.push(PROFILE_TAB_TRANSLATIONS)
   return tabs
 }
 
-/** @deprecated use buildOwnProfileTabs */
-export const PROFILE_TABS = buildOwnProfileTabs(false)
-
-export const parseProfileTab = (raw: string | null): ProfileTabId => {
-  if (raw === 'watch' || raw === 'playlists' || raw === 'personal' || raw === 'stats') return raw
-  return 'watch'
+const LEGACY_TAB_MAP: Record<string, ProfilePrimaryTabId> = {
+  watch: 'activities',
+  playlists: 'activities',
+  personal: 'activities',
+  stats: 'stats',
+  translations: 'translations',
 }
 
-export const isDefaultProfileTab = (tab: ProfileTabId): boolean => tab === 'watch'
+export const parseProfileTabQuery = (
+  tabRaw: string | null,
+  subRaw: string | null
+): ProfileTabQuery => {
+  let primary: ProfilePrimaryTabId = 'activities'
+  let activitiesSub = parseActivitiesSubTab(subRaw)
+  let statsSub = parseStatsSubTab(subRaw)
+
+  if (tabRaw) {
+    const mapped = LEGACY_TAB_MAP[tabRaw] ?? (tabRaw as ProfilePrimaryTabId)
+    if (mapped === 'activities' || mapped === 'stats' || mapped === 'translations') {
+      primary = mapped
+    }
+    if (tabRaw === 'playlists') activitiesSub = 'playlists'
+    if (tabRaw === 'watch' || tabRaw === 'personal') activitiesSub = 'watch'
+    if (tabRaw === 'stats' && !subRaw) statsSub = 'viewing'
+  }
+
+  if (primary === 'activities' && subRaw && (subRaw === 'viewing' || subRaw === 'favorites')) {
+    activitiesSub = defaultActivitiesSubTab()
+  }
+  if (primary === 'stats') {
+    statsSub = parseStatsSubTab(subRaw)
+  }
+
+  return { primary, activitiesSub, statsSub }
+}
+
+/** @deprecated use parseProfileTabQuery */
+export const parseProfileTab = (raw: string | null): ProfilePrimaryTabId =>
+  parseProfileTabQuery(raw, null).primary
+
+export const isDefaultProfileTab = (tab: ProfilePrimaryTabId): boolean => tab === 'activities'
+
+export const serializeProfileTabQuery = (
+  query: ProfileTabQuery,
+  opts: { hasTranslator: boolean }
+): { tab?: string; sub?: string } => {
+  const { primary, activitiesSub, statsSub } = query
+  if (primary === 'activities' && activitiesSub === 'watch') {
+    return {}
+  }
+  if (primary === 'stats' && statsSub === 'viewing') {
+    return { tab: 'stats' }
+  }
+  if (primary === 'translations') {
+    return opts.hasTranslator ? { tab: 'translations' } : {}
+  }
+  if (primary === 'activities') {
+    return { tab: 'activities', sub: activitiesSub }
+  }
+  return { tab: 'stats', sub: statsSub }
+}
