@@ -29,12 +29,12 @@ export const ProfileTranslatorSummaryRow = ({
   experience,
   className,
 }: ProfileTranslatorSummaryRowProps) => {
-  const experienceValue =
-    experience && experience.trim().length > 0 ? experience.trim() : '—'
+  const years = experience?.match(/[0-9۰-۹]+/)?.[0]
+  const experienceValue = years ? toPersianDigits(years) : '—'
 
   return (
     <div className={cn('flex min-w-0 gap-2', className)}>
-      <SummaryChip label="سابقه ترجمه" value={experienceValue} />
+      <SummaryChip label="سال سابقه ترجمه" value={experienceValue} />
       <SummaryChip label="انیمه ترجمه‌شده" value={toPersianDigits(animeCount)} />
     </div>
   )
