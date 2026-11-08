@@ -18,7 +18,6 @@ export const ProfileFollowListRow = ({
   showFollowActions = false,
 }: ProfileFollowListRowProps) => {
   const [following, setFollowing] = useState(user.is_following === true)
-  const followsYou = user.follows_you === true
   const { follow, unfollow, isPending } = useSocialFollowMutation(user.telegram_user_id)
 
   useEffect(() => {
@@ -34,11 +33,7 @@ export const ProfileFollowListRow = ({
     }
   }
 
-  const actionLabel = following
-    ? 'لغو دنبال کردن'
-    : followsYou
-      ? 'دنبال کردن متقابل'
-      : 'دنبال کردن'
+  const actionLabel = following ? 'لغو دنبال کردن' : 'دنبال کردن'
 
   return (
     <SocialUserRow

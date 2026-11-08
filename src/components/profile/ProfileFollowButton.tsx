@@ -110,8 +110,7 @@ export const ProfileFollowButton = ({
     return null
   }
 
-  const followLabel =
-    followsYou && !following ? 'دنبال کردن متقابل' : following ? 'دنبال می‌کنی' : 'دنبال کردن'
+  const followLabel = following ? 'دنبال می‌کنی' : 'دنبال کردن'
 
   return (
     <>

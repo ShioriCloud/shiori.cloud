@@ -74,10 +74,12 @@ const Layout = ({ children }: LayoutProps) => {
   /** Home/Explore render AppHeader in-page (below Telegram fullscreen chrome). */
   const usesInPageHeader = isHomePage || isExplorePage
   const isAnimeDetailPage = location.pathname.startsWith('/anime/')
+  const normalizedPath = location.pathname.replace(/\/+$/, '') || '/'
+  /** Only main profile shells — subpages (translations, followers, …) need header offset. */
   const isProfileHeroPage =
-    location.pathname === '/profile' ||
-    location.pathname.startsWith('/translators/') ||
-    location.pathname.startsWith('/u/')
+    normalizedPath === '/profile' ||
+    /^\/translators\/[^/]+$/.test(normalizedPath) ||
+    /^\/u\/[^/]+$/.test(normalizedPath)
   const isTransparentHeaderPage = isAnimeDetailPage || isProfileHeroPage
   const showFixedHeader = !usesInPageHeader
 
