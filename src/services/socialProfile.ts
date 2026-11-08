@@ -64,6 +64,8 @@ export type SocialProfileMe = {
       role: string | null
       start_date?: string | null
       year?: number | null
+      /** AniList average score, 0–100. */
+      anilist_score?: number | null
     }>
   } | null
   relationship?: {

@@ -4,7 +4,10 @@ import { ProfileFavoritesGridSkeleton } from '@/components/profile/ProfileSectio
 import { ProfileTranslatorPosterCard } from '@/components/profile/ProfileTranslatorPosterCard'
 import { ProfileTranslatorSummaryRow } from '@/components/profile/ProfileTranslatorSummaryRow'
 import type { SocialProfileMe } from '@/services/socialProfile'
-import { sortTranslatorWorksNewestFirst } from '@/lib/translatorWorksSort'
+import {
+  sortTranslatorWorksByAnilistScore,
+  sortTranslatorWorksNewestFirst,
+} from '@/lib/translatorWorksSort'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { cn } from '@/lib/utils'
 
@@ -34,7 +37,10 @@ export const ProfileTranslationsTabPanel = ({
     [translator.anime]
   )
   const totalCount = translator.anime_count ?? sortedWorks.length
-  const topWorks = sortedWorks.slice(0, TOP_WORKS_COUNT)
+  const topWorks = useMemo(
+    () => sortTranslatorWorksByAnilistScore(sortedWorks).slice(0, TOP_WORKS_COUNT),
+    [sortedWorks]
+  )
 
   const [visibleCount, setVisibleCount] = useState(INITIAL_GRID_COUNT)
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
