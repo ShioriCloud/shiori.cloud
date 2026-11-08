@@ -1,7 +1,7 @@
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { ProfilePersonalSubpageLayout } from '@/components/profile/ProfilePersonalSubpageLayout'
 import { ProfileUserListRow } from '@/components/profile/ProfileUserListRow'
-import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
+import { SocialUserListSkeleton } from '@/components/profile/social/SocialListSkeleton'
 import { MyListCompactCard } from '@/components/my-list/MyListUi'
 import { Button } from '@/components/ui/button'
 import { useAppAuth } from '@/hooks/useAppAuth'
@@ -47,7 +47,7 @@ const ProfileBlockedUsers = () => {
       description="از منوی پروفایل دیگران می‌توانی مسدود کنی."
     >
       {isLoading ? (
-        <SocialListSkeleton rows={3} />
+        <SocialUserListSkeleton rows={6} showAction={false} />
       ) : !data?.items.length ? (
         <ExploreEmptyState
           compact

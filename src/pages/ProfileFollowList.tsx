@@ -2,7 +2,7 @@ import { useLocation, useParams } from 'react-router-dom'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { ProfileFollowListRow } from '@/components/profile/ProfileFollowListRow'
 import { ProfilePersonalSubpageLayout } from '@/components/profile/ProfilePersonalSubpageLayout'
-import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
+import { SocialUserListSkeleton } from '@/components/profile/social/SocialListSkeleton'
 import { SOCIAL_DIVIDER_CLASS, SOCIAL_SURFACE_CLASS } from '@/components/profile/social/socialUi'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -56,8 +56,8 @@ const ProfileFollowList = () => {
 
   return (
     <ProfilePersonalSubpageLayout title={title} description={layoutDescription}>
-      {listQuery.isLoading ? (
-        <SocialListSkeleton rows={3} />
+      {listQuery.isLoading && items.length === 0 ? (
+        <SocialUserListSkeleton rows={6} />
       ) : items.length ? (
         <>
           <div className={cn(SOCIAL_SURFACE_CLASS, SOCIAL_DIVIDER_CLASS)}>

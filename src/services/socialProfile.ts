@@ -84,6 +84,8 @@ export type SocialProfileUserListItem = {
   photo_url: string | null
   role_badges?: Array<{ id: string; title: string }>
   is_following?: boolean
+  /** Whether this user follows the authenticated viewer (follow list). */
+  follows_you?: boolean
 }
 
 export type SocialProfileUserList = {

@@ -1,5 +1,31 @@
 import { cn } from '@/lib/utils'
-import { SOCIAL_SURFACE_CLASS } from './socialUi'
+import { SOCIAL_DIVIDER_CLASS, SOCIAL_SURFACE_CLASS } from './socialUi'
+
+/** Compact user rows (followers, following, blocked, people search). */
+export const SocialUserListSkeleton = ({
+  rows = 6,
+  showAction = true,
+  className,
+}: {
+  rows?: number
+  showAction?: boolean
+  className?: string
+}) => (
+  <div className={cn(SOCIAL_SURFACE_CLASS, SOCIAL_DIVIDER_CLASS, className)} aria-hidden>
+    {Array.from({ length: rows }).map((_, i) => (
+      <div key={i} className="flex animate-pulse items-center gap-2 px-3 py-2.5">
+        <div className="h-9 w-9 shrink-0 rounded-lg bg-muted/80" />
+        <div className="min-w-0 flex-1 space-y-2">
+          <div className="h-3 w-[42%] max-w-[9rem] rounded-md bg-muted/80" />
+          <div className="h-2.5 w-[28%] max-w-[6rem] rounded-md bg-muted/60" />
+        </div>
+        {showAction ? (
+          <div className="h-8 w-[4.5rem] shrink-0 rounded-lg bg-muted/70" />
+        ) : null}
+      </div>
+    ))}
+  </div>
+)
 
 export const SocialListSkeleton = ({ rows = 3 }: { rows?: number }) => (
   <div className="space-y-3">

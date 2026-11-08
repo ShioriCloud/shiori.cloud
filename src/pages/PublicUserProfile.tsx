@@ -203,16 +203,6 @@ const PublicUserProfile = () => {
         memberSinceLabel={memberSinceLabel}
         roleBadges={roleBadges}
         onAvatarError={() => setAvatarFailed(true)}
-        subtitle={
-          profileReady && animeWatched > 0 ? (
-            <p className="mt-0.5 text-center text-[11px] text-muted-foreground">
-              {toPersianDigits(animeWatched)} انیمه دیده
-              {(data!.badges_summary?.earned_count ?? 0) > 0
-                ? ` · ${toPersianDigits(data!.badges_summary?.earned_count ?? 0)} نشان`
-                : ''}
-            </p>
-          ) : null
-        }
         leftAction={
           <ProfileShareButton
             telegramUserId={telegramUserId}

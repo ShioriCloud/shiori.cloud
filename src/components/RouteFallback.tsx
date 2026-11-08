@@ -4,6 +4,7 @@ import { DetailSkeleton } from '@/components/anime-detail/AnimeDetailSkeletons'
 import { AnimePosterSkeletonGrid } from '@/components/anime/AnimePosterCard'
 import { MyListSkeletonCards } from '@/components/my-list/MyListUi'
 import { ProfilePageSkeleton } from '@/components/profile/ProfilePageSkeleton'
+import { SocialUserListSkeleton } from '@/components/profile/social/SocialListSkeleton'
 
 const Pulse = ({ className }: { className: string }) => (
   <div className={`animate-pulse rounded-md bg-muted ${className}`} aria-hidden />
@@ -101,6 +102,21 @@ export const RouteFallback = () => {
   if (pathname.startsWith('/schedule')) return <SchedulePageSkeleton />
   if (pathname === '/feed') return <ContentLoadingSkeleton />
   if (pathname.startsWith('/my-list')) return <MyListPageSkeleton />
+  const normalizedPath = pathname.replace(/\/+$/, '')
+  const isFollowListPath =
+    normalizedPath.endsWith('/followers') || normalizedPath.endsWith('/following')
+  if (isFollowListPath) {
+    return (
+      <div className="bg-background pb-24 text-foreground" dir="rtl" aria-busy="true">
+        <header className="border-b border-border/40 px-4 pt-4 pb-3">
+          <div className="h-6 w-36 animate-pulse rounded-md bg-muted/80" aria-hidden />
+        </header>
+        <div className="px-4 pt-4">
+          <SocialUserListSkeleton rows={6} />
+        </div>
+      </div>
+    )
+  }
   const isMainProfileShell =
     pathname === '/profile' ||
     pathname.startsWith('/translators/') ||

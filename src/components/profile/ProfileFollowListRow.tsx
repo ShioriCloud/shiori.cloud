@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { SHIORI_PRIMARY_BUTTON_CLASS } from '@/components/explore/ExploreUi'
 import { SocialUserRow } from '@/components/profile/social/SocialUserRow'
 import { useSocialFollowMutation } from '@/hooks/useSocialProfile'
 import { hapticSelection } from '@/lib/telegramHaptics'
+import { cn } from '@/lib/utils'
 import type { SocialProfileUserListItem } from '@/services/socialProfile'
 
 type ProfileFollowListRowProps = {
@@ -16,6 +18,7 @@ export const ProfileFollowListRow = ({
   showFollowActions = false,
 }: ProfileFollowListRowProps) => {
   const [following, setFollowing] = useState(user.is_following === true)
+  const followsYou = user.follows_you === true
   const { follow, unfollow, isPending } = useSocialFollowMutation(user.telegram_user_id)
 
   useEffect(() => {
@@ -31,6 +34,12 @@ export const ProfileFollowListRow = ({
     }
   }
 
+  const actionLabel = following
+    ? 'لغو دنبال کردن'
+    : followsYou
+      ? 'دنبال کردن متقابل'
+      : 'دنبال کردن'
+
   return (
     <SocialUserRow
       user={user}
@@ -38,13 +47,17 @@ export const ProfileFollowListRow = ({
         showFollowActions ? (
           <Button
             type="button"
-            variant={following ? 'secondary' : 'default'}
+            variant={following ? 'destructive' : 'default'}
             size="sm"
-            className="ui-elevated shrink-0 text-xs"
+            className={cn(
+              'ui-elevated shrink-0 text-xs font-semibold',
+              !following &&
+                cn('border-transparent text-white hover:opacity-95', SHIORI_PRIMARY_BUTTON_CLASS)
+            )}
             disabled={isPending}
             onClick={onToggle}
           >
-            {following ? 'آنفالو' : 'فالو'}
+            {actionLabel}
           </Button>
         ) : undefined
       }
