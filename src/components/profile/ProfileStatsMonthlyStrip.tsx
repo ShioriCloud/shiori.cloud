@@ -1,11 +1,11 @@
-import { profileStatsCardClass, ProfileSampleDataTag } from '@/components/profile/profileStatsCard'
+import { profileStatsCardClass } from '@/components/profile/profileStatsCard'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { cn } from '@/lib/utils'
 
-/** Nearest 6 Jalali months — newest first (matches Figma bar order). */
+/** شش ماه اخیر — جدیدترین سمت راست (شروع ردیف در صفحهٔ راست‌به‌چپ). */
 const MONTH_LABELS = ['آبان', 'مهر', 'شهریور', 'مرداد', 'تیر', 'خرداد'] as const
 
-/** تا دادهٔ ماهانه از API نیاید، از ساعت کل تقریب می‌زنیم (داده نمونه). */
+/** تا دادهٔ ماهانه از API نیاید، از ساعت کل تقریب می‌زنیم. */
 export const ProfileStatsMonthlyStrip = ({
   watchHours,
   className,
@@ -23,11 +23,8 @@ export const ProfileStatsMonthlyStrip = ({
   const chartHeight = 150
 
   return (
-    <section className={cn(profileStatsCardClass(), 'flex flex-col gap-3.5', className)} dir="rtl">
-      <div className="flex items-center justify-between gap-2">
-        <ProfileSampleDataTag />
-        <h2 className="text-sm font-bold text-foreground">ساعت تماشا در هر ماه</h2>
-      </div>
+    <section className={cn(profileStatsCardClass(), 'flex flex-col gap-3.5', className)}>
+      <h2 className="text-sm font-bold text-foreground">ساعت تماشا در هر ماه</h2>
       <div className="flex h-[150px] items-end gap-2.5">
         {bars.map((hours, i) => {
           const h = Math.max(24, Math.round((hours / maxBar) * (chartHeight - 36)))

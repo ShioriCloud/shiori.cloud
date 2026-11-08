@@ -60,21 +60,17 @@ export const ProfileFavoritesPreview = ({
 
   if (gridVariant === 'profile') {
     return (
-      <section className={cn('flex flex-col gap-3', className)} dir="rtl">
+      <section className={cn('flex flex-col gap-3', className)}>
         <div className="flex items-center justify-between gap-2">
-          {showMore ? (
-            <ProfileSectionMoreLink to={moreHref} label="همه" />
-          ) : (
-            <span aria-hidden className="w-8" />
-          )}
           <div className="flex items-center gap-1.5 whitespace-nowrap">
+            <h2 className="text-[15.5px] font-bold text-foreground">علاقه‌مندی‌ها</h2>
             <span className="text-xs text-muted-foreground tabular-nums">
               {toPersianDigits(displayTotal)}
             </span>
-            <h2 className="text-[15.5px] font-bold text-foreground">علاقه‌مندی‌ها</h2>
           </div>
+          {showMore ? <ProfileSectionMoreLink to={moreHref} label="همه" /> : null}
         </div>
-        <div className="grid grid-cols-3 justify-items-end gap-2.5">
+        <div className="grid grid-cols-3 justify-items-start gap-2.5">
           {preview.map((item) => (
             <ProfileTranslatorPosterCard
               key={item.anime_id}

@@ -140,7 +140,7 @@ export const ProfileTabBarSkeleton = ({ className }: { className?: string }) => 
 
 export const ProfileOverviewStripSkeleton = ({ className }: { className?: string }) => (
   <div className={cn(profileStatsCardClass(), 'space-y-4', className)} aria-hidden>
-    <div className="flex justify-end gap-2">
+    <div className="flex gap-2">
       <Pulse className="h-4 w-16" />
       <Pulse className="h-5 w-28" />
     </div>

@@ -35,26 +35,22 @@ export const ProfileOverviewStrip = ({
       : null
 
   return (
-    <section className={cn(profileStatsCardClass(), 'flex flex-col gap-3.5', className)} dir="rtl">
-      <div className="flex items-center justify-end gap-1.5 whitespace-nowrap text-right">
+    <section className={cn(profileStatsCardClass(), 'flex flex-col gap-3.5', className)}>
+      <div className="flex items-center gap-1.5 whitespace-nowrap">
+        <h2 className="text-[15.5px] font-bold leading-snug text-foreground">{sectionTitle}</h2>
         {countLabel ? (
           <span className="text-xs text-muted-foreground">{countLabel}</span>
         ) : null}
-        <h2 className="text-[15.5px] font-bold leading-snug text-foreground">{sectionTitle}</h2>
       </div>
 
       <div className="flex items-center gap-5">
+        <FormatWatchDonut hours={hours} byFormat={data.byFormat} />
+
         <div className="min-w-0 flex-1 space-y-2.5">
           {formats.length > 0 ? (
             formats.map((row) => (
               <div key={row.format} className="flex w-full items-center justify-between gap-2">
-                <span className="text-sm font-bold tabular-nums text-foreground">
-                  {toPersianDigits(row.count)}
-                </span>
                 <div className="flex items-center gap-2">
-                  <span className="text-[13px] text-muted-foreground">
-                    {formatLabel(row.format)}
-                  </span>
                   <span
                     className={cn(
                       'inline-block h-2.5 w-2.5 shrink-0 rounded-full',
@@ -62,7 +58,13 @@ export const ProfileOverviewStrip = ({
                     )}
                     aria-hidden
                   />
+                  <span className="text-[13px] text-muted-foreground">
+                    {formatLabel(row.format)}
+                  </span>
                 </div>
+                <span className="text-sm font-bold tabular-nums text-foreground">
+                  {toPersianDigits(row.count)}
+                </span>
               </div>
             ))
           ) : (
@@ -73,8 +75,6 @@ export const ProfileOverviewStrip = ({
             </p>
           )}
         </div>
-
-        <FormatWatchDonut hours={hours} byFormat={data.byFormat} />
       </div>
     </section>
   )

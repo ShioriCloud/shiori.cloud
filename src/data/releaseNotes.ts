@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.111',
+    items: ['چیدمان تب آمار و ترجمه‌ها در پروفایل راست‌چین شد'],
+  },
+  {
     version: '0.2.110',
     items: [
       'تب آمار: مرور تماشا و علاقه‌مندی‌ها شبیه‌تر به طرح جدید شد',
