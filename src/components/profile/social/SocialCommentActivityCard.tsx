@@ -2,6 +2,7 @@ import AnimePrefetchLink from '@/components/AnimePrefetchLink'
 import { BidiText } from '@/components/BidiText'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
 import { formatRelativeTimeFa } from '@/lib/myListUtils'
+import { toPersianDigits } from '@/lib/persianDigits'
 import { cn } from '@/lib/utils'
 import type { AnimeCommentActivity } from '@/services/animeComments'
 
@@ -17,6 +18,7 @@ export const SocialCommentActivityCard = ({
   const anime = item.anime
   const routeRef = anime ? { id: anime.id, slug: anime.slug, title: anime.title } : null
   const when = formatRelativeTimeFa(item.created_at)
+  const likes = `${toPersianDigits(item.like_count)} پسند`
 
   const inner = (
     <article
@@ -26,21 +28,22 @@ export const SocialCommentActivityCard = ({
         className
       )}
     >
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <div className="h-[42px] w-[30px] shrink-0 overflow-hidden rounded-[6px] border border-white/10 bg-muted">
-            {anime?.image ? (
-              <img src={anime.image} alt="" className="h-full w-full object-cover" />
-            ) : null}
-          </div>
-          <BidiText
-            as="p"
-            className="truncate text-[13px] font-semibold leading-5 text-foreground"
-          >
+      <div className="flex items-center gap-3">
+        <div className="h-[68px] w-12 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-muted">
+          {anime?.image ? (
+            <img src={anime.image} alt="" className="h-full w-full object-cover" />
+          ) : null}
+        </div>
+        <div className="min-w-0 flex-1 text-right">
+          <BidiText as="p" className="truncate text-[13px] font-semibold leading-5 text-foreground">
             {anime?.title ?? 'انیمه'}
           </BidiText>
+          <div className="mt-1 flex items-center gap-2 text-[11.5px] leading-[17px] text-muted-foreground">
+            <time>{when}</time>
+            <span className="size-1 shrink-0 rounded-full bg-muted-foreground/40" aria-hidden />
+            <span>{likes}</span>
+          </div>
         </div>
-        <time className="shrink-0 text-[11.5px] leading-[17px] text-muted-foreground">{when}</time>
       </div>
       <p className="line-clamp-3 text-right text-[13px] leading-[22px] text-foreground/75">{item.body}</p>
     </article>
