@@ -65,10 +65,12 @@ const FeedEngagementBar = ({
   item,
   engagement,
   onEngagement,
+  when,
 }: {
   item: SocialProfileFeedItem
   engagement: SocialFeedEngagement
   onEngagement: (next: SocialFeedEngagement) => void
+  when: string
 }) => {
   const [noteOpen, setNoteOpen] = useState(false)
   const [noteDraft, setNoteDraft] = useState(engagement.my_note ?? '')
@@ -124,40 +126,48 @@ const FeedEngagementBar = ({
 
   return (
     <>
-      <div className="flex items-center gap-1 border-t border-border/35 px-2 py-1.5">
-        <button
-          type="button"
-          onClick={() => void onToggleLike()}
-          disabled={busy}
-          className={cn(
-            'inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium',
-            'active:opacity-80',
-            engagement.liked_by_me
-              ? 'text-rose-500'
-              : 'text-muted-foreground hover:text-foreground'
-          )}
+      <div className="flex items-center justify-between gap-2 border-t border-border/35 px-2 py-1.5">
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => void onToggleLike()}
+            disabled={busy}
+            className={cn(
+              'inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium',
+              'active:opacity-80',
+              engagement.liked_by_me
+                ? 'text-rose-500'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            <Heart
+              className={cn('h-3.5 w-3.5', engagement.liked_by_me && 'fill-current')}
+              aria-hidden
+            />
+            {engagement.like_count > 0 ? toPersianDigits(engagement.like_count) : 'لایک'}
+          </button>
+          <button
+            type="button"
+            onClick={openNote}
+            className={cn(
+              'inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium',
+              'active:opacity-80',
+              engagement.my_note
+                ? 'text-amber-600 dark:text-amber-300'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            <StickyNote className="h-3.5 w-3.5" aria-hidden />
+            {engagement.my_note ? 'نوت' : 'یادداشت'}
+            {myPrivateOnly ? <Lock className="h-3 w-3 opacity-70" aria-hidden /> : null}
+          </button>
+        </div>
+        <time
+          dateTime={item.updated_at}
+          className="shrink-0 text-[11px] font-medium tabular-nums text-muted-foreground"
         >
-          <Heart
-            className={cn('h-3.5 w-3.5', engagement.liked_by_me && 'fill-current')}
-            aria-hidden
-          />
-          {engagement.like_count > 0 ? toPersianDigits(engagement.like_count) : 'پسند'}
-        </button>
-        <button
-          type="button"
-          onClick={openNote}
-          className={cn(
-            'inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium',
-            'active:opacity-80',
-            engagement.my_note
-              ? 'text-amber-600 dark:text-amber-300'
-              : 'text-muted-foreground hover:text-foreground'
-          )}
-        >
-          <StickyNote className="h-3.5 w-3.5" aria-hidden />
-          {engagement.my_note ? 'نوت' : 'یادداشت'}
-          {myPrivateOnly ? <Lock className="h-3 w-3 opacity-70" aria-hidden /> : null}
-        </button>
+          {when}
+        </time>
       </div>
 
       {visibleNotes.length > 0 ? (
@@ -313,7 +323,6 @@ export const SocialActivityCard = ({ item }: SocialActivityCardProps) => {
             >
               {item.target.display_name}
             </Link>
-            <span className="text-muted-foreground"> · {when}</span>
           </p>
           <Link
             to={`/u/${encodeURIComponent(item.target.telegram_user_id)}`}
@@ -327,7 +336,12 @@ export const SocialActivityCard = ({ item }: SocialActivityCardProps) => {
             />
           </Link>
         </div>
-        <FeedEngagementBar item={item} engagement={engagement} onEngagement={setEngagement} />
+        <FeedEngagementBar
+          item={item}
+          engagement={engagement}
+          onEngagement={setEngagement}
+          when={when}
+        />
       </article>
     )
   }
@@ -395,11 +409,7 @@ export const SocialActivityCard = ({ item }: SocialActivityCardProps) => {
             <p className="truncate text-sm font-semibold text-foreground">
               {item.actor.display_name}
             </p>
-            <p className="truncate text-[11px] text-muted-foreground">
-              {meta.label}
-              <span className="mx-1 opacity-50">·</span>
-              {when}
-            </p>
+            <p className="truncate text-[11px] text-muted-foreground">{meta.label}</p>
           </div>
         </Link>
         <span
@@ -430,7 +440,12 @@ export const SocialActivityCard = ({ item }: SocialActivityCardProps) => {
         </Link>
       )}
 
-      <FeedEngagementBar item={item} engagement={engagement} onEngagement={setEngagement} />
+      <FeedEngagementBar
+        item={item}
+        engagement={engagement}
+        onEngagement={setEngagement}
+        when={when}
+      />
     </article>
   )
 }
