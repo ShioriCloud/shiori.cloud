@@ -20,15 +20,14 @@ export const ProfileStatsMonthlyStrip = ({
   const sum = weights.reduce((a, b) => a + b, 0)
   const bars = weights.map((w) => Math.max(1, Math.round((w / sum) * total)))
   const maxBar = Math.max(...bars, 1)
-  const chartHeight = 150
 
   return (
     <section className={cn(profileStatsCardClass(), 'flex flex-col gap-3.5', className)}>
       <h2 className="text-sm font-bold text-foreground">ساعت تماشا در هر ماه</h2>
-      <div className="flex h-[150px] items-end gap-2.5">
+      <div dir="ltr" className="flex h-[150px] min-w-0 items-end gap-2.5">
         {bars.map((hours, i) => {
-          const h = Math.max(24, Math.round((hours / maxBar) * (chartHeight - 36)))
           const isLatest = i === 0
+          const barPct = Math.max(28, Math.round((hours / maxBar) * 100))
           return (
             <div key={MONTH_LABELS[i]} className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
               <span
@@ -39,14 +38,18 @@ export const ProfileStatsMonthlyStrip = ({
               >
                 {toPersianDigits(hours)}
               </span>
-              <div
-                className={cn(
-                  'w-full rounded-t-md',
-                  isLatest ? 'bg-primary-500' : 'bg-primary-500/45'
-                )}
-                style={{ height: `${h}px` }}
-              />
-              <span className="text-[11px] text-muted-foreground">{MONTH_LABELS[i]}</span>
+              <div className="flex h-24 w-full items-end">
+                <div
+                  className={cn(
+                    'w-full rounded-t-md',
+                    isLatest ? 'bg-primary-500' : 'bg-primary-500/45'
+                  )}
+                  style={{ height: `${barPct}%` }}
+                />
+              </div>
+              <span className="max-w-full truncate text-[11px] text-muted-foreground">
+                {MONTH_LABELS[i]}
+              </span>
             </div>
           )
         })}

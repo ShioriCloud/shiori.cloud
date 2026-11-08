@@ -34,7 +34,11 @@ export const ProfileFavoritesPreview = ({
   gridVariant = 'default',
 }: ProfileFavoritesPreviewProps) => {
   if (isLoading) {
-    return <ProfileFavoritesGridSkeleton className={className} />
+    return (
+      <ProfileFavoritesGridSkeleton
+        className={cn(gridVariant === 'profile' && '!mt-0 !px-0', className)}
+      />
+    )
   }
 
   if (items.length === 0 && (!orderedIds || orderedIds.length === 0)) return null
@@ -61,16 +65,16 @@ export const ProfileFavoritesPreview = ({
   if (gridVariant === 'profile') {
     return (
       <section className={cn('flex flex-col gap-3', className)}>
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 whitespace-nowrap">
+        <div className="flex min-w-0 items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-1.5">
             <h2 className="text-[15.5px] font-bold text-foreground">علاقه‌مندی‌ها</h2>
-            <span className="text-xs text-muted-foreground tabular-nums">
+            <span className="text-xs tabular-nums text-muted-foreground">
               {toPersianDigits(displayTotal)}
             </span>
           </div>
-          {showMore ? <ProfileSectionMoreLink to={moreHref} label="همه" /> : null}
+          <ProfileSectionMoreLink to={moreHref} label="همه" />
         </div>
-        <div className="grid grid-cols-3 justify-items-start gap-2.5">
+        <div className="grid min-w-0 grid-cols-3 gap-2.5">
           {preview.map((item) => (
             <ProfileTranslatorPosterCard
               key={item.anime_id}

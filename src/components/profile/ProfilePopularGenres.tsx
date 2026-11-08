@@ -33,11 +33,11 @@ export const ProfilePopularGenres = ({
               ? Math.max(1, Math.round((g.percent / 100) * animeCount))
               : g.percent
           return (
-            <div key={g.slug} className="flex items-center gap-2.5">
-              <span className="w-[4.5rem] shrink-0 text-[12.5px] text-muted-foreground">
+            <div key={g.slug} className="flex min-w-0 items-center gap-2.5">
+              <span className="w-[4.5rem] shrink-0 truncate text-right text-[12.5px] text-muted-foreground">
                 {g.label}
               </span>
-              <div className="h-2 min-w-0 flex-1 overflow-hidden rounded bg-white/[0.06]">
+              <div className="flex h-2 min-w-0 flex-1 overflow-hidden rounded bg-white/[0.06]">
                 <div
                   className={cn(
                     'h-full rounded',
@@ -46,7 +46,7 @@ export const ProfilePopularGenres = ({
                   style={{ width: `${width}%` }}
                 />
               </div>
-              <span className="w-6 shrink-0 text-xs font-semibold tabular-nums text-foreground">
+              <span className="w-6 shrink-0 text-left text-xs font-semibold tabular-nums text-foreground">
                 {toPersianDigits(displayCount)}
               </span>
             </div>

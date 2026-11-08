@@ -72,16 +72,13 @@ export const FormatWatchDonut = ({ hours, byFormat, className }: FormatWatchDonu
 
   return (
     <div
-      className={cn('relative shrink-0', className)}
-      style={{ width: size, height: size }}
+      className={cn('relative aspect-square w-[140px] max-w-[46%] shrink', className)}
       role="img"
       aria-label={`${toPersianDigits(safeHours)} ساعت تماشا`}
     >
       <svg
-        width={size}
-        height={size}
         viewBox={`0 0 ${size} ${size}`}
-        className="relative"
+        className="h-full w-full"
         aria-hidden
       >
         <defs>

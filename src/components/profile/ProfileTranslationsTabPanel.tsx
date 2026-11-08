@@ -101,7 +101,7 @@ export const ProfileTranslationsTabPanel = ({
           >
             آثار برتر
           </h2>
-          <div className="grid grid-cols-3 justify-items-start gap-2.5">
+          <div className="grid min-w-0 grid-cols-3 gap-2.5">
             {topWorks.map((item) => (
               <ProfileTranslatorPosterCard key={item.anime_id} item={item} />
             ))}
@@ -127,7 +127,7 @@ export const ProfileTranslationsTabPanel = ({
           </span>
         </div>
 
-        <div className="grid grid-cols-3 justify-items-start gap-2.5">
+        <div className="grid min-w-0 grid-cols-3 gap-2.5">
           {visibleWorks.map((item) => (
             <ProfileTranslatorPosterCard key={`all-${item.anime_id}`} item={item} />
           ))}
@@ -135,7 +135,7 @@ export const ProfileTranslationsTabPanel = ({
 
         {loadingMore ? (
           <>
-            <div className="grid grid-cols-3 justify-items-start gap-2.5 opacity-35">
+            <div className="grid min-w-0 grid-cols-3 gap-2.5 opacity-35">
               <PosterSkeleton />
               <PosterSkeleton />
               <PosterSkeleton />

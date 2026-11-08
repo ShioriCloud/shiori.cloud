@@ -26,13 +26,10 @@ export const ProfileTranslatorPosterCard = ({
     <AnimePrefetchLink
       animeId={animePublicSegment(routeRef)}
       to={animeDetailPath(routeRef)}
-      className={cn(
-        'block w-[112px] active:scale-[0.98] transition-transform',
-        className
-      )}
+      className={cn('block w-full min-w-0 transition-transform active:scale-[0.98]', className)}
       aria-label={`مشاهده ${item.title}`}
     >
-      <div className="relative h-[160px] w-[112px] overflow-hidden rounded-[10px] border border-white/[0.08] bg-muted">
+      <div className="relative aspect-[112/160] w-full overflow-hidden rounded-[10px] border border-white/[0.08] bg-muted">
         {item.image ? (
           <img
             src={item.image}

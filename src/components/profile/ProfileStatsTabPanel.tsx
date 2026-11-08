@@ -59,7 +59,7 @@ export const ProfileStatsTabPanel = ({
   if (subTab === 'favorites') {
     const favTotal = favoritesTotal ?? favoriteListItems.length
     return (
-      <div className="flex flex-col gap-7 pb-8 pt-5">
+      <div className="flex min-w-0 flex-col gap-7 overflow-x-hidden px-4 pb-8 pt-5">
         <ProfileFavoritesPreview
           items={favoriteListItems}
           total={favTotal}
@@ -74,7 +74,7 @@ export const ProfileStatsTabPanel = ({
   }
 
   return (
-    <div className="flex flex-col gap-7 pb-8 pt-5">
+    <div className="flex min-w-0 flex-col gap-7 overflow-x-hidden px-4 pb-8 pt-5">
       {isLoading ? (
         <ProfileOverviewStripSkeleton />
       ) : (

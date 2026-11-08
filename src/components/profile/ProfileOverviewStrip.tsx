@@ -36,21 +36,21 @@ export const ProfileOverviewStrip = ({
 
   return (
     <section className={cn(profileStatsCardClass(), 'flex flex-col gap-3.5', className)}>
-      <div className="flex items-center gap-1.5 whitespace-nowrap">
+      <div className="flex min-w-0 items-center gap-1.5">
         <h2 className="text-[15.5px] font-bold leading-snug text-foreground">{sectionTitle}</h2>
         {countLabel ? (
-          <span className="text-xs text-muted-foreground">{countLabel}</span>
+          <span className="truncate text-xs text-muted-foreground">{countLabel}</span>
         ) : null}
       </div>
 
-      <div className="flex items-center gap-5">
+      <div className="flex min-w-0 items-center gap-5">
         <FormatWatchDonut hours={hours} byFormat={data.byFormat} />
 
         <div className="min-w-0 flex-1 space-y-2.5">
           {formats.length > 0 ? (
             formats.map((row) => (
-              <div key={row.format} className="flex w-full items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
+              <div key={row.format} className="flex w-full min-w-0 items-center justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-2">
                   <span
                     className={cn(
                       'inline-block h-2.5 w-2.5 shrink-0 rounded-full',
@@ -58,7 +58,7 @@ export const ProfileOverviewStrip = ({
                     )}
                     aria-hidden
                   />
-                  <span className="text-[13px] text-muted-foreground">
+                  <span className="truncate text-[13px] text-muted-foreground">
                     {formatLabel(row.format)}
                   </span>
                 </div>

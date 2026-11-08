@@ -295,7 +295,7 @@ const Profile = () => {
           </div>
         ) : null}
         {activeTab === 'stats' ? (
-          <div className="space-y-3">
+          <div className="min-w-0 space-y-3 overflow-x-hidden">
             <div className="mx-4">
               <ProfileSubTabBar tabs={statsSubTabs} active={statsSub} onChange={setStatsSub} />
             </div>
