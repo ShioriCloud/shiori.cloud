@@ -39,7 +39,7 @@ export const ProfileHeroHeader = ({
   rightAction,
   onAvatarError,
 }: ProfileHeroHeaderProps) => (
-  <div className="px-4 pt-4">
+  <div className="px-4 pt-[calc(var(--app-tg-safe-top,0px)+max(2.25rem,var(--app-tg-content-top,0px))+1.125rem)]">
     <div className="flex items-start justify-between gap-3">
       <div className="flex min-w-0 items-center gap-3">
         <div

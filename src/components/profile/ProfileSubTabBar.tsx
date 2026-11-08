@@ -8,7 +8,7 @@ type ProfileSubTabBarProps<T extends string> = {
   className?: string
 }
 
-/** زیرتب‌های پروفایل — قرص‌های فیگما v3، چسبیده به شروع ردیف. */
+/** همان قاب تب‌های اصلی؛ حالت فعال با رنگ بنفش زیرتب‌ها. */
 export const ProfileSubTabBar = <T extends string>({
   tabs,
   active,
@@ -16,7 +16,7 @@ export const ProfileSubTabBar = <T extends string>({
   className,
 }: ProfileSubTabBarProps<T>) => (
   <div
-    className={cn('flex flex-wrap items-center gap-2', className)}
+    className={cn('home-type-tabs relative flex rounded-xl p-1', className)}
     role="tablist"
     aria-label="زیرتب‌های پروفایل"
   >
@@ -34,13 +34,17 @@ export const ProfileSubTabBar = <T extends string>({
             onChange(tab.id)
           }}
           className={cn(
-            'rounded-full px-3 py-1 text-[12.5px] leading-[18px] transition-colors',
-            isActive
-              ? 'bg-primary-500/15 font-semibold text-[#a78bfa]'
-              : 'border border-border/80 font-normal text-muted-foreground'
+            'relative min-h-9 flex-1 rounded-[10px] py-2 text-xs transition-all duration-200',
+            isActive ? 'font-semibold text-[#a78bfa]' : 'font-medium text-muted-foreground hover:text-foreground'
           )}
         >
-          {tab.label}
+          {isActive ? (
+            <span
+              aria-hidden
+              className="absolute inset-0 rounded-[10px] border border-[#3a2766] bg-primary-500/15"
+            />
+          ) : null}
+          <span className="relative z-10">{tab.label}</span>
         </button>
       )
     })}
