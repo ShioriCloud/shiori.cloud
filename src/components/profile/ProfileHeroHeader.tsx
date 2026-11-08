@@ -89,23 +89,23 @@ export const ProfileHeroHeader = ({
         </div>
 
         <div className="min-w-0 flex-1 text-right">
-          <h1 className="line-clamp-2 text-base font-bold leading-snug text-foreground">{displayName}</h1>
+          <div className="flex flex-wrap items-center justify-end gap-1.5">
+            {roleBadges.map((badge) => (
+              <span
+                key={badge.id}
+                className="inline-flex shrink-0 items-center rounded-full border border-primary-400/30 bg-primary-400/10 px-2 py-0.5 text-[10px] font-medium text-primary-400"
+              >
+                {badge.title}
+              </span>
+            ))}
+            <h1 className="line-clamp-2 min-w-0 text-base font-bold leading-snug text-foreground">
+              {displayName}
+            </h1>
+          </div>
           {memberSinceLabel ? (
             <p className="mt-0.5 text-[11px] text-muted-foreground">{memberSinceLabel}</p>
           ) : null}
           {subtitle}
-          {roleBadges.length > 0 ? (
-            <div className="mt-1.5 flex flex-wrap justify-end gap-1.5">
-              {roleBadges.map((badge) => (
-                <span
-                  key={badge.id}
-                  className="inline-flex items-center rounded-full border border-primary-400/30 bg-primary-400/10 px-2 py-0.5 text-[10px] font-medium text-primary-400"
-                >
-                  {badge.title}
-                </span>
-              ))}
-            </div>
-          ) : null}
         </div>
       </div>
     </div>

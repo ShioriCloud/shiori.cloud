@@ -28,13 +28,13 @@ export type ProfileTabQuery = {
 export type ProfileTabId = ProfilePrimaryTabId
 
 export const buildOwnProfileTabs = (hasTranslator: boolean): ProfileTabConfig[] => {
-  const tabs: ProfileTabConfig[] = [PROFILE_TAB_STATS, PROFILE_TAB_ACTIVITIES]
+  const tabs: ProfileTabConfig[] = [PROFILE_TAB_ACTIVITIES, PROFILE_TAB_STATS]
   if (hasTranslator) tabs.push(PROFILE_TAB_TRANSLATIONS)
   return tabs
 }
 
 export const buildPublicProfileTabs = (hasTranslator: boolean): ProfileTabConfig[] => {
-  const tabs: ProfileTabConfig[] = [PROFILE_TAB_STATS, PROFILE_TAB_ACTIVITIES]
+  const tabs: ProfileTabConfig[] = [PROFILE_TAB_ACTIVITIES, PROFILE_TAB_STATS]
   if (hasTranslator) tabs.push(PROFILE_TAB_TRANSLATIONS)
   return tabs
 }
@@ -52,7 +52,7 @@ export const parseProfileTabQuery = (
   tabRaw: string | null,
   subRaw: string | null
 ): ProfileTabQuery => {
-  let primary: ProfilePrimaryTabId = 'stats'
+  let primary: ProfilePrimaryTabId = 'activities'
   let activitiesSub = parseActivitiesSubTab(subRaw)
   let statsSub = parseStatsSubTab(subRaw)
 
@@ -79,18 +79,18 @@ export const parseProfileTabQuery = (
 export const parseProfileTab = (raw: string | null): ProfilePrimaryTabId =>
   parseProfileTabQuery(raw, null).primary
 
-export const isDefaultProfileTab = (tab: ProfilePrimaryTabId): boolean => tab === 'stats'
+export const isDefaultProfileTab = (tab: ProfilePrimaryTabId): boolean => tab === 'activities'
 
 export const serializeProfileTabQuery = (
   query: ProfileTabQuery,
   opts: { hasTranslator: boolean }
 ): { tab?: string; sub?: string } => {
   const { primary, activitiesSub, statsSub } = query
-  if (primary === 'stats' && statsSub === 'favorites') {
+  if (primary === 'activities' && activitiesSub === 'watch') {
     return {}
   }
-  if (primary === 'activities' && activitiesSub === 'watch') {
-    return { tab: 'activities' }
+  if (primary === 'stats' && statsSub === 'viewing') {
+    return { tab: 'stats' }
   }
   if (primary === 'translations') {
     return opts.hasTranslator ? { tab: 'translations' } : {}

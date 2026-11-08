@@ -10,8 +10,6 @@ import { ProfileBadgesHeaderStrip } from '@/components/profile/ProfileBadgesHead
 import { ProfileStatsTabPanel } from '@/components/profile/ProfileStatsTabPanel'
 import { ProfileSubTabBar } from '@/components/profile/ProfileSubTabBar'
 import { ProfileTranslationsTabPanel } from '@/components/profile/ProfileTranslationsTabPanel'
-import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
-import { ProfileTranslationsRailSkeleton } from '@/components/profile/ProfileSectionSkeletons'
 import {
   getProfileInitials,
   ProfileHeroHeader,
@@ -310,17 +308,6 @@ const PublicUserProfile = () => {
         targetUserId={telegramUserId}
         isLoading={profileLoading}
       />
-
-      {profileLoading && data == null ? (
-        <ProfileTranslationsRailSkeleton className="!mt-3" />
-      ) : translator ? (
-        <ProfileTranslationsRail
-          translator={translator}
-          profileUserId={telegramUserId}
-          title="آثار برتر"
-          className="!mt-3"
-        />
-      ) : null}
 
       <ProfileTabSwipeShell
         tabs={profileTabs}

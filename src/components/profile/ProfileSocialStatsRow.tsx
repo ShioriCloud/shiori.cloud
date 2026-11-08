@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { ChevronLeft } from 'lucide-react'
 import {
   profileHighlightGlowClass,
   profileHighlightSectionClass,
@@ -16,49 +17,51 @@ type ProfileSocialStatsRowProps = {
   className?: string
 }
 
-const MetricCell = ({
-  value,
-  label,
-  to,
-  dividerAfter,
-}: Metric & { dividerAfter?: boolean }) => {
+const MetricCard = ({ value, label, to }: Metric) => {
   const inner = (
-  <>
-    <p className="text-lg font-bold tabular-nums leading-none tracking-tight text-foreground">{value}</p>
-    <p className="mt-1.5 text-[10px] font-medium leading-tight text-muted-foreground">{label}</p>
-  </>
+    <div className="relative px-3 py-3.5 text-center">
+      {to ? (
+        <ChevronLeft
+          className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70"
+          aria-hidden
+        />
+      ) : null}
+      <p className="text-lg font-bold tabular-nums leading-none tracking-tight text-foreground">
+        {value}
+      </p>
+      <p className="mt-1.5 text-[10px] font-medium leading-tight text-muted-foreground">{label}</p>
+    </div>
   )
 
-  const cellClass = cn(
-    'flex min-w-0 flex-1 flex-col items-center justify-center px-2 py-3.5 text-center',
-    dividerAfter && 'border-s border-border/50',
-    to && 'transition-opacity active:opacity-75'
-  )
+  if (to) {
+    return (
+      <Link
+        to={to}
+        className={cn(
+          profileHighlightSectionClass('primary'),
+          'block flex-1 active:opacity-85 transition-opacity'
+        )}
+      >
+        <div className={profileHighlightGlowClass('left', 'primary')} aria-hidden />
+        <div className={cn(profileHighlightGlowClass('right', 'sky'), 'opacity-60')} aria-hidden />
+        <div className="relative">{inner}</div>
+      </Link>
+    )
+  }
 
-  return to ? (
-    <Link to={to} className={cellClass}>
-      {inner}
-    </Link>
-  ) : (
-    <div className={cellClass}>{inner}</div>
+  return (
+    <div className={cn(profileHighlightSectionClass('primary'), 'flex-1')}>
+      <div className={profileHighlightGlowClass('left', 'primary')} aria-hidden />
+      <div className={cn(profileHighlightGlowClass('right', 'sky'), 'opacity-60')} aria-hidden />
+      <div className="relative">{inner}</div>
+    </div>
   )
 }
 
 export const ProfileSocialStatsRow = ({ metrics, className }: ProfileSocialStatsRowProps) => (
-  <div className={cn('mx-4 mt-3', className)}>
-    <section className={profileHighlightSectionClass('primary')}>
-      <div className={profileHighlightGlowClass('left', 'primary')} aria-hidden />
-      <div className={profileHighlightGlowClass('right', 'sky')} aria-hidden />
-
-      <div className="relative flex items-stretch" dir="rtl">
-        {metrics.map((metric, index) => (
-          <MetricCell
-            key={metric.label}
-            {...metric}
-            dividerAfter={index < metrics.length - 1}
-          />
-        ))}
-      </div>
-    </section>
+  <div className={cn('mx-4 mt-3 flex gap-2', className)} dir="rtl">
+    {metrics.map((metric) => (
+      <MetricCard key={metric.label} {...metric} />
+    ))}
   </div>
 )

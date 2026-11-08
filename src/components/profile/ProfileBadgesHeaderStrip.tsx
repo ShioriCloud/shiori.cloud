@@ -68,7 +68,6 @@ export const ProfileBadgesHeaderStrip = ({
   const earned = badgesSummary?.earned_count ?? previewBadges?.length ?? 0
   const total = badgesSummary?.total_count ?? earned
   const preview = previewBadges?.slice(0, PREVIEW_COUNT) ?? []
-  const overflow = Math.max(0, earned - preview.length)
   const title = variant === 'own' ? 'نشان‌هام' : 'نشان‌هاش'
 
   const { data: ownCatalog } = useSocialBadgeCatalogMe(variant === 'own' && !isLoading)
@@ -216,11 +215,6 @@ export const ProfileBadgesHeaderStrip = ({
               </p>
             )}
 
-            {overflow > 0 ? (
-              <p className="mt-2 text-center text-[10px] text-muted-foreground">
-                {toPersianDigits(overflow)} نشان دیگر
-              </p>
-            ) : null}
           </div>
         </section>
       </div>
