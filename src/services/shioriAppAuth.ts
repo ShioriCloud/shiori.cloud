@@ -5,7 +5,6 @@ import {
   writeStoredAppSession,
   type AppSession,
 } from '../lib/appSessionStorage'
-import { setWebMiniappBypassForUser } from '../lib/webMiniappGate'
 
 type AuthResponse = {
   ok: boolean
@@ -34,7 +33,6 @@ export const loginAppUser = async (email: string, password: string): Promise<App
 
   const session = toSession(payload)
   writeStoredAppSession(session)
-  setWebMiniappBypassForUser(session.userId)
   return session
 }
 
@@ -55,7 +53,6 @@ export const registerAppUser = async (
 
   const session = toSession(payload)
   writeStoredAppSession(session)
-  setWebMiniappBypassForUser(session.userId)
   return session
 }
 
@@ -82,7 +79,6 @@ export const verifyAppSession = async (): Promise<AppSession | null> => {
       canLinkTelegram: payload.can_link_telegram,
     }
     writeStoredAppSession(session)
-    setWebMiniappBypassForUser(session.userId)
     return session
   } catch {
     clearStoredAppSession()
