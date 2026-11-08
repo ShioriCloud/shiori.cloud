@@ -1,15 +1,37 @@
+import { cn } from '@/lib/utils'
 import {
+  ProfileAnimeRailSkeleton,
   ProfileBadgesShowcaseSkeleton,
+  ProfileFollowButtonSkeleton,
+  ProfileSocialStatsRowSkeleton,
+  ProfileTabBarSkeleton,
+  ProfileTranslationsRailSkeleton,
 } from '@/components/profile/ProfileSectionSkeletons'
 
+export type ProfilePageSkeletonVariant = 'own' | 'public'
+
+type ProfilePageSkeletonProps = {
+  /** Public shells show the follow CTA placeholder under stats. */
+  variant?: ProfilePageSkeletonVariant
+  className?: string
+}
+
 /**
- * Hero-style loading shell — only for the main profile shell routes:
- * `/profile`, `/u/:id`, `/translators/:slug` (see RouteFallback + page initial load).
- * Do not use inside sheets, tabs, or subpages; use ContentLoadingSkeleton or SocialListSkeleton.
+ * Progressive profile shell — hero + highlight sections + tab area.
+ * Used while auth (`isReady`) or social profile is still loading on:
+ * `/profile`, `/u/:id`, `/translators/:slug` (see RouteFallback + pages).
+ * Do not use inside sheets, tabs, or subpages; use ContentLoadingSkeleton instead.
  */
-export const ProfilePageSkeleton = () => (
-  <div className="pb-24">
-    <div className="animate-pulse">
+export const ProfilePageSkeleton = ({
+  variant = 'own',
+  className,
+}: ProfilePageSkeletonProps) => (
+  <div
+    className={cn('bg-background pb-24 text-foreground', className)}
+    aria-busy="true"
+    aria-label="در حال بارگذاری پروفایل"
+  >
+    <div className="animate-pulse" aria-hidden>
       <div className="relative h-36">
         <div className="absolute inset-x-0 top-0 h-full bg-muted/60" />
         <div className="relative z-10 flex flex-col items-center pt-[5.75rem]">
@@ -20,8 +42,21 @@ export const ProfilePageSkeleton = () => (
           <div className="mt-2 h-3 w-24 rounded-md bg-muted/80" />
         </div>
       </div>
-      <div className="mx-4 mt-3 h-12 rounded-xl bg-muted/70" />
     </div>
-    <ProfileBadgesShowcaseSkeleton className="mt-2.5" />
+
+    <ProfileSocialStatsRowSkeleton className="mt-0" />
+
+    {variant === 'public' ? (
+      <div className="px-4 pt-0.5">
+        <ProfileFollowButtonSkeleton />
+      </div>
+    ) : null}
+
+    <ProfileTranslationsRailSkeleton className="!mt-2.5" />
+    <ProfileBadgesShowcaseSkeleton className="mt-2" />
+
+    <ProfileTabBarSkeleton />
+    <ProfileAnimeRailSkeleton className="mt-4" titleClassName="w-36" />
+    <ProfileAnimeRailSkeleton className="mt-6" titleClassName="w-28" />
   </div>
 )

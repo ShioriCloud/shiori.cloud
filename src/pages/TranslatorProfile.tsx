@@ -21,7 +21,7 @@ const TranslatorProfile = () => {
   }
 
   if (isLoading && !data) {
-    return <ProfilePageSkeleton />
+    return <ProfilePageSkeleton variant="public" />
   }
 
   if (!isError && data?.linked_telegram_user_id) {

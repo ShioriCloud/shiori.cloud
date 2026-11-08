@@ -128,7 +128,7 @@ const Profile = () => {
     (activeTab === 'playlists' && hasPublicPlaylists)
 
   if (!isReady) {
-    return <ProfilePageSkeleton />
+    return <ProfilePageSkeleton variant="own" />
   }
 
   if (!tabAllowed) {

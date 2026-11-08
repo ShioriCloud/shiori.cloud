@@ -1,5 +1,7 @@
 export type ProfileTabId = 'watch' | 'stats' | 'playlists' | 'personal'
 
+/** `personal` is included only in `buildOwnProfileTabs` — never on public `/u/:id` profiles. */
+
 export const PROFILE_TAB_WATCH = { id: 'watch' as const, label: 'تماشا' }
 export const PROFILE_TAB_STATS = { id: 'stats' as const, label: 'آمار' }
 export const PROFILE_TAB_PLAYLISTS = { id: 'playlists' as const, label: 'پلی‌لیست‌ها' }

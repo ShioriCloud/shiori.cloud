@@ -128,6 +128,23 @@ export const ProfileFollowButtonSkeleton = ({ className }: { className?: string 
   <Pulse className={cn('mx-4 h-11 w-auto rounded-xl', className)} aria-hidden />
 )
 
+/** Sticky tab strip placeholder while profile shell data is not ready. */
+export const ProfileTabBarSkeleton = ({ className }: { className?: string }) => (
+  <div
+    className={cn(
+      'mx-4 mt-5 rounded-xl border border-border/40 bg-card/40 px-2 py-2.5',
+      className
+    )}
+    aria-hidden
+  >
+    <div className="flex gap-2">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <Pulse key={i} className="h-9 flex-1 rounded-lg" />
+      ))}
+    </div>
+  </div>
+)
+
 export const ProfileOverviewStripSkeleton = ({ className }: { className?: string }) => (
   <div className={cn('mx-4 mt-5', className)} aria-hidden>
     <section className={profileHighlightSectionClass('primary')}>

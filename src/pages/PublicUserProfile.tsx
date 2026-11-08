@@ -112,7 +112,7 @@ const PublicUserProfile = () => {
   }
 
   if (!isReady) {
-    return <ProfilePageSkeleton />
+    return <ProfilePageSkeleton variant="public" />
   }
 
   if (showWebAuth) {
