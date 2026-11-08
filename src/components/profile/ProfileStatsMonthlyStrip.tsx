@@ -1,14 +1,11 @@
-import { BarChart3 } from 'lucide-react'
-import {
-  profileHighlightGlowClass,
-  profileHighlightSectionClass,
-} from '@/components/profile/profileHighlightCard'
+import { profileStatsCardClass, ProfileSampleDataTag } from '@/components/profile/profileStatsCard'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { cn } from '@/lib/utils'
 
-const MONTH_LABELS = ['خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان'] as const
+/** Nearest 6 Jalali months — newest first (matches Figma bar order). */
+const MONTH_LABELS = ['آبان', 'مهر', 'شهریور', 'مرداد', 'تیر', 'خرداد'] as const
 
-/** فریم فیگما: ساعت تماشا در هر ماه — تا دادهٔ ماهانه از API نیاید، از ساعت کل تقریب می‌زنیم. */
+/** تا دادهٔ ماهانه از API نیاید، از ساعت کل تقریب می‌زنیم (داده نمونه). */
 export const ProfileStatsMonthlyStrip = ({
   watchHours,
   className,
@@ -19,48 +16,44 @@ export const ProfileStatsMonthlyStrip = ({
   const total = Math.max(0, Math.round(watchHours))
   if (total <= 0) return null
 
-  const weights = MONTH_LABELS.map((_, i) => 0.55 + (i % 3) * 0.22 + (i === 4 ? 0.35 : 0))
+  const weights = [0.62, 0.88, 1, 0.82, 0.7, 0.55]
   const sum = weights.reduce((a, b) => a + b, 0)
   const bars = weights.map((w) => Math.max(1, Math.round((w / sum) * total)))
-
   const maxBar = Math.max(...bars, 1)
+  const chartHeight = 150
 
   return (
-    <section className={cn('mx-4 mt-4', className)}>
-      <section className={profileHighlightSectionClass('primary')}>
-        <div className={profileHighlightGlowClass('left', 'primary')} aria-hidden />
-        <div className={cn(profileHighlightGlowClass('right', 'sky'), 'opacity-45')} aria-hidden />
-        <div className="relative px-3.5 py-3.5 text-right" dir="rtl">
-          <div className="mb-3 flex items-center gap-2">
-            <span
-              className={cn(
-                'flex h-8 w-8 items-center justify-center rounded-xl',
-                'border border-primary-400/25 bg-primary-400/15 text-primary-400'
-              )}
-            >
-              <BarChart3 className="h-4 w-4" aria-hidden />
-            </span>
-            <h2 className="text-sm font-semibold text-foreground">ساعت تماشا در هر ماه</h2>
-          </div>
-          <div className="flex items-end justify-between gap-1.5 pt-1">
-            {bars.map((hours, i) => {
-              const h = Math.max(12, Math.round((hours / maxBar) * 88))
-              return (
-                <div key={MONTH_LABELS[i]} className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
-                  <span className="text-[9px] font-medium tabular-nums text-muted-foreground">
-                    {toPersianDigits(hours)}
-                  </span>
-                  <div
-                    className="w-full max-w-[2.25rem] rounded-t-md bg-gradient-to-t from-primary-500/90 to-primary-400/55"
-                    style={{ height: `${h}px` }}
-                  />
-                  <span className="text-[9px] text-muted-foreground">{MONTH_LABELS[i]}</span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
+    <section className={cn(profileStatsCardClass(), 'flex flex-col gap-3.5', className)} dir="rtl">
+      <div className="flex items-center justify-between gap-2">
+        <ProfileSampleDataTag />
+        <h2 className="text-sm font-bold text-foreground">ساعت تماشا در هر ماه</h2>
+      </div>
+      <div className="flex h-[150px] items-end gap-2.5">
+        {bars.map((hours, i) => {
+          const h = Math.max(24, Math.round((hours / maxBar) * (chartHeight - 36)))
+          const isLatest = i === 0
+          return (
+            <div key={MONTH_LABELS[i]} className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
+              <span
+                className={cn(
+                  'text-[11px] tabular-nums',
+                  isLatest ? 'text-foreground' : 'text-muted-foreground'
+                )}
+              >
+                {toPersianDigits(hours)}
+              </span>
+              <div
+                className={cn(
+                  'w-full rounded-t-md',
+                  isLatest ? 'bg-primary-500' : 'bg-primary-500/45'
+                )}
+                style={{ height: `${h}px` }}
+              />
+              <span className="text-[11px] text-muted-foreground">{MONTH_LABELS[i]}</span>
+            </div>
+          )
+        })}
+      </div>
     </section>
   )
 }

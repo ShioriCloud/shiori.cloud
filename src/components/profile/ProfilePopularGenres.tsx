@@ -1,7 +1,4 @@
-import {
-  profileHighlightGlowClass,
-  profileHighlightSectionClass,
-} from '@/components/profile/profileHighlightCard'
+import { profileStatsCardClass, ProfileSampleDataTag } from '@/components/profile/profileStatsCard'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { cn } from '@/lib/utils'
 
@@ -11,10 +8,15 @@ export const ProfilePopularGenres = ({
   genres,
   title = 'ژانرهای محبوب',
   className,
+  animeCount,
+  showSampleTag = true,
 }: {
   genres: GenreRow[]
   title?: string
   className?: string
+  /** برای نمایش تعداد تقریبی روی نوارها وقتی API فقط درصد می‌دهد. */
+  animeCount?: number
+  showSampleTag?: boolean
 }) => {
   if (genres.length === 0) return null
 
@@ -22,33 +24,40 @@ export const ProfilePopularGenres = ({
   const maxPercent = Math.max(...top.map((g) => g.percent), 1)
 
   return (
-    <section className={cn('px-4 pt-2', className)}>
-      <h2 className="mb-3 text-sm font-semibold text-foreground">{title}</h2>
-      <section className={profileHighlightSectionClass('primary')}>
-        <div className={profileHighlightGlowClass('left', 'primary')} aria-hidden />
-        <div className={cn(profileHighlightGlowClass('right', 'sky'), 'opacity-50')} aria-hidden />
-        <div className="relative space-y-3 px-3.5 py-3.5">
-          {top.map((g) => {
-            const width = Math.max(10, Math.round((g.percent / maxPercent) * 100))
-            return (
-              <div key={g.slug}>
-                <div className="mb-1.5 flex items-center justify-between gap-2 text-xs">
-                  <span className="font-medium text-foreground">{g.label}</span>
-                  <span className="tabular-nums text-muted-foreground">
-                    {toPersianDigits(g.percent)}٪
-                  </span>
-                </div>
-                <div className="h-2 overflow-hidden rounded-full bg-muted/50">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-l from-primary-400 to-primary-500/85"
-                    style={{ width: `${width}%` }}
-                  />
-                </div>
+    <section className={cn(profileStatsCardClass(), 'flex flex-col gap-3.5', className)} dir="rtl">
+      <div className="flex items-center justify-between gap-2">
+        {showSampleTag ? <ProfileSampleDataTag /> : <span aria-hidden />}
+        <h2 className="text-[15.5px] font-bold text-foreground">{title}</h2>
+      </div>
+      <div className="space-y-2.5">
+        {top.map((g) => {
+          const width = Math.max(8, Math.round((g.percent / maxPercent) * 100))
+          const isLeader = g.percent >= maxPercent
+          const displayCount =
+            animeCount && animeCount > 0
+              ? Math.max(1, Math.round((g.percent / 100) * animeCount))
+              : g.percent
+          return (
+            <div key={g.slug} className="flex items-center gap-2.5">
+              <span className="w-6 shrink-0 text-xs font-semibold tabular-nums text-foreground">
+                {toPersianDigits(displayCount)}
+              </span>
+              <div className="h-2 min-w-0 flex-1 overflow-hidden rounded bg-white/[0.06]">
+                <div
+                  className={cn(
+                    'ms-auto h-full rounded',
+                    isLeader ? 'bg-primary-500' : 'bg-primary-500/45'
+                  )}
+                  style={{ width: `${width}%` }}
+                />
               </div>
-            )
-          })}
-        </div>
-      </section>
+              <span className="w-[4.5rem] shrink-0 text-right text-[12.5px] text-muted-foreground">
+                {g.label}
+              </span>
+            </div>
+          )
+        })}
+      </div>
     </section>
   )
 }

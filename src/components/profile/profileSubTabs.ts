@@ -14,7 +14,7 @@ export const PROFILE_ACTIVITIES_SUB_COMMENTS = {
   label: 'نظرات',
 }
 
-export const PROFILE_STATS_SUB_VIEWING = { id: 'viewing' as const, label: 'آمار تماشا' }
+export const PROFILE_STATS_SUB_VIEWING = { id: 'viewing' as const, label: 'بازدید' }
 export const PROFILE_STATS_SUB_FAVORITES = { id: 'favorites' as const, label: 'علاقه‌مندی‌ها' }
 
 export type ProfileSubTabConfig<T extends string> = { id: T; label: string }

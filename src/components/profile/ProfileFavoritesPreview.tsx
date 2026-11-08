@@ -1,25 +1,26 @@
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
-import { ProfileSectionMoreLink } from '@/components/profile/ProfileSectionMoreLink'
 import { BidiText } from '@/components/BidiText'
+import { ProfileSectionMoreLink } from '@/components/profile/ProfileSectionMoreLink'
+import { ProfileTranslatorPosterCard } from '@/components/profile/ProfileTranslatorPosterCard'
 import { SOCIAL_SURFACE_CLASS } from '@/components/profile/social/socialUi'
 import type { SocialProfileMe } from '@/services/socialProfile'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
 import { cn } from '@/lib/utils'
+import { toPersianDigits } from '@/lib/persianDigits'
 import { ProfileFavoritesGridSkeleton } from '@/components/profile/ProfileSectionSkeletons'
 
-const PREVIEW_COUNT = 9
+const PREVIEW_COUNT_DEFAULT = 9
+const PREVIEW_COUNT_PROFILE = 6
 
 type Item = NonNullable<SocialProfileMe['watched']>['items'][number]
 
 type ProfileFavoritesPreviewProps = {
   items: Item[]
   total: number
-  /** When set, items are shown in this order with rank badges (own profile). */
   orderedIds?: Array<string | number>
   profileBase: string
   className?: string
   isLoading?: boolean
-  /** `profile` = فیگما v3 دو ستونه پستر عمودی */
   gridVariant?: 'default' | 'profile'
 }
 
@@ -46,14 +47,49 @@ export const ProfileFavoritesPreview = ({
           .filter((item): item is Item => Boolean(item))
       : items
 
-  const preview = orderedItems.slice(0, PREVIEW_COUNT)
-  const showMore = total > PREVIEW_COUNT
+  const previewLimit = gridVariant === 'profile' ? PREVIEW_COUNT_PROFILE : PREVIEW_COUNT_DEFAULT
+  const preview = orderedItems.slice(0, previewLimit)
+  const displayTotal = total > 0 ? total : orderedItems.length
+  const showMore = displayTotal > previewLimit
   const moreHref =
     profileBase === '/profile'
       ? '/profile/favorites'
       : `${profileBase}?tab=stats&sub=favorites`
 
   if (preview.length === 0) return null
+
+  if (gridVariant === 'profile') {
+    return (
+      <section className={cn('flex flex-col gap-3', className)} dir="rtl">
+        <div className="flex items-center justify-between gap-2">
+          {showMore ? (
+            <ProfileSectionMoreLink to={moreHref} label="همه" />
+          ) : (
+            <span aria-hidden className="w-8" />
+          )}
+          <div className="flex items-center gap-1.5 whitespace-nowrap">
+            <span className="text-xs text-muted-foreground tabular-nums">
+              {toPersianDigits(displayTotal)}
+            </span>
+            <h2 className="text-[15.5px] font-bold text-foreground">علاقه‌مندی‌ها</h2>
+          </div>
+        </div>
+        <div className="grid grid-cols-3 justify-items-end gap-2.5">
+          {preview.map((item) => (
+            <ProfileTranslatorPosterCard
+              key={item.anime_id}
+              item={{
+                anime_id: item.anime_id,
+                slug: item.slug,
+                title: item.title,
+                image: item.image,
+              }}
+            />
+          ))}
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className={cn('mt-6 px-4', className)}>
@@ -66,13 +102,7 @@ export const ProfileFavoritesPreview = ({
           />
         ) : null}
       </div>
-      <div
-        className={cn(
-          SOCIAL_SURFACE_CLASS,
-          'grid gap-2 p-2',
-          gridVariant === 'profile' ? 'grid-cols-2' : 'grid-cols-3'
-        )}
-      >
+      <div className={cn(SOCIAL_SURFACE_CLASS, 'grid grid-cols-3 gap-2 p-2')}>
         {preview.map((item) => {
           const routeRef = { id: item.anime_id, slug: item.slug, title: item.title }
           return (
@@ -83,12 +113,7 @@ export const ProfileFavoritesPreview = ({
               className="group block overflow-hidden rounded-xl active:scale-[0.98] transition-transform"
             >
               <div className="media-card-skeuo rounded-xl">
-                <div
-                  className={cn(
-                    'media-card-skeuo-face relative bg-muted',
-                    gridVariant === 'profile' ? 'aspect-[2/3]' : 'aspect-square'
-                  )}
-                >
+                <div className="media-card-skeuo-face relative aspect-square bg-muted">
                   {item.image ? (
                     <img
                       src={item.image}

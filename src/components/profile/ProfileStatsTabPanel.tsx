@@ -15,12 +15,13 @@ type ProfileStatsTabPanelProps = {
   variant: 'own' | 'public'
   subTab: ProfileStatsSubTabId
   overview: { watchHours: number; byFormat: FormatBreakdownRow[] }
-  fullStatsTo?: string | null
   watchVisible?: boolean
   badgesSection?: ReactNode
   isLoading?: boolean
+  watchAnimeCount?: number | null
   favoriteListItems?: WatchedItem[]
   favoriteOrderIds?: Array<string | number>
+  favoritesTotal?: number
   profileBase?: string
   favoritesLoading?: boolean
   topGenres?: NonNullable<SocialProfileMe['top_genres']>
@@ -35,14 +36,15 @@ export const ProfileStatsTabPanel = ({
   variant,
   subTab,
   overview,
-  fullStatsTo,
   watchVisible = true,
   badgesSection,
   isLoading = false,
+  watchAnimeCount,
   favoriteListItems = [],
   favoriteOrderIds,
   profileBase = '/profile',
   favoritesLoading = false,
+  favoritesTotal,
   topGenres = [],
   publicExtras,
 }: ProfileStatsTabPanelProps) => {
@@ -55,39 +57,38 @@ export const ProfileStatsTabPanel = ({
   }
 
   if (subTab === 'favorites') {
+    const favTotal = favoritesTotal ?? favoriteListItems.length
     return (
-      <div className="-mx-4 space-y-1 pb-2 pt-1">
+      <div className="flex flex-col gap-7 pb-8 pt-5">
         <ProfileFavoritesPreview
           items={favoriteListItems}
-          total={favoriteListItems.length}
+          total={favTotal}
           orderedIds={favoriteOrderIds}
           profileBase={profileBase}
-          className="mt-0"
           isLoading={favoritesLoading}
           gridVariant="profile"
         />
-        <ProfilePopularGenres genres={topGenres} className="!pt-4" />
+        <ProfilePopularGenres genres={topGenres} animeCount={watchAnimeCount ?? undefined} />
       </div>
     )
   }
 
   return (
-    <div className="-mx-4 space-y-1 pb-2">
+    <div className="flex flex-col gap-7 pb-8 pt-5">
       {isLoading ? (
         <ProfileOverviewStripSkeleton />
       ) : (
         <>
           <ProfileOverviewStrip
             data={overview}
-            fullStatsTo={fullStatsTo ?? null}
             audience={variant}
-            sectionTitle="مرور تماشا"
+            animeCount={watchAnimeCount}
           />
           <ProfileStatsMonthlyStrip watchHours={overview.watchHours} />
         </>
       )}
 
-      {badgesSection ? <div className="mx-4 mt-4">{badgesSection}</div> : null}
+      {badgesSection ? <div className="mt-1">{badgesSection}</div> : null}
 
       {variant === 'public' && publicExtras ? (
         <ProfilePublicStatsExtras

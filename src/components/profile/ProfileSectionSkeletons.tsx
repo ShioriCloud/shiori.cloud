@@ -3,6 +3,7 @@ import {
   profileHighlightGlowClass,
   profileHighlightSectionClass,
 } from '@/components/profile/profileHighlightCard'
+import { profileStatsCardClass } from '@/components/profile/profileStatsCard'
 
 const Pulse = ({ className }: { className?: string }) => (
   <div className={cn('animate-pulse rounded-md bg-muted/70', className)} />
@@ -138,24 +139,18 @@ export const ProfileTabBarSkeleton = ({ className }: { className?: string }) => 
 )
 
 export const ProfileOverviewStripSkeleton = ({ className }: { className?: string }) => (
-  <div className={cn('mx-4 mt-5', className)} aria-hidden>
-    <section className={profileHighlightSectionClass('primary')}>
-      <div className={profileHighlightGlowClass('left', 'primary')} />
-      <div className={cn(profileHighlightGlowClass('right', 'primary'), 'bottom-0 top-auto')} />
-      <div className="relative space-y-4 p-4">
-        <div className="flex items-center gap-2">
-          <Pulse className="h-8 w-8 rounded-xl" />
-          <Pulse className="h-4 w-32" />
-        </div>
-        <div className="flex items-center gap-4">
-          <Pulse className="h-[5.5rem] w-[5.5rem] shrink-0 rounded-full" />
-          <div className="grid min-w-0 flex-1 grid-cols-2 gap-2">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Pulse key={i} className="h-14 rounded-xl" />
-            ))}
-          </div>
-        </div>
+  <div className={cn(profileStatsCardClass(), 'space-y-4', className)} aria-hidden>
+    <div className="flex justify-end gap-2">
+      <Pulse className="h-4 w-16" />
+      <Pulse className="h-5 w-28" />
+    </div>
+    <div className="flex items-center gap-5">
+      <div className="min-w-0 flex-1 space-y-3">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Pulse key={i} className="h-5 w-full rounded-md" />
+        ))}
       </div>
-    </section>
+      <Pulse className="h-[8.75rem] w-[8.75rem] shrink-0 rounded-full" />
+    </div>
   </div>
 )

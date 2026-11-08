@@ -306,10 +306,11 @@ const Profile = () => {
               variant="own"
               subTab={statsSub}
               overview={overview}
-              fullStatsTo="/profile/stats"
               isLoading={socialProfileLoading}
+              watchAnimeCount={mergedStats.animeCount}
               favoriteListItems={favoriteListItems}
               favoriteOrderIds={favoriteAnime}
+              favoritesTotal={favoriteAnime.length}
               profileBase="/profile"
               favoritesLoading={favoriteAnime.length > 0 && favoriteCardsLoading}
               topGenres={mergedStats.topGenres}

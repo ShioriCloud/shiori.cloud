@@ -1,5 +1,3 @@
-import { Link } from 'react-router-dom'
-import { ChartPie, ChevronLeft } from 'lucide-react'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { cn } from '@/lib/utils'
 import {
@@ -8,11 +6,8 @@ import {
   sortFormats,
   type FormatBreakdownRow,
 } from './profileFormats'
-import {
-  profileHighlightGlowClass,
-  profileHighlightSectionClass,
-} from '@/components/profile/profileHighlightCard'
-import { WatchHoursDonut } from './WatchHoursDonut'
+import { profileStatsCardClass } from '@/components/profile/profileStatsCard'
+import { FormatWatchDonut } from './FormatWatchDonut'
 
 type OverviewModel = {
   watchHours: number
@@ -21,97 +16,66 @@ type OverviewModel = {
 
 export const ProfileOverviewStrip = ({
   data,
-  fullStatsTo = '/profile/stats',
   audience = 'own',
   sectionTitle = 'مرور تماشا',
+  animeCount,
+  className,
 }: {
   data: OverviewModel
-  /** Pass `null` to hide the full-stats link (e.g. public profiles). */
-  fullStatsTo?: string | null
   audience?: 'own' | 'public'
   sectionTitle?: string
+  animeCount?: number | null
+  className?: string
 }) => {
-  const formats = sortFormats(data.byFormat).slice(0, 6)
+  const formats = sortFormats(data.byFormat).filter((row) => row.count > 0).slice(0, 4)
   const hours = Math.max(0, Math.round(data.watchHours))
+  const countLabel =
+    animeCount != null && animeCount > 0
+      ? `${toPersianDigits(animeCount)} انیمه`
+      : null
 
   return (
-    <div className="mx-4 mt-5">
-      <section className={profileHighlightSectionClass('primary')}>
-        <div className={profileHighlightGlowClass('left', 'primary')} aria-hidden />
-        <div
-          className={cn(profileHighlightGlowClass('right', 'primary'), 'bottom-0 top-auto')}
-          aria-hidden
-        />
+    <section className={cn(profileStatsCardClass(), 'flex flex-col gap-3.5', className)} dir="rtl">
+      <div className="flex items-center justify-end gap-1.5 whitespace-nowrap text-right">
+        {countLabel ? (
+          <span className="text-xs text-muted-foreground">{countLabel}</span>
+        ) : null}
+        <h2 className="text-[15.5px] font-bold leading-snug text-foreground">{sectionTitle}</h2>
+      </div>
 
-        <div className="relative p-4">
-          <div className="mb-4 flex items-center gap-2">
-            <span
-              className={cn(
-                'flex h-8 w-8 items-center justify-center rounded-xl',
-                'border border-primary-400/25 bg-primary-400/15 text-primary-400'
-              )}
-            >
-              <ChartPie className="h-4 w-4" aria-hidden />
-            </span>
-            <h2 className="text-sm font-semibold text-foreground">{sectionTitle}</h2>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <WatchHoursDonut hours={hours} />
-
-            <div className="min-w-0 flex-1">
-              {formats.length > 0 ? (
-                <div className="grid grid-cols-2 gap-2">
-                  {formats.map((row) => (
-                    <div
-                      key={row.format}
-                      className={cn(
-                        'rounded-xl border border-border/70 px-2.5 py-2.5 text-center',
-                        'bg-card shadow-sm dark:border-border/60 dark:bg-muted/70'
-                      )}
-                    >
-                      <p className="text-xl font-bold tabular-nums leading-none text-foreground">
-                        {toPersianDigits(row.count)}
-                      </p>
-                      <p className="mt-1.5 flex items-center justify-center gap-1 text-[10px] leading-4 text-muted-foreground">
-                        <span
-                          className={cn(
-                            'inline-block h-1.5 w-1.5 rounded-full',
-                            FORMAT_ACCENT[row.format] ?? 'bg-muted-foreground/50'
-                          )}
-                          aria-hidden
-                        />
-                        {formatLabel(row.format)}
-                      </p>
-                    </div>
-                  ))}
+      <div className="flex items-center gap-5">
+        <div className="min-w-0 flex-1 space-y-2.5">
+          {formats.length > 0 ? (
+            formats.map((row) => (
+              <div key={row.format} className="flex w-full items-center justify-between gap-2">
+                <span className="text-sm font-bold tabular-nums text-foreground">
+                  {toPersianDigits(row.count)}
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[13px] text-muted-foreground">
+                    {formatLabel(row.format)}
+                  </span>
+                  <span
+                    className={cn(
+                      'inline-block h-2.5 w-2.5 shrink-0 rounded-full',
+                      FORMAT_ACCENT[row.format] ?? 'bg-muted-foreground/50'
+                    )}
+                    aria-hidden
+                  />
                 </div>
-              ) : (
-                <p className="text-xs leading-6 text-muted-foreground">
-                  {audience === 'public'
-                    ? 'هنوز آمار تماشایی برای نمایش نیست.'
-                    : 'با تماشای انیمه، خلاصه ساعت و ژانر/فرمت اینجا شکل می‌گیرد.'}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {fullStatsTo ? (
-            <Link
-              to={fullStatsTo}
-              className={cn(
-                'mt-4 flex w-full items-center justify-center gap-1 rounded-xl',
-                'border border-primary-400/25 bg-primary-400/10 px-3 py-2.5',
-                'text-sm font-semibold text-primary-700 dark:text-primary-200',
-                'transition-colors hover:bg-primary-400/15 active:bg-primary-400/20'
-              )}
-            >
-              مشاهده آمار کامل
-              <ChevronLeft className="h-4 w-4 opacity-80" aria-hidden />
-            </Link>
-          ) : null}
+              </div>
+            ))
+          ) : (
+            <p className="text-xs leading-6 text-muted-foreground">
+              {audience === 'public'
+                ? 'هنوز آمار تماشایی برای نمایش نیست.'
+                : 'با تماشای انیمه، خلاصه ساعت و فرمت اینجا شکل می‌گیرد.'}
+            </p>
+          )}
         </div>
-      </section>
-    </div>
+
+        <FormatWatchDonut hours={hours} byFormat={data.byFormat} />
+      </div>
+    </section>
   )
 }

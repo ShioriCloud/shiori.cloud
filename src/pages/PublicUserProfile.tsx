@@ -344,10 +344,11 @@ const PublicUserProfile = () => {
               variant="public"
               subTab={statsSub}
               overview={overview}
-              fullStatsTo={watchVisible ? `${profileBase}/stats` : null}
               watchVisible={watchVisible}
               isLoading={profileLoading}
+              watchAnimeCount={animeWatched}
               favoriteListItems={favoriteListItems}
+              favoritesTotal={favoriteListItems.length}
               profileBase={profileBase}
               favoritesLoading={profileLoading}
               topGenres={data?.top_genres ?? []}
