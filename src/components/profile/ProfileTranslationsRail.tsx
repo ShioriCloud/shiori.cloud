@@ -15,28 +15,6 @@ import { sortTranslatorWorksNewestFirst } from '@/lib/translatorWorksSort'
 
 const DEFAULT_VISIBLE = 5
 
-const joinRolesFa = (roles: string[]): string => {
-  if (roles.length === 0) return 'مترجم'
-  if (roles.length === 1) return roles[0]!
-  if (roles.length === 2) return `${roles[0]} و ${roles[1]}`
-  return `${roles.slice(0, -1).join('، ')} و ${roles[roles.length - 1]}`
-}
-
-/** Unique roles from linked works; empty/missing role → مترجم. */
-export const formatTranslatorRoleLine = (
-  anime: Array<{ role: string | null }>
-): string => {
-  const seen = new Set<string>()
-  const ordered: string[] = []
-  for (const item of anime) {
-    const raw = String(item.role ?? '').trim() || 'مترجم'
-    if (seen.has(raw)) continue
-    seen.add(raw)
-    ordered.push(raw)
-  }
-  return joinRolesFa(ordered)
-}
-
 type ProfileTranslationsRailProps = {
   translator: NonNullable<SocialProfileMe['translator']>
   profileUserId: string
@@ -50,7 +28,7 @@ export const ProfileTranslationsRail = ({
   translator,
   profileUserId,
   maxVisible = DEFAULT_VISIBLE,
-  title = 'ترجمه‌هاش',
+  title = 'آثار برتر',
   className,
 }: ProfileTranslationsRailProps) => {
   const total = translator.anime_count
@@ -58,7 +36,6 @@ export const ProfileTranslationsRail = ({
 
   const visible = sortTranslatorWorksNewestFirst(translator.anime).slice(0, maxVisible)
   const allPath = `/u/${encodeURIComponent(profileUserId)}/translations`
-  const roleLine = formatTranslatorRoleLine(translator.anime)
 
   return (
     <div className={cn('mx-4 mt-2.5', className)}>
@@ -82,10 +59,8 @@ export const ProfileTranslationsRail = ({
 
             <div className="min-w-0 flex-1">
               <h2 className="text-sm font-semibold text-foreground">{title}</h2>
-              <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
-                <span>{roleLine} شیوری</span>
-                <span className="mx-1.5 text-border" aria-hidden>|</span>
-                <span className="tabular-nums">{toPersianDigits(total)} اثر</span>
+              <p className="mt-0.5 text-xs leading-5 text-muted-foreground tabular-nums">
+                {toPersianDigits(total)} اثر
               </p>
             </div>
 

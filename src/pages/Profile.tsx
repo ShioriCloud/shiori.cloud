@@ -20,6 +20,8 @@ import { ProfileSocialStatsRow } from '@/components/profile/ProfileSocialStatsRo
 import { ProfileStatsTabPanel } from '@/components/profile/ProfileStatsTabPanel'
 import { ProfileSubTabBar } from '@/components/profile/ProfileSubTabBar'
 import { ProfileTranslationsTabPanel } from '@/components/profile/ProfileTranslationsTabPanel'
+import { ProfileTranslationsRail } from '@/components/profile/ProfileTranslationsRail'
+import { ProfileTranslationsRailSkeleton } from '@/components/profile/ProfileSectionSkeletons'
 import {
   buildActivitiesSubTabs,
   buildStatsSubTabs,
@@ -270,8 +272,18 @@ const Profile = () => {
         badgesSummary={socialProfile?.badges_summary}
         previewBadges={socialProfile?.badges}
         isLoading={socialProfileLoading}
-        className="mt-2.5"
       />
+
+      {socialProfileLoading && socialProfile == null ? (
+        <ProfileTranslationsRailSkeleton className="!mt-3" />
+      ) : socialProfile?.translator && profileUserId ? (
+        <ProfileTranslationsRail
+          translator={socialProfile.translator}
+          profileUserId={profileUserId}
+          title="آثار برتر"
+          className="!mt-3"
+        />
+      ) : null}
 
       <ProfileTabSwipeShell
         tabs={profileTabs}
@@ -319,7 +331,7 @@ const Profile = () => {
         {activeTab === 'translations' && socialProfile?.translator ? (
           <ProfileTranslationsTabPanel
             translator={socialProfile.translator}
-            displayName={displayName}
+            profileUserId={profileUserId}
             isLoading={socialProfileLoading}
           />
         ) : null}

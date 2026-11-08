@@ -37,7 +37,9 @@ export const ProfileTabSwipeShell = ({
           tabBarClassName
         )}
       >
-        <ExploreTabBar tabs={[...tabs]} active={active} onChange={onChange} />
+        <div dir="rtl">
+          <ExploreTabBar tabs={[...tabs]} active={active} onChange={onChange} />
+        </div>
       </div>
       <div className={cn('mx-4 mt-4 flex-1 min-h-0', panelClassName)}>{children}</div>
     </TabSwipeArea>

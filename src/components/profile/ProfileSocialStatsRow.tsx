@@ -22,35 +22,35 @@ const MetricCell = ({
   to,
   dividerAfter,
 }: Metric & { dividerAfter?: boolean }) => {
-  const body = (
-    <>
-      <p className="text-sm font-bold tabular-nums leading-none text-foreground">{value}</p>
-      <p className="mt-1 text-[9px] leading-3 text-muted-foreground">{label}</p>
-    </>
+  const inner = (
+  <>
+    <p className="text-lg font-bold tabular-nums leading-none tracking-tight text-foreground">{value}</p>
+    <p className="mt-1.5 text-[10px] font-medium leading-tight text-muted-foreground">{label}</p>
+  </>
   )
 
   const cellClass = cn(
-    'flex min-w-0 flex-1 flex-col items-center justify-center px-1 py-2.5 text-center',
-    dividerAfter && 'border-e border-border/45',
-    to && 'active:opacity-80 transition-opacity'
+    'flex min-w-0 flex-1 flex-col items-center justify-center px-2 py-3.5 text-center',
+    dividerAfter && 'border-s border-border/50',
+    to && 'transition-opacity active:opacity-75'
   )
 
   return to ? (
     <Link to={to} className={cellClass}>
-      {body}
+      {inner}
     </Link>
   ) : (
-    <div className={cellClass}>{body}</div>
+    <div className={cellClass}>{inner}</div>
   )
 }
 
 export const ProfileSocialStatsRow = ({ metrics, className }: ProfileSocialStatsRowProps) => (
-  <div className={cn('mx-4 mt-2', className)}>
+  <div className={cn('mx-4 mt-3', className)}>
     <section className={profileHighlightSectionClass('primary')}>
       <div className={profileHighlightGlowClass('left', 'primary')} aria-hidden />
       <div className={profileHighlightGlowClass('right', 'sky')} aria-hidden />
 
-      <div className="relative flex items-stretch">
+      <div className="relative flex items-stretch" dir="rtl">
         {metrics.map((metric, index) => (
           <MetricCell
             key={metric.label}

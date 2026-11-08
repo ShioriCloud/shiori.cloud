@@ -1,4 +1,3 @@
-import { EXPLORE_CHIP_CLASS } from '@/components/explore/ExploreUi'
 import { hapticSelection } from '@/lib/telegramHaptics'
 import { cn } from '@/lib/utils'
 
@@ -9,7 +8,7 @@ type ProfileSubTabBarProps<T extends string> = {
   className?: string
 }
 
-/** Secondary tab row (v3) — chip style aligned with Explore. */
+/** زیرتب‌ها — همان زبان بصری segmented control خانه/اکتشاف. */
 export const ProfileSubTabBar = <T extends string>({
   tabs,
   active,
@@ -17,12 +16,10 @@ export const ProfileSubTabBar = <T extends string>({
   className,
 }: ProfileSubTabBarProps<T>) => (
   <div
-    className={cn(
-      'flex flex-wrap justify-end gap-2 border-b border-border/40 pb-2',
-      className
-    )}
+    className={cn('home-type-tabs relative flex rounded-xl p-1', className)}
     role="tablist"
     aria-label="زیرتب‌های پروفایل"
+    dir="rtl"
   >
     {tabs.map((tab) => {
       const isActive = tab.id === active
@@ -38,14 +35,14 @@ export const ProfileSubTabBar = <T extends string>({
             onChange(tab.id)
           }}
           className={cn(
-            EXPLORE_CHIP_CLASS,
-            'min-h-8 px-3 text-xs',
-            isActive
-              ? 'bg-primary-500/15 text-primary-700 dark:text-primary-200'
-              : 'text-muted-foreground'
+            'relative min-h-9 flex-1 rounded-[10px] py-2 text-xs font-medium transition-all duration-200',
+            isActive ? 'text-foreground font-semibold' : 'text-muted-foreground hover:text-foreground'
           )}
         >
-          {tab.label}
+          {isActive ? (
+            <span aria-hidden className="home-type-tabs-thumb absolute inset-0 rounded-[10px]" />
+          ) : null}
+          <span className="relative z-10">{tab.label}</span>
         </button>
       )
     })}
