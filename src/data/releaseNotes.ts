@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.119',
+    items: ['ترجمه‌های پروفایل داخل صفحه ماند و خلاصهٔ آثار خواناتر شد'],
+  },
+  {
     version: '0.2.118',
     items: ['آمار پروفایل داخل صفحه ماند و بازدید و علاقه‌مندی‌ها خواناتر شد'],
   },

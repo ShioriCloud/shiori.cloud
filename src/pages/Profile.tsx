@@ -315,11 +315,13 @@ const Profile = () => {
           </div>
         ) : null}
         {activeTab === 'translations' && socialProfile?.translator ? (
+          <div className="min-w-0 overflow-x-hidden">
           <ProfileTranslationsTabPanel
             translator={socialProfile.translator}
             profileUserId={profileUserId}
             isLoading={socialProfileLoading}
           />
+          </div>
         ) : null}
       </ProfileTabSwipeShell>
 

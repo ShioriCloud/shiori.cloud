@@ -1,3 +1,4 @@
+import { ChevronLeft } from 'lucide-react'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { cn } from '@/lib/utils'
 
@@ -7,25 +8,19 @@ type ProfileTranslatorSummaryRowProps = {
   className?: string
 }
 
-const SummaryChip = ({
-  label,
-  value,
-  className,
-}: {
-  label: string
-  value: string
-  className?: string
-}) => (
+const SummaryChip = ({ label, value }: { label: string; value: string }) => (
   <div
     className={cn(
-      'flex min-w-0 flex-1 items-center justify-between gap-2 rounded-xl',
-      'border border-border/70 bg-card/90 px-3 py-2.5 text-right',
-      className
+      'flex min-w-0 flex-1 items-center justify-between gap-1 overflow-hidden rounded-xl',
+      'border border-border/70 bg-card py-2 pl-2.5 pr-3',
+      'dark:border-[#1e1e24] dark:bg-[#141418]'
     )}
-    dir="rtl"
   >
-    <span className="text-[11px] leading-tight text-muted-foreground">{label}</span>
-    <span className="shrink-0 text-sm font-bold tabular-nums text-foreground">{value}</span>
+    <div className="min-w-0 text-right">
+      <p className="truncate text-[17px] font-bold leading-6 text-foreground">{value}</p>
+      <p className="line-clamp-2 text-[11.5px] leading-4 text-muted-foreground">{label}</p>
+    </div>
+    <ChevronLeft className="size-4 shrink-0 opacity-35" aria-hidden />
   </div>
 )
 
@@ -38,12 +33,9 @@ export const ProfileTranslatorSummaryRow = ({
     experience && experience.trim().length > 0 ? experience.trim() : '—'
 
   return (
-    <div className={cn('flex gap-2', className)} dir="rtl">
-      <SummaryChip
-        label="انیمه ترجمه‌شده"
-        value={toPersianDigits(animeCount)}
-      />
+    <div className={cn('flex min-w-0 gap-2', className)}>
       <SummaryChip label="سابقه ترجمه" value={experienceValue} />
+      <SummaryChip label="انیمه ترجمه‌شده" value={toPersianDigits(animeCount)} />
     </div>
   )
 }

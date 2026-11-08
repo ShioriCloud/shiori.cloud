@@ -20,7 +20,7 @@ type ProfileTranslationsTabPanelProps = {
 
 const PosterSkeleton = () => (
   <div
-    className="h-[160px] w-[112px] animate-pulse rounded-[10px] border border-white/[0.08] bg-muted/50"
+    className="aspect-[112/160] w-full min-w-0 animate-pulse rounded-[10px] border border-white/[0.08] bg-muted/50"
     aria-hidden
   />
 )
@@ -70,7 +70,7 @@ export const ProfileTranslationsTabPanel = ({
 
   if (sortedWorks.length === 0) {
     return (
-      <div className="pb-6 pt-4">
+      <div className="min-w-0 overflow-x-hidden px-4 pb-6 pt-5">
         <ProfileTranslatorSummaryRow
           animeCount={totalCount}
           experience={translator.experience}
@@ -87,21 +87,21 @@ export const ProfileTranslationsTabPanel = ({
   }
 
   return (
-    <div className="flex flex-col gap-7 pb-8 pt-5">
+    <div className="flex min-w-0 flex-col gap-7 overflow-x-hidden px-4 pb-8 pt-5">
       <ProfileTranslatorSummaryRow
         animeCount={totalCount}
         experience={translator.experience}
       />
 
       {topWorks.length > 0 ? (
-        <section className="flex flex-col gap-3.5" aria-labelledby="profile-top-translations">
+        <section className="flex min-w-0 flex-col gap-3.5" aria-labelledby="profile-top-translations">
           <h2
             id="profile-top-translations"
             className="text-right text-[15.5px] font-bold leading-snug text-foreground"
           >
             آثار برتر
           </h2>
-          <div className="grid min-w-0 grid-cols-3 gap-2.5">
+          <div className="grid min-w-0 grid-cols-3 gap-x-2.5 gap-y-3">
             {topWorks.map((item) => (
               <ProfileTranslatorPosterCard key={item.anime_id} item={item} />
             ))}
@@ -109,8 +109,8 @@ export const ProfileTranslationsTabPanel = ({
         </section>
       ) : null}
 
-      <section className="flex flex-col gap-3" aria-labelledby="profile-all-translations">
-        <div className="flex items-center gap-2">
+      <section className="flex min-w-0 flex-col gap-3" aria-labelledby="profile-all-translations">
+        <div className="flex min-w-0 items-center gap-2">
           <h2
             id="profile-all-translations"
             className="text-[15.5px] font-bold text-foreground"
@@ -119,15 +119,15 @@ export const ProfileTranslationsTabPanel = ({
           </h2>
           <span
             className={cn(
-              'rounded-full bg-primary-400/15 px-2.5 py-0.5',
-              'text-xs font-medium text-primary-400'
+              'shrink-0 rounded-full bg-[#a78bfa] px-[9px] py-[3px]',
+              'text-xs font-medium text-[#3b0764]'
             )}
           >
             {toPersianDigits(totalCount)} انیمه
           </span>
         </div>
 
-        <div className="grid min-w-0 grid-cols-3 gap-2.5">
+        <div className="grid min-w-0 grid-cols-3 gap-x-2.5 gap-y-3">
           {visibleWorks.map((item) => (
             <ProfileTranslatorPosterCard key={`all-${item.anime_id}`} item={item} />
           ))}
@@ -135,7 +135,7 @@ export const ProfileTranslationsTabPanel = ({
 
         {loadingMore ? (
           <>
-            <div className="grid min-w-0 grid-cols-3 gap-2.5 opacity-35">
+            <div className="grid min-w-0 grid-cols-3 gap-x-2.5 gap-y-3 opacity-35">
               <PosterSkeleton />
               <PosterSkeleton />
               <PosterSkeleton />
