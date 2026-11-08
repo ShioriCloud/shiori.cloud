@@ -173,6 +173,7 @@
             } catch (e) { /* ignore */ }
         })()
     </script>
+    <!-- WEB_MINIAPP_GATE_SNIPPET -->
     <!-- Self-hosted WebApp script — telegram.org CDN often fails behind Telegram's built-in proxy. -->
     <script src="/telegram-web-app.js"></script>
     <script>
@@ -215,7 +216,19 @@
                     if (/Android/i.test(ua)) return false
                     return true
                 }
+                function webMiniappAllowed() {
+                    try {
+                        if (typeof window.__shioriWebMiniappAllowed === 'function') {
+                            return window.__shioriWebMiniappAllowed()
+                        }
+                    } catch (e) { /* ignore */ }
+                    return false
+                }
                 if (hasTelegramSignal()) {
+                    document.documentElement.classList.remove('outside-telegram')
+                    return
+                }
+                if (webMiniappAllowed()) {
                     document.documentElement.classList.remove('outside-telegram')
                     return
                 }

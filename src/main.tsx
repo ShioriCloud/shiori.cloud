@@ -12,6 +12,7 @@ import {
   persistTelegramLaunchHash,
   waitForTelegramMiniApp,
 } from './lib/platform'
+import { shouldAllowWebMiniappOutsideTelegram } from './lib/webMiniappGate'
 import { refreshBootQuotesCache } from './services/bootQuotes'
 import './index.css'
 
@@ -53,8 +54,12 @@ const boot = async () => {
     return
   }
 
-  // Desktop Chrome/Firefox/etc. — show Telegram gate immediately (no splash wait).
+  // Desktop Chrome/Firefox/etc. — show Telegram gate unless allowlisted web preview.
   if (isClearlyOutsideTelegram()) {
+    if (shouldAllowWebMiniappOutsideTelegram()) {
+      renderApp()
+      return
+    }
     markOutsideTelegram()
     return
   }

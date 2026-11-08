@@ -2,8 +2,9 @@ import { execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
+import { buildWebMiniappHtmlGateSnippet } from './src/lib/webMiniappHtmlGateSnippet'
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url))
 const appVersion = JSON.parse(
@@ -27,9 +28,24 @@ const resolveAppBuild = (): string => {
 
 const appBuild = resolveAppBuild()
 
+const webMiniappHtmlGatePlugin = (mode: string): Plugin => ({
+  name: 'web-miniapp-html-gate',
+  transformIndexHtml(html) {
+    const env = loadEnv(mode, rootDir, '')
+    const snippet = buildWebMiniappHtmlGateSnippet({
+      allowlistCsv: env.VITE_WEB_MINIAPP_ALLOWLIST ?? '',
+      previewKey: env.VITE_WEB_MINIAPP_PREVIEW_KEY ?? '',
+    })
+    return html.replace(
+      '<!-- WEB_MINIAPP_GATE_SNIPPET -->',
+      `<script>${snippet}</script>`,
+    )
+  },
+})
+
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [react()],
+export default defineConfig(({ mode }) => ({
+  plugins: [react(), webMiniappHtmlGatePlugin(mode)],
   define: {
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion),
     'import.meta.env.VITE_APP_BUILD': JSON.stringify(appBuild),
@@ -61,4 +77,4 @@ export default defineConfig({
       '@': path.resolve(rootDir, 'src'),
     },
   },
-})
+}))
