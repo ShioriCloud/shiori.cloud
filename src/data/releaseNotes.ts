@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.115',
+    items: ['بخش نظرات پروفایل باز می‌شود و نظرهای ثبت‌شده را نشان می‌دهد'],
+  },
+  {
     version: '0.2.114',
     items: ['پلی‌لیست‌های پروفایل داخل صفحه می‌مانند و ساخت لیست جدید دم دست است'],
   },

@@ -4,36 +4,22 @@ import { ProfileCommentActivityList } from '@/components/profile/ProfileCommentA
 import { ProfilePersonalSubpageLayout } from '@/components/profile/ProfilePersonalSubpageLayout'
 import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
 import { useAppAuth } from '@/hooks/useAppAuth'
-import {
-  useAnimeCommentsAccess,
-  useMyAnimeCommentsQuery,
-  useUserAnimeCommentsQuery,
-} from '@/hooks/useAnimeComments'
+import { useMyAnimeCommentsQuery, useUserAnimeCommentsQuery } from '@/hooks/useAnimeComments'
 
 const ProfileActivity = () => {
   const { telegramUserId: rawId } = useParams<{ telegramUserId: string }>()
   const targetId = rawId?.trim() ?? ''
   const isPublic = targetId.length > 0
   const { user, isReady, inTelegram } = useAppAuth()
-  const canCheckComments = isReady && (inTelegram || Boolean(user))
-  const { data: commentsAccess } = useAnimeCommentsAccess(canCheckComments)
-  const commentsRollout = commentsAccess?.enabled === true
-  const enabled = commentsRollout
-  const mine = useMyAnimeCommentsQuery(Boolean(user) && enabled && !isPublic)
-  const theirs = useUserAnimeCommentsQuery(targetId, Boolean(user) && enabled && isPublic)
+  const canLoad = isReady && (inTelegram || Boolean(user))
+  const mine = useMyAnimeCommentsQuery(canLoad && !isPublic)
+  const theirs = useUserAnimeCommentsQuery(targetId, canLoad && isPublic)
   const query = isPublic ? theirs : mine
-  const { data, isLoading, isError, refetch } = query
+  const { data, isPending, isError, refetch } = query
 
   return (
     <ProfilePersonalSubpageLayout title={isPublic ? 'نظرات' : 'نظرات من'}>
-      {!enabled ? (
-        <ExploreEmptyState
-          compact
-          showImage={false}
-          title="نظرات فعال نیست"
-          subtitle="بخش نظرات فعلاً برای حساب تو در دسترس نیست."
-        />
-      ) : isLoading ? (
+      {!canLoad || isPending ? (
         <SocialListSkeleton rows={4} />
       ) : isError ? (
         <ExploreEmptyState

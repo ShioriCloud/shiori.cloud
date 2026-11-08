@@ -7,7 +7,7 @@ import {
   profileHighlightSectionClass,
 } from '@/components/profile/profileHighlightCard'
 import { useAppAuth } from '@/hooks/useAppAuth'
-import { useAnimeCommentsAccess, useMyAnimeCommentsQuery, useUserAnimeCommentsQuery } from '@/hooks/useAnimeComments'
+import { useMyAnimeCommentsQuery, useUserAnimeCommentsQuery } from '@/hooks/useAnimeComments'
 import { cn } from '@/lib/utils'
 
 type ProfileProfileCommentsSubTabProps = {
@@ -20,19 +20,12 @@ export const ProfileProfileCommentsSubTab = ({
   profileUserId,
 }: ProfileProfileCommentsSubTabProps) => {
   const { user, isReady, inTelegram } = useAppAuth()
-  const { data: commentsAccess } = useAnimeCommentsAccess(
-    isReady && (inTelegram || Boolean(user))
-  )
-  const enabled = commentsAccess?.enabled === true
+  const canLoad = isReady && (inTelegram || Boolean(user))
 
-  const ownQuery = useMyAnimeCommentsQuery(
-    variant === 'own' && Boolean(user) && enabled,
-    1,
-    20
-  )
+  const ownQuery = useMyAnimeCommentsQuery(variant === 'own' && canLoad, 1, 20)
   const publicQuery = useUserAnimeCommentsQuery(
     profileUserId,
-    variant === 'public' && enabled && profileUserId.length > 0,
+    variant === 'public' && canLoad && profileUserId.length > 0,
     1,
     20
   )
@@ -41,19 +34,20 @@ export const ProfileProfileCommentsSubTab = ({
   const items = query.data?.items ?? []
   const sectionTitle = variant === 'own' ? 'نظرات اخیر من' : 'نظرات اخیر'
 
-  if (!enabled) {
+  if (!canLoad || query.isPending) {
+    return <p className="px-4 py-6 text-center text-sm text-muted-foreground">در حال بارگذاری…</p>
+  }
+
+  if (query.isError) {
     return (
       <ExploreEmptyState
         compact
         showImage={false}
-        title="نظرات در دسترس نیست"
-        subtitle="قابلیت نظرات برای این حساب فعال نیست."
+        title="بارگذاری ناموفق بود"
+        actionLabel="تلاش مجدد"
+        onAction={() => void query.refetch()}
       />
     )
-  }
-
-  if (query.isLoading) {
-    return <p className="px-4 py-6 text-center text-sm text-muted-foreground">در حال بارگذاری…</p>
   }
 
   if (items.length === 0) {

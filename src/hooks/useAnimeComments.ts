@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useState } from 'react'
 import { ensureDevAppAuth, hasAppUserAuth } from '../lib/ensureDevAppAuth'
+import { ensureTelegramListAuth } from '../lib/ensureTelegramListAuth'
+import { isTelegramMiniApp } from '../lib/platform'
 import { showAppToast } from '@/store/appFeedbackStore'
 import {
   createAnimeComment,
@@ -22,9 +24,13 @@ function useCommentsAuthReady(enabled: boolean) {
   useEffect(() => {
     if (!enabled) return
     let cancelled = false
-    void ensureDevAppAuth().then((ok) => {
-      if (!cancelled) setAuthReady(ok)
-    })
+    void (async () => {
+      const devOk = await ensureDevAppAuth()
+      if (isTelegramMiniApp()) {
+        await ensureTelegramListAuth()
+      }
+      if (!cancelled) setAuthReady(devOk || hasAppUserAuth() || isTelegramMiniApp())
+    })()
     return () => {
       cancelled = true
     }
