@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { SocialActivityCard } from '@/components/profile/social/SocialActivityCard'
 import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
-import { SocialSection } from '@/components/profile/social/SocialSection'
 import { useSocialFeedInfinite } from '@/hooks/useSocialProfile'
 import { Button } from '@/components/ui/button'
 import { socialFeedActivityKey, type SocialProfileFeedItem } from '@/services/socialProfile'
@@ -58,13 +57,11 @@ export const ProfileFeedPanel = ({ enabled = true }: { enabled?: boolean }) => {
           onAction={() => navigate('/profile/people')}
         />
       ) : (
-        <SocialSection title="فعالیت اخیر" description="از میان کسانی که دنبال می‌کنی">
-          <div className="space-y-3">
-            {items.map((item) => (
-              <SocialActivityCard key={socialFeedItemKey(item)} item={item} />
-            ))}
-          </div>
-        </SocialSection>
+        <div className="space-y-3">
+          {items.map((item) => (
+            <SocialActivityCard key={socialFeedItemKey(item)} item={item} />
+          ))}
+        </div>
       )}
 
       {hasNextPage ? (

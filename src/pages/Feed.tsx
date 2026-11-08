@@ -33,10 +33,7 @@ const Feed = () => {
   return (
     <div className="pb-24 text-foreground">
       <div className="px-4 pt-4">
-        <div className="mb-4">
-          <h1 className="text-lg font-bold">فید</h1>
-          <p className="mt-0.5 text-xs text-muted-foreground">فعالیت کسانی که دنبال می‌کنی</p>
-        </div>
+        <h1 className="mb-4 text-lg font-bold">فید</h1>
 
         <button
           type="button"
