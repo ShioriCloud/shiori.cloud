@@ -5,7 +5,7 @@ import {
   BadgeDetailBody,
   BadgeDetailDialog,
 } from '@/components/profile/badges/BadgeDetailDialog'
-import { BadgeVisual } from '@/components/profile/badges/badgeUi'
+import { BadgeVisual, BadgeNewPill, badgeShowsAsNew } from '@/components/profile/badges/badgeUi'
 import { ProfileBadgesSheet } from '@/components/profile/badges/ProfileBadgesSheet'
 import { ProfileSectionMoreLink } from '@/components/profile/ProfileSectionMoreLink'
 import {
@@ -209,6 +209,9 @@ export const ProfileBadgesShowcase = ({
                           />
                         </div>
                       </div>
+                      {badgeShowsAsNew(badge) ? (
+                        <BadgeNewPill className="absolute -left-0.5 -top-0.5 z-10" />
+                      ) : null}
                     </button>
                   )
                 })}
@@ -271,6 +274,7 @@ export const ProfileBadgesShowcase = ({
                 earned: true,
                 unlock_hint: selectedPublic.unlock_hint ?? null,
                 earned_at: selectedPublic.earned_at,
+                is_new: selectedPublic.is_new,
               }}
             />
           </DialogContent>

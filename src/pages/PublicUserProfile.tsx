@@ -168,7 +168,17 @@ const PublicUserProfile = () => {
     isLoading
 
   if (!profileReady && !profileLoading) {
-    return <ProfilePageSkeleton />
+    return (
+      <div className="px-4 pt-10 pb-24">
+        <ExploreEmptyState
+          title="پروفایل در دسترس نیست"
+          subtitle="اطلاعات این پروفایل هنوز آماده نیست. چند لحظه بعد دوباره امتحان کن."
+        />
+        <Link to="/explore" className="mt-6 block text-center text-sm font-medium text-primary-400">
+          بازگشت به اکتشاف
+        </Link>
+      </div>
+    )
   }
 
   const followers = data?.profile?.followers_count ?? 0

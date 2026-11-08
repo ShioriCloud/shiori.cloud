@@ -11,6 +11,8 @@ import {
   BADGE_RARITY_LABEL,
   BadgeProgressBar,
   BadgeVisual,
+  BadgeNewPill,
+  badgeShowsAsNew,
   formatBadgeProgress,
 } from './badgeUi'
 
@@ -45,6 +47,7 @@ export type BadgeDetailViewModel = {
   hint?: string | null
   unlock_hint?: string | null
   earned_at?: string | null
+  is_new?: boolean
   progress?: { current: number; target: number }
   progress_parts?: Array<{
     label: string
@@ -85,6 +88,9 @@ export const BadgeDetailBody = ({ badge }: { badge: BadgeDetailViewModel }) => {
             rarity={rarity}
             size="lg"
           />
+          {badgeShowsAsNew(badge) ? (
+            <BadgeNewPill className="absolute -left-1 -top-1" />
+          ) : null}
         </div>
 
         {showHidden && badge.hint ? (
@@ -179,6 +185,7 @@ export const BadgeDetailDialog = ({ badge, open, onOpenChange }: BadgeDetailDial
     hint: badge.hint,
     unlock_hint: badge.unlock_hint,
     earned_at: badge.earned_at,
+    is_new: badge.is_new,
     progress: badge.progress,
     progress_parts: badge.progress_parts,
   }

@@ -13,7 +13,21 @@ import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
 import { sortTranslatorWorksNewestFirst } from '@/lib/translatorWorksSort'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
-import { ProfilePageSkeleton } from '@/components/profile/ProfilePageSkeleton'
+
+const translationsInitialSkeleton = (
+  <>
+    <div className="animate-pulse overflow-hidden rounded-2xl border border-border/60 bg-muted/30 p-4">
+      <div className="flex items-start gap-3">
+        <div className="h-11 w-11 shrink-0 rounded-xl bg-muted/70" />
+        <div className="min-w-0 flex-1 space-y-2">
+          <div className="mr-auto h-4 w-32 rounded-md bg-muted/70" />
+          <div className="mr-auto h-3 w-24 rounded-md bg-muted/60" />
+        </div>
+      </div>
+    </div>
+    <ProfileFavoritesGridSkeleton className="!mt-0 !px-0" />
+  </>
+)
 
 const UserTranslationsPage = () => {
   const { telegramUserId: rawId } = useParams<{ telegramUserId: string }>()
@@ -36,7 +50,11 @@ const UserTranslationsPage = () => {
   )
 
   if (!isReady) {
-    return <ProfilePageSkeleton />
+    return (
+      <ProfilePersonalSubpageLayout hideHeader title="" contentClassName="space-y-5">
+        {translationsInitialSkeleton}
+      </ProfilePersonalSubpageLayout>
+    )
   }
 
   if (!telegramUserId) {
@@ -58,18 +76,7 @@ const UserTranslationsPage = () => {
   return (
     <ProfilePersonalSubpageLayout hideHeader title="" contentClassName="space-y-5">
       {initialLoad ? (
-        <>
-          <div className="animate-pulse overflow-hidden rounded-2xl border border-border/60 bg-muted/30 p-4">
-            <div className="flex items-start gap-3">
-              <div className="h-11 w-11 shrink-0 rounded-xl bg-muted/70" />
-              <div className="min-w-0 flex-1 space-y-2">
-                <div className="mr-auto h-4 w-32 rounded-md bg-muted/70" />
-                <div className="mr-auto h-3 w-24 rounded-md bg-muted/60" />
-              </div>
-            </div>
-          </div>
-          <ProfileFavoritesGridSkeleton className="!mt-0 !px-0" />
-        </>
+        translationsInitialSkeleton
       ) : (
         <>
           <div

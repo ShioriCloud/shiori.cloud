@@ -2,6 +2,7 @@ import type { SocialBadgeCatalogItem } from '@/services/socialProfile'
 import { BADGE_ART_DROP_SHADOW, badgeImageSrc } from '@/lib/badgeArt'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
+import { isBadgeNew } from '@/lib/badgeFreshness'
 
 export const BADGE_RARITY_LABEL: Record<string, string> = {
   common: 'معمولی',
@@ -142,3 +143,21 @@ export type BadgeCardModel = Pick<
   | 'is_new'
   | 'rarity'
 >
+
+export const BadgeNewPill = ({ className }: { className?: string }) => (
+  <span
+    className={cn(
+      'inline-flex rounded-md bg-pink-500/90 px-1.5 py-0.5 text-[9px] font-bold leading-none text-white',
+      className
+    )}
+  >
+    جدید
+  </span>
+)
+
+export function badgeShowsAsNew(badge: {
+  is_new?: boolean
+  earned_at?: string | null
+}): boolean {
+  return isBadgeNew(badge)
+}

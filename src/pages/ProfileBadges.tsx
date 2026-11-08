@@ -16,6 +16,7 @@ import type { SocialBadgeCatalogItem } from '@/services/socialProfile'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { isBadgeNew } from '@/lib/badgeFreshness'
+import { BadgeNewPill } from '@/components/profile/badges/badgeUi'
 
 const SHOWCASE_MAX = 4
 
@@ -193,11 +194,7 @@ const ProfileBadges = () => {
                         {BADGE_RARITY_LABEL[badge.rarity] ?? badge.rarity}
                       </p>
                       {isBadgeNew(badge) ? (
-                        <span
-                          className="absolute -right-1 -top-1 rounded-md bg-pink-500/90 px-1 py-0.5 text-[9px] font-bold text-white"
-                        >
-                          جدید
-                        </span>
+                        <BadgeNewPill className="absolute -right-1 -top-1" />
                       ) : null}
                     </div>
                     <p className="line-clamp-2 flex-1 text-[11px] font-medium leading-snug text-foreground">
