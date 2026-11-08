@@ -39,10 +39,7 @@ const ProfileActivity = () => {
           }
         />
       ) : (
-        <ProfileCommentActivityList
-          items={data.items}
-          tone={isPublic ? 'public' : 'self'}
-        />
+        <ProfileCommentActivityList items={data.items} />
       )}
     </ProfilePersonalSubpageLayout>
   )

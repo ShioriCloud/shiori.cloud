@@ -1,14 +1,8 @@
-import { Link } from 'react-router-dom'
-import { MessageSquareText } from 'lucide-react'
 import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { ProfileCommentActivityList } from '@/components/profile/ProfileCommentActivityList'
-import {
-  profileHighlightGlowClass,
-  profileHighlightSectionClass,
-} from '@/components/profile/profileHighlightCard'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import { useMyAnimeCommentsQuery, useUserAnimeCommentsQuery } from '@/hooks/useAnimeComments'
-import { cn } from '@/lib/utils'
+import { toPersianDigits } from '@/lib/persianDigits'
 
 type ProfileProfileCommentsSubTabProps = {
   variant: 'own' | 'public'
@@ -61,39 +55,15 @@ export const ProfileProfileCommentsSubTab = ({
     )
   }
 
-  return (
-    <div className="mx-4 mt-2 space-y-3">
-      <section className={profileHighlightSectionClass('emerald')}>
-        <div className={profileHighlightGlowClass('right', 'emerald')} aria-hidden />
-        <div className={cn(profileHighlightGlowClass('left', 'primary'), 'opacity-40')} aria-hidden />
-        <div className="relative px-3.5 py-3 text-right" dir="rtl">
-          <div className="flex items-center gap-2.5">
-            <span
-              className={cn(
-                'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl',
-                'border border-emerald-400/30 bg-emerald-400/12 text-emerald-700 dark:text-emerald-200'
-              )}
-            >
-              <MessageSquareText className="h-4 w-4" aria-hidden />
-            </span>
-            <h2 className="text-sm font-semibold text-foreground">{sectionTitle}</h2>
-          </div>
-        </div>
-      </section>
+  const total = query.data?.total ?? items.length
 
-      <ProfileCommentActivityList items={items} tone={variant === 'own' ? 'self' : 'public'} />
-      {variant === 'own' ? (
-        <Link to="/profile/activity" className="block text-center text-xs font-medium text-primary-400">
-          همه نظرات
-        </Link>
-      ) : (
-        <Link
-          to={`/u/${encodeURIComponent(profileUserId)}/activity`}
-          className="block text-center text-xs font-medium text-primary-400"
-        >
-          همه نظرات
-        </Link>
-      )}
-    </div>
+  return (
+    <section className="mx-4 mt-5">
+      <div className="mb-3 flex items-center gap-2">
+        <h2 className="text-[15.5px] font-bold leading-snug text-foreground">{sectionTitle}</h2>
+        <span className="text-[13px] font-medium text-muted-foreground">{toPersianDigits(total)}</span>
+      </div>
+      <ProfileCommentActivityList items={items} />
+    </section>
   )
 }

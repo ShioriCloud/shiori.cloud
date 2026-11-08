@@ -26,6 +26,10 @@ export type ReleaseNote = {
  */
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.116',
+    items: ['کارت نظرات پروفایل جمع‌وجورتر شد: پوستر، عنوان و متن نظر'],
+  },
+  {
     version: '0.2.115',
     items: ['بخش نظرات پروفایل باز می‌شود و نظرهای ثبت‌شده را نشان می‌دهد'],
   },

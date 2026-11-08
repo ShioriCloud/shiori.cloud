@@ -3,16 +3,12 @@ import { SocialCommentActivityCard } from '@/components/profile/social/SocialCom
 
 type ProfileCommentActivityListProps = {
   items: AnimeCommentActivity[]
-  tone?: 'self' | 'public'
 }
 
-export const ProfileCommentActivityList = ({
-  items,
-  tone = 'self',
-}: ProfileCommentActivityListProps) => (
-  <div className="space-y-3">
+export const ProfileCommentActivityList = ({ items }: ProfileCommentActivityListProps) => (
+  <div className="flex flex-col gap-2.5">
     {items.map((item) => (
-      <SocialCommentActivityCard key={item.id} item={item} tone={tone} />
+      <SocialCommentActivityCard key={item.id} item={item} />
     ))}
   </div>
 )

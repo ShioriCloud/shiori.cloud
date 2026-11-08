@@ -229,7 +229,7 @@ export const ProfilePersonalPanel = ({
 
       {commentsEnabled && publicComments.data?.items.length ? (
         <SocialSection title="آخرین نظرات" description="از میان فعالیت‌های اخیر">
-          <ProfileCommentActivityList items={publicComments.data.items} tone="public" />
+          <ProfileCommentActivityList items={publicComments.data.items} />
           {commentCount > publicComments.data.items.length ? (
             <Link
               to={commentsPath}
