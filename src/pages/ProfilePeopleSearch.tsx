@@ -9,8 +9,10 @@ import { SOCIAL_DIVIDER_CLASS, SOCIAL_SURFACE_CLASS } from '@/components/profile
 import { cn } from '@/lib/utils'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import { useSocialUserSearch } from '@/hooks/useSocialProfile'
+import { profileScrollKey, useTabScrollRestoration } from '@/hooks/useTabScrollRestoration'
 
 const ProfilePeopleSearch = () => {
+  useTabScrollRestoration(profileScrollKey('people'))
   const { user } = useAppAuth()
   const [searchParams] = useSearchParams()
   const [query, setQuery] = useState(() => searchParams.get('q')?.trim() ?? '')

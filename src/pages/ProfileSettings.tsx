@@ -25,6 +25,7 @@ import {
   getMiniAppBotUsername,
 } from '@/utils/externalLinks'
 import { toPersianDigits } from '@/lib/persianDigits'
+import { profileScrollKey, useTabScrollRestoration } from '@/hooks/useTabScrollRestoration'
 
 const APP_VERSION = String(import.meta.env.VITE_APP_VERSION ?? '0.1.0').trim() || '0.1.0'
 
@@ -82,6 +83,7 @@ const MenuItem = ({ to, ...row }: MenuRowProps & { to: string }) => (
 )
 
 const ProfileSettings = () => {
+  useTabScrollRestoration(profileScrollKey('settings'))
   const { hash } = useLocation()
   const { user, inTelegram, logout } = useAppAuth()
   const { data: subscriptionMe } = useSubscriptionMe(ENABLE_SUBSCRIPTION_DOWNLOAD_GATE)

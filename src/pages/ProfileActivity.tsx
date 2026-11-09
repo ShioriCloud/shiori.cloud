@@ -5,11 +5,13 @@ import { ProfilePersonalSubpageLayout } from '@/components/profile/ProfilePerson
 import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import { useMyAnimeCommentsQuery, useUserAnimeCommentsQuery } from '@/hooks/useAnimeComments'
+import { profileScrollKey, useTabScrollRestoration } from '@/hooks/useTabScrollRestoration'
 
 const ProfileActivity = () => {
   const { telegramUserId: rawId } = useParams<{ telegramUserId: string }>()
   const targetId = rawId?.trim() ?? ''
   const isPublic = targetId.length > 0
+  useTabScrollRestoration(profileScrollKey('activity', isPublic ? targetId : 'own'))
   const { user, isReady, inTelegram } = useAppAuth()
   const canLoad = isReady && (inTelegram || Boolean(user))
   const mine = useMyAnimeCommentsQuery(canLoad && !isPublic)

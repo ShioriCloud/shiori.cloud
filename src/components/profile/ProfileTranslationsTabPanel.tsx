@@ -15,6 +15,12 @@ const TOP_WORKS_COUNT = 6
 const INITIAL_GRID_COUNT = 15
 const GRID_PAGE_SIZE = 15
 
+const readVisibleSpan = (key: string) => {
+  const raw = sessionStorage.getItem(key)
+  const count = raw ? Number.parseInt(raw, 10) : NaN
+  return Number.isFinite(count) && count >= INITIAL_GRID_COUNT ? count : INITIAL_GRID_COUNT
+}
+
 type ProfileTranslationsTabPanelProps = {
   translator: NonNullable<SocialProfileMe['translator']>
   profileUserId: string
@@ -30,6 +36,7 @@ const PosterSkeleton = () => (
 
 export const ProfileTranslationsTabPanel = ({
   translator,
+  profileUserId,
   isLoading = false,
 }: ProfileTranslationsTabPanelProps) => {
   const sortedWorks = useMemo(
@@ -42,12 +49,17 @@ export const ProfileTranslationsTabPanel = ({
     [sortedWorks]
   )
 
-  const [visibleCount, setVisibleCount] = useState(INITIAL_GRID_COUNT)
+  const visibleKey = `shiori-list-span:translations:${profileUserId || translator.id}`
+  const [visibleCount, setVisibleCount] = useState(() => readVisibleSpan(visibleKey))
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    setVisibleCount(INITIAL_GRID_COUNT)
-  }, [translator.id, sortedWorks.length])
+    setVisibleCount(readVisibleSpan(visibleKey))
+  }, [visibleKey])
+
+  useEffect(() => {
+    sessionStorage.setItem(visibleKey, String(visibleCount))
+  }, [visibleCount, visibleKey])
 
   useEffect(() => {
     const node = loadMoreRef.current

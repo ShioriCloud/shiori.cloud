@@ -13,6 +13,7 @@ import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
 import { sortTranslatorWorksNewestFirst } from '@/lib/translatorWorksSort'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
+import { profileScrollKey, useTabScrollRestoration } from '@/hooks/useTabScrollRestoration'
 
 const translationsInitialSkeleton = (
   <>
@@ -32,6 +33,7 @@ const translationsInitialSkeleton = (
 const UserTranslationsPage = () => {
   const { telegramUserId: rawId } = useParams<{ telegramUserId: string }>()
   const telegramUserId = rawId?.trim() ?? ''
+  useTabScrollRestoration(profileScrollKey('translations', telegramUserId))
   const { user, isReady, inTelegram } = useAppAuth()
   const canFetch = isReady && (inTelegram || Boolean(user)) && telegramUserId.length > 0
   const { data, isLoading, isError } = useSocialProfileUser(

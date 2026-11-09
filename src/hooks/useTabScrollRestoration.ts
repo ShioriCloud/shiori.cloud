@@ -29,6 +29,9 @@ const applyScrollTop = (y: number) => {
  * Saving in useEffect cleanup is too late — scroll is already 0 and overwrites
  * a good position.
  */
+export const profileScrollKey = (...parts: Array<string | number | null | undefined>) =>
+  `profile:${parts.map((part) => String(part ?? '').trim() || '_').join(':')}`
+
 export const useTabScrollRestoration = (storageKey: string) => {
   const prevKeyRef = useRef<string | null>(null)
   const lastYRef = useRef(0)
@@ -43,31 +46,49 @@ export const useTabScrollRestoration = (storageKey: string) => {
     const saved = readSaved(storageKey)
     let rafId = 0
 
+    let stopRetry = () => {}
+    let userMoved = false
+
     if (saved != null && saved > 0) {
       lastYRef.current = saved
       applyScrollTop(saved)
 
-      // Rails / Suspense often grow height after first paint — keep retrying.
-      let attempts = 0
+      // Lists often grow after the first paint (cached data, images, “load more”).
+      const started = performance.now()
+      stopRetry = () => {
+        userMoved = true
+      }
       const retry = () => {
+        if (userMoved) return
         applyScrollTop(saved)
-        attempts += 1
         const maxScroll = Math.max(
           document.documentElement.scrollHeight - window.innerHeight,
           document.body.scrollHeight - window.innerHeight,
           0
         )
-        if (attempts < 30 && maxScroll + 4 < saved) {
-          rafId = requestAnimationFrame(retry)
-        }
+        if (maxScroll + 4 >= saved) return
+        if (performance.now() - started > 1800) return
+        rafId = requestAnimationFrame(retry)
       }
       rafId = requestAnimationFrame(retry)
+      window.addEventListener('pointerdown', stopRetry, { passive: true })
+      window.addEventListener('wheel', stopRetry, { passive: true })
+      window.addEventListener('keydown', stopRetry)
     } else {
       lastYRef.current = currentScrollY()
     }
 
     const onScroll = () => {
-      lastYRef.current = currentScrollY()
+      const y = currentScrollY()
+      if (!userMoved && saved != null && saved > y + 4) {
+        const maxScroll = Math.max(
+          document.documentElement.scrollHeight - window.innerHeight,
+          document.body.scrollHeight - window.innerHeight,
+          0
+        )
+        if (maxScroll + 4 < saved) return
+      }
+      lastYRef.current = y
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
       saveTimerRef.current = setTimeout(() => {
         writeSaved(storageKey, lastYRef.current)
@@ -81,6 +102,9 @@ export const useTabScrollRestoration = (storageKey: string) => {
       // Remove listener before sibling ScrollToTop zeroes the window on PUSH,
       // so a scroll event cannot overwrite lastYRef with 0.
       window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('pointerdown', stopRetry)
+      window.removeEventListener('wheel', stopRetry)
+      window.removeEventListener('keydown', stopRetry)
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
       cancelAnimationFrame(rafId)
       writeSaved(storageKey, lastYRef.current)

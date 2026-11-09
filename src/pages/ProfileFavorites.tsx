@@ -13,8 +13,10 @@ import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { cn } from '@/lib/utils'
 import { hapticSelection } from '@/lib/telegramHaptics'
+import { profileScrollKey, useTabScrollRestoration } from '@/hooks/useTabScrollRestoration'
 
 const ProfileFavorites = () => {
+  useTabScrollRestoration(profileScrollKey('favorites'))
   const { isReady } = useAppAuth()
   const { favoriteAnime, moveFavoriteUp, moveFavoriteDown } = useUserAnimeList()
   const { data: cards = [], isLoading } = useFavoriteAnimeCardsQuery(favoriteAnime)

@@ -11,6 +11,7 @@ import {
 } from '@/hooks/useSocialProfile'
 import { hapticSelection } from '@/lib/telegramHaptics'
 import type { SocialProfileUserListItem } from '@/services/socialProfile'
+import { profileScrollKey, useTabScrollRestoration } from '@/hooks/useTabScrollRestoration'
 
 const BlockedRow = ({ user }: { user: SocialProfileUserListItem }) => {
   const { unblock, isPending } = useSocialModerationMutations(user.telegram_user_id)
@@ -38,6 +39,7 @@ const BlockedRow = ({ user }: { user: SocialProfileUserListItem }) => {
 }
 
 const ProfileBlockedUsers = () => {
+  useTabScrollRestoration(profileScrollKey('blocked'))
   const { user } = useAppAuth()
   const { data, isLoading } = useBlockedSocialUsers(Boolean(user))
 

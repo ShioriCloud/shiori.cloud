@@ -17,10 +17,12 @@ import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { isBadgeNew } from '@/lib/badgeFreshness'
 import { BadgeNewPill } from '@/components/profile/badges/badgeUi'
+import { profileScrollKey, useTabScrollRestoration } from '@/hooks/useTabScrollRestoration'
 
 const SHOWCASE_MAX = 4
 
 const ProfileBadges = () => {
+  useTabScrollRestoration(profileScrollKey('badges'))
   const { data, isLoading, isError } = useSocialBadgeCatalogMe(true)
   const showcaseMutation = useUpdateSocialBadgeShowcase()
   const [selected, setSelected] = useState<SocialBadgeCatalogItem | null>(null)

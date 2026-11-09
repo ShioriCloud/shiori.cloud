@@ -6,10 +6,12 @@ import { ProfileOverviewStripSkeleton } from '@/components/profile/ProfileSectio
 import { useAppAuth } from '@/hooks/useAppAuth'
 import { useSocialProfileUser } from '@/hooks/useSocialProfile'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
+import { profileScrollKey, useTabScrollRestoration } from '@/hooks/useTabScrollRestoration'
 
 const PublicProfileFullStats = () => {
   const { telegramUserId: rawId } = useParams<{ telegramUserId: string }>()
   const telegramUserId = rawId?.trim() ?? ''
+  useTabScrollRestoration(profileScrollKey('full-stats', telegramUserId))
   const { user, isReady, inTelegram, login, register } = useAppAuth()
   const canFetch = isReady && (inTelegram || Boolean(user)) && telegramUserId.length > 0
   const { data, isLoading, isError } = useSocialProfileUser(telegramUserId, canFetch)

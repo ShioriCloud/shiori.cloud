@@ -23,11 +23,13 @@ import { ExploreEmptyState } from '@/components/explore/ExploreUi'
 import { EditListSheet } from '@/components/my-list/ShioriListEditSheet'
 import { cn } from '@/lib/utils'
 import type { GenreItem } from '@/types/catalog'
+import { profileScrollKey, useTabScrollRestoration } from '@/hooks/useTabScrollRestoration'
 
 const genreLabel = (g: GenreItem) => g.name_fa || g.name_en || g.slug
 
 const ShioriListDetail = () => {
   const { listId } = useParams<{ listId: string }>()
+  useTabScrollRestoration(profileScrollKey('my-list', listId))
   const navigate = useNavigate()
   const { showAlert, showConfirm } = useAppAuth()
   const { customLists, removeAnimeFromList, deleteList, resolveListId, isOffline } =

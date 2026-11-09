@@ -2,8 +2,10 @@ import { RouteFallback } from '@/components/RouteFallback'
 import { PersonalPlaylistsBlock } from '@/components/profile/personal/PersonalPlaylistsBlock'
 import { ProfilePersonalSubpageLayout } from '@/components/profile/ProfilePersonalSubpageLayout'
 import { useAppAuth } from '@/hooks/useAppAuth'
+import { profileScrollKey, useTabScrollRestoration } from '@/hooks/useTabScrollRestoration'
 
 const ProfilePlaylists = () => {
+  useTabScrollRestoration(profileScrollKey('playlists'))
   const { isReady } = useAppAuth()
   if (!isReady) return <RouteFallback />
 

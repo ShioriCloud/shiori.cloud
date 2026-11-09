@@ -38,6 +38,7 @@ import { mergeOwnProfileHeaderStats } from '@/lib/ownProfileStats'
 import { formatProfileMemberSince } from '@/lib/profileMemberSince'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { withViewTransition } from '@/lib/viewTransition'
+import { profileScrollKey, useTabScrollRestoration } from '@/hooks/useTabScrollRestoration'
 
 const Profile = () => {
   const { user, isReady, inTelegram, login, register } = useAppAuth()
@@ -67,6 +68,9 @@ const Profile = () => {
   const activeTab = tabQuery.primary
   const activitiesSub = tabQuery.activitiesSub
   const statsSub = tabQuery.statsSub
+  const profileScrollSub =
+    activeTab === 'activities' ? activitiesSub : activeTab === 'stats' ? statsSub : 'main'
+  useTabScrollRestoration(profileScrollKey('own', activeTab, profileScrollSub))
 
   const applyTabQuery = (next: ProfileTabQuery) => {
     withViewTransition(() => {

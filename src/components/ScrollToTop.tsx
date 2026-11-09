@@ -9,6 +9,13 @@ import { resetWindowScroll } from '../utils/resetWindowScroll'
  * Also skip when replacing onto a root tab that already has a saved scroll
  * (Telegram back fallback uses replace when history stack is empty).
  */
+const keepsSavedScroll = (pathname: string) =>
+  pathname === '/' ||
+  pathname.startsWith('/explore') ||
+  pathname === '/profile' ||
+  pathname.startsWith('/profile/') ||
+  pathname.startsWith('/u/')
+
 const ScrollToTop = () => {
   const { pathname } = useLocation()
   const navigationType = useNavigationType()
@@ -17,10 +24,7 @@ const ScrollToTop = () => {
     if (navigationType === 'POP') return
 
     // REPLACE onto Home/Explore after anime back-fallback — don't clobber restore.
-    if (
-      navigationType === 'REPLACE' &&
-      (pathname === '/' || pathname.startsWith('/explore'))
-    ) {
+    if (navigationType === 'REPLACE' && keepsSavedScroll(pathname)) {
       return
     }
 

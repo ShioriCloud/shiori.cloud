@@ -5,8 +5,10 @@ import { useAppAuth } from '@/hooks/useAppAuth'
 import { useSocialProfileMe } from '@/hooks/useSocialProfile'
 import { useUserAnimeList } from '@/hooks/useUserAnimeList'
 import { mergeOwnProfileHeaderStats } from '@/lib/ownProfileStats'
+import { profileScrollKey, useTabScrollRestoration } from '@/hooks/useTabScrollRestoration'
 
 const ProfileFullStats = () => {
+  useTabScrollRestoration(profileScrollKey('full-stats', 'own'))
   const { user, isReady } = useAppAuth()
   const { stats } = useUserAnimeList()
   const { data: social, isLoading } = useSocialProfileMe(Boolean(user))

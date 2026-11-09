@@ -40,6 +40,7 @@ import {
 } from '@/components/profile/ProfileSectionSkeletons'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { withViewTransition } from '@/lib/viewTransition'
+import { profileScrollKey, useTabScrollRestoration } from '@/hooks/useTabScrollRestoration'
 
 const PublicUserProfile = () => {
   const { telegramUserId: rawId } = useParams<{ telegramUserId: string }>()
@@ -72,6 +73,9 @@ const PublicUserProfile = () => {
   const activeTab = tabQuery.primary
   const activitiesSub = tabQuery.activitiesSub
   const statsSub = tabQuery.statsSub
+  const profileScrollSub =
+    activeTab === 'activities' ? activitiesSub : activeTab === 'stats' ? statsSub : 'main'
+  useTabScrollRestoration(profileScrollKey('public', telegramUserId, activeTab, profileScrollSub))
 
   const applyTabQuery = (next: ProfileTabQuery) => {
     withViewTransition(() => {

@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import { useSocialFollowListInfinite, useSocialProfileUser } from '@/hooks/useSocialProfile'
+import { profileScrollKey, useTabScrollRestoration } from '@/hooks/useTabScrollRestoration'
 
 const ProfileFollowList = () => {
   const { pathname } = useLocation()
@@ -16,6 +17,9 @@ const ProfileFollowList = () => {
 
   const isFollowing = pathname.endsWith('/following')
   const title = isFollowing ? 'دنبال‌شده‌ها' : 'دنبال‌کننده‌ها'
+  useTabScrollRestoration(
+    profileScrollKey('follows', routeUserId?.trim() || 'own', isFollowing ? 'following' : 'followers')
+  )
 
   const subjectId = routeUserId?.trim() || (user?.id != null ? String(user.id) : '')
   const viewerId = user?.id != null ? String(user.id) : ''

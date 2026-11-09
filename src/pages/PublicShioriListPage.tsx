@@ -14,6 +14,7 @@ import { usePublicCustomListQuery } from '@/hooks/usePublicCustomLists'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { cn } from '@/lib/utils'
+import { profileScrollKey, useTabScrollRestoration } from '@/hooks/useTabScrollRestoration'
 
 const PublicShioriListPage = () => {
   const { telegramUserId: rawUserId, listId: rawListId } = useParams<{
@@ -22,6 +23,7 @@ const PublicShioriListPage = () => {
   }>()
   const telegramUserId = rawUserId?.trim() ?? ''
   const listId = rawListId?.trim() ?? ''
+  useTabScrollRestoration(profileScrollKey('list', telegramUserId, listId))
   const { user } = useAppAuth()
   const { data, isLoading, isError, refetch } = usePublicCustomListQuery(
     telegramUserId,
