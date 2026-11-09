@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
-import { ListPlus, MessageCircle, Play, Star, UserPlus } from 'lucide-react'
+import { LayoutList, ListPlus, MessageCircle, Play, Star } from 'lucide-react'
 import type { SocialProfileFeedItem } from '@/services/socialProfile'
 
 export type SocialFeedType = SocialProfileFeedItem['type']
@@ -41,10 +41,10 @@ export const socialFeedMeta: Record<SocialFeedType, FeedMeta> = {
     pillClass:
       'border-fuchsia-400/30 bg-fuchsia-400/10 text-fuchsia-700 dark:text-fuchsia-300',
   },
-  user_follow: {
-    label: 'دنبال کرد',
-    Icon: UserPlus,
+  playlist_created: {
+    label: 'پلی‌لیست عمومی',
+    Icon: LayoutList,
     pillClass:
-      'border-blue-400/30 bg-blue-400/10 text-blue-700 dark:text-blue-300',
+      'border-rose-400/30 bg-rose-400/10 text-rose-700 dark:text-rose-300',
   },
 }

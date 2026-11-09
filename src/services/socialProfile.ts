@@ -169,18 +169,18 @@ export type SocialProfileFeedItem =
       updated_at: string
     })
   | (SocialFeedItemBase & {
-      type: 'user_follow'
+      type: 'playlist_created'
       actor: SocialProfileUserListItem
-      target: SocialProfileUserListItem
+      list_id: string
+      list_name: string
+      list_icon: string
       updated_at: string
     })
 
 export const socialFeedActivityKey = (item: SocialProfileFeedItem): string => {
   if (item.engagement?.activity_key) return item.engagement.activity_key
   if (item.type === 'anime_comment') return `c:${item.comment_id}`
-  if (item.type === 'user_follow') {
-    return `f:${item.actor.telegram_user_id}:${item.target.telegram_user_id}`
-  }
+  if (item.type === 'playlist_created') return `plc:${item.list_id}`
   if (item.type === 'public_list_add') {
     return `pl:${item.list_id}:${item.anime_id}`
   }

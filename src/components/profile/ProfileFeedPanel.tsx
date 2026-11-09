@@ -52,7 +52,7 @@ export const ProfileFeedPanel = ({ enabled = true }: { enabled?: boolean }) => {
         <ExploreEmptyState
           compact
           title="فید خالی است"
-          subtitle="چند نفر را دنبال کن تا تماشا، نظر و لیست‌هایشان اینجا دیده شود."
+          subtitle="فعالیت‌های تماشا و انیمه‌ات اینجا می‌آید. چند نفر را هم دنبال کن تا فعالیت‌های مرتبط با انیمه‌شان را ببینی."
           actionLabel="جست‌وجوی کاربران"
           onAction={() => navigate('/profile/people')}
         />

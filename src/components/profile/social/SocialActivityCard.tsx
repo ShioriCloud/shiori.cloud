@@ -43,7 +43,7 @@ const emptyEngagement = (item: SocialProfileFeedItem): SocialFeedEngagement => (
 const activityDetail = (item: SocialProfileFeedItem): string => {
   if (item.type === 'anime_comment') return item.comment_preview
   if (item.type === 'public_list_add') return `به «${item.list_name}» اضافه کرد`
-  if (item.type === 'user_follow') return item.target.display_name
+  if (item.type === 'playlist_created') return 'پلی‌لیست عمومی ساخت'
   if (item.type === 'rating' && item.user_rating != null) {
     return `نمره ${toPersianDigits(item.user_rating)}`
   }
@@ -294,13 +294,14 @@ export const SocialActivityCard = ({ item }: SocialActivityCardProps) => {
   const meta = socialFeedMeta[item.type]
   const when = formatRelativeTimeFa(item.updated_at)
 
-  if (item.type === 'user_follow') {
+  if (item.type === 'playlist_created') {
+    const listTo = `/u/${encodeURIComponent(item.actor.telegram_user_id)}/lists/${encodeURIComponent(item.list_id)}`
     return (
       <article className={cn(SOCIAL_SURFACE_CLASS, 'overflow-hidden')}>
-        <div className="flex items-center gap-2 px-3 py-2.5">
+        <div className="flex items-center gap-2.5 px-3 pt-3 pb-2">
           <Link
             to={`/u/${encodeURIComponent(item.actor.telegram_user_id)}`}
-            className="shrink-0 active:opacity-85"
+            className="flex min-w-0 flex-1 items-center gap-2.5 active:opacity-85"
           >
             <SocialUserAvatar
               photoUrl={item.actor.photo_url}
@@ -308,34 +309,39 @@ export const SocialActivityCard = ({ item }: SocialActivityCardProps) => {
               size="sm"
               className="ring-0"
             />
+            <div className="min-w-0 flex-1 text-right">
+              <p className="truncate text-sm font-semibold text-foreground">
+                {item.actor.display_name}
+              </p>
+              <p className="truncate text-[11px] text-muted-foreground">{meta.label}</p>
+            </div>
           </Link>
-          <p className="min-w-0 flex-1 truncate text-xs leading-5 text-foreground">
-            <Link
-              to={`/u/${encodeURIComponent(item.actor.telegram_user_id)}`}
-              className="font-semibold active:opacity-85"
-            >
-              {item.actor.display_name}
-            </Link>
-            <span className="text-muted-foreground"> شروع کرد دنبال کردن </span>
-            <Link
-              to={`/u/${encodeURIComponent(item.target.telegram_user_id)}`}
-              className="font-semibold active:opacity-85"
-            >
-              {item.target.display_name}
-            </Link>
-          </p>
-          <Link
-            to={`/u/${encodeURIComponent(item.target.telegram_user_id)}`}
-            className="shrink-0 active:opacity-85"
+          <span
+            className={cn(
+              'flex h-8 w-8 shrink-0 items-center justify-center rounded-full border',
+              meta.pillClass
+            )}
+            aria-hidden
           >
-            <SocialUserAvatar
-              photoUrl={item.target.photo_url}
-              displayName={item.target.display_name}
-              size="sm"
-              className="ring-0"
-            />
-          </Link>
+            <meta.Icon className="h-3.5 w-3.5" strokeWidth={2.25} />
+          </span>
         </div>
+
+        <Link
+          to={listTo}
+          className="flex gap-3 border-t border-border/35 px-3 py-3 active:bg-muted/25"
+        >
+          <div className="flex size-[4.25rem] shrink-0 items-center justify-center rounded-xl border border-rose-400/25 bg-rose-400/10">
+            <meta.Icon className="size-6 text-rose-600 dark:text-rose-300" strokeWidth={2} />
+          </div>
+          <div className="min-w-0 flex-1 text-right">
+            <BidiText as="p" className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">
+              {item.list_name}
+            </BidiText>
+            <p className="mt-1 text-xs text-muted-foreground">{activityDetail(item)}</p>
+          </div>
+        </Link>
+
         <FeedEngagementBar
           item={item}
           engagement={engagement}
