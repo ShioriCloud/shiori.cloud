@@ -7,44 +7,59 @@ export type SocialFeedType = SocialProfileFeedItem['type']
 type FeedMeta = {
   label: string
   Icon: LucideIcon
-  pillClass: string
+  /** Quiet 2px edge strip — only accent on the card. */
+  edgeClass: string
+  /** Tiny type dot next to the activity label. */
+  dotClass: string
+  /** Soft icon tile for playlist / non-poster media. */
+  tileClass: string
 }
 
 export const socialFeedMeta: Record<SocialFeedType, FeedMeta> = {
   watch_progress: {
     label: 'پیشرفت تماشا',
     Icon: Play,
-    pillClass:
-      'border-sky-400/30 bg-sky-400/10 text-sky-600 dark:text-sky-300',
+    edgeClass: 'bg-sky-500/70',
+    dotClass: 'bg-sky-500',
+    tileClass: 'border-sky-400/20 bg-sky-400/10 text-sky-700 dark:text-sky-300',
   },
   rating: {
     label: 'نمره داد',
     Icon: Star,
-    pillClass:
-      'border-amber-400/35 bg-amber-400/10 text-amber-700 dark:text-amber-200',
+    edgeClass: 'bg-amber-500/70',
+    dotClass: 'bg-amber-500',
+    tileClass: 'border-amber-400/20 bg-amber-400/10 text-amber-800 dark:text-amber-200',
   },
   list_add: {
     label: 'به لیست اضافه کرد',
     Icon: ListPlus,
-    pillClass:
-      'border-violet-400/30 bg-violet-400/10 text-violet-700 dark:text-violet-300',
+    edgeClass: 'bg-violet-500/65',
+    dotClass: 'bg-violet-500',
+    tileClass: 'border-violet-400/20 bg-violet-400/10 text-violet-700 dark:text-violet-300',
   },
   anime_comment: {
     label: 'نظر گذاشت',
     Icon: MessageCircle,
-    pillClass:
-      'border-emerald-400/30 bg-emerald-400/10 text-emerald-700 dark:text-emerald-300',
+    edgeClass: 'bg-emerald-500/70',
+    dotClass: 'bg-emerald-500',
+    tileClass: 'border-emerald-400/20 bg-emerald-400/10 text-emerald-700 dark:text-emerald-300',
   },
   public_list_add: {
     label: 'لیست عمومی',
     Icon: ListPlus,
-    pillClass:
-      'border-fuchsia-400/30 bg-fuchsia-400/10 text-fuchsia-700 dark:text-fuchsia-300',
+    edgeClass: 'bg-fuchsia-500/65',
+    dotClass: 'bg-fuchsia-500',
+    tileClass: 'border-fuchsia-400/20 bg-fuchsia-400/10 text-fuchsia-700 dark:text-fuchsia-300',
   },
   playlist_created: {
     label: 'پلی‌لیست عمومی',
     Icon: LayoutList,
-    pillClass:
-      'border-rose-400/30 bg-rose-400/10 text-rose-700 dark:text-rose-300',
+    edgeClass: 'bg-rose-500/65',
+    dotClass: 'bg-rose-500',
+    tileClass: 'border-rose-400/20 bg-rose-400/10 text-rose-700 dark:text-rose-300',
   },
 }
+
+/** Neutral feed card shell — color comes only from the edge strip / dot. */
+export const FEED_CARD_SURFACE_CLASS =
+  'relative overflow-hidden rounded-2xl border border-border/55 bg-card shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]'
