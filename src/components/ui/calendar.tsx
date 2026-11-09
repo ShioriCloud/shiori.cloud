@@ -192,57 +192,48 @@ function Calendar({
           String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`
         )}
         classNames={{
-          root: cn(persian ? 'w-full' : 'w-fit', defaultClassNames.root),
+          root: cn(defaultClassNames.root, persian ? 'w-full' : 'w-fit'),
           months: cn(
+            defaultClassNames.months,
             'relative flex flex-col gap-4',
-            persian ? 'w-full' : 'sm:flex-row',
-            defaultClassNames.months
+            persian ? 'w-full' : 'sm:flex-row'
           ),
-          month: cn('space-y-4', persian && 'w-full', defaultClassNames.month),
-          month_caption: cn('hidden', defaultClassNames.month_caption),
-          nav: cn('hidden', defaultClassNames.nav),
-          button_previous: cn('hidden', defaultClassNames.button_previous),
-          button_next: cn('hidden', defaultClassNames.button_next),
-          dropdowns: cn('hidden', defaultClassNames.dropdowns),
-          dropdown_root: cn('hidden', defaultClassNames.dropdown_root),
-          dropdown: cn('hidden', defaultClassNames.dropdown),
-          caption_label: cn('hidden', defaultClassNames.caption_label),
+          month: cn(defaultClassNames.month, 'w-full space-y-3'),
+          month_caption: cn(defaultClassNames.month_caption, 'hidden'),
+          nav: cn(defaultClassNames.nav, 'hidden'),
+          button_previous: cn(defaultClassNames.button_previous, 'hidden'),
+          button_next: cn(defaultClassNames.button_next, 'hidden'),
+          dropdowns: cn(defaultClassNames.dropdowns, 'hidden'),
+          dropdown_root: cn(defaultClassNames.dropdown_root, 'hidden'),
+          dropdown: cn(defaultClassNames.dropdown, 'hidden'),
+          caption_label: cn(defaultClassNames.caption_label, 'hidden'),
           table: 'w-full border-collapse',
-          weekdays: cn('flex w-full', defaultClassNames.weekdays),
+          weekdays: cn(defaultClassNames.weekdays, 'flex w-full'),
           weekday: cn(
-            'flex-1 rounded-md text-center text-[0.8rem] font-normal text-muted-foreground select-none',
-            defaultClassNames.weekday
+            defaultClassNames.weekday,
+            'flex h-8 w-[14.285%] items-center justify-center text-center text-[0.8rem] font-normal text-muted-foreground select-none'
           ),
-          week: cn('mt-2 flex w-full', defaultClassNames.week),
-          week_number_header: cn('w-9 select-none', defaultClassNames.week_number_header),
+          week: cn(defaultClassNames.week, 'mt-1 flex w-full'),
+          week_number_header: cn(defaultClassNames.week_number_header, 'w-9 select-none'),
           week_number: cn(
-            'text-[0.8rem] text-muted-foreground select-none',
-            defaultClassNames.week_number
+            defaultClassNames.week_number,
+            'text-[0.8rem] text-muted-foreground select-none'
           ),
           day: cn(
-            'group/day relative flex-1 p-0 text-center text-sm select-none',
-            persian ? 'aspect-square' : 'h-9 w-9',
-            props.showWeekNumber
-              ? '[&:nth-child(2)[data-selected=true]_button]:rounded-l-md'
-              : '[&:first-child[data-selected=true]_button]:rounded-l-md',
-            defaultClassNames.day
+            defaultClassNames.day,
+            'group/day relative flex h-10 w-[14.285%] items-center justify-center p-0 text-center text-sm select-none'
           ),
-          range_start: cn(
-            'relative isolate z-0 rounded-l-md bg-muted',
-            defaultClassNames.range_start
-          ),
-          range_middle: cn('rounded-none', defaultClassNames.range_middle),
-          range_end: cn('relative isolate z-0 rounded-r-md bg-muted', defaultClassNames.range_end),
-          today: cn(
-            'rounded-md bg-muted text-foreground data-[selected=true]:rounded-none',
-            defaultClassNames.today
-          ),
+          range_start: cn(defaultClassNames.range_start, 'rounded-l-md bg-muted'),
+          range_middle: cn(defaultClassNames.range_middle, 'rounded-none'),
+          range_end: cn(defaultClassNames.range_end, 'rounded-r-md bg-muted'),
+          // Highlight lives on the day button, not the cell — avoids off-center today boxes.
+          today: cn(defaultClassNames.today, 'bg-transparent'),
           outside: cn(
-            'text-muted-foreground aria-selected:text-muted-foreground',
-            defaultClassNames.outside
+            defaultClassNames.outside,
+            'text-muted-foreground aria-selected:text-muted-foreground'
           ),
-          disabled: cn('text-muted-foreground opacity-50', defaultClassNames.disabled),
-          hidden: cn('invisible', defaultClassNames.hidden),
+          disabled: cn(defaultClassNames.disabled, 'text-muted-foreground opacity-50'),
+          hidden: cn(defaultClassNames.hidden, 'invisible'),
           ...classNames,
         }}
         components={{
@@ -260,9 +251,7 @@ function Calendar({
 
             return <ChevronDownIcon className={cn('size-4', className)} {...props} />
           },
-          DayButton: ({ ...props }) => (
-            <CalendarDayButton locale={locale} stretch={persian} {...props} />
-          ),
+          DayButton: ({ ...props }) => <CalendarDayButton locale={locale} {...props} />,
           WeekNumber: ({ children, ...props }) => {
             return (
               <td {...props}>
@@ -285,11 +274,9 @@ function CalendarDayButton({
   day,
   modifiers,
   locale,
-  stretch = false,
   ...props
 }: React.ComponentProps<typeof DayButton> & {
   locale?: Partial<Locale>
-  stretch?: boolean
 }) {
   const defaultClassNames = getDefaultClassNames()
 
@@ -298,31 +285,36 @@ function CalendarDayButton({
     if (modifiers.focused) ref.current?.focus()
   }, [modifiers.focused])
 
+  const selectedSingle =
+    modifiers.selected &&
+    !modifiers.range_start &&
+    !modifiers.range_end &&
+    !modifiers.range_middle
+
   return (
-    <Button
+    <button
       ref={ref}
-      variant="ghost"
-      size="icon"
+      type="button"
       data-day={day.date.toLocaleDateString(locale?.code)}
-      data-selected-single={
-        modifiers.selected &&
-        !modifiers.range_start &&
-        !modifiers.range_end &&
-        !modifiers.range_middle
-      }
-      data-range-start={modifiers.range_start}
-      data-range-end={modifiers.range_end}
-      data-range-middle={modifiers.range_middle}
+      data-selected-single={selectedSingle || undefined}
+      data-range-start={modifiers.range_start || undefined}
+      data-range-end={modifiers.range_end || undefined}
+      data-range-middle={modifiers.range_middle || undefined}
       className={cn(
-        'relative isolate z-10 flex items-center justify-center border-0 p-0 font-normal leading-none tabular-nums',
-        stretch ? 'h-full w-full min-h-0 min-w-0 rounded-md' : 'h-9 w-9',
-        'group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-2 group-data-[focused=true]/day:ring-ring',
-        'data-[range-end=true]:rounded-md data-[range-end=true]:bg-primary data-[range-end=true]:text-primary-foreground',
-        'data-[range-middle=true]:rounded-none data-[range-middle=true]:bg-muted data-[range-middle=true]:text-foreground',
-        'data-[range-start=true]:rounded-md data-[range-start=true]:bg-primary data-[range-start=true]:text-primary-foreground',
-        'data-[selected-single=true]:bg-primary data-[selected-single=true]:text-primary-foreground',
-        'hover:bg-accent hover:text-accent-foreground',
-        defaultClassNames.day,
+        defaultClassNames.day_button,
+        'relative z-10 flex size-9 shrink-0 items-center justify-center rounded-md border-0 bg-transparent p-0',
+        'text-sm font-normal leading-none tabular-nums text-foreground',
+        'outline-none transition-colors hover:bg-accent hover:text-accent-foreground',
+        'focus-visible:ring-2 focus-visible:ring-ring',
+        modifiers.today &&
+          !modifiers.selected &&
+          'bg-muted text-foreground hover:bg-muted hover:text-foreground',
+        selectedSingle && 'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
+        modifiers.range_start && 'rounded-md bg-primary text-primary-foreground',
+        modifiers.range_end && 'rounded-md bg-primary text-primary-foreground',
+        modifiers.range_middle && 'rounded-none bg-muted text-foreground',
+        modifiers.outside && 'text-muted-foreground',
+        modifiers.disabled && 'opacity-50',
         className
       )}
       {...props}
