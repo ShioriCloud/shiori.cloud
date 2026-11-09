@@ -191,7 +191,7 @@ const Profile = () => {
               type="button"
               variant="outline"
               size="icon"
-              className="relative size-[38px] rounded-xl border-border/70 bg-card text-foreground/80 dark:border-[#1e1e24] dark:bg-[#141418]"
+              className="relative size-[38px] rounded-xl border-border/80 bg-card text-foreground"
             >
               <Link
                 to="/notifications"
@@ -211,7 +211,7 @@ const Profile = () => {
               type="button"
               variant="outline"
               size="icon"
-              className="size-[38px] rounded-xl border-border/70 bg-card text-foreground/80 dark:border-[#1e1e24] dark:bg-[#141418]"
+              className="size-[38px] rounded-xl border-border/80 bg-card text-foreground"
               aria-label="حساب من و تنظیمات"
               onClick={() => setAccountOpen(true)}
             >
@@ -241,7 +241,7 @@ const Profile = () => {
             label: 'دنبال‌شده',
           },
           {
-            to: '/profile/stats',
+            to: '/profile/watch-archive',
             value: statDigits(mergedStats.animeCount),
             label: 'انیمه دیده',
           },

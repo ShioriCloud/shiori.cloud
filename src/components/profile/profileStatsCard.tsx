@@ -1,8 +1,14 @@
 import { cn } from '@/lib/utils'
 
-/** Flat stats card shell — Figma v3 (آمار / بازدید و علاقه‌مندی‌ها). */
+/**
+ * Shared profile panel. Uses the theme card (lighter than the old near-black
+ * fill) so labels stay readable without changing layout.
+ */
+export const PROFILE_PANEL_CLASS = cn(
+  'border border-border/80 bg-card text-foreground',
+  'shadow-[inset_0_1px_0_0_oklch(1_0_0/0.06),0_10px_24px_-18px_rgba(0,0,0,0.55)]'
+)
+
+/** Flat stats card shell — same surface as other profile panels. */
 export const profileStatsCardClass = () =>
-  cn(
-    'min-w-0 w-full overflow-hidden rounded-2xl border border-border/70 bg-card/95 p-4 text-right',
-    'dark:border-[#1e1e24] dark:bg-[#141418]'
-  )
+  cn(PROFILE_PANEL_CLASS, 'min-w-0 w-full overflow-hidden rounded-2xl p-4 text-right')

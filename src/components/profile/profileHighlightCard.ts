@@ -31,10 +31,10 @@ export const profileHighlightGlowClass = (
     'pointer-events-none absolute rounded-full blur-3xl',
     position === 'left' && '-left-8 top-0 h-28 w-28',
     position === 'right' && '-right-10 top-0 h-32 w-32',
-    color === 'primary' && 'bg-primary-400/15',
-    color === 'amber' && 'bg-amber-400/15',
-    color === 'sky' && 'bg-sky-400/15',
-    color === 'emerald' && 'bg-emerald-400/15'
+    color === 'primary' && 'bg-primary-400/10',
+    color === 'amber' && 'bg-amber-400/10',
+    color === 'sky' && 'bg-sky-400/10',
+    color === 'emerald' && 'bg-emerald-400/10'
   )
 
 /** Skeuo frame + glow for each badge on profile showcase. */

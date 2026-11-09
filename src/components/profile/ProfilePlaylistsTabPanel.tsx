@@ -9,6 +9,7 @@ import { usePublicCustomListQuery, usePublicCustomListsQuery } from '@/hooks/use
 import { useFavoriteAnimeCardsQuery } from '@/hooks/queries/useAnimeQueries'
 import type { ShioriCustomList } from '@/store/myListStore'
 import { toPersianDigits } from '@/lib/persianDigits'
+import { PROFILE_PANEL_CLASS } from '@/components/profile/profileStatsCard'
 import { cn } from '@/lib/utils'
 
 type ProfilePlaylistsTabPanelProps = {
@@ -64,9 +65,8 @@ const PlaylistCard = ({
     <Link
       to={`/u/${encodeURIComponent(profileUserId)}/lists/${encodeURIComponent(listId)}`}
       className={cn(
-        'min-w-0 rounded-2xl border border-border/70 bg-card p-2.5 text-right',
-        'dark:border-[#1e1e24] dark:bg-[#141418]',
-        'active:opacity-85'
+        PROFILE_PANEL_CLASS,
+        'min-w-0 rounded-2xl p-2.5 text-right active:opacity-90'
       )}
     >
       <ListPosterGrid images={images} />
@@ -89,9 +89,8 @@ const OwnPlaylistCard = ({ list }: { list: ShioriCustomList }) => {
     <Link
       to={`/my-list/lists/${encodeURIComponent(list.id)}`}
       className={cn(
-        'min-w-0 rounded-2xl border border-border/70 bg-card p-2.5 text-right',
-        'dark:border-[#1e1e24] dark:bg-[#141418]',
-        'active:opacity-85'
+        PROFILE_PANEL_CLASS,
+        'min-w-0 rounded-2xl p-2.5 text-right active:opacity-90'
       )}
     >
       <ListPosterGrid images={images} />

@@ -1,8 +1,6 @@
 import { useMemo, useState } from 'react'
-import AnimePrefetchLink from '@/components/AnimePrefetchLink'
-import { BidiText } from '@/components/BidiText'
-import { ExploreTabBar } from '@/components/explore/ExploreUi'
-import { MyListPoster } from '@/components/my-list/MyListUi'
+import { ProfileAnimeMediaRow } from '@/components/profile/ProfileAnimeMediaRow'
+import { hapticSelection } from '@/lib/telegramHaptics'
 import { useFavoriteAnimeCardsQuery } from '@/hooks/queries/useAnimeQueries'
 import { hasTrackedProgress, useUserAnimeList } from '@/hooks/useUserAnimeList'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
@@ -14,7 +12,6 @@ import {
   WATCH_STATUS_LABELS,
   type WatchStatus,
 } from '@/lib/myListUtils'
-import { SOCIAL_DIVIDER_CLASS, SOCIAL_SURFACE_CLASS } from '@/components/profile/social/socialUi'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { PersonalSection } from './PersonalSection'
@@ -69,61 +66,81 @@ export const PersonalWatchArchive = ({ embedded = false }: { embedded?: boolean 
 
   const body = (
     <>
-      <ExploreTabBar
-        tabs={tabs}
-        active={statusTab}
-        onChange={setStatusTab}
-        className="!px-0"
-      />
-
-      <div className={cn(SOCIAL_SURFACE_CLASS, SOCIAL_DIVIDER_CLASS, 'mt-2 overflow-hidden')}>
-        {isLoading && listAnimeIds.length > 0 ? (
-          <p className="px-4 py-8 text-center text-sm text-muted-foreground">در حال بارگذاری…</p>
-        ) : filtered.length === 0 ? (
-          <p className="px-4 py-8 text-center text-sm text-muted-foreground">
-            در این وضعیت انیمه‌ای نداری.
-          </p>
-        ) : (
-          filtered.map((row) => {
-            const routeRef = { id: row.card.id, slug: row.card.slug, title: row.card.title }
+      <div className="-mx-1 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" dir="rtl">
+        <div className="flex w-max gap-1.5 pb-0.5" role="tablist" aria-label="وضعیت تماشا">
+          {tabs.map((tab) => {
+            const active = tab.id === statusTab
+            const count = counts.get(tab.id) ?? 0
             return (
-              <AnimePrefetchLink
-                key={String(row.id)}
-                animeId={animePublicSegment(routeRef)}
-                to={animeDetailPath(routeRef)}
-                className="flex gap-3 px-3 py-3 transition-colors hover:bg-muted/35 active:bg-muted/50"
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => {
+                  if (active) return
+                  hapticSelection()
+                  setStatusTab(tab.id)
+                }}
+                className={cn(
+                  'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium',
+                  active
+                    ? 'bg-primary-500 text-white'
+                    : 'border border-border/80 bg-card text-foreground/75'
+                )}
               >
-                <MyListPoster src={row.card.image} className="h-[4.5rem] w-12 shrink-0" />
-                <div className="min-w-0 flex-1 text-right">
-                  <BidiText as="p" className="text-sm font-semibold text-foreground line-clamp-2">
-                    {row.card.title}
-                  </BidiText>
-                  <p className="mt-1 text-xs text-primary-400/90">
-                    {WATCH_STATUS_LABELS[row.status]}
-                    <span className="mx-1.5 text-muted-foreground/50">·</span>
-                    {toPersianDigits(row.progress.episodesWatched)}/
-                    {toPersianDigits(row.episodesCount)} قسمت
-                  </p>
-                  <div className="mt-1 flex flex-wrap items-center justify-end gap-2 text-[11px] text-muted-foreground">
-                    {row.statusDate ? <span>ثبت: {row.statusDate}</span> : null}
-                    {typeof row.progress.userRating === 'number' ? (
-                      <span
-                        className="rounded-md bg-amber-400/15 px-1.5 py-0.5 font-medium text-amber-700 dark:text-amber-200"
-                      >
-                        امتیاز {formatUserRatingFa(row.progress.userRating)}
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-              </AnimePrefetchLink>
+                {tab.label}
+                <span className={cn('tabular-nums', active ? 'text-white/80' : 'text-foreground/45')}>
+                  {toPersianDigits(count)}
+                </span>
+              </button>
             )
-          })
-        )}
+          })}
+        </div>
       </div>
 
-      <p className="text-[10px] text-muted-foreground/80 text-center">
-        {PROFILE_WATCH_STATUSES.map((s) => `${WATCH_STATUS_LABELS[s]}: ${toPersianDigits(counts.get(s) ?? 0)}`).join(' · ')}
-      </p>
+      {isLoading && listAnimeIds.length > 0 ? (
+        <p className="px-4 py-8 text-center text-sm text-foreground/60">در حال بارگذاری…</p>
+      ) : filtered.length === 0 ? (
+        <p className="px-4 py-8 text-center text-sm text-foreground/60">
+          در این وضعیت انیمه‌ای نداری.
+        </p>
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {filtered.map((row) => {
+            const routeRef = { id: row.card.id, slug: row.card.slug, title: row.card.title }
+            return (
+              <li key={String(row.id)}>
+                <ProfileAnimeMediaRow
+                  animeId={animePublicSegment(routeRef)}
+                  to={animeDetailPath(routeRef)}
+                  image={row.card.image}
+                  title={row.card.title}
+                  meta={
+                    <>
+                      <span>
+                        {toPersianDigits(row.progress.episodesWatched)}/
+                        {toPersianDigits(row.episodesCount)} قسمت
+                      </span>
+                      {row.statusDate ? (
+                        <>
+                          <span className="size-1 rounded-full bg-foreground/30" aria-hidden />
+                          <span>{row.statusDate}</span>
+                        </>
+                      ) : null}
+                      {typeof row.progress.userRating === 'number' ? (
+                        <span className="rounded-md bg-amber-400/15 px-1.5 py-0.5 font-medium text-amber-800 dark:text-amber-200">
+                          {formatUserRatingFa(row.progress.userRating)}
+                        </span>
+                      ) : null}
+                    </>
+                  }
+                />
+              </li>
+            )
+          })}
+        </ul>
+      )}
     </>
   )
 

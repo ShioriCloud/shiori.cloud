@@ -107,7 +107,7 @@ export const ProfileSocialStatsRowSkeleton = ({ className }: { className?: strin
     {Array.from({ length: 3 }).map((_, i) => (
       <div
         key={i}
-        className="flex h-14 flex-1 items-center justify-between rounded-xl border border-border/70 bg-card px-3 dark:border-[#1e1e24] dark:bg-[#141418]"
+        className="flex h-14 flex-1 items-center justify-between rounded-xl border border-border/80 bg-card px-3"
       >
         <div className="space-y-1.5">
           <Pulse className="h-4 w-8" />

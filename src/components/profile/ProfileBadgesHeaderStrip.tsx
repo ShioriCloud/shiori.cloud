@@ -167,7 +167,7 @@ export const ProfileBadgesHeaderStrip = ({
                   <h2 className="text-sm font-semibold text-foreground">{title}</h2>
                   {(earned > 0 || preview.length > 0) && headerMore}
                 </div>
-                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                <p className="mt-0.5 text-xs leading-5 text-foreground/75">
                   {earned > 0
                     ? `${toPersianDigits(earned)} از ${toPersianDigits(total)} نشان`
                     : 'با تماشا و فعالیت در شیوری باز می‌شوند'}
