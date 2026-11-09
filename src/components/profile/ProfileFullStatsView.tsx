@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { CalendarDays, Clapperboard, Clock3, Star } from 'lucide-react'
+import { CalendarDays, Clapperboard, Clock3, ListVideo, PenLine, Star } from 'lucide-react'
 import { ProfilePopularGenres } from '@/components/profile/ProfilePopularGenres'
 import { formatLabel, FORMAT_ACCENT, sortFormats, type FormatBreakdownRow } from '@/components/profile/profileFormats'
 import { profileStatsCardClass } from '@/components/profile/profileStatsCard'
@@ -73,22 +73,19 @@ export const ProfileFullStatsView = ({ model }: { model: ProfileFullStatsModel }
           label="روز فعال"
           tone="bg-emerald-400/15 text-emerald-800 dark:text-emerald-200"
         />
+        <Metric
+          icon={<ListVideo className="size-4" aria-hidden />}
+          value={toPersianDigits(model.episodesWatched)}
+          label="قسمت دیده‌شده"
+          tone="bg-violet-400/15 text-violet-800 dark:text-violet-200"
+        />
+        <Metric
+          icon={<PenLine className="size-4" aria-hidden />}
+          value={toPersianDigits(model.ratingsCount)}
+          label="نمره ثبت‌شده"
+          tone="bg-rose-400/15 text-rose-800 dark:text-rose-200"
+        />
       </div>
-
-      <section className={cn(profileStatsCardClass(), 'flex items-center justify-between gap-3')}>
-        <div className="text-right">
-          <p className="text-lg font-bold tabular-nums text-foreground">
-            {toPersianDigits(model.episodesWatched)}
-          </p>
-          <p className="text-xs text-foreground/70">قسمت دیده‌شده</p>
-        </div>
-        <div className="text-right">
-          <p className="text-lg font-bold tabular-nums text-foreground">
-            {toPersianDigits(model.ratingsCount)}
-          </p>
-          <p className="text-xs text-foreground/70">نمره ثبت‌شده</p>
-        </div>
-      </section>
 
       <ProfilePopularGenres genres={model.topGenres} title="ژانرهای پرتکرار" animeCount={model.animeCount} />
 

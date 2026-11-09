@@ -125,8 +125,8 @@ export const ProfileTranslationsTabPanel = ({
           </h2>
           <span
             className={cn(
-              'shrink-0 rounded-full bg-[#a78bfa] px-[9px] py-[3px]',
-              'text-xs font-medium text-[#3b0764]'
+              'shrink-0 rounded-full border border-violet-400/25 bg-violet-400/15',
+              'px-2 py-0.5 text-xs font-medium text-violet-800 dark:text-violet-200'
             )}
           >
             {toPersianDigits(totalCount)} انیمه

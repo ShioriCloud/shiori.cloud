@@ -1,4 +1,3 @@
-import { ChevronLeft } from 'lucide-react'
 import { PROFILE_PANEL_CLASS } from '@/components/profile/profileStatsCard'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { cn } from '@/lib/utils'
@@ -13,14 +12,13 @@ const SummaryChip = ({ label, value }: { label: string; value: string }) => (
   <div
     className={cn(
       PROFILE_PANEL_CLASS,
-      'flex min-w-0 flex-1 items-center justify-between gap-1 overflow-hidden rounded-xl py-2.5 pl-2 pr-3'
+      'flex min-w-0 flex-1 items-center overflow-hidden rounded-xl px-3 py-2.5'
     )}
   >
     <div className="min-w-0 text-right">
       <p className="truncate text-[17px] font-bold leading-6 text-foreground">{value}</p>
       <p className="line-clamp-2 text-[11.5px] leading-4 text-foreground/70">{label}</p>
     </div>
-    <ChevronLeft className="size-4 shrink-0 opacity-35" aria-hidden />
   </div>
 )
 
