@@ -67,15 +67,11 @@ type SocialActivityCardProps = {
   item: SocialProfileFeedItem
 }
 
-const FeedEngagementBar = ({
-  item,
-  engagement,
-  onEngagement,
-}: {
-  item: SocialProfileFeedItem
-  engagement: SocialFeedEngagement
+const useFeedEngagement = (
+  item: SocialProfileFeedItem,
+  engagement: SocialFeedEngagement,
   onEngagement: (next: SocialFeedEngagement) => void
-}) => {
+) => {
   const [noteOpen, setNoteOpen] = useState(false)
   const [noteDraft, setNoteDraft] = useState(engagement.my_note ?? '')
   const [notePrivate, setNotePrivate] = useState(engagement.my_note_is_private === true)
@@ -125,46 +121,102 @@ const FeedEngagementBar = ({
     }
   }
 
+  return {
+    busy,
+    noteOpen,
+    setNoteOpen,
+    noteDraft,
+    setNoteDraft,
+    notePrivate,
+    setNotePrivate,
+    key,
+    visibleNotes,
+    myPrivateOnly,
+    onToggleLike,
+    openNote,
+    saveNote,
+    onEngagement,
+  }
+}
+
+const FeedEngagementActions = ({
+  engagement,
+  busy,
+  myPrivateOnly,
+  onToggleLike,
+  openNote,
+}: {
+  engagement: SocialFeedEngagement
+  busy: boolean
+  myPrivateOnly: boolean
+  onToggleLike: () => void
+  openNote: () => void
+}) => (
+  <div className="flex shrink-0 items-center gap-0.5">
+    <button
+      type="button"
+      onClick={() => void onToggleLike()}
+      disabled={busy}
+      aria-label="لایک"
+      className={cn(
+        'inline-flex h-8 min-w-8 items-center justify-center gap-1 rounded-lg px-1.5 text-[11px] font-medium tabular-nums',
+        'active:opacity-80',
+        engagement.liked_by_me ? 'text-rose-500' : 'text-muted-foreground hover:text-foreground'
+      )}
+    >
+      <Heart
+        className={cn('size-3.5', engagement.liked_by_me && 'fill-current')}
+        aria-hidden
+      />
+      {engagement.like_count > 0 ? toPersianDigits(engagement.like_count) : null}
+    </button>
+    <button
+      type="button"
+      onClick={openNote}
+      aria-label={engagement.my_note ? 'ویرایش یادداشت' : 'یادداشت'}
+      className={cn(
+        'relative inline-flex size-8 items-center justify-center rounded-lg',
+        'active:opacity-80',
+        engagement.my_note
+          ? 'text-amber-600 dark:text-amber-300'
+          : 'text-muted-foreground hover:text-foreground'
+      )}
+    >
+      <StickyNote className="size-3.5" aria-hidden />
+      {myPrivateOnly ? (
+        <Lock className="absolute end-0.5 top-0.5 size-2.5 opacity-70" aria-hidden />
+      ) : null}
+    </button>
+  </div>
+)
+
+const FeedEngagementExtras = ({
+  engagement,
+  onEngagement,
+  ctl,
+}: {
+  engagement: SocialFeedEngagement
+  onEngagement: (next: SocialFeedEngagement) => void
+  ctl: ReturnType<typeof useFeedEngagement>
+}) => {
+  const {
+    busy,
+    noteOpen,
+    setNoteOpen,
+    noteDraft,
+    setNoteDraft,
+    notePrivate,
+    setNotePrivate,
+    key,
+    visibleNotes,
+    saveNote,
+  } = ctl
+  const [deleting, setDeleting] = useState(false)
+
   return (
     <>
-      <div className="flex items-center gap-0.5 px-3 py-2">
-        <button
-          type="button"
-          onClick={() => void onToggleLike()}
-          disabled={busy}
-          className={cn(
-            'inline-flex h-8 items-center gap-1.5 rounded-lg px-2 text-xs font-medium',
-            'active:opacity-80',
-            engagement.liked_by_me
-              ? 'text-rose-500'
-              : 'text-muted-foreground hover:text-foreground'
-          )}
-        >
-          <Heart
-            className={cn('h-3.5 w-3.5', engagement.liked_by_me && 'fill-current')}
-            aria-hidden
-          />
-          {engagement.like_count > 0 ? toPersianDigits(engagement.like_count) : 'لایک'}
-        </button>
-        <button
-          type="button"
-          onClick={openNote}
-          className={cn(
-            'inline-flex h-8 items-center gap-1.5 rounded-lg px-2 text-xs font-medium',
-            'active:opacity-80',
-            engagement.my_note
-              ? 'text-amber-600 dark:text-amber-300'
-              : 'text-muted-foreground hover:text-foreground'
-          )}
-        >
-          <StickyNote className="h-3.5 w-3.5" aria-hidden />
-          {engagement.my_note ? 'نوت' : 'یادداشت'}
-          {myPrivateOnly ? <Lock className="h-3 w-3 opacity-70" aria-hidden /> : null}
-        </button>
-      </div>
-
       {visibleNotes.length > 0 ? (
-        <ul className="space-y-2 border-t border-border/25 px-3 py-2.5">
+        <ul className="space-y-2 border-t border-border/25 px-3 py-2">
           {visibleNotes.map((note) => (
             <li key={`${note.telegram_user_id}:${note.created_at}`} className="flex gap-2">
               <Link
@@ -178,7 +230,7 @@ const FeedEngagementBar = ({
                   className="!h-7 !w-7 ring-0"
                 />
               </Link>
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 text-start">
                 <p className="flex items-center gap-1 text-[11px] leading-4">
                   <Link
                     to={`/u/${encodeURIComponent(note.telegram_user_id)}`}
@@ -244,19 +296,19 @@ const FeedEngagementBar = ({
                 type="button"
                 variant="ghost"
                 size="sm"
-                disabled={busy}
+                disabled={busy || deleting}
                 onClick={() => {
-                  setNoteDraft('')
                   void (async () => {
-                    setBusy(true)
+                    setDeleting(true)
                     try {
                       const next = await deleteSocialFeedNote(key)
                       onEngagement(next)
+                      setNoteDraft('')
                       setNoteOpen(false)
                     } catch {
                       showAppToast('حذف نوت ناموفق بود', 'error')
                     } finally {
-                      setBusy(false)
+                      setDeleting(false)
                     }
                   })()
                 }}
@@ -266,7 +318,7 @@ const FeedEngagementBar = ({
             ) : (
               <span />
             )}
-            <Button type="button" size="sm" disabled={busy} onClick={() => void saveNote()}>
+            <Button type="button" size="sm" disabled={busy || deleting} onClick={() => void saveNote()}>
               ذخیره
             </Button>
           </DialogFooter>
@@ -276,17 +328,22 @@ const FeedEngagementBar = ({
   )
 }
 
-const FeedCardChrome = ({
+const FeedCardShell = ({
   item,
   isOwn,
+  engagement,
+  onEngagement,
   children,
 }: {
   item: SocialProfileFeedItem
   isOwn: boolean
+  engagement: SocialFeedEngagement
+  onEngagement: (next: SocialFeedEngagement) => void
   children: ReactNode
 }) => {
   const meta = socialFeedMeta[item.type]
   const when = formatRelativeTimeFa(item.updated_at)
+  const ctl = useFeedEngagement(item, engagement, onEngagement)
 
   return (
     <article className={FEED_CARD_SURFACE_CLASS}>
@@ -295,10 +352,10 @@ const FeedCardChrome = ({
         className={cn('absolute inset-y-0 start-0 w-[2px]', meta.edgeClass)}
       />
 
-      <div className="flex items-center gap-2.5 pe-3 ps-3.5 pt-3 pb-2">
+      <div className="flex items-center gap-2 pe-2.5 ps-3.5 pt-2.5 pb-1.5">
         <Link
           to={`/u/${encodeURIComponent(item.actor.telegram_user_id)}`}
-          className="flex min-w-0 flex-1 items-center gap-2.5 active:opacity-85"
+          className="flex min-w-0 flex-1 items-center gap-2 active:opacity-85"
         >
           <SocialUserAvatar
             photoUrl={item.actor.photo_url}
@@ -306,8 +363,9 @@ const FeedCardChrome = ({
             size="sm"
             className="ring-0"
           />
-          <div className="min-w-0 flex-1 text-right">
-            <p className="flex min-w-0 items-center justify-end gap-1.5">
+          {/* justify-start in RTL = toward avatar (right); avoid justify-end which flips left. */}
+          <div className="min-w-0 flex-1 text-start">
+            <p className="flex min-w-0 items-center justify-start gap-1.5">
               <span className="truncate text-sm font-semibold text-foreground">
                 {item.actor.display_name}
               </span>
@@ -317,7 +375,7 @@ const FeedCardChrome = ({
                 </span>
               ) : null}
             </p>
-            <p className="mt-0.5 flex items-center justify-end gap-1.5 text-[11px] text-muted-foreground">
+            <p className="mt-0.5 flex min-w-0 items-center justify-start gap-1.5 text-[11px] text-muted-foreground">
               <span className={cn('size-1.5 shrink-0 rounded-full', meta.dotClass)} aria-hidden />
               <span className="truncate">{meta.label}</span>
               <span className="text-border">·</span>
@@ -327,9 +385,23 @@ const FeedCardChrome = ({
             </p>
           </div>
         </Link>
+
+        <FeedEngagementActions
+          engagement={engagement}
+          busy={ctl.busy}
+          myPrivateOnly={ctl.myPrivateOnly}
+          onToggleLike={ctl.onToggleLike}
+          openNote={ctl.openNote}
+        />
       </div>
 
       {children}
+
+      <FeedEngagementExtras
+        engagement={engagement}
+        onEngagement={onEngagement}
+        ctl={ctl}
+      />
     </article>
   )
 }
@@ -346,34 +418,32 @@ export const SocialActivityCard = ({ item }: SocialActivityCardProps) => {
   if (item.type === 'playlist_created') {
     const listTo = `/u/${encodeURIComponent(item.actor.telegram_user_id)}/lists/${encodeURIComponent(item.list_id)}`
     return (
-      <FeedCardChrome item={item} isOwn={isOwn}>
+      <FeedCardShell
+        item={item}
+        isOwn={isOwn}
+        engagement={engagement}
+        onEngagement={setEngagement}
+      >
         <Link
           to={listTo}
-          className="flex gap-3 border-t border-border/30 px-3.5 py-3 active:bg-muted/20"
+          className="flex gap-2.5 border-t border-border/30 px-3.5 py-2.5 active:bg-muted/20"
         >
           <div
             className={cn(
-              'flex size-[4.25rem] shrink-0 items-center justify-center rounded-xl border',
+              'flex size-14 shrink-0 items-center justify-center rounded-xl border',
               meta.tileClass
             )}
           >
-            <meta.Icon className="size-6" strokeWidth={2} />
+            <meta.Icon className="size-5" strokeWidth={2} />
           </div>
-          <div className="min-w-0 flex-1 self-center text-right">
+          <div className="min-w-0 flex-1 self-center text-start">
             <BidiText as="p" className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">
               {item.list_name}
             </BidiText>
-            <p className="mt-1 text-xs text-muted-foreground">{headline}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{headline}</p>
           </div>
         </Link>
-        <div className="border-t border-border/30">
-          <FeedEngagementBar
-            item={item}
-            engagement={engagement}
-            onEngagement={setEngagement}
-          />
-        </div>
-      </FeedCardChrome>
+      </FeedCardShell>
     )
   }
 
@@ -396,7 +466,7 @@ export const SocialActivityCard = ({ item }: SocialActivityCardProps) => {
       <div
         className={cn(
           'media-card-skeuo media-card-skeuo-dense shrink-0 rounded-xl',
-          isComment ? 'w-14' : 'w-[4.25rem]'
+          isComment ? 'w-12' : 'w-14'
         )}
       >
         <div className="media-card-skeuo-face relative aspect-[2/3] bg-muted">
@@ -405,19 +475,19 @@ export const SocialActivityCard = ({ item }: SocialActivityCardProps) => {
           ) : null}
         </div>
       </div>
-      <div className="min-w-0 flex-1 self-center text-right">
+      <div className="min-w-0 flex-1 self-center text-start">
         <BidiText as="p" className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">
           {item.title}
         </BidiText>
         {isComment ? (
-          <p className="mt-1.5 line-clamp-3 rounded-xl bg-muted/45 px-2.5 py-2 text-xs leading-5 text-foreground/90">
+          <p className="mt-1 line-clamp-2 rounded-lg bg-muted/45 px-2 py-1.5 text-xs leading-5 text-foreground/90">
             {headline}
           </p>
         ) : (
-          <p className="mt-1 text-xs tabular-nums text-muted-foreground">{headline}</p>
+          <p className="mt-0.5 text-xs tabular-nums text-muted-foreground">{headline}</p>
         )}
         {progress != null ? (
-          <div className="mt-2 h-1 overflow-hidden rounded-full bg-muted">
+          <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-muted">
             <div
               className="h-full rounded-full bg-sky-500/80 transition-[width]"
               style={{ width: `${progress}%` }}
@@ -429,30 +499,28 @@ export const SocialActivityCard = ({ item }: SocialActivityCardProps) => {
   )
 
   return (
-    <FeedCardChrome item={item} isOwn={isOwn}>
+    <FeedCardShell
+      item={item}
+      isOwn={isOwn}
+      engagement={engagement}
+      onEngagement={setEngagement}
+    >
       {bottomPrefetchId ? (
         <AnimePrefetchLink
           animeId={bottomPrefetchId}
           to={bottomTo}
-          className="flex gap-3 border-t border-border/30 px-3.5 py-3 active:bg-muted/20"
+          className="flex gap-2.5 border-t border-border/30 px-3.5 py-2.5 active:bg-muted/20"
         >
           {mediaBlock}
         </AnimePrefetchLink>
       ) : (
         <Link
           to={bottomTo}
-          className="flex gap-3 border-t border-border/30 px-3.5 py-3 active:bg-muted/20"
+          className="flex gap-2.5 border-t border-border/30 px-3.5 py-2.5 active:bg-muted/20"
         >
           {mediaBlock}
         </Link>
       )}
-      <div className="border-t border-border/30">
-        <FeedEngagementBar
-          item={item}
-          engagement={engagement}
-          onEngagement={setEngagement}
-        />
-      </div>
-    </FeedCardChrome>
+    </FeedCardShell>
   )
 }
