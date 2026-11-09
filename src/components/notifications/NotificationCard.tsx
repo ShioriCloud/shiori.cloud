@@ -13,6 +13,7 @@ import { resolveMediaServeUrl } from '@/lib/shioriApi'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { formatNotificationTime } from '@/utils/notificationTime'
 import { hapticSelection } from '@/lib/telegramHaptics'
+import { likeAnimeComment, unlikeAnimeComment } from '@/services/animeComments'
 import { toggleSocialFeedLike } from '@/services/socialProfile'
 import { showAppToast } from '@/store/appFeedbackStore'
 import { cn } from '@/lib/utils'
@@ -55,6 +56,11 @@ const kindVisual = (kind: string): { label: string; icon: ReactNode; tone: strin
 
 const showsActor = (kind: string) => kind.includes('like') || kind.includes('follow')
 
+const isCommentCard = (kind: string) =>
+  kind.includes('comment') || kind.includes('reply') || kind.includes('note')
+
+const MEDIA_RADIUS = 'rounded-lg'
+
 export const NotificationCard = ({
   notification,
   unreadBadgeClass,
@@ -65,12 +71,13 @@ export const NotificationCard = ({
   const message = formatNotificationMessage(notification)
   const visual = kindVisual(notification.kind)
   const when = formatNotificationTime(notification.created_at)
-  const episodeLabel =
-    notification.episode_number != null
-      ? `قسمت ${toPersianDigits(notification.episode_number)}`
-      : null
   const useAvatar = showsActor(notification.kind) && !coverSrc
+  const commentId = notification.comment_id?.trim() || ''
   const activityKey = notification.activity_key?.trim() || ''
+  const commentText = isCommentCard(notification.kind)
+    ? notification.content_body?.trim() || ''
+    : ''
+  const canLike = Boolean(commentId || activityKey)
   const [liked, setLiked] = useState(notification.liked_by_me === true)
   const [likeCount, setLikeCount] = useState(notification.like_count ?? 0)
   const [liking, setLiking] = useState(false)
@@ -91,14 +98,18 @@ export const NotificationCard = ({
   }
 
   const onLike = async () => {
-    if (!activityKey || liking) return
+    if (!canLike || liking) return
     hapticSelection()
     const next = !liked
     setLiked(next)
     setLikeCount((count) => Math.max(0, count + (next ? 1 : -1)))
     setLiking(true)
     try {
-      const result = await toggleSocialFeedLike(activityKey)
+      const result = commentId
+        ? next
+          ? await likeAnimeComment(commentId)
+          : await unlikeAnimeComment(commentId)
+        : await toggleSocialFeedLike(activityKey)
       setLiked(result.liked_by_me)
       setLikeCount(result.like_count)
     } catch {
@@ -110,11 +121,10 @@ export const NotificationCard = ({
     }
   }
 
-  const body = (
-    <div className="flex gap-3 p-3" dir="rtl">
-      <div className="flex w-14 shrink-0 flex-col items-center gap-1.5">
+  const media = (
+      <div className="flex w-12 shrink-0 flex-col items-stretch gap-1.5">
         {coverSrc ? (
-          <div className="h-16 w-12 overflow-hidden rounded-lg bg-muted ring-1 ring-inset ring-border/70">
+          <div className={cn('h-16 w-12 overflow-hidden bg-muted ring-1 ring-inset ring-border/70', MEDIA_RADIUS)}>
             <img src={coverSrc} alt="" className="h-full w-full object-cover" loading="lazy" />
           </div>
         ) : useAvatar ? (
@@ -122,24 +132,27 @@ export const NotificationCard = ({
             photoUrl={notification.actor_photo_url}
             displayName={notification.actor_display_name || 'کاربر'}
             size="md"
-            className="!h-12 !w-12 !rounded-lg"
+            className="!h-12 !w-12 !rounded-lg !ring-1"
           />
         ) : (
-          <span className={cn('flex size-12 items-center justify-center rounded-xl', visual.tone)}>
+          <span className={cn('flex size-12 items-center justify-center', MEDIA_RADIUS, visual.tone)}>
             {visual.icon}
           </span>
         )}
         <span
           className={cn(
-            'w-full truncate rounded-md px-1 py-0.5 text-center text-[10px] font-medium leading-4',
+            'w-full truncate px-1 py-0.5 text-center text-[10px] font-medium leading-4',
+            MEDIA_RADIUS,
             visual.tone
           )}
         >
           {visual.label}
         </span>
       </div>
+  )
 
-      <div className="min-w-0 flex-1 text-right">
+  const text = (
+        <div className="min-w-0 flex-1 text-right">
         <div className="flex items-start justify-between gap-2">
           <h3 className="min-w-0 text-sm font-semibold leading-5 text-foreground">
             {toPersianDigits(notification.title)}
@@ -149,66 +162,75 @@ export const NotificationCard = ({
         <p className="mt-1 line-clamp-2 text-[13px] leading-6 text-foreground/75">
           {toPersianDigits(message)}
         </p>
-        {notification.content_body ? (
-          <p className="mt-2 line-clamp-4 rounded-xl bg-muted/45 px-2.5 py-2 text-[13px] leading-6 text-foreground">
-            {notification.content_body}
+        {commentText ? (
+          <p className="mt-2 line-clamp-4 rounded-lg bg-muted/45 px-2.5 py-2 text-[13px] leading-6 text-foreground">
+            {commentText}
           </p>
         ) : null}
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-x-2 text-[11px] text-foreground/60">
-            {episodeLabel ? <span className="tabular-nums">{episodeLabel}</span> : null}
-            <time dateTime={notification.created_at} className="tabular-nums">
-              {when}
-            </time>
-          </div>
-          {activityKey ? (
-            <button
-              type="button"
-              disabled={liking}
-              onClick={(event) => {
-                event.preventDefault()
-                event.stopPropagation()
-                void onLike()
-              }}
-              className={cn(
-                'inline-flex h-8 items-center gap-1 rounded-lg px-2 text-xs font-medium active:opacity-80',
-                liked ? 'text-rose-500' : 'text-foreground/60'
-              )}
-              aria-pressed={liked}
-            >
-              <Heart className={cn('size-3.5', liked && 'fill-current')} aria-hidden />
-              {likeCount > 0 ? toPersianDigits(likeCount) : 'لایک'}
-            </button>
-          ) : null}
+        <time
+          dateTime={notification.created_at}
+          className={cn('mt-2 block text-[11px] tabular-nums text-foreground/60', canLike && 'pe-16')}
+        >
+          {when}
+        </time>
         </div>
-      </div>
+  )
+
+  const likeControl = canLike ? (
+    <button
+      type="button"
+      disabled={liking}
+      onClick={(event) => {
+        event.preventDefault()
+        event.stopPropagation()
+        void onLike()
+      }}
+      className={cn(
+        'absolute bottom-3 end-3 inline-flex h-8 items-center gap-1 rounded-lg px-2 text-xs font-medium active:opacity-80',
+        liked ? 'text-rose-500' : 'text-foreground/60'
+      )}
+      aria-pressed={liked}
+    >
+      <Heart className={cn('size-3.5', liked && 'fill-current')} aria-hidden />
+      {likeCount > 0 ? toPersianDigits(likeCount) : 'لایک'}
+    </button>
+  ) : null
+
+  const linked = (
+    <div className="flex gap-3 p-3" dir="rtl">
+      {media}
+      {text}
     </div>
   )
 
   if (target && !target.startsWith('http://') && !target.startsWith('https://')) {
     return (
-      <div className={shellClass}>
+      <div className={cn(shellClass, 'relative')}>
         <Link to={target} onClick={openTarget} className="block no-underline">
-          {body}
+          {linked}
         </Link>
+        {likeControl}
       </div>
     )
   }
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={openTarget}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault()
-          openTarget()
-        }
-      }}
-      className={cn(shellClass, 'cursor-pointer')}
-    >
-      {body}
+    <div className={cn(shellClass, 'relative')}>
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={openTarget}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            openTarget()
+          }
+        }}
+        className="cursor-pointer"
+      >
+        {linked}
+      </div>
+      {likeControl}
     </div>
   )
 }

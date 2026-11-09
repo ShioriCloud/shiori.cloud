@@ -14,6 +14,7 @@ export type UserNotificationRow = {
   actor_display_name?: string | null
   content_body?: string | null
   activity_key?: string | null
+  comment_id?: string | null
   liked_by_me?: boolean
   like_count?: number
 }
