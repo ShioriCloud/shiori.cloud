@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Plus } from 'lucide-react'
-import { ExploreEmptyState } from '@/components/explore/ExploreUi'
+import { ExploreEmptyState, SHIORI_PRIMARY_BUTTON_CLASS } from '@/components/explore/ExploreUi'
 import { CreateShioriListSheet } from '@/components/my-list/CreateShioriListSheet'
 import { SocialListSkeleton } from '@/components/profile/social/SocialListSkeleton'
 import { useCustomLists } from '@/hooks/useCustomLists'
@@ -126,7 +126,10 @@ export const ProfilePlaylistsTabPanel = ({
           <button
             type="button"
             onClick={() => setCreateOpen(true)}
-            className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[#3a2766] bg-primary-500/15 px-3 py-1 text-xs font-semibold text-[#a78bfa] active:opacity-80"
+            className={cn(
+              SHIORI_PRIMARY_BUTTON_CLASS,
+              'inline-flex h-[38px] shrink-0 items-center gap-1 rounded-xl px-3 text-sm font-medium text-white active:opacity-90'
+            )}
           >
             <Plus className="size-3.5" aria-hidden />
             جدید
