@@ -37,7 +37,7 @@ export const ProfilePopularGenres = ({
               <span className="w-[4.5rem] shrink-0 truncate text-right text-[12.5px] text-muted-foreground">
                 {g.label}
               </span>
-              <div className="flex h-2 min-w-0 flex-1 overflow-hidden rounded bg-white/[0.06]">
+              <div className="flex h-2 min-w-0 flex-1 overflow-hidden rounded bg-muted">
                 <div
                   className={cn(
                     'h-full rounded',

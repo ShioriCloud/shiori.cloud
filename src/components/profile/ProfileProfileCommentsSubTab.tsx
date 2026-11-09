@@ -3,6 +3,7 @@ import { ProfileCommentActivityList } from '@/components/profile/ProfileCommentA
 import { useAppAuth } from '@/hooks/useAppAuth'
 import { useMyAnimeCommentsQuery, useUserAnimeCommentsQuery } from '@/hooks/useAnimeComments'
 import { toPersianDigits } from '@/lib/persianDigits'
+import { cn } from '@/lib/utils'
 
 type ProfileProfileCommentsSubTabProps = {
   variant: 'own' | 'public'
@@ -61,7 +62,14 @@ export const ProfileProfileCommentsSubTab = ({
     <section className="mx-4 mt-5">
       <div className="mb-3 flex items-center gap-2">
         <h2 className="text-[15.5px] font-bold leading-snug text-foreground">{sectionTitle}</h2>
-        <span className="text-[13px] font-medium text-muted-foreground">{toPersianDigits(total)}</span>
+        <span
+          className={cn(
+            'shrink-0 rounded-full border border-violet-400/25 bg-violet-400/15',
+            'px-2 py-0.5 text-xs font-medium text-violet-800 dark:text-violet-200'
+          )}
+        >
+          {toPersianDigits(total)}
+        </span>
       </div>
       <ProfileCommentActivityList items={items} />
     </section>

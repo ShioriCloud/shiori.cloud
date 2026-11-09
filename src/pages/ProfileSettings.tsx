@@ -1,6 +1,6 @@
 import { ProfilePersonalSubpageLayout } from '@/components/profile/ProfilePersonalSubpageLayout'
 import { useEffect, useState, type ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { AlarmClockIcon, CustomerServiceIcon } from 'hugeicons-react'
 import { Ban, ChevronLeft, Crown, Moon, Sun } from 'lucide-react'
 import { useAppAuth } from '../hooks/useAppAuth'
@@ -82,6 +82,7 @@ const MenuItem = ({ to, ...row }: MenuRowProps & { to: string }) => (
 )
 
 const ProfileSettings = () => {
+  const { hash } = useLocation()
   const { user, inTelegram, logout } = useAppAuth()
   const { data: subscriptionMe } = useSubscriptionMe(ENABLE_SUBSCRIPTION_DOWNLOAD_GATE)
   const {
@@ -115,11 +116,16 @@ const ProfileSettings = () => {
     setDraftName(currentSocialName)
   }, [currentSocialName])
 
+  useEffect(() => {
+    if (hash !== '#display-name') return
+    document.getElementById('display-name')?.scrollIntoView({ block: 'start' })
+  }, [hash, showIdentitySettings])
+
   return (
     <>
       <ProfilePersonalSubpageLayout title="تنظیمات">
         {showIdentitySettings ? (
-          <div className="mt-2">
+          <div id="display-name" className="mt-2 scroll-mt-4">
             <SectionTitle>نام نمایشی</SectionTitle>
             <MyListCompactCard className="space-y-3 overflow-hidden p-3">
               <div className="text-right">

@@ -5,7 +5,6 @@ import { ProfileFavoritesPreview } from '@/components/profile/ProfileFavoritesPr
 import { ProfileOverviewStrip } from '@/components/profile/ProfileOverviewStrip'
 import { ProfilePopularGenres } from '@/components/profile/ProfilePopularGenres'
 import { ProfilePublicStatsExtras } from '@/components/profile/ProfilePublicStatsExtras'
-import { ProfileStatsMonthlyStrip } from '@/components/profile/ProfileStatsMonthlyStrip'
 import { ProfileOverviewStripSkeleton } from '@/components/profile/ProfileSectionSkeletons'
 import type { ProfileStatsSubTabId } from '@/components/profile/profileSubTabs'
 import type { SocialProfileMe } from '@/services/socialProfile'
@@ -86,7 +85,6 @@ export const ProfileStatsTabPanel = ({
             audience={variant}
             animeCount={watchAnimeCount}
           />
-          <ProfileStatsMonthlyStrip watchHours={overview.watchHours} />
           {watchVisible ? (
             <Link
               to={variant === 'own' ? '/profile/stats' : `${profileBase}/stats`}

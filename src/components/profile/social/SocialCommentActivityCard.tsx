@@ -20,7 +20,7 @@ export const SocialCommentActivityCard = ({
   const anime = item.anime
   const routeRef = anime ? { id: anime.id, slug: anime.slug, title: anime.title } : null
   const when = formatRelativeTimeFa(item.created_at)
-  const likes = `${toPersianDigits(item.like_count)} پسند`
+  const likes = `${toPersianDigits(item.like_count)} لایک`
 
   const inner = (
     <article className={cn(PROFILE_PANEL_CLASS, 'flex flex-col gap-2.5 rounded-2xl px-3 py-3', className)}>
