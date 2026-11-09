@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react'
+import { Pencil } from 'lucide-react'
+import FavoriteAnimeEditor from '@/components/FavoriteAnimeEditor'
 import { ProfileAnimeMediaRow, ProfileAnimeScore } from '@/components/profile/ProfileAnimeMediaRow'
 import { hapticSelection } from '@/lib/telegramHaptics'
+import { useAppAuth } from '@/hooks/useAppAuth'
 import { useFavoriteAnimeCardsQuery } from '@/hooks/queries/useAnimeQueries'
 import { hasTrackedProgress, useUserAnimeList } from '@/hooks/useUserAnimeList'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
@@ -12,14 +15,19 @@ import {
   WATCH_STATUS_LABELS,
   type WatchStatus,
 } from '@/lib/myListUtils'
+import { formatUserListSaveError } from '@/services/userListErrors'
+import type { FavoriteProgress } from '@/store/animeStore'
 import { cn } from '@/lib/utils'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { PersonalSection } from './PersonalSection'
 
 export const PersonalWatchArchive = ({ embedded = false }: { embedded?: boolean }) => {
-  const { listAnimeIds, favoriteProgress } = useUserAnimeList()
+  const { showAlert } = useAppAuth()
+  const { listAnimeIds, favoriteProgress, saveProgress, clearListTracking, isSaving } =
+    useUserAnimeList()
   const { data: cards = [], isLoading } = useFavoriteAnimeCardsQuery(listAnimeIds)
   const [statusTab, setStatusTab] = useState<WatchStatus>('watching')
+  const [editingId, setEditingId] = useState<string | null>(null)
 
   const byId = useMemo(() => new Map(cards.map((c) => [String(c.id), c])), [cards])
 
@@ -58,6 +66,29 @@ export const PersonalWatchArchive = ({ embedded = false }: { embedded?: boolean 
   }, [rows])
 
   const filtered = rows.filter((r) => r.status === statusTab)
+  const editing = rows.find((row) => String(row.id) === editingId) ?? null
+
+  const handleSave = async (progress: FavoriteProgress) => {
+    if (!editing) return
+    try {
+      await saveProgress(editing.id, progress)
+      setEditingId(null)
+      showAlert('ذخیره شد')
+    } catch (e) {
+      showAlert(formatUserListSaveError(e))
+    }
+  }
+
+  const handleRemove = async () => {
+    if (!editing) return
+    try {
+      await clearListTracking(editing.id)
+      setEditingId(null)
+      showAlert('از لیست تماشا حذف شد')
+    } catch (e) {
+      showAlert(formatUserListSaveError(e))
+    }
+  }
 
   const tabs = PROFILE_WATCH_STATUSES.map((id) => ({
     id,
@@ -133,12 +164,47 @@ export const PersonalWatchArchive = ({ embedded = false }: { embedded?: boolean 
                       ) : null}
                     </>
                   }
+                  action={
+                    <button
+                      type="button"
+                      aria-label={`ویرایش وضعیت ${row.card.title}`}
+                      onClick={() => {
+                        hapticSelection()
+                        setEditingId(String(row.id))
+                      }}
+                      className="flex size-8 shrink-0 items-center justify-center rounded-lg text-foreground/55 active:bg-muted active:text-foreground"
+                    >
+                      <Pencil className="size-3.5" aria-hidden />
+                    </button>
+                  }
                 />
               </li>
             )
           })}
         </ul>
       )}
+
+      {editing ? (
+        <FavoriteAnimeEditor
+          open
+          onOpenChange={(open) => {
+            if (!open) setEditingId(null)
+          }}
+          title={editing.card.title}
+          titleRomaji={editing.card.title_romaji}
+          image={editing.card.image}
+          detailHref={animeDetailPath({
+            id: editing.card.id,
+            slug: editing.card.slug,
+            title: editing.card.title,
+          })}
+          episodesCount={editing.episodesCount}
+          progress={editing.progress}
+          saving={isSaving}
+          onSave={(progress) => void handleSave(progress)}
+          onRemove={() => void handleRemove()}
+        />
+      ) : null}
     </>
   )
 

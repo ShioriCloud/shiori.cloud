@@ -40,6 +40,7 @@ type ProfileAnimeMediaRowProps = {
   image?: string | null
   title: string
   meta?: ReactNode
+  action?: ReactNode
   className?: string
 }
 
@@ -50,27 +51,33 @@ export const ProfileAnimeMediaRow = ({
   image,
   title,
   meta,
+  action,
   className,
 }: ProfileAnimeMediaRowProps) => (
-  <AnimePrefetchLink
-    animeId={animeId}
-    to={to}
+  <div
     className={cn(
       PROFILE_PANEL_CLASS,
-      'flex items-center gap-3 rounded-2xl px-3 py-2.5 active:opacity-90',
+      'flex items-center gap-1 rounded-2xl py-2.5 pe-2 ps-1.5',
       className
     )}
   >
-    <ProfileAnimePoster src={image} />
-    <div className="min-w-0 flex-1 text-right">
-      <BidiText as="p" className="line-clamp-2 text-[13.5px] font-semibold leading-5 text-foreground">
-        {title}
-      </BidiText>
-      {meta ? (
-        <div className={PROFILE_ANIME_META_CLASS} dir="rtl">
-          {meta}
-        </div>
-      ) : null}
-    </div>
-  </AnimePrefetchLink>
+    <AnimePrefetchLink
+      animeId={animeId}
+      to={to}
+      className="flex min-w-0 flex-1 items-center gap-3 active:opacity-90"
+    >
+      <ProfileAnimePoster src={image} />
+      <div className="min-w-0 flex-1 text-right">
+        <BidiText as="p" className="line-clamp-2 text-[13.5px] font-semibold leading-5 text-foreground">
+          {title}
+        </BidiText>
+        {meta ? (
+          <div className={PROFILE_ANIME_META_CLASS} dir="rtl">
+            {meta}
+          </div>
+        ) : null}
+      </div>
+    </AnimePrefetchLink>
+    {action}
+  </div>
 )
