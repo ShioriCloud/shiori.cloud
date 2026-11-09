@@ -9,6 +9,7 @@ export type UiAnimeCard = {
   id: number | string
   slug?: string | null
   title: string
+  titleRomaji?: string | null
   image: string
   featuredImage?: string
   episode: string
@@ -22,6 +23,7 @@ export type UiAnimeCard = {
   description?: string
   genres?: catalog.GenreItem[]
   latestEpisodeNumber?: number
+  episodesCount?: number
 }
 
 export type UiStudioLink = {
@@ -93,6 +95,18 @@ const toCacheAnime = (c: any): UiAnimeCard => ({
       : typeof c.latest_episode_number === 'number' && c.latest_episode_number > 0
         ? c.latest_episode_number
         : undefined,
+  episodesCount:
+    typeof c.episodesCount === 'number' && c.episodesCount > 0
+      ? c.episodesCount
+      : typeof c.episodes_count === 'number' && c.episodes_count > 0
+        ? c.episodes_count
+        : undefined,
+  titleRomaji:
+    typeof c.titleRomaji === 'string'
+      ? c.titleRomaji
+      : typeof c.title_romaji === 'string'
+        ? c.title_romaji
+        : null,
 })
 
 export const normalizeAnimeFormat = (f: unknown) =>

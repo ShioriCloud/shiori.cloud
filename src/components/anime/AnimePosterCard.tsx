@@ -1,9 +1,12 @@
+import type { MouseEvent } from 'react'
+import { ArrowDown01Icon } from 'hugeicons-react'
 import type { GenreItem } from '@/types/catalog'
 import type { UiAnimeCard } from '@/utils/api'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
 import { AnimeViewCountBadge } from '@/components/anime/AnimeViewCountBadge'
 import { BidiText } from '@/components/BidiText'
+import { cn } from '@/lib/utils'
 
 const cardGenreLabel = (g: GenreItem) => g.name_fa || g.name_en || g.slug
 
@@ -11,12 +14,28 @@ export type AnimePosterCardProps = {
   anime: UiAnimeCard
   viewCount?: number
   priority?: boolean
+  /** Opens progress sheet without navigating to detail. */
+  onOpenProgress?: () => void
+  /** Lighter paint path for dense grids (Explore). */
+  dense?: boolean
 }
 
 /** Shared poster card — Home, Search, Explore */
-export const AnimePosterCard = ({ anime, viewCount, priority }: AnimePosterCardProps) => {
+export const AnimePosterCard = ({
+  anime,
+  viewCount,
+  priority,
+  onOpenProgress,
+  dense = false,
+}: AnimePosterCardProps) => {
   const genres = (anime.genres || []).slice(0, 3)
   const views = typeof viewCount === 'number' ? viewCount : anime.viewCount
+
+  const handleProgressClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+    onOpenProgress?.()
+  }
 
   return (
     <AnimePrefetchLink
@@ -25,20 +44,49 @@ export const AnimePosterCard = ({ anime, viewCount, priority }: AnimePosterCardP
       className="group block active:scale-[0.98] transition-transform"
       aria-label={`مشاهده ${anime.title}`}
     >
-      <div className="media-card-skeuo rounded-xl">
+      <div className={cn('media-card-skeuo rounded-xl', dense && 'media-card-skeuo-dense')}>
         <div className="media-card-skeuo-face aspect-[2/3] bg-muted">
           <img
             src={anime.image}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className={cn(
+              'absolute inset-0 h-full w-full object-cover',
+              !dense && 'transition-transform duration-300 group-hover:scale-105'
+            )}
             loading={priority ? 'eager' : 'lazy'}
             decoding="async"
             fetchPriority={priority ? 'high' : 'auto'}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent" />
-          <AnimeViewCountBadge count={views} />
+          <div
+            className={cn(
+              'absolute inset-0',
+              dense ? 'bg-gradient-to-t from-black/80 to-transparent' : 'bg-gradient-to-t from-black/90 via-black/25 to-transparent'
+            )}
+          />
+          <AnimeViewCountBadge count={views} soft={dense} />
+          {onOpenProgress ? (
+            <button
+              type="button"
+              aria-label={`ویرایش وضعیت ${anime.title}`}
+              onClick={handleProgressClick}
+              className={cn(
+                'absolute top-2 left-2 z-[2] flex size-7 items-center justify-center rounded-lg',
+                'border border-white/20 bg-black/55 text-white shadow-sm',
+                'transition-colors active:scale-95 active:bg-black/70',
+                dense ? '' : 'backdrop-blur-[2px]'
+              )}
+            >
+              <ArrowDown01Icon className="size-3.5" strokeWidth={2.25} />
+            </button>
+          ) : null}
           {anime.isNew ? (
-            <span className="absolute top-2 end-2 text-[10px] font-semibold bg-primary-400 text-white px-1.5 py-0.5 rounded-md">
+            <span
+              className={cn(
+                'absolute z-[1] text-[10px] font-semibold bg-primary-400 text-white px-1.5 py-0.5 rounded-md',
+                // Progress control owns physical top-left; keep «جدید» clear of it and the view chip.
+                onOpenProgress ? 'top-11 left-2' : 'top-2 end-2'
+              )}
+            >
               جدید
             </span>
           ) : null}

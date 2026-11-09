@@ -5,7 +5,12 @@ import { faIR } from 'date-fns-jalali/locale'
 import { CalendarDays } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
 import { toPersianDigits } from '@/lib/persianDigits'
 import { cn } from '@/lib/utils'
 
@@ -34,38 +39,58 @@ export function ShamsiDateField({ label, value, onChange, disabled }: ShamsiDate
   return (
     <div className="min-w-0">
       <span className="mb-1 block text-[11px] font-medium text-muted-foreground">{label}</span>
-      <Popover open={open} onOpenChange={setOpen} modal>
-        <PopoverTrigger asChild>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={disabled}
-            className={cn(
-              'h-9 w-full justify-start gap-1.5 rounded-xl border-border/70 bg-card/50 px-2 text-xs font-normal shadow-none',
-              !selected && 'text-muted-foreground'
-            )}
-          >
-            <CalendarDays className="size-3.5 shrink-0 text-muted-foreground" />
-            <span className="truncate">{display}</span>
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent
+      <Button
+        type="button"
+        variant="outline"
+        disabled={disabled}
+        onClick={() => setOpen(true)}
+        className={cn(
+          'h-9 w-full justify-start gap-1.5 rounded-xl border-border/70 bg-card/50 px-2 text-xs font-normal shadow-none',
+          !selected && 'text-muted-foreground'
+        )}
+      >
+        <CalendarDays className="size-3.5 shrink-0 text-muted-foreground" />
+        <span className="truncate">{display}</span>
+      </Button>
+
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent
           data-shamsi-calendar=""
-          align="start"
-          className="z-[80] w-auto p-0"
+          side="bottom"
+          overlayClassName="z-[70]"
+          className={cn(
+            'z-[70] flex w-full max-w-none flex-col gap-0 rounded-t-2xl border-t border-border bg-background p-0',
+            'pb-[max(0.75rem,var(--app-tg-bottom-inset))]'
+          )}
           onOpenAutoFocus={(event) => event.preventDefault()}
+          onInteractOutside={(event) => {
+            const target = event.target
+            if (!(target instanceof Element)) return
+            if (target.closest('[role="listbox"]') || target.closest('[data-radix-select-content]')) {
+              event.preventDefault()
+            }
+          }}
         >
-          <Calendar
-            persian
-            mode="single"
-            selected={selected}
-            onSelect={(date) => {
-              onChange(date ? format(date, 'yyyy-MM-dd') : '')
-              if (date) setOpen(false)
-            }}
-          />
+          <div className="flex justify-center pt-3 pb-1">
+            <div className="h-1.5 w-12 rounded-full bg-muted-foreground/35" />
+          </div>
+          <SheetHeader className="border-0 px-4 pb-2 pt-1">
+            <SheetTitle className="text-sm">{label}</SheetTitle>
+          </SheetHeader>
+          <div className="px-2 pb-1">
+            <Calendar
+              persian
+              mode="single"
+              selected={selected}
+              onSelect={(date) => {
+                onChange(date ? format(date, 'yyyy-MM-dd') : '')
+                if (date) setOpen(false)
+              }}
+              className="w-full max-w-none rounded-none bg-transparent p-2"
+            />
+          </div>
           {value ? (
-            <div className="border-t border-border px-3 py-2">
+            <div className="border-t border-border px-4 py-2">
               <Button
                 type="button"
                 variant="ghost"
@@ -80,8 +105,8 @@ export function ShamsiDateField({ label, value, onChange, disabled }: ShamsiDate
               </Button>
             </div>
           ) : null}
-        </PopoverContent>
-      </Popover>
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }

@@ -41,9 +41,8 @@ const isCalendarLayer = (target: EventTarget | null) => {
   if (!(target instanceof Element)) return false
   return Boolean(
     target.closest('[data-shamsi-calendar]') ||
-      target.closest('[data-slot="popover-content"]') ||
-      target.closest('[data-radix-popper-content-wrapper]') ||
-      target.closest('[role="listbox"]')
+      target.closest('[role="listbox"]') ||
+      target.closest('[data-radix-select-content]')
   )
 }
 

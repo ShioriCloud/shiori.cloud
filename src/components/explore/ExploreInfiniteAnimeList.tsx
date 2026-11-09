@@ -1,7 +1,13 @@
-import { useEffect, useMemo, useRef } from 'react'
-import type { UiAnimeCard } from '@/utils/api'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import FavoriteAnimeEditor from '@/components/FavoriteAnimeEditor'
 import { AnimePosterCard, AnimePosterSkeletonGrid } from '@/components/anime/AnimePosterCard'
+import { useAppAuth } from '@/hooks/useAppAuth'
 import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel'
+import { useUserAnimeList } from '@/hooks/useUserAnimeList'
+import { animeDetailPath } from '@/lib/animePaths'
+import { formatUserListSaveError } from '@/services/userListErrors'
+import type { FavoriteProgress } from '@/store/animeStore'
+import type { UiAnimeCard } from '@/utils/api'
 import { ExploreEmptyState } from './ExploreUi'
 
 const GRID_COLS = 3
@@ -10,6 +16,14 @@ const nextPageSkeletonCount = (itemCount: number) => {
   const remainder = itemCount % GRID_COLS
   const fillLastRow = remainder === 0 ? 0 : GRID_COLS - remainder
   return fillLastRow + GRID_COLS * 2
+}
+
+const resolveEpisodesCount = (anime: UiAnimeCard) => {
+  if (typeof anime.episodesCount === 'number' && anime.episodesCount > 0) return anime.episodesCount
+  if (typeof anime.latestEpisodeNumber === 'number' && anime.latestEpisodeNumber > 0) {
+    return anime.latestEpisodeNumber
+  }
+  return 1
 }
 
 type ExploreInfiniteAnimeListProps = {
@@ -40,11 +54,15 @@ export const ExploreInfiniteAnimeList = ({
   emptyTitle = 'انیمه‌ای پیدا نشد',
   emptySubtitle,
 }: ExploreInfiniteAnimeListProps) => {
+  const { showAlert } = useAppAuth()
+  const [editingAnime, setEditingAnime] = useState<UiAnimeCard | null>(null)
+  const { getProgress, saveProgress, clearListTracking, isSaving } = useUserAnimeList()
+
   const sentinelRef = useInfiniteScrollSentinel({
     hasNextPage,
     isFetching: isFetchingNextPage,
     onLoadMore,
-    rootMargin: '1400px 0px',
+    rootMargin: '640px 0px',
   })
 
   // Warm page 2 once after first paint so the first scroll-to-end rarely waits cold.
@@ -68,6 +86,31 @@ export const ExploreInfiniteAnimeList = ({
     const timer = window.setTimeout(run, 450)
     return () => window.clearTimeout(timer)
   }, [hasNextPage, isLoading, isFetchingNextPage, isRefreshing, items.length, onLoadMore])
+
+  const handleSave = useCallback(
+    async (progress: FavoriteProgress) => {
+      if (!editingAnime) return
+      try {
+        await saveProgress(editingAnime.id, progress)
+        setEditingAnime(null)
+        showAlert('ذخیره شد')
+      } catch (e) {
+        showAlert(formatUserListSaveError(e))
+      }
+    },
+    [editingAnime, saveProgress, showAlert]
+  )
+
+  const handleRemove = useCallback(async () => {
+    if (!editingAnime) return
+    try {
+      await clearListTracking(editingAnime.id)
+      setEditingAnime(null)
+      showAlert('از لیست تماشا حذف شد')
+    } catch (e) {
+      showAlert(formatUserListSaveError(e))
+    }
+  }, [clearListTracking, editingAnime, showAlert])
 
   if (isLoading) {
     return <AnimePosterSkeletonGrid className="px-4" />
@@ -97,22 +140,44 @@ export const ExploreInfiniteAnimeList = ({
 
   return (
     <div className="relative px-4 pb-8">
-      <div
-        className="grid grid-cols-3 gap-3"
-        aria-busy={isRefreshing || undefined}
-      >
+      <div className="explore-poster-grid grid grid-cols-3 gap-3" aria-busy={isRefreshing || undefined}>
         {items.map((anime, index) => (
-          <AnimePosterCard key={String(anime.id)} anime={anime} priority={index < 6} />
+          <div key={String(anime.id)} className="explore-poster-cell">
+            <AnimePosterCard
+              anime={anime}
+              priority={index < 6}
+              dense
+              onOpenProgress={() => setEditingAnime(anime)}
+            />
+          </div>
         ))}
         {skeletonCount > 0
           ? Array.from({ length: skeletonCount }).map((_, i) => (
-              <div key={`next-skel-${i}`} className="animate-pulse" aria-hidden>
+              <div key={`next-skel-${i}`} className="animate-pulse explore-poster-cell" aria-hidden>
                 <div className="aspect-[2/3] rounded-xl bg-muted" />
               </div>
             ))
           : null}
       </div>
       <div ref={sentinelRef} className="h-4 w-full" aria-hidden />
+
+      {editingAnime ? (
+        <FavoriteAnimeEditor
+          open={Boolean(editingAnime)}
+          onOpenChange={(open) => {
+            if (!open) setEditingAnime(null)
+          }}
+          title={editingAnime.title}
+          titleRomaji={editingAnime.titleRomaji}
+          image={editingAnime.image}
+          detailHref={animeDetailPath(editingAnime)}
+          episodesCount={resolveEpisodesCount(editingAnime)}
+          progress={getProgress(editingAnime.id)}
+          saving={isSaving}
+          onSave={(progress) => void handleSave(progress)}
+          onRemove={() => void handleRemove()}
+        />
+      ) : null}
     </div>
   )
 }
