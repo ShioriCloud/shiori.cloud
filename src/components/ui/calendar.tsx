@@ -1,8 +1,20 @@
 import * as React from 'react'
 import { DayPicker, getDefaultClassNames, type DayButton, type Locale } from 'react-day-picker'
+import { DayPicker as PersianDayPicker } from 'react-day-picker/persian'
 import { addMonths } from 'date-fns'
+import {
+  addMonths as addJalaliMonths,
+  format as formatJalali,
+  getMonth as getJalaliMonth,
+  getYear as getJalaliYear,
+  setDate as setJalaliDate,
+  setMonth as setJalaliMonth,
+  setYear as setJalaliYear,
+} from 'date-fns-jalali'
+import { faIR as faJalali } from 'date-fns-jalali/locale'
 
 import { cn } from '@/lib/utils'
+import { toPersianDigits } from '@/lib/persianDigits'
 import { Button } from '@/components/ui/button'
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from 'lucide-react'
 import {
@@ -22,14 +34,18 @@ function Calendar({
   locale,
   formatters,
   components,
+  persian = false,
   ...props
 }: React.ComponentProps<typeof DayPicker> & {
   buttonVariant?: React.ComponentProps<typeof Button>['variant']
+  /** Jalali month grid and Shamsi year/month dropdowns. */
+  persian?: boolean
 }) {
   const defaultClassNames = getDefaultClassNames()
-  const currentYear = new Date().getFullYear()
-  const fromYear = (props as any).fromYear ?? currentYear - 80
-  const toYear = (props as any).toYear ?? currentYear + 10
+  const Picker = (persian ? PersianDayPicker : DayPicker) as typeof DayPicker
+  const currentYear = persian ? getJalaliYear(new Date()) : new Date().getFullYear()
+  const fromYear = (props as { fromYear?: number }).fromYear ?? (persian ? currentYear - 40 : currentYear - 80)
+  const toYear = (props as { toYear?: number }).toYear ?? (persian ? currentYear + 2 : currentYear + 10)
 
   const selectedProp = (props as any).selected
   const selectedSingleDate = selectedProp instanceof Date ? selectedProp : undefined
@@ -63,7 +79,20 @@ function Calendar({
     return out
   }, [fromYear, toYear])
 
+  const monthIndex = persian ? getJalaliMonth(month) : month.getMonth()
+  const yearValue = persian ? getJalaliYear(month) : month.getFullYear()
+  const shiftMonth = (base: Date, amount: number) =>
+    persian ? addJalaliMonths(base, amount) : addMonths(base, amount)
+
   const monthItems = React.useMemo(() => {
+    if (persian) {
+      return Array.from({ length: 12 }, (_, i) => ({
+        value: String(i),
+        label: formatJalali(setJalaliDate(setJalaliMonth(new Date(), i), 1), 'MMMM', {
+          locale: faJalali,
+        }),
+      }))
+    }
     const base = new Date(2020, 0, 1)
     return Array.from({ length: 12 }, (_, i) => {
       const d = new Date(base)
@@ -71,7 +100,7 @@ function Calendar({
       const label = d.toLocaleString(locale?.code, { month: 'short' })
       return { value: String(i), label }
     })
-  }, [locale?.code])
+  }, [locale?.code, persian])
 
   return (
     <div className={cn('rounded-lg bg-background p-3 text-foreground', className)}>
@@ -81,7 +110,7 @@ function Calendar({
             type="button"
             variant={buttonVariant}
             size="icon"
-            onClick={() => handleMonthChange(addMonths(month, -1))}
+            onClick={() => handleMonthChange(shiftMonth(month, -1))}
             aria-label="ماه قبل"
           >
             <ChevronRightIcon className="h-4 w-4" />
@@ -89,17 +118,17 @@ function Calendar({
 
           <div className="flex items-center gap-2">
             <Select
-              value={String(month.getMonth())}
+              value={String(monthIndex)}
               onValueChange={(v) => {
-                const next = new Date(month)
-                next.setMonth(Number(v))
-                handleMonthChange(next)
+                handleMonthChange(
+                  persian ? setJalaliMonth(month, Number(v)) : new Date(month.getFullYear(), Number(v), month.getDate())
+                )
               }}
             >
               <SelectTrigger className="h-8 gap-1">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[90]">
                 {monthItems.map((m) => (
                   <SelectItem key={m.value} value={m.value}>
                     {m.label}
@@ -109,20 +138,18 @@ function Calendar({
             </Select>
 
             <Select
-              value={String(month.getFullYear())}
+              value={String(yearValue)}
               onValueChange={(v) => {
-                const next = new Date(month)
-                next.setFullYear(Number(v))
-                handleMonthChange(next)
+                handleMonthChange(persian ? setJalaliYear(month, Number(v)) : new Date(Number(v), month.getMonth(), month.getDate()))
               }}
             >
               <SelectTrigger className="h-8 gap-1">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[90]">
                 {years.map((y) => (
                   <SelectItem key={String(y)} value={String(y)}>
-                    {String(y)}
+                    {persian ? toPersianDigits(y) : String(y)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -133,7 +160,7 @@ function Calendar({
             type="button"
             variant={buttonVariant}
             size="icon"
-            onClick={() => handleMonthChange(addMonths(month, 1))}
+            onClick={() => handleMonthChange(shiftMonth(month, 1))}
             aria-label="ماه بعد"
           >
             <ChevronLeftIcon className="h-4 w-4" />
@@ -141,14 +168,14 @@ function Calendar({
         </div>
       )}
 
-      <DayPicker
+      <Picker
         showOutsideDays={showOutsideDays}
         fromYear={(props as any).fromYear ?? fromYear}
         toYear={(props as any).toYear ?? toYear}
         month={month}
         onMonthChange={handleMonthChange}
         captionLayout="label"
-        locale={locale}
+        {...(persian ? { dir: 'rtl' as const, numerals: 'arabext' as const } : { locale })}
         formatters={{
           formatMonthDropdown: (date) => date.toLocaleString(locale?.code, { month: 'short' }),
           ...formatters,

@@ -11,6 +11,7 @@ import {
 import { cn } from '@/lib/utils'
 import { BidiText } from '@/components/BidiText'
 import { toPersianDigits } from '@/lib/persianDigits'
+import { ShamsiDateField } from '@/components/ShamsiDateField'
 import {
   clampUserRating,
   deriveWatchStatus,
@@ -35,6 +36,16 @@ const todayDate = () => {
 
 const DISMISS_DRAG_PX = 80
 const MAX_UPWARD_DRAG_PX = 24
+
+const isCalendarLayer = (target: EventTarget | null) => {
+  if (!(target instanceof Element)) return false
+  return Boolean(
+    target.closest('[data-shamsi-calendar]') ||
+      target.closest('[data-slot="popover-content"]') ||
+      target.closest('[data-radix-popper-content-wrapper]') ||
+      target.closest('[role="listbox"]')
+  )
+}
 
 const dragTranslateY = (offset: number) => {
   if (offset > 0) return offset
@@ -227,6 +238,15 @@ const FavoriteAnimeEditor = ({
             'transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]'
         )}
         style={isSheetMoved ? { transform: `translateY(${dragY}px)` } : undefined}
+        onPointerDownOutside={(event) => {
+          if (isCalendarLayer(event.target)) event.preventDefault()
+        }}
+        onInteractOutside={(event) => {
+          if (isCalendarLayer(event.target)) event.preventDefault()
+        }}
+        onFocusOutside={(event) => {
+          if (isCalendarLayer(event.target)) event.preventDefault()
+        }}
       >
         <div
           className="flex touch-none cursor-grab flex-col active:cursor-grabbing"
@@ -301,34 +321,18 @@ const FavoriteAnimeEditor = ({
               })}
             </div>
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <label className="min-w-0">
-                <span className="mb-1 block text-[11px] font-medium text-muted-foreground">تاریخ شروع</span>
-                <input
-                  type="date"
-                  dir="ltr"
-                  value={startedOn}
-                  disabled={saving}
-                  onChange={(event) => setStartedOn(dateOnly(event.target.value))}
-                  className={cn(
-                    'h-9 w-full min-w-0 rounded-xl border border-border/70 bg-card/50 px-2 text-xs text-foreground',
-                    'dark:[color-scheme:dark]'
-                  )}
-                />
-              </label>
-              <label className="min-w-0">
-                <span className="mb-1 block text-[11px] font-medium text-muted-foreground">تاریخ پایان</span>
-                <input
-                  type="date"
-                  dir="ltr"
-                  value={finishedOn}
-                  disabled={saving}
-                  onChange={(event) => setFinishedOn(dateOnly(event.target.value))}
-                  className={cn(
-                    'h-9 w-full min-w-0 rounded-xl border border-border/70 bg-card/50 px-2 text-xs text-foreground',
-                    'dark:[color-scheme:dark]'
-                  )}
-                />
-              </label>
+              <ShamsiDateField
+                label="تاریخ شروع"
+                value={startedOn}
+                disabled={saving}
+                onChange={setStartedOn}
+              />
+              <ShamsiDateField
+                label="تاریخ پایان"
+                value={finishedOn}
+                disabled={saving}
+                onChange={setFinishedOn}
+              />
             </div>
           </section>
 
