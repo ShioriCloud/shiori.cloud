@@ -9,6 +9,13 @@ export type UserNotificationRow = {
   episode_number: number | null
   is_read: boolean
   created_at: string
+  actor_telegram_user_id?: string | null
+  actor_photo_url?: string | null
+  actor_display_name?: string | null
+  content_body?: string | null
+  activity_key?: string | null
+  liked_by_me?: boolean
+  like_count?: number
 }
 
 export type NotificationPreferences = {
