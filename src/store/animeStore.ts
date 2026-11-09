@@ -28,6 +28,10 @@ export type FavoriteProgress = {
     | null
   /** When listStatus (or major progress) was last set — ISO string. */
   listStatusUpdatedAt?: string | null
+  /** Calendar day the user started this watch activity, YYYY-MM-DD. */
+  startedOn?: string | null
+  /** Calendar day the user finished this watch activity, YYYY-MM-DD. */
+  finishedOn?: string | null
 }
 
 interface AnimeState {

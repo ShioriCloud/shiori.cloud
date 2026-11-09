@@ -21,6 +21,18 @@ import {
   type WatchStatus,
 } from '@/lib/myListUtils'
 
+const dateOnly = (value?: string | null) => {
+  const raw = value?.trim() ?? ''
+  return /^\d{4}-\d{2}-\d{2}/.test(raw) ? raw.slice(0, 10) : ''
+}
+
+const todayDate = () => {
+  const now = new Date()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${now.getFullYear()}-${month}-${day}`
+}
+
 const DISMISS_DRAG_PX = 80
 const MAX_UPWARD_DRAG_PX = 24
 
@@ -63,6 +75,8 @@ const FavoriteAnimeEditor = ({
   const [listStatus, setListStatus] = useState<WatchStatus>(() =>
     deriveWatchStatus(progress, maxEpisodes)
   )
+  const [startedOn, setStartedOn] = useState(() => dateOnly(progress.startedOn))
+  const [finishedOn, setFinishedOn] = useState(() => dateOnly(progress.finishedOn))
   const [dragOffset, setDragOffset] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [isClosingByDrag, setIsClosingByDrag] = useState(false)
@@ -80,6 +94,8 @@ const FavoriteAnimeEditor = ({
     setEpisodesWatched(progress.episodesWatched)
     setUserRating(progress.userRating)
     setListStatus(deriveWatchStatus(progress, maxEpisodes))
+    setStartedOn(dateOnly(progress.startedOn))
+    setFinishedOn(dateOnly(progress.finishedOn))
   }, [open, progress, maxEpisodes])
 
   useEffect(() => {
@@ -93,15 +109,21 @@ const FavoriteAnimeEditor = ({
 
   const progressPercent = Math.min(100, Math.round((episodesWatched / maxEpisodes) * 100))
 
+  const fillCompletedDates = () => {
+    const today = todayDate()
+    setStartedOn((prev) => prev || today)
+    setFinishedOn((prev) => prev || today)
+  }
+
   const bumpEpisodes = (delta: number) => {
-    setEpisodesWatched((prev) => {
-      const next = Math.min(maxEpisodes, Math.max(0, prev + delta))
-      if (next >= maxEpisodes) setListStatus('completed')
-      else if (next > 0 && (listStatus === 'planning' || listStatus === 'completed')) {
-        setListStatus('watching')
-      }
-      return next
-    })
+    const next = Math.min(maxEpisodes, Math.max(0, episodesWatched + delta))
+    setEpisodesWatched(next)
+    if (next >= maxEpisodes) {
+      setListStatus('completed')
+      fillCompletedDates()
+    } else if (next > 0 && (listStatus === 'planning' || listStatus === 'completed')) {
+      setListStatus('watching')
+    }
   }
 
   const applyStatus = (status: WatchStatus) => {
@@ -112,6 +134,7 @@ const FavoriteAnimeEditor = ({
     )
     setListStatus(status)
     setEpisodesWatched(next.episodesWatched)
+    if (status === 'completed') fillCompletedDates()
   }
 
   const bumpRating = (delta: number) => {
@@ -181,6 +204,8 @@ const FavoriteAnimeEditor = ({
       episodesWatched,
       userRating: rating,
       listStatus,
+      startedOn: startedOn || null,
+      finishedOn: finishedOn || null,
     })
   }
 
@@ -275,6 +300,36 @@ const FavoriteAnimeEditor = ({
                 )
               })}
             </div>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <label className="min-w-0">
+                <span className="mb-1 block text-[11px] font-medium text-muted-foreground">تاریخ شروع</span>
+                <input
+                  type="date"
+                  dir="ltr"
+                  value={startedOn}
+                  disabled={saving}
+                  onChange={(event) => setStartedOn(dateOnly(event.target.value))}
+                  className={cn(
+                    'h-9 w-full min-w-0 rounded-xl border border-border/70 bg-card/50 px-2 text-xs text-foreground',
+                    'dark:[color-scheme:dark]'
+                  )}
+                />
+              </label>
+              <label className="min-w-0">
+                <span className="mb-1 block text-[11px] font-medium text-muted-foreground">تاریخ پایان</span>
+                <input
+                  type="date"
+                  dir="ltr"
+                  value={finishedOn}
+                  disabled={saving}
+                  onChange={(event) => setFinishedOn(dateOnly(event.target.value))}
+                  className={cn(
+                    'h-9 w-full min-w-0 rounded-xl border border-border/70 bg-card/50 px-2 text-xs text-foreground',
+                    'dark:[color-scheme:dark]'
+                  )}
+                />
+              </label>
+            </div>
           </section>
 
           <section className="rounded-2xl border border-border/60 bg-muted/20 p-3">
@@ -324,6 +379,7 @@ const FavoriteAnimeEditor = ({
                 onClick={() => {
                   setEpisodesWatched(maxEpisodes)
                   setListStatus('completed')
+                  fillCompletedDates()
                 }}
               >
                 علامت‌گذاری همه ({toPersianDigits(maxEpisodes)} قسمت)

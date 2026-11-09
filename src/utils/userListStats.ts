@@ -6,6 +6,8 @@ export type UserAnimeListRow = {
   favorite_rank?: number | null
   list_status?: string | null
   list_status_at?: string | null
+  started_on?: string | null
+  finished_on?: string | null
   updated_at?: string
 }
 

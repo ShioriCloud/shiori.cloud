@@ -16,6 +16,7 @@ import { useAnimeCommentsAccess, useMyAnimeCommentsQuery, useUserAnimeCommentsQu
 import { usePublicCustomListsQuery } from '@/hooks/usePublicCustomLists'
 import { useCustomLists } from '@/hooks/useCustomLists'
 import { hasTrackedProgress, useUserAnimeList } from '@/hooks/useUserAnimeList'
+import { formatProfileMonthYear } from '@/lib/profileMemberSince'
 import { toPersianDigits } from '@/lib/persianDigits'
 import type { SocialProfileMe } from '@/services/socialProfile'
 import { cn } from '@/lib/utils'
@@ -56,13 +57,6 @@ const PersonalLinksCard = ({ children }: { children: ReactNode }) => (
   <div className={cn(SOCIAL_SURFACE_CLASS, SOCIAL_DIVIDER_CLASS)}>{children}</div>
 )
 
-const formatMemberSince = (iso?: string | null): string | null => {
-  if (!iso) return null
-  const date = new Date(iso)
-  if (Number.isNaN(date.getTime())) return null
-  return date.toLocaleDateString('fa-IR', { year: 'numeric', month: 'long' })
-}
-
 type ProfilePersonalPanelProps = {
   translator?: SocialProfileMe['translator']
   variant?: 'self' | 'public'
@@ -97,7 +91,7 @@ export const ProfilePersonalPanel = ({
   const commentsPath = profileUserId
     ? `/u/${encodeURIComponent(profileUserId)}/activity`
     : '/profile/activity'
-  const joined = formatMemberSince(memberSince)
+  const joined = formatProfileMonthYear(memberSince)
   const publicComments = useUserAnimeCommentsQuery(
     profileUserId,
     commentsEnabled && variant === 'public' && Boolean(profileUserId),

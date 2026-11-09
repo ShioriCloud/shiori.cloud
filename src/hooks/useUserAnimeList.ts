@@ -40,6 +40,8 @@ const toProgress = (row: UserAnimeListRow): FavoriteProgress => {
     userRating: row.user_rating,
     listStatus: listStatus ?? null,
     listStatusUpdatedAt: row.list_status_at ?? null,
+    startedOn: row.started_on ?? null,
+    finishedOn: row.finished_on ?? null,
   }
 }
 
@@ -168,6 +170,8 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
             user_rating: progress.userRating,
             is_favorite: isFav,
             list_status: progress.listStatus ?? null,
+            started_on: progress.startedOn ?? null,
+            finished_on: progress.finishedOn ?? null,
           })
         } catch (e) {
           if (import.meta.env.DEV) console.warn('sync local list entry:', e)
@@ -260,6 +264,8 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
           user_rating: progress.userRating,
           is_favorite: isFav,
           list_status: progress.listStatus ?? null,
+          started_on: progress.startedOn ?? null,
+          finished_on: progress.finishedOn ?? null,
         })
       }
       const stamped = stampProgress(animeId, progress)
@@ -392,6 +398,8 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
         episodesWatched: 0,
         userRating: null,
         listStatus: null,
+        startedOn: null,
+        finishedOn: null,
       }
       await ensureDevAppAuth()
       const uid = user?.id ?? getSessionTelegramUserId()
@@ -408,6 +416,8 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
             user_rating: null,
             is_favorite: true,
             list_status: null,
+            started_on: null,
+            finished_on: null,
           })
         } else {
           try {
@@ -429,6 +439,8 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
                   episodes_watched: 0,
                   user_rating: null,
                   list_status: null,
+                  started_on: null,
+                  finished_on: null,
                 }
               : row
           )
@@ -456,7 +468,14 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
           if (!fav) return rows.filter((row) => String(row.anime_id) !== String(animeId))
           return rows.map((row) =>
             String(row.anime_id) === String(animeId)
-              ? { ...row, episodes_watched: 0, user_rating: null, list_status: null }
+              ? {
+                  ...row,
+                  episodes_watched: 0,
+                  user_rating: null,
+                  list_status: null,
+                  started_on: null,
+                  finished_on: null,
+                }
               : row
           )
         })
