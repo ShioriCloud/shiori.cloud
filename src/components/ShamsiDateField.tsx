@@ -77,7 +77,7 @@ export function ShamsiDateField({ label, value, onChange, disabled }: ShamsiDate
           <SheetHeader className="border-0 px-4 pb-2 pt-1">
             <SheetTitle className="text-sm">{label}</SheetTitle>
           </SheetHeader>
-          <div className="px-2 pb-1">
+          <div className="w-full px-3 pb-2">
             <Calendar
               persian
               mode="single"
@@ -86,7 +86,7 @@ export function ShamsiDateField({ label, value, onChange, disabled }: ShamsiDate
                 onChange(date ? format(date, 'yyyy-MM-dd') : '')
                 if (date) setOpen(false)
               }}
-              className="w-full max-w-none rounded-none bg-transparent p-2"
+              className="w-full max-w-none rounded-none bg-transparent p-0"
             />
           </div>
           {value ? (

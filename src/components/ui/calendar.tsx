@@ -106,12 +106,12 @@ function Calendar({
     <div
       className={cn(
         'rounded-lg bg-background p-3 text-foreground',
-        persian && 'w-full',
+        persian ? 'w-full' : 'w-fit',
         className
       )}
     >
       {captionLayout === 'dropdown' && (
-        <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="mb-3 flex w-full items-center justify-between gap-2">
           <Button
             type="button"
             variant={buttonVariant}
@@ -188,6 +188,7 @@ function Calendar({
         }}
         className={cn(
           'group/calendar',
+          persian ? '!w-full' : undefined,
           String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
           String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`
         )}
@@ -195,8 +196,8 @@ function Calendar({
           root: cn(defaultClassNames.root, persian ? 'w-full' : 'w-fit'),
           months: cn(
             defaultClassNames.months,
-            'relative flex flex-col gap-4',
-            persian ? 'w-full' : 'sm:flex-row'
+            'relative flex w-full flex-col gap-4',
+            !persian && 'sm:flex-row sm:w-fit'
           ),
           month: cn(defaultClassNames.month, 'w-full space-y-3'),
           month_caption: cn(defaultClassNames.month_caption, 'hidden'),
@@ -207,13 +208,15 @@ function Calendar({
           dropdown_root: cn(defaultClassNames.dropdown_root, 'hidden'),
           dropdown: cn(defaultClassNames.dropdown, 'hidden'),
           caption_label: cn(defaultClassNames.caption_label, 'hidden'),
-          table: 'w-full border-collapse',
-          weekdays: cn(defaultClassNames.weekdays, 'flex w-full'),
+          // v9 uses month_grid (table); without w-full the grid shrink-wraps to ~7×36px.
+          month_grid: cn(defaultClassNames.month_grid, 'w-full border-collapse'),
+          weeks: cn(defaultClassNames.weeks, 'w-full'),
+          weekdays: cn(defaultClassNames.weekdays, 'grid w-full grid-cols-7'),
           weekday: cn(
             defaultClassNames.weekday,
-            'flex h-8 w-[14.285%] items-center justify-center text-center text-[0.8rem] font-normal text-muted-foreground select-none'
+            'flex h-8 items-center justify-center text-center text-[0.8rem] font-normal text-muted-foreground select-none'
           ),
-          week: cn(defaultClassNames.week, 'mt-1 flex w-full'),
+          week: cn(defaultClassNames.week, 'mt-1 grid w-full grid-cols-7'),
           week_number_header: cn(defaultClassNames.week_number_header, 'w-9 select-none'),
           week_number: cn(
             defaultClassNames.week_number,
@@ -221,7 +224,7 @@ function Calendar({
           ),
           day: cn(
             defaultClassNames.day,
-            'group/day relative flex h-10 w-[14.285%] items-center justify-center p-0 text-center text-sm select-none'
+            'group/day relative flex aspect-square min-w-0 items-center justify-center p-0.5 text-center text-sm select-none'
           ),
           range_start: cn(defaultClassNames.range_start, 'rounded-l-md bg-muted'),
           range_middle: cn(defaultClassNames.range_middle, 'rounded-none'),
@@ -302,7 +305,7 @@ function CalendarDayButton({
       data-range-middle={modifiers.range_middle || undefined}
       className={cn(
         defaultClassNames.day_button,
-        'relative z-10 flex size-9 shrink-0 items-center justify-center rounded-md border-0 bg-transparent p-0',
+        'relative z-10 flex size-full min-h-0 min-w-0 items-center justify-center rounded-md border-0 bg-transparent p-0',
         'text-sm font-normal leading-none tabular-nums text-foreground',
         'outline-none transition-colors hover:bg-accent hover:text-accent-foreground',
         'focus-visible:ring-2 focus-visible:ring-ring',
