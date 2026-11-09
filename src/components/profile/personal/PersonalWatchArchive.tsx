@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ProfileAnimeMediaRow } from '@/components/profile/ProfileAnimeMediaRow'
+import { ProfileAnimeMediaRow, ProfileAnimeScore } from '@/components/profile/ProfileAnimeMediaRow'
 import { hapticSelection } from '@/lib/telegramHaptics'
 import { useFavoriteAnimeCardsQuery } from '@/hooks/queries/useAnimeQueries'
 import { hasTrackedProgress, useUserAnimeList } from '@/hooks/useUserAnimeList'
@@ -129,9 +129,7 @@ export const PersonalWatchArchive = ({ embedded = false }: { embedded?: boolean 
                         </>
                       ) : null}
                       {typeof row.progress.userRating === 'number' ? (
-                        <span className="rounded-md bg-amber-400/15 px-1.5 py-0.5 font-medium text-amber-800 dark:text-amber-200">
-                          {formatUserRatingFa(row.progress.userRating)}
-                        </span>
+                        <ProfileAnimeScore value={formatUserRatingFa(row.progress.userRating)} />
                       ) : null}
                     </>
                   }

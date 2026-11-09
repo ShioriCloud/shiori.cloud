@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
+import { ChevronLeft } from 'lucide-react'
 import { ProfileFavoritesPreview } from '@/components/profile/ProfileFavoritesPreview'
 import { ProfileOverviewStrip } from '@/components/profile/ProfileOverviewStrip'
 import { ProfilePopularGenres } from '@/components/profile/ProfilePopularGenres'
@@ -85,6 +87,15 @@ export const ProfileStatsTabPanel = ({
             animeCount={watchAnimeCount}
           />
           <ProfileStatsMonthlyStrip watchHours={overview.watchHours} />
+          {watchVisible ? (
+            <Link
+              to={variant === 'own' ? '/profile/stats' : `${profileBase}/stats`}
+              className="inline-flex items-center justify-center gap-1 self-center rounded-full border border-border/80 bg-card px-4 py-2 text-sm font-medium text-foreground active:opacity-80"
+            >
+              نمایش آمار کامل
+              <ChevronLeft className="size-4 opacity-70" aria-hidden />
+            </Link>
+          ) : null}
         </>
       )}
 

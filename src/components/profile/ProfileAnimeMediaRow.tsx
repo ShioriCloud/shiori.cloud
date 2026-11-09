@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Star } from 'lucide-react'
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
 import { BidiText } from '@/components/BidiText'
 import { PROFILE_PANEL_CLASS } from '@/components/profile/profileStatsCard'
@@ -19,6 +20,18 @@ export const ProfileAnimePoster = ({ src, className }: ProfileAnimePosterProps) 
   >
     {src ? <img src={src} alt="" className="h-full w-full object-cover" loading="lazy" /> : null}
   </div>
+)
+
+/** Meta line under the title. `justify-start` sits on the right when the page is RTL. */
+export const PROFILE_ANIME_META_CLASS =
+  'mt-1 flex w-full flex-wrap items-center justify-start gap-x-2 gap-y-1 text-start text-[12px] leading-5 text-foreground/70'
+
+export const ProfileAnimeScore = ({ value }: { value: string }) => (
+  <span className="inline-flex items-center gap-1 rounded-md bg-amber-400/15 px-1.5 py-0.5 font-medium text-amber-800 dark:text-amber-200">
+    <Star className="size-3 fill-amber-400 text-amber-500" aria-hidden />
+    <span className="tabular-nums">{value}</span>
+    <span className="text-[10px] font-normal text-amber-800/80 dark:text-amber-100/80">از ۱۰</span>
+  </span>
 )
 
 type ProfileAnimeMediaRowProps = {
@@ -54,7 +67,7 @@ export const ProfileAnimeMediaRow = ({
         {title}
       </BidiText>
       {meta ? (
-        <div className="mt-1 flex flex-wrap items-center justify-end gap-x-2 gap-y-0.5 text-[12px] leading-5 text-foreground/70">
+        <div className={PROFILE_ANIME_META_CLASS} dir="rtl">
           {meta}
         </div>
       ) : null}

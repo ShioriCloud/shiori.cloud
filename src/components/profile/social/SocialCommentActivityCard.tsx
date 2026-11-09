@@ -1,5 +1,5 @@
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
-import { ProfileAnimePoster } from '@/components/profile/ProfileAnimeMediaRow'
+import { PROFILE_ANIME_META_CLASS, ProfileAnimePoster } from '@/components/profile/ProfileAnimeMediaRow'
 import { PROFILE_PANEL_CLASS } from '@/components/profile/profileStatsCard'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
 import { formatRelativeTimeFa } from '@/lib/myListUtils'
@@ -30,7 +30,7 @@ export const SocialCommentActivityCard = ({
           <BidiText as="p" className="line-clamp-2 text-[13.5px] font-semibold leading-5 text-foreground">
             {anime?.title ?? 'انیمه'}
           </BidiText>
-          <div className="mt-1 flex flex-wrap items-center justify-end gap-x-2 text-[12px] leading-5 text-foreground/70">
+          <div className={PROFILE_ANIME_META_CLASS} dir="rtl">
             <time>{when}</time>
             <span className="size-1 shrink-0 rounded-full bg-foreground/30" aria-hidden />
             <span>{likes}</span>

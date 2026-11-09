@@ -81,9 +81,7 @@ const PublicProfileFullStats = () => {
           activeDays: summary?.active_days ?? 0,
           topGenres: data.top_genres ?? [],
           byFormat: data.by_format ?? [],
-          watchedItems: data.watched?.items ?? [],
         }}
-        emptyWatchedLabel="هنوز انیمه‌ای برای نمایش نیست."
       />
     </ProfilePersonalSubpageLayout>
   )
