@@ -2,9 +2,10 @@ import { useMemo, useState } from 'react'
 import { Pencil } from 'lucide-react'
 import FavoriteAnimeEditor from '@/components/FavoriteAnimeEditor'
 import { ProfileAnimeMediaRow, ProfileAnimeScore } from '@/components/profile/ProfileAnimeMediaRow'
+import { SHIORI_PRIMARY_BUTTON_CLASS } from '@/components/explore/ExploreUi'
 import { hapticSelection } from '@/lib/telegramHaptics'
-import { useAppAuth } from '@/hooks/useAppAuth'
 import { useFavoriteAnimeCardsQuery } from '@/hooks/queries/useAnimeQueries'
+import { useAppAuth } from '@/hooks/useAppAuth'
 import { hasTrackedProgress, useUserAnimeList } from '@/hooks/useUserAnimeList'
 import { animeDetailPath, animePublicSegment } from '@/lib/animePaths'
 import { formatStatusDateFa } from '@/lib/formatStatusDate'
@@ -172,7 +173,10 @@ export const PersonalWatchArchive = ({ embedded = false }: { embedded?: boolean 
                         hapticSelection()
                         setEditingId(String(row.id))
                       }}
-                      className="flex size-8 shrink-0 items-center justify-center rounded-lg text-foreground/55 active:bg-muted active:text-foreground"
+                      className={cn(
+                        SHIORI_PRIMARY_BUTTON_CLASS,
+                        'flex size-8 shrink-0 items-center justify-center rounded-lg text-white'
+                      )}
                     >
                       <Pencil className="size-3.5" aria-hidden />
                     </button>

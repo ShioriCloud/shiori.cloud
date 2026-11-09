@@ -396,6 +396,10 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
       await ensureDevAppAuth()
       const uid = user?.id ?? getSessionTelegramUserId()
       const fav = favoriteAnime.some((id) => String(id) === String(animeId))
+      const listKey =
+        typeof telegramUserId === 'number'
+          ? queryKeys.userAnimeList(telegramUserId)
+          : null
       let result: UserAnimeListMutationResult | undefined
       if (typeof uid === 'number' && canSyncUserAnimeList()) {
         if (fav) {
@@ -403,14 +407,32 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
             episodes_watched: 0,
             user_rating: null,
             is_favorite: true,
+            list_status: null,
           })
         } else {
           try {
             result = await removeUserAnimeListEntry(uid, animeId)
-          } catch {
-            // Row may only exist locally until first sync.
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error)
+            if (!message.includes('404')) throw error
           }
         }
+      }
+      if (listKey) {
+        queryClient.setQueryData<UserAnimeListRow[]>(listKey, (rows) => {
+          if (!rows) return rows
+          if (!fav) return rows.filter((row) => String(row.anime_id) !== String(animeId))
+          return rows.map((row) =>
+            String(row.anime_id) === String(animeId)
+              ? {
+                  ...row,
+                  episodes_watched: 0,
+                  user_rating: null,
+                  list_status: null,
+                }
+              : row
+          )
+        })
       }
       setFavoriteProgress(animeId, cleared)
       return { result, animeId }
@@ -420,17 +442,39 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
         episodesWatched: 0,
         userRating: null,
       }
+      const listKey =
+        typeof telegramUserId === 'number'
+          ? queryKeys.userAnimeList(telegramUserId)
+          : null
+      const previousRows = listKey
+        ? queryClient.getQueryData<UserAnimeListRow[]>(listKey)
+        : undefined
+      const fav = favoriteAnime.some((id) => String(id) === String(animeId))
+      if (listKey) {
+        queryClient.setQueryData<UserAnimeListRow[]>(listKey, (rows) => {
+          if (!rows) return rows
+          if (!fav) return rows.filter((row) => String(row.anime_id) !== String(animeId))
+          return rows.map((row) =>
+            String(row.anime_id) === String(animeId)
+              ? { ...row, episodes_watched: 0, user_rating: null, list_status: null }
+              : row
+          )
+        })
+      }
       setFavoriteProgress(animeId, {
         episodesWatched: 0,
         userRating: null,
         listStatus: null,
       })
       patchAnimeDetailShioriScore(animeId, null)
-      return { previous, animeId }
+      return { previous, animeId, listKey, previousRows }
     },
     onError: (_error, animeId, context) => {
       if (context?.previous) {
         setFavoriteProgress(animeId, context.previous)
+      }
+      if (context?.listKey) {
+        queryClient.setQueryData(context.listKey, context.previousRows)
       }
     },
     onSuccess: (data) => {
