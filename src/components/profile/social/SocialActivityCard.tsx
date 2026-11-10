@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { Heart, Lock, StickyNote } from 'lucide-react'
+import { Heart, Lock, Star, StickyNote } from 'lucide-react'
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
 import { BidiText } from '@/components/BidiText'
 import { Button } from '@/components/ui/button'
@@ -66,7 +66,9 @@ const activityHeadline = (item: SocialProfileFeedItem): string => {
   if (item.type === 'anime_comment') return item.comment_preview
   if (item.type === 'public_list_add') return `به «${item.list_name}» اضافه کرد`
   if (item.type === 'playlist_created') return 'پلی‌لیست عمومی ساخت'
-  if (item.type === 'rating') return 'نمره داد'
+  if (item.type === 'rating' && item.user_rating != null) {
+    return `نمره ${toPersianDigits(item.user_rating)} داد`
+  }
   if (item.type === 'list_add') return 'به لیست تماشا اضافه کرد'
   if (item.type === 'watch_status') {
     const status = String(item.list_status ?? '').trim()
@@ -74,11 +76,13 @@ const activityHeadline = (item: SocialProfileFeedItem): string => {
     if (parts) return `${parts.before}${item.title}${parts.after}`
     return `وضعیت تماشای ${item.title} را عوض کرد`
   }
+  const rating =
+    item.user_rating != null ? ` · نمره ${toPersianDigits(item.user_rating)}` : ''
   const progress =
     item.episodes_total != null && item.episodes_total > 0
       ? `${toPersianDigits(item.episodes_watched)} از ${toPersianDigits(item.episodes_total)}`
       : toPersianDigits(item.episodes_watched)
-  return `قسمت ${progress} را دید`
+  return `قسمت ${progress} را دید${rating}`
 }
 
 const watchProgressPercent = (item: SocialProfileFeedItem): number | null => {
@@ -494,6 +498,8 @@ export const SocialActivityCard = ({ item }: SocialActivityCardProps) => {
     isWatchStatus && 'list_status' in item
       ? watchStatusSentenceParts(String(item.list_status ?? '').trim())
       : null
+  const statusRating =
+    isWatchStatus && item.user_rating != null ? item.user_rating : null
 
   const mediaBlock = (
     <>
@@ -511,13 +517,21 @@ export const SocialActivityCard = ({ item }: SocialActivityCardProps) => {
       </div>
       <div className="min-w-0 flex-1 self-center text-start">
         {isWatchStatus && statusParts ? (
-          <p className="line-clamp-3 text-sm leading-snug text-foreground">
-            {statusParts.before}
-            <BidiText as="span" className="font-semibold">
-              {item.title}
-            </BidiText>
-            {statusParts.after}
-          </p>
+          <>
+            <p className="line-clamp-3 text-sm leading-snug text-foreground">
+              {statusParts.before}
+              <BidiText as="span" className="font-semibold">
+                {item.title}
+              </BidiText>
+              {statusParts.after}
+            </p>
+            {statusRating != null ? (
+              <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-amber-400/15 px-2 py-0.5 text-[11px] font-medium tabular-nums text-amber-800 dark:text-amber-200">
+                <Star className="size-3 fill-current" aria-hidden />
+                نمره {toPersianDigits(statusRating)}
+              </span>
+            ) : null}
+          </>
         ) : (
           <>
             <BidiText
