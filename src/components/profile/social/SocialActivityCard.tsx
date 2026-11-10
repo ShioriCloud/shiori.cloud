@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { Heart, Lock, StickyNote } from 'lucide-react'
+import { Heart, Lock, Star, StickyNote } from 'lucide-react'
 import AnimePrefetchLink from '@/components/AnimePrefetchLink'
 import { BidiText } from '@/components/BidiText'
 import { Button } from '@/components/ui/button'
@@ -70,14 +70,14 @@ const activityHeadline = (item: SocialProfileFeedItem): string => {
     return `نمره ${toPersianDigits(item.user_rating)} داد`
   }
   if (item.type === 'list_add') return 'به لیست تماشا اضافه کرد'
-  const rating =
-    item.user_rating != null ? ` · نمره ${toPersianDigits(item.user_rating)}` : ''
   if (item.type === 'watch_status') {
     const status = String(item.list_status ?? '').trim()
     const parts = watchStatusSentenceParts(status)
-    if (parts) return `${parts.before}${item.title}${parts.after}${rating}`
-    return `وضعیت تماشای ${item.title} را عوض کرد${rating}`
+    if (parts) return `${parts.before}${item.title}${parts.after}`
+    return `وضعیت تماشای ${item.title} را عوض کرد`
   }
+  const rating =
+    item.user_rating != null ? ` · نمره ${toPersianDigits(item.user_rating)}` : ''
   const progress =
     item.episodes_total != null && item.episodes_total > 0
       ? `${toPersianDigits(item.episodes_watched)} از ${toPersianDigits(item.episodes_total)}`
@@ -86,15 +86,8 @@ const activityHeadline = (item: SocialProfileFeedItem): string => {
 }
 
 const watchProgressPercent = (item: SocialProfileFeedItem): number | null => {
-  if (item.type === 'watch_status') {
-    const status = String(item.list_status ?? '').trim()
-    if (item.episodes_total == null || item.episodes_total <= 0) return null
-    if (status === 'completed') return 100
-    if (status === 'watching' || status === 'rewatching') {
-      return Math.min(100, Math.round((item.episodes_watched / item.episodes_total) * 100))
-    }
-    return null
-  }
+  // Status cards use a sentence, not a progress bar.
+  if (item.type === 'watch_status') return null
   if (item.type !== 'watch_progress') return null
   if (item.episodes_total == null || item.episodes_total <= 0) return null
   return Math.min(100, Math.round((item.episodes_watched / item.episodes_total) * 100))
@@ -505,10 +498,8 @@ export const SocialActivityCard = ({ item }: SocialActivityCardProps) => {
     isWatchStatus && 'list_status' in item
       ? watchStatusSentenceParts(String(item.list_status ?? '').trim())
       : null
-  const ratingSuffix =
-    isWatchStatus && item.user_rating != null
-      ? ` · نمره ${toPersianDigits(item.user_rating)}`
-      : ''
+  const statusRating =
+    isWatchStatus && item.user_rating != null ? item.user_rating : null
 
   const mediaBlock = (
     <>
@@ -526,16 +517,21 @@ export const SocialActivityCard = ({ item }: SocialActivityCardProps) => {
       </div>
       <div className="min-w-0 flex-1 self-center text-start">
         {isWatchStatus && statusParts ? (
-          <p className="line-clamp-3 text-sm leading-snug text-foreground">
-            {statusParts.before}
-            <BidiText as="span" className="font-semibold">
-              {item.title}
-            </BidiText>
-            {statusParts.after}
-            {ratingSuffix ? (
-              <span className="text-muted-foreground">{ratingSuffix}</span>
+          <>
+            <p className="line-clamp-3 text-sm leading-snug text-foreground">
+              {statusParts.before}
+              <BidiText as="span" className="font-semibold">
+                {item.title}
+              </BidiText>
+              {statusParts.after}
+            </p>
+            {statusRating != null ? (
+              <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-amber-400/15 px-2 py-0.5 text-[11px] font-medium tabular-nums text-amber-800 dark:text-amber-200">
+                <Star className="size-3 fill-current" aria-hidden />
+                نمره {toPersianDigits(statusRating)}
+              </span>
             ) : null}
-          </p>
+          </>
         ) : (
           <>
             <BidiText
