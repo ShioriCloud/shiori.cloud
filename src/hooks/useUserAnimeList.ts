@@ -244,6 +244,58 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
     void queryClient.invalidateQueries({ queryKey: queryKeys.socialProfileMe })
   }, [queryClient])
 
+  const listQueryKey =
+    typeof telegramUserId === 'number' ? queryKeys.userAnimeList(telegramUserId) : null
+
+  const patchListFavoriteFlag = useCallback(
+    (animeId: number | string, isFavorite: boolean) => {
+      if (!listQueryKey) return
+      queryClient.setQueryData<UserAnimeListRow[]>(listQueryKey, (rows) => {
+        if (!rows) return rows
+        const key = String(animeId)
+        const idx = rows.findIndex((row) => String(row.anime_id) === key)
+        if (isFavorite) {
+          if (idx >= 0) {
+            return rows.map((row, i) =>
+              i === idx ? { ...row, is_favorite: true } : row
+            )
+          }
+          return [
+            ...rows,
+            {
+              anime_id: key,
+              episodes_watched: 0,
+              user_rating: null,
+              is_favorite: true,
+              favorite_rank: null,
+              list_status: null,
+              list_status_at: null,
+              started_on: null,
+              finished_on: null,
+              updated_at: new Date().toISOString(),
+            },
+          ]
+        }
+        if (idx < 0) return rows
+        return rows.map((row, i) =>
+          i === idx ? { ...row, is_favorite: false, favorite_rank: null } : row
+        )
+      })
+    },
+    [listQueryKey, queryClient]
+  )
+
+  const removeListRowFromCache = useCallback(
+    (animeId: number | string) => {
+      if (!listQueryKey) return
+      queryClient.setQueryData<UserAnimeListRow[]>(listQueryKey, (rows) => {
+        if (!rows) return rows
+        return rows.filter((row) => String(row.anime_id) !== String(animeId))
+      })
+    },
+    [listQueryKey, queryClient]
+  )
+
   const saveMutation = useMutation({
     mutationFn: async ({
       animeId,
@@ -321,10 +373,18 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
       return undefined
     },
     onMutate: (animeId) => {
+      const previousRows = listQueryKey
+        ? queryClient.getQueryData<UserAnimeListRow[]>(listQueryKey)
+        : undefined
       addToFavorites(animeId)
+      patchListFavoriteFlag(animeId, true)
+      return { previousRows }
     },
-    onError: (_error, animeId) => {
+    onError: (_error, animeId, context) => {
       removeFromFavorites(animeId)
+      if (listQueryKey && context?.previousRows) {
+        queryClient.setQueryData(listQueryKey, context.previousRows)
+      }
     },
     onSuccess: (_result, _animeId) => {
       refreshSocialProfileCaches()
@@ -335,19 +395,32 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
     mutationFn: async (animeId: number | string) => {
       await ensureDevAppAuth()
       const uid = user?.id ?? getSessionTelegramUserId()
-      const progress = favoriteProgress[String(animeId)] ?? {
-        episodesWatched: 0,
-        userRating: null,
-      }
+      const progress =
+        useAnimeStore.getState().favoriteProgress[String(animeId)] ?? {
+          episodesWatched: 0,
+          userRating: null,
+        }
       if (typeof uid === 'number' && canSyncUserAnimeList()) {
         if (hasTrackedProgress(progress)) {
           return upsertUserAnimeListEntry(uid, animeId, {
             episodes_watched: progress.episodesWatched,
             user_rating: progress.userRating,
             is_favorite: false,
+            list_status: progress.listStatus ?? null,
+            started_on: progress.startedOn ?? null,
+            finished_on: progress.finishedOn ?? null,
           })
         }
-        return removeUserAnimeListEntry(uid, animeId)
+        try {
+          return await removeUserAnimeListEntry(uid, animeId)
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error)
+          // Already gone on server — treat as success so UI/cache stay unfavorited.
+          if (message.includes('404') || message.includes('پیدا نشد')) {
+            return { ok: true as const }
+          }
+          throw error
+        }
       }
       return undefined
     },
@@ -357,13 +430,21 @@ export const useUserAnimeList = (options?: { syncRemoteList?: boolean }) => {
         userRating: null,
       }
       const keepProgress = hasTrackedProgress(previousProgress)
+      const previousRows = listQueryKey
+        ? queryClient.getQueryData<UserAnimeListRow[]>(listQueryKey)
+        : undefined
       removeFromFavorites(animeId, keepProgress)
-      return { previousProgress, keepProgress }
+      if (keepProgress) patchListFavoriteFlag(animeId, false)
+      else removeListRowFromCache(animeId)
+      return { previousProgress, keepProgress, previousRows }
     },
     onError: (_error, animeId, context) => {
       addToFavorites(animeId)
       if (context?.previousProgress && !context.keepProgress) {
         setFavoriteProgress(animeId, context.previousProgress)
+      }
+      if (listQueryKey && context?.previousRows) {
+        queryClient.setQueryData(listQueryKey, context.previousRows)
       }
     },
     onSuccess: (result, animeId) => {
