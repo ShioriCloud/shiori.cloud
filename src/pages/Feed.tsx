@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, Search } from 'lucide-react'
 import { useAppAuth } from '@/hooks/useAppAuth'
 import { useSocialProfileMe } from '@/hooks/useSocialProfile'
+import { useTabScrollRestoration } from '@/hooks/useTabScrollRestoration'
 import { RouteFallback } from '@/components/RouteFallback'
 import { ProfileAuthPanel } from '@/components/ProfileAuthPanel'
 import { ProfileFeedPanel } from '@/components/profile/ProfileFeedPanel'
@@ -11,6 +12,7 @@ import { SHIORI_PRIMARY_BUTTON_CLASS } from '@/components/explore/ExploreUi'
 import { cn } from '@/lib/utils'
 
 const Feed = () => {
+  useTabScrollRestoration('feed')
   const navigate = useNavigate()
   const { isReady, user, inTelegram, login, register } = useAppAuth()
   const socialEnabled = Boolean(user)
