@@ -40,12 +40,26 @@ const emptyEngagement = (item: SocialProfileFeedItem): SocialFeedEngagement => (
   public_notes: [],
 })
 
-const WATCH_STATUS_FEED_COPY: Record<string, string> = {
-  completed: 'کامل دید',
-  planning: 'می‌خواد ببینه',
-  rewatching: 'دوباره می‌بینه',
-  paused: 'فعلاً نمی‌بینه',
-  dropped: 'دراپ کرد',
+/** Persian sentence around the anime title for watch_status cards. */
+const watchStatusSentenceParts = (
+  status: string
+): { before: string; after: string } | null => {
+  switch (status) {
+    case 'watching':
+      return { before: 'داره انیمه‌ی ', after: ' رو می‌بینه.' }
+    case 'planning':
+      return { before: 'می‌خواد انیمه‌ی ', after: ' رو ببینه.' }
+    case 'completed':
+      return { before: 'انیمه‌ی ', after: ' رو کامل دید.' }
+    case 'rewatching':
+      return { before: 'داره انیمه‌ی ', after: ' رو دوباره می‌بینه.' }
+    case 'paused':
+      return { before: 'فعلاً دیدن انیمه‌ی ', after: ' رو متوقف کرد.' }
+    case 'dropped':
+      return { before: 'انیمه‌ی ', after: ' رو دراپ کرد.' }
+    default:
+      return null
+  }
 }
 
 const activityHeadline = (item: SocialProfileFeedItem): string => {
@@ -60,8 +74,9 @@ const activityHeadline = (item: SocialProfileFeedItem): string => {
     item.user_rating != null ? ` · نمره ${toPersianDigits(item.user_rating)}` : ''
   if (item.type === 'watch_status') {
     const status = String(item.list_status ?? '').trim()
-    const copy = WATCH_STATUS_FEED_COPY[status] ?? 'وضعیت تماشا را عوض کرد'
-    return `${copy}${rating}`
+    const parts = watchStatusSentenceParts(status)
+    if (parts) return `${parts.before}${item.title}${parts.after}${rating}`
+    return `وضعیت تماشای ${item.title} را عوض کرد${rating}`
   }
   const progress =
     item.episodes_total != null && item.episodes_total > 0
@@ -71,9 +86,14 @@ const activityHeadline = (item: SocialProfileFeedItem): string => {
 }
 
 const watchProgressPercent = (item: SocialProfileFeedItem): number | null => {
-  if (item.type === 'watch_status' && item.list_status === 'completed') {
+  if (item.type === 'watch_status') {
+    const status = String(item.list_status ?? '').trim()
     if (item.episodes_total == null || item.episodes_total <= 0) return null
-    return 100
+    if (status === 'completed') return 100
+    if (status === 'watching' || status === 'rewatching') {
+      return Math.min(100, Math.round((item.episodes_watched / item.episodes_total) * 100))
+    }
+    return null
   }
   if (item.type !== 'watch_progress') return null
   if (item.episodes_total == null || item.episodes_total <= 0) return null
@@ -479,7 +499,16 @@ export const SocialActivityCard = ({ item }: SocialActivityCardProps) => {
   const bottomPrefetchId =
     item.type === 'public_list_add' ? null : animePublicSegment(routeRef)
   const isComment = item.type === 'anime_comment'
+  const isWatchStatus = item.type === 'watch_status'
   const progress = watchProgressPercent(item)
+  const statusParts =
+    isWatchStatus && 'list_status' in item
+      ? watchStatusSentenceParts(String(item.list_status ?? '').trim())
+      : null
+  const ratingSuffix =
+    isWatchStatus && item.user_rating != null
+      ? ` · نمره ${toPersianDigits(item.user_rating)}`
+      : ''
 
   const mediaBlock = (
     <>
@@ -496,18 +525,33 @@ export const SocialActivityCard = ({ item }: SocialActivityCardProps) => {
         </div>
       </div>
       <div className="min-w-0 flex-1 self-center text-start">
-        <BidiText
-          as="p"
-          className="line-clamp-2 text-end text-sm font-semibold leading-snug text-foreground"
-        >
-          {item.title}
-        </BidiText>
-        {isComment ? (
-          <p className="mt-1 line-clamp-2 rounded-lg bg-muted/45 px-2 py-1.5 text-xs leading-5 text-foreground/90">
-            {headline}
+        {isWatchStatus && statusParts ? (
+          <p className="line-clamp-3 text-sm leading-snug text-foreground">
+            {statusParts.before}
+            <BidiText as="span" className="font-semibold">
+              {item.title}
+            </BidiText>
+            {statusParts.after}
+            {ratingSuffix ? (
+              <span className="text-muted-foreground">{ratingSuffix}</span>
+            ) : null}
           </p>
         ) : (
-          <p className="mt-0.5 text-xs tabular-nums text-muted-foreground">{headline}</p>
+          <>
+            <BidiText
+              as="p"
+              className="line-clamp-2 text-end text-sm font-semibold leading-snug text-foreground"
+            >
+              {item.title}
+            </BidiText>
+            {isComment ? (
+              <p className="mt-1 line-clamp-2 rounded-lg bg-muted/45 px-2 py-1.5 text-xs leading-5 text-foreground/90">
+                {headline}
+              </p>
+            ) : (
+              <p className="mt-0.5 text-xs tabular-nums text-muted-foreground">{headline}</p>
+            )}
+          </>
         )}
         {progress != null ? (
           <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-muted">
