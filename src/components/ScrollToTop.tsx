@@ -9,12 +9,14 @@ import { resetWindowScroll } from '../utils/resetWindowScroll'
  * Also skip when replacing onto a root tab that already has a saved scroll
  * (Telegram back fallback uses replace when history stack is empty).
  */
+/** Root tabs that restore their own scroll on REPLACE (not nested subpages). */
 const keepsSavedScroll = (pathname: string) =>
   pathname === '/' ||
+  pathname === '/feed' ||
+  pathname === '/my-list' ||
   pathname.startsWith('/explore') ||
   pathname === '/profile' ||
-  pathname.startsWith('/profile/') ||
-  pathname.startsWith('/u/')
+  /^\/u\/[^/]+\/?$/.test(pathname)
 
 const ScrollToTop = () => {
   const { pathname } = useLocation()
