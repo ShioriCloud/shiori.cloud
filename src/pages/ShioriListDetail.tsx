@@ -65,7 +65,7 @@ const ShioriListDetail = () => {
       <div className="space-y-4 px-4 py-16 pb-24 text-center">
         <p className="text-sm text-muted-foreground">لیست پیدا نشد</p>
         <Button asChild type="button" variant="secondary" size="sm">
-          <Link to="/my-list?tab=lists">لیست‌های من</Link>
+          <Link to="/profile/playlists">پلی‌لیست‌های من</Link>
         </Button>
       </div>
     )
@@ -86,7 +86,7 @@ const ShioriListDetail = () => {
     try {
       await deleteList(list.id)
       showAlert('لیست حذف شد')
-      navigate('/my-list?tab=lists', { replace: true })
+      navigate('/profile/playlists', { replace: true })
     } catch {
       showAlert('حذف لیست ناموفق بود')
     }

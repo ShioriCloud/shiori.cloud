@@ -1,6 +1,15 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { Archive, Award, Ban, ChevronLeft, ListVideo, Settings, UserRound } from 'lucide-react'
+import {
+  Archive,
+  Award,
+  Ban,
+  ChevronLeft,
+  History,
+  ListVideo,
+  Settings,
+  UserRound,
+} from 'lucide-react'
 import {
   Sheet,
   SheetContent,
@@ -86,6 +95,12 @@ export const ProfileAccountSheet = ({
                 to="/profile/badges"
                 icon={<Award className="h-4 w-4" />}
                 label="نشان‌ها"
+                onNavigate={close}
+              />
+              <Row
+                to="/my-list"
+                icon={<History className="h-4 w-4" />}
+                label="تاریخچه و دانلودها"
                 onNavigate={close}
               />
             </div>

@@ -41,7 +41,8 @@ export const shouldShowTelegramBackButton = (pathname: string): boolean => {
 }
 
 export const fallbackBackPath = (pathname: string): string => {
-  if (pathname.startsWith('/my-list/lists/')) return '/my-list?tab=lists'
+  if (pathname.startsWith('/my-list/lists/')) return '/profile/playlists'
+  if (pathname === '/my-list') return '/profile'
   if (pathname.startsWith('/profile/people')) return '/feed'
   if (
     pathname.startsWith('/profile/favorites') ||
