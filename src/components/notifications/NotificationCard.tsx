@@ -5,6 +5,7 @@ import { Bell, Heart, MessageSquareText, UserRound } from 'lucide-react'
 import { PROFILE_PANEL_CLASS } from '@/components/profile/profileStatsCard'
 import { SocialUserAvatar } from '@/components/profile/social/SocialUserAvatar'
 import {
+  formatLikeNotificationLine,
   formatNotificationMessage,
   resolveNotificationTarget,
 } from '@/lib/notificationDisplay'
@@ -69,11 +70,10 @@ export const NotificationCard = ({
   const coverSrc = resolveMediaServeUrl(notification.anime_cover_image)
   const target = resolveNotificationTarget(notification)
   const message = formatNotificationMessage(notification)
+  const likeLine = formatLikeNotificationLine(notification)
   const rawTitle = notification.title.trim()
-  const displayTitle =
-    rawTitle === 'پسند روی فعالیت' || rawTitle === 'پسند روی فعالیتت'
-      ? 'فعالیتت رو پسندیدن'
-      : rawTitle
+  const displayTitle = likeLine ?? rawTitle
+  const showSubtitle = !likeLine && Boolean(message) && message !== displayTitle
   const visual = kindVisual(notification.kind)
   const when = formatNotificationTime(notification.created_at)
   const useAvatar = showsActor(notification.kind) && !coverSrc
@@ -168,9 +168,11 @@ export const NotificationCard = ({
         </h3>
         {!notification.is_read ? <span className={cn(unreadBadgeClass, 'shrink-0')}>جدید</span> : null}
       </div>
-      <p className="mt-1 line-clamp-2 text-[13px] leading-6 text-foreground/75">
-        {toPersianDigits(message)}
-      </p>
+      {showSubtitle ? (
+        <p className="mt-1 line-clamp-2 text-[13px] leading-6 text-foreground/75">
+          {toPersianDigits(message)}
+        </p>
+      ) : null}
     </>
   )
 
