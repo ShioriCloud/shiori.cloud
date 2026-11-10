@@ -38,6 +38,8 @@ type MyListState = {
   customLists: ShioriCustomList[]
   /** Old local list id → server id after first-sync merge */
   listIdAliases: Record<string, string>
+  /** Recently deleted list ids — stop sync from rehydrating/recreating them. */
+  deletedListIds: string[]
   browseHistory: BrowseHistoryEntry[]
   downloads: DownloadRecord[]
 
@@ -47,6 +49,7 @@ type MyListState = {
     patch: Partial<Pick<ShioriCustomList, 'name' | 'icon' | 'isPublic'>>
   ) => void
   deleteList: (id: string) => void
+  forgetDeletedListId: (id: string) => void
   addAnimeToList: (listId: string, animeId: string | number) => void
   removeAnimeFromList: (listId: string, animeId: string | number) => void
   replaceCustomLists: (
@@ -82,6 +85,7 @@ export const useMyListStore = create<MyListState>()(
     (set, get) => ({
       customLists: [],
       listIdAliases: {},
+      deletedListIds: [],
       browseHistory: [],
       downloads: [],
 
@@ -96,7 +100,10 @@ export const useMyListStore = create<MyListState>()(
           createdAt: now,
           updatedAt: now,
         }
-        set((s) => ({ customLists: [...s.customLists, list] }))
+        set((s) => ({
+          customLists: [...s.customLists, list],
+          deletedListIds: s.deletedListIds.filter((deletedId) => deletedId !== list.id),
+        }))
         return list
       },
 
@@ -112,6 +119,15 @@ export const useMyListStore = create<MyListState>()(
       deleteList: (id) =>
         set((s) => ({
           customLists: s.customLists.filter((l) => l.id !== id),
+          deletedListIds: [id, ...s.deletedListIds.filter((deletedId) => deletedId !== id)].slice(
+            0,
+            50
+          ),
+        })),
+
+      forgetDeletedListId: (id) =>
+        set((s) => ({
+          deletedListIds: s.deletedListIds.filter((deletedId) => deletedId !== id),
         })),
 
       addAnimeToList: (listId, animeId) => {
@@ -145,12 +161,15 @@ export const useMyListStore = create<MyListState>()(
       },
 
       replaceCustomLists: (lists, aliases) =>
-        set((s) => ({
-          customLists: lists,
-          listIdAliases: aliases
-            ? { ...s.listIdAliases, ...aliases }
-            : s.listIdAliases,
-        })),
+        set((s) => {
+          const deleted = new Set(s.deletedListIds)
+          return {
+            customLists: lists.filter((list) => !deleted.has(list.id)),
+            listIdAliases: aliases
+              ? { ...s.listIdAliases, ...aliases }
+              : s.listIdAliases,
+          }
+        }),
 
       remapListId: (fromId, toId) => {
         if (!fromId || !toId || fromId === toId) return
@@ -210,7 +229,7 @@ export const useMyListStore = create<MyListState>()(
     }),
     {
       name: 'shiori-my-list-extra',
-      version: 2,
+      version: 3,
       migrate: (persisted) => {
         const state = (persisted ?? {}) as Partial<MyListState>
         return {
@@ -220,6 +239,7 @@ export const useMyListStore = create<MyListState>()(
             state.listIdAliases && typeof state.listIdAliases === 'object'
               ? state.listIdAliases
               : {},
+          deletedListIds: Array.isArray(state.deletedListIds) ? state.deletedListIds : [],
         }
       },
     }

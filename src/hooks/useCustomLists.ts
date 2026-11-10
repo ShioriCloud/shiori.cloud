@@ -42,12 +42,17 @@ const toStoreList = (row: UserCustomListRow): ShioriCustomList => ({
 
 let migrateInFlight: Promise<void> | null = null
 
-const mergeLocalIntoRemote = async (local: ShioriCustomList[], remote: UserCustomListRow[]) => {
+const mergeLocalIntoRemote = async (
+  local: ShioriCustomList[],
+  remote: UserCustomListRow[],
+  deletedIds: ReadonlySet<string>
+) => {
   const remotes = remote.map((row) => ({ ...row, items: [...(row.items ?? [])] }))
   const matched = new Set<string>()
   const aliases: Record<string, string> = {}
 
   for (const localList of local) {
+    if (deletedIds.has(localList.id)) continue
     const byId = remotes.find((row) => row.id === localList.id)
     if (byId) {
       matched.add(byId.id)
@@ -195,18 +200,22 @@ export const useCustomLists = (options?: { syncRemote?: boolean }) => {
 
     syncedRef.current = true
     const localSnapshot = useMyListStore.getState().customLists
+    const deletedIds = new Set(useMyListStore.getState().deletedListIds)
 
     migrateInFlight = (async () => {
-      const aliases = await mergeLocalIntoRemote(localSnapshot, remoteRows)
+      const aliases = await mergeLocalIntoRemote(localSnapshot, remoteRows, deletedIds)
+
+      // Always refetch before hydrate — stale React Query pages can resurrect deleted lists.
       let nextRows = remoteRows
-      if (localSnapshot.length > 0) {
-        try {
-          nextRows = await getUserCustomLists()
-          queryClient.setQueryData(queryKeys.userCustomLists(telegramUserId), nextRows)
-        } catch (error) {
-          if (import.meta.env.DEV) console.warn('refetch custom lists:', error)
-        }
+      try {
+        nextRows = await getUserCustomLists()
+        queryClient.setQueryData(queryKeys.userCustomLists(telegramUserId), nextRows)
+      } catch (error) {
+        if (import.meta.env.DEV) console.warn('refetch custom lists:', error)
       }
+
+      const liveDeleted = new Set(useMyListStore.getState().deletedListIds)
+      nextRows = nextRows.filter((row) => !liveDeleted.has(row.id))
 
       const shouldHydrate = nextRows.length > 0 || localSnapshot.length === 0
       if (shouldHydrate) {
@@ -215,6 +224,7 @@ export const useCustomLists = (options?: { syncRemote?: boolean }) => {
           .getState()
           .customLists.filter(
             (list) =>
+              !liveDeleted.has(list.id) &&
               !snapshotIds.has(list.id) &&
               !nextRows.some((row) => row.id === list.id)
           )
@@ -315,11 +325,24 @@ export const useCustomLists = (options?: { syncRemote?: boolean }) => {
   const deleteListMutation = useMutation({
     mutationFn: async (id: string) => {
       const previous = useMyListStore.getState().customLists
+      const previousDeleted = useMyListStore.getState().deletedListIds
       deleteListLocal(id)
+
+      const uid = user?.id ?? getSessionTelegramUserId()
+      if (typeof uid === 'number') {
+        queryClient.setQueryData(
+          queryKeys.userCustomLists(uid),
+          (old: UserCustomListRow[] | undefined) =>
+            Array.isArray(old) ? old.filter((row) => row.id !== id) : old
+        )
+      }
+
       if (!canCallApi()) return
       try {
         await deleteUserCustomList(id)
       } catch (error) {
+        // Clear tombstone before restore — replaceCustomLists filters deleted ids.
+        useMyListStore.setState({ deletedListIds: previousDeleted })
         replaceCustomLists(previous)
         throw error
       }
