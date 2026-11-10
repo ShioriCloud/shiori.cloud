@@ -40,6 +40,14 @@ const emptyEngagement = (item: SocialProfileFeedItem): SocialFeedEngagement => (
   public_notes: [],
 })
 
+const WATCH_STATUS_FEED_COPY: Record<string, string> = {
+  completed: 'کامل دید',
+  planning: 'می‌خواد ببینه',
+  rewatching: 'دوباره می‌بینه',
+  paused: 'فعلاً نمی‌بینه',
+  dropped: 'دراپ کرد',
+}
+
 const activityHeadline = (item: SocialProfileFeedItem): string => {
   if (item.type === 'anime_comment') return item.comment_preview
   if (item.type === 'public_list_add') return `به «${item.list_name}» اضافه کرد`
@@ -48,16 +56,25 @@ const activityHeadline = (item: SocialProfileFeedItem): string => {
     return `نمره ${toPersianDigits(item.user_rating)} داد`
   }
   if (item.type === 'list_add') return 'به لیست تماشا اضافه کرد'
+  const rating =
+    item.user_rating != null ? ` · نمره ${toPersianDigits(item.user_rating)}` : ''
+  if (item.type === 'watch_status') {
+    const status = String(item.list_status ?? '').trim()
+    const copy = WATCH_STATUS_FEED_COPY[status] ?? 'وضعیت تماشا را عوض کرد'
+    return `${copy}${rating}`
+  }
   const progress =
     item.episodes_total != null && item.episodes_total > 0
       ? `${toPersianDigits(item.episodes_watched)} از ${toPersianDigits(item.episodes_total)}`
       : toPersianDigits(item.episodes_watched)
-  const rating =
-    item.user_rating != null ? ` · نمره ${toPersianDigits(item.user_rating)}` : ''
   return `قسمت ${progress} را دید${rating}`
 }
 
 const watchProgressPercent = (item: SocialProfileFeedItem): number | null => {
+  if (item.type === 'watch_status' && item.list_status === 'completed') {
+    if (item.episodes_total == null || item.episodes_total <= 0) return null
+    return 100
+  }
   if (item.type !== 'watch_progress') return null
   if (item.episodes_total == null || item.episodes_total <= 0) return null
   return Math.min(100, Math.round((item.episodes_watched / item.episodes_total) * 100))
@@ -437,7 +454,10 @@ export const SocialActivityCard = ({ item }: SocialActivityCardProps) => {
             <meta.Icon className="size-5" strokeWidth={2} />
           </div>
           <div className="min-w-0 flex-1 self-center text-start">
-            <BidiText as="p" className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">
+            <BidiText
+              as="p"
+              className="line-clamp-2 text-end text-sm font-semibold leading-snug text-foreground"
+            >
               {item.list_name}
             </BidiText>
             <p className="mt-0.5 text-xs text-muted-foreground">{headline}</p>
@@ -476,7 +496,10 @@ export const SocialActivityCard = ({ item }: SocialActivityCardProps) => {
         </div>
       </div>
       <div className="min-w-0 flex-1 self-center text-start">
-        <BidiText as="p" className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">
+        <BidiText
+          as="p"
+          className="line-clamp-2 text-end text-sm font-semibold leading-snug text-foreground"
+        >
           {item.title}
         </BidiText>
         {isComment ? (

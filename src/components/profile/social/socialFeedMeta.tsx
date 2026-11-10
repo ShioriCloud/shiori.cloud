@@ -1,5 +1,12 @@
 import type { LucideIcon } from 'lucide-react'
-import { LayoutList, ListPlus, MessageCircle, Play, Star } from 'lucide-react'
+import {
+  CheckCircle2,
+  LayoutList,
+  ListPlus,
+  MessageCircle,
+  Play,
+  Star,
+} from 'lucide-react'
 import type { SocialProfileFeedItem } from '@/services/socialProfile'
 
 export type SocialFeedType = SocialProfileFeedItem['type']
@@ -22,6 +29,13 @@ export const socialFeedMeta: Record<SocialFeedType, FeedMeta> = {
     edgeClass: 'bg-sky-500/70',
     dotClass: 'bg-sky-500',
     tileClass: 'border-sky-400/20 bg-sky-400/10 text-sky-700 dark:text-sky-300',
+  },
+  watch_status: {
+    label: 'وضعیت تماشا',
+    Icon: CheckCircle2,
+    edgeClass: 'bg-indigo-500/65',
+    dotClass: 'bg-indigo-500',
+    tileClass: 'border-indigo-400/20 bg-indigo-400/10 text-indigo-700 dark:text-indigo-300',
   },
   rating: {
     label: 'نمره داد',

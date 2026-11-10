@@ -135,7 +135,7 @@ type SocialFeedItemBase = {
 
 export type SocialProfileFeedItem =
   | (SocialFeedItemBase & {
-      type: 'watch_progress' | 'rating' | 'list_add'
+      type: 'watch_progress' | 'rating' | 'list_add' | 'watch_status'
       actor: SocialProfileUserListItem
       anime_id: string
       slug: string | null
@@ -144,6 +144,7 @@ export type SocialProfileFeedItem =
       episodes_watched: number
       episodes_total: number | null
       user_rating?: number | null
+      list_status?: string | null
       updated_at: string
     })
   | (SocialFeedItemBase & {
@@ -184,7 +185,8 @@ export const socialFeedActivityKey = (item: SocialProfileFeedItem): string => {
   if (item.type === 'public_list_add') {
     return `pl:${item.list_id}:${item.anime_id}`
   }
-  return `${item.type}:${item.actor.telegram_user_id}:${item.anime_id}`
+  // Stable across watch_progress / watch_status / rating / list_add.
+  return `ual:${item.actor.telegram_user_id}:${item.anime_id}`
 }
 
 export type SocialProfileFeed = {
