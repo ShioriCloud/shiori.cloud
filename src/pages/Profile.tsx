@@ -157,6 +157,20 @@ const Profile = () => {
     [mergedStats.watchHours, mergedStats.byFormat]
   )
 
+  const fullStats = useMemo(() => {
+    const enabled = mergedStats.socialEnabled || stats.animeCount > 0
+    return {
+      animeCount: enabled ? mergedStats.animeCount : stats.animeCount,
+      episodesWatched: enabled ? mergedStats.episodesWatched : stats.episodesWatched,
+      watchHours: enabled ? mergedStats.watchHours : 0,
+      averageRating: enabled ? mergedStats.averageRating : stats.averageRating,
+      ratingsCount: enabled ? mergedStats.ratingsCount : 0,
+      activeDays: enabled ? mergedStats.activeDays : 0,
+      topGenres: enabled ? mergedStats.topGenres : [],
+      byFormat: enabled ? mergedStats.byFormat : [],
+    }
+  }, [mergedStats, stats.animeCount, stats.episodesWatched, stats.averageRating])
+
   if (searchParams.get('tab') === 'feed') {
     return <Navigate to="/feed" replace />
   }
@@ -293,6 +307,7 @@ const Profile = () => {
               variant="own"
               subTab={statsSub}
               overview={overview}
+              fullStats={fullStats}
               isLoading={socialProfileLoading}
               watchAnimeCount={mergedStats.animeCount}
               favoriteListItems={favoriteListItems}

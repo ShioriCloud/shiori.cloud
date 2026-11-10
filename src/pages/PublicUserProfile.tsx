@@ -131,6 +131,20 @@ const PublicUserProfile = () => {
     return { watchHours: 0, byFormat: [] as Array<{ format: string; count: number; episodes_watched: number }> }
   }, [data])
 
+  const fullStats = useMemo(() => {
+    if (!data?.enabled || !data.summary) return null
+    return {
+      animeCount: data.summary.anime_count,
+      episodesWatched: data.summary.episodes_watched,
+      watchHours: data.summary.estimated_watch_hours,
+      averageRating: data.summary.average_rating,
+      ratingsCount: data.summary.ratings_count,
+      activeDays: data.summary.active_days,
+      topGenres: data.top_genres ?? [],
+      byFormat: data.by_format ?? [],
+    }
+  }, [data])
+
   const favoriteListItems = useMemo(
     () => (data?.watched?.items ?? []).filter((item) => item.is_favorite === true),
     [data?.watched?.items]
@@ -334,6 +348,7 @@ const PublicUserProfile = () => {
               variant="public"
               subTab={statsSub}
               overview={overview}
+              fullStats={watchVisible ? fullStats : null}
               watchVisible={watchVisible}
               isLoading={profileLoading}
               watchAnimeCount={animeWatched}

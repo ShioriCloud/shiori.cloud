@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { useEffect, lazy, Suspense } from 'react'
 import Layout from './components/Layout'
 import ScrollToTop from './components/ScrollToTop'
@@ -32,8 +32,6 @@ const ShioriListDetail = lazy(() => import('./pages/ShioriListDetail'))
 const Profile = lazy(() => import('./pages/Profile'))
 const SocialProfile = lazy(() => import('./pages/SocialProfile'))
 const ProfileSettings = lazy(() => import('./pages/ProfileSettings'))
-const ProfileFullStats = lazy(() => import('./pages/ProfileFullStats'))
-const PublicProfileFullStats = lazy(() => import('./pages/PublicProfileFullStats'))
 const ProfileFollowList = lazy(() => import('./pages/ProfileFollowList'))
 const UserTranslationsPage = lazy(() => import('./pages/UserTranslationsPage'))
 const ProfilePeopleSearch = lazy(() => import('./pages/ProfilePeopleSearch'))
@@ -46,6 +44,16 @@ const SupportTicketDetail = lazy(() => import('./pages/SupportTicketDetail'))
 const StudioDetail = lazy(() => import('./pages/StudioDetail'))
 // Subscribe page kept for later monetization relaunch (see monetizationFlags.ts)
 const Subscribe = lazy(() => import('./pages/Subscribe'))
+
+const PublicStatsRedirect = () => {
+  const { telegramUserId = '' } = useParams<{ telegramUserId: string }>()
+  return (
+    <Navigate
+      to={`/u/${encodeURIComponent(telegramUserId)}?tab=stats`}
+      replace
+    />
+  )
+}
 
 function App() {
   const { isReady } = useAppAuth()
@@ -107,7 +115,7 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/social" element={<SocialProfile />} />
             <Route path="/profile/settings" element={<ProfileSettings />} />
-            <Route path="/profile/stats" element={<ProfileFullStats />} />
+            <Route path="/profile/stats" element={<Navigate to="/profile?tab=stats" replace />} />
             <Route path="/profile/followers" element={<ProfileFollowList />} />
             <Route path="/profile/following" element={<ProfileFollowList />} />
             <Route path="/profile/people" element={<ProfilePeopleSearch />} />
@@ -118,7 +126,10 @@ function App() {
             <Route path="/profile/badges" element={<ProfileBadges />} />
             <Route path="/profile/blocked" element={<ProfileBlockedUsers />} />
             <Route path="/u/:telegramUserId" element={<PublicUserProfile />} />
-            <Route path="/u/:telegramUserId/stats" element={<PublicProfileFullStats />} />
+            <Route
+              path="/u/:telegramUserId/stats"
+              element={<PublicStatsRedirect />}
+            />
             <Route path="/u/:telegramUserId/activity" element={<ProfileActivity />} />
             <Route path="/u/:telegramUserId/lists/:listId" element={<PublicShioriListPage />} />
             <Route path="/u/:telegramUserId/translations" element={<UserTranslationsPage />} />
