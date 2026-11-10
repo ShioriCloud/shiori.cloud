@@ -59,10 +59,8 @@ const stampProgress = (
 ): FavoriteProgress => {
   const key = String(animeId)
   const prev = previous ?? useAnimeStore.getState().favoriteProgress[key]
-  const statusChanged =
-    next.listStatus !== prev?.listStatus ||
-    next.episodesWatched !== prev?.episodesWatched ||
-    next.userRating !== prev?.userRating
+  // Only bump status clock when listStatus itself changes — matches API list_status_at.
+  const statusChanged = next.listStatus !== prev?.listStatus
   if (!statusChanged) return next
   return { ...next, listStatusUpdatedAt: new Date().toISOString() }
 }

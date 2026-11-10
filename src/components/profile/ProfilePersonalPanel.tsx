@@ -78,7 +78,7 @@ export const ProfilePersonalPanel = ({
     isReady && (inTelegram || Boolean(user))
   )
   const commentsEnabled = commentsAccess?.enabled === true
-  const { favoriteProgress } = useUserAnimeList({ syncRemoteList: false })
+  const { favoriteProgress } = useUserAnimeList()
   const { customLists } = useCustomLists({ syncRemote: false })
   const myComments = useMyAnimeCommentsQuery(Boolean(user) && commentsEnabled && variant === 'self', 1, 1)
 

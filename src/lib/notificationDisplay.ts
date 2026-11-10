@@ -25,6 +25,29 @@ export const formatNotificationMessage = (notification: UserNotificationRow): st
   return raw
 }
 
+const extractActorName = (text: string): string | null => {
+  const patterns = [
+    /^کاربر (.+) نظرت را پسندید$/,
+    /^کاربر (.+) نظرت رو لایک کرد$/,
+    /^کاربر (.+) فعالیتت را پسندید$/,
+    /^کاربر (.+) فعالیتت رو لایک کرد$/,
+    /^کاربر (.+) نظرت را لایک کرد$/,
+    /^کاربر (.+) فعالیتت را لایک کرد$/,
+  ]
+  for (const re of patterns) {
+    const m = text.match(re)
+    if (m?.[1]) return m[1].trim()
+  }
+  return null
+}
+
+const rewritePasand = (text: string): string =>
+  text
+    .replace(/پسندید/g, 'لایک کرد')
+    .replace(/را پسند/g, 'رو لایک')
+    .replace(/رو پسند/g, 'رو لایک')
+    .replace(/پسندیدن/g, 'لایک کردن')
+
 /** Single-line like copy (no «پسند»); also rewrites older inbox rows. */
 export const formatLikeNotificationLine = (
   notification: UserNotificationRow
@@ -34,34 +57,41 @@ export const formatLikeNotificationLine = (
   const title = notification.title?.trim() ?? ''
   const message = formatNotificationMessage(notification)
 
-  const fromComment =
-    message.match(/^کاربر (.+) نظرت را پسندید$/) ||
-    message.match(/^کاربر (.+) نظرت رو لایک کرد$/) ||
-    title.match(/^کاربر (.+) نظرت رو لایک کرد$/)
-  if (notification.kind === 'comment_like' && fromComment) {
-    return `کاربر ${fromComment[1].trim()} نظرت رو لایک کرد`
+  const nameFromMessage = extractActorName(message)
+  const nameFromTitle = extractActorName(title)
+  const name = nameFromMessage || nameFromTitle
+
+  if (notification.kind === 'comment_like') {
+    if (name) return `کاربر ${name} نظرت رو لایک کرد`
+    if (
+      title === 'پسند روی نظرت' ||
+      title.includes('پسند') ||
+      message.includes('پسند')
+    ) {
+      const rewritten = rewritePasand(message || title)
+      if (rewritten.startsWith('کاربر ')) return rewritten
+      return message ? rewritePasand(message) : 'نظرت رو لایک کردند'
+    }
   }
 
-  const fromFeed =
-    message.match(/^کاربر (.+) فعالیتت را پسندید$/) ||
-    message.match(/^کاربر (.+) فعالیتت رو لایک کرد$/) ||
-    title.match(/^کاربر (.+) فعالیتت رو لایک کرد$/)
-  if (notification.kind === 'feed_activity_like' && fromFeed) {
-    return `کاربر ${fromFeed[1].trim()} فعالیتت رو لایک کرد`
-  }
-
-  if (title === 'پسند روی نظرت' || title === 'پسند روی فعالیت' || title === 'پسند روی فعالیتت') {
-    return message
-      .replace('پسندید', 'لایک کرد')
-      .replace('را پسند', 'رو لایک')
-  }
-  if (title === 'فعالیتت رو پسندیدن') {
-    return message.replace('پسندید', 'لایک کرد').replace('را پسند', 'رو لایک')
+  if (notification.kind === 'feed_activity_like') {
+    if (name) return `کاربر ${name} فعالیتت رو لایک کرد`
+    if (
+      title === 'پسند روی فعالیت' ||
+      title === 'پسند روی فعالیتت' ||
+      title === 'فعالیتت رو پسندیدن' ||
+      title.includes('پسند') ||
+      message.includes('پسند')
+    ) {
+      const rewritten = rewritePasand(message || title)
+      if (rewritten.startsWith('کاربر ')) return rewritten
+      return message ? rewritePasand(message) : 'فعالیتت رو لایک کردند'
+    }
   }
 
   // Prefer one non-empty line; drop duplicate title/message.
-  if (message && title && message !== title) return message
-  return message || title || null
+  if (message && title && message !== title) return rewritePasand(message)
+  return rewritePasand(message || title) || null
 }
 
 export const resolveNotificationTarget = (notification: UserNotificationRow): string | null => {

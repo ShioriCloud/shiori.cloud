@@ -35,7 +35,12 @@ export const ProfileStatsMonthlyStrip = ({
 
   return (
     <section className={cn(profileStatsCardClass(), 'flex flex-col gap-3.5', className)}>
-      <h2 className="text-sm font-bold text-foreground">ساعت تماشا در هر ماه</h2>
+      <div className="space-y-1">
+        <h2 className="text-sm font-bold text-foreground">ساعت تماشا در ماه‌های اخیر</h2>
+        <p className="text-[11px] leading-4 text-muted-foreground">
+          برآورد تقریبی از مجموع ساعت تماشا — آمار ماه‌به‌ماه دقیق هنوز آماده نیست.
+        </p>
+      </div>
       <div dir="ltr" className="flex h-[150px] min-w-0 items-end gap-2.5">
         {bars.map((hours, i) => {
           const isLatest = i === 0

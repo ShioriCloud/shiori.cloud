@@ -42,7 +42,7 @@ import { profileScrollKey, useTabScrollRestoration } from '@/hooks/useTabScrollR
 
 const Profile = () => {
   const { user, isReady, inTelegram, login, register } = useAppAuth()
-  const { stats, favoriteAnime } = useUserAnimeList({ syncRemoteList: false })
+  const { stats, favoriteAnime } = useUserAnimeList()
   const { unreadCount } = useNotifications()
   const { data: favoriteCards = [], isLoading: favoriteCardsLoading } =
     useFavoriteAnimeCardsQuery(favoriteAnime)

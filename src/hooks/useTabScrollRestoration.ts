@@ -77,11 +77,19 @@ export const useTabScrollRestoration = (storageKey: string) => {
           lastYRef.current = saved
           return
         }
-        if (performance.now() - started > 1800) {
-          // Saved Y is taller than this page (often leak from another route). Stay at top.
-          applyScrollTop(0)
-          lastYRef.current = 0
-          writeSaved(storageKey, 0)
+        // Slow feeds/images: keep waiting longer before giving up.
+        if (performance.now() - started > 4500) {
+          const gap = saved - max
+          // Only treat as cross-route leak when saved Y is far beyond this page.
+          if (max < 80 || gap > Math.max(480, max * 1.25)) {
+            applyScrollTop(0)
+            lastYRef.current = 0
+            writeSaved(storageKey, 0)
+            return
+          }
+          const clamped = clampScrollY(saved)
+          applyScrollTop(clamped)
+          lastYRef.current = clamped
           return
         }
         applyScrollTop(clampScrollY(saved))

@@ -35,7 +35,7 @@ export function useAnimeDetailPage() {
     saveProgress,
     clearListTracking,
     isSaving: isSavingProgress,
-  } = useUserAnimeList({ syncRemoteList: false })
+  } = useUserAnimeList()
   const { preferences, updatePreferences, updatingPreferences } = useNotifications()
   const {
     isReminderOn,
