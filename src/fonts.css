@@ -1,0 +1,11 @@
+@font-face {
+  font-family: 'Vazirmatn RD';
+  src: url('./assets/fonts/Vazirmatn-RD.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  --app-font-sans: 'Vazirmatn RD', system-ui, sans-serif;
+}

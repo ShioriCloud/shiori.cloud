@@ -8,8 +8,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Vazirmatn', 'system-ui', 'sans-serif'],
-        'vazir': ['Vazirmatn', 'sans-serif'],
+        sans: 'var(--app-font-sans)',
+        vazir: 'var(--app-font-sans)',
       },
       colors: {
         background: 'oklch(var(--background) / <alpha-value>)',
