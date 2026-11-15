@@ -28,7 +28,7 @@ export const TranslatorBioQuote = ({
       <p
         className={cn(
           'mt-1.5 whitespace-pre-wrap text-right',
-          "font-['ShioriDialogue','Vazirmatn',serif]",
+          "font-['ShioriDialogue',var(--app-font-sans)]",
           'text-[0.95rem] leading-[1.85] text-foreground/90'
         )}
       >

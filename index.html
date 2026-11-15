@@ -6,11 +6,7 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>شیوری - برنامه انیمه</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;200;300;400;500;600;700;800;900&display=swap"
-        rel="stylesheet">
+    <link rel="stylesheet" href="/src/fonts.css">
     <style>
         /* Bridge until React hydrates — matches BrandBootScreen */
         html,
@@ -19,7 +15,7 @@
             min-height: 100%;
             background: #05030a;
             color: #f4f0ff;
-            font-family: 'Vazirmatn', system-ui, sans-serif;
+            font-family: var(--app-font-sans);
         }
 
         @font-face {
@@ -95,7 +91,7 @@
 
         #boot-splash .boot-quote {
             margin: 0;
-            font-family: 'ShioriDialogue', 'Vazirmatn', serif;
+            font-family: 'ShioriDialogue', var(--app-font-sans);
             font-size: clamp(1.15rem, 4.6vw, 1.32rem);
             font-weight: 500;
             line-height: 2.05;
@@ -247,7 +243,7 @@
 </head>
 
 <body>
-    <div id="tg-gate" style="display:none;position:fixed;inset:0;z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:1.25rem;background:#05030a;color:#f4f0ff;font-family:'Vazirmatn',system-ui,sans-serif;text-align:center;padding:2rem;">
+    <div id="tg-gate" style="display:none;position:fixed;inset:0;z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:1.25rem;background:#05030a;color:#f4f0ff;text-align:center;padding:2rem;">
         <p style="margin:0;font-size:1.05rem;line-height:1.9;color:rgba(244,240,255,0.85);">
             برای استفاده از مینی‌اپ، لطفاً از <strong style="font-weight:600;color:#f4f0ff;">آخرین نسخهٔ رسمی تلگرام</strong> استفاده کنید.
         </p>
