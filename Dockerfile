@@ -33,6 +33,11 @@ server {
         try_files $uri $uri/ /index.html;
     }
 
+    location = /telegram-web-app.js {
+        expires off;
+        add_header Cache-Control "no-cache, must-revalidate" always;
+    }
+
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|webp|woff|woff2)$ {
         expires 7d;
         add_header Cache-Control "public, immutable";
